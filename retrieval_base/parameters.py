@@ -75,6 +75,18 @@ class Parameters:
         assert(self.cov_mode in ['GP', None])
 
         self.wlen_settings = wlen_settings
+        
+    def __str__(self):
+        out = '** Parameters **\n'
+        # add line of dashes
+        out += '-'*len(out) + '\n'
+        for key_i in self.__dict__.keys():
+            if key_i.startswith('__'):
+                continue
+            out += f'{key_i}: {self.__dict__[key_i]}\n'
+        return out
+    def __repr__(self):
+        return self.__str__()
 
     def __call__(self, cube, ndim=None, nparams=None):
         '''
@@ -386,3 +398,20 @@ class Parameters:
                 param_dict[key_lin_i] = None
 
         return param_dict
+    
+    def lower_prior_sample(self):
+        '''Get the sample from the lower prior boundaries.'''
+        cube = np.zeros(self.n_params)
+        for i, key_i in enumerate(self.param_keys):
+            low, high = self.param_priors[key_i]
+            cube[i] = low
+        return cube
+    
+    def upper_prior_sample(self):
+        '''Get the sample from the upper prior boundaries.'''
+        cube = np.zeros(self.n_params)
+        for i, key_i in enumerate(self.param_keys):
+            low, high = self.param_priors[key_i]
+            cube[i] = high
+        return cube
+        

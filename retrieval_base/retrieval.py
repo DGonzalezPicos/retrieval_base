@@ -1,6 +1,5 @@
 import os
 os.environ['OMP_NUM_THREADS'] = '1'
-
 from mpi4py import MPI
 import time
 
@@ -316,7 +315,6 @@ class Retrieval:
         time_A = time.time()
 
         # Param.params dictionary is already updated
-
         if self.Param.params.get('temperature') is not None:
             # Read the constant temperatures
             temperature = self.Param.params.get('temperature')

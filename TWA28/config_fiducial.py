@@ -103,12 +103,12 @@ free_params = {
     #'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], 
 
     # PT profile
-    'dlnT_dlnP_0': [(0.12, 0.4), r'$\nabla_{T,0}$'], 
-    'dlnT_dlnP_1': [(0.13,0.32), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.03,0.23), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(0.0,0.14), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.03,0.2), r'$\nabla_{T,4}$'], 
-    'T_0': [(2000,9000), r'$T_0$'], 
+    'dlnT_dlnP_0': [(0.10, 0.35), r'$\nabla_{T,0}$'], 
+    'dlnT_dlnP_1': [(0.05,0.25), r'$\nabla_{T,1}$'], 
+    'dlnT_dlnP_2': [(0.05,0.25), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_3': [(0.00,0.15), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
+    'T_0': [(3000,9000), r'$T_0$'], 
 }
 
 # Constants to use if prior is not given
@@ -118,11 +118,11 @@ parallax = 1/d_pc
 parallax_mas = parallax * 1000
 constant_params = {
     # General properties
-    'parallax': 16.89,  # +/- 37 mas
-    'epsilon_limb': 0.65, 
+    'parallax': parallax_mas, 
+    # 'epsilon_limb': 0.65, 
 
     # PT profile
-    'log_P_knots': [-5, -2, -1/2, 1, 2], 
+    'log_P_knots': [-5., -3., -1., 1., 2.], 
 }
 
 ####################################################################################

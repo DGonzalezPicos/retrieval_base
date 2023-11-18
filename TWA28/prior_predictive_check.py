@@ -6,8 +6,7 @@ import numpy as np
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-# FIXME: problems with the path of the config file
-run_pre_processing = True
+run_pre_processing = False
 if run_pre_processing:
     for conf_data_i in conf.config_data.values():
         pre_processing(conf=conf, conf_data=conf_data_i)
@@ -70,9 +69,17 @@ def prior_check():
     ax.legend()
     plt.show()
     return ret
-        
-ret = prior_check()
+     
+     
+if run_prior_predictive_check:   
+    ret = prior_check()
 
 
 
-
+run_PMN = False
+if run_PMN:
+    ret = Retrieval(
+                conf=conf, 
+                evaluation=False
+                )
+    ret.PMN_run()

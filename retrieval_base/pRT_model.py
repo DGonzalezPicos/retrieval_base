@@ -281,7 +281,7 @@ class pRT_model:
                 )
             wave_i = nc.c / atm_i.freq
             # flux_i = np.nan_to_num(atm_i.flux, nan=0.0)
-            # flux_i = np.where(np.isinf(flux_i), 0.0, flux_i)
+            flux_i = np.where(np.isfinite(atm_i.flux), atm_i.flux, 0.0)
             overflow = np.log(atm_i.flux) > 20
             atm_i.flux[overflow] = 0.0
             

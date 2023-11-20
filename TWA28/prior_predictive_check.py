@@ -35,7 +35,7 @@ def prior_check():
     ax_PT = fig.add_subplot(gs0[:4,3:])
     
     ret = Retrieval(conf=conf, evaluation=False)
-    order, det = 0,1
+    order, det = 0,2
 
     for i in [0.0, 0.5, 0.90]:
         ret.Param(i * np.ones(len(ret.Param.param_keys)))

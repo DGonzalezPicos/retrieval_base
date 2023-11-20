@@ -261,10 +261,17 @@ class pRT_model:
         for i, atm_i in enumerate(self.atm):
             
             # Compute the emission spectrum
+            
+            # assert np.isnan(self.temperature).sum() == 0, 'NaNs in temperature'
+            # assert np.isinf(self.temperature).sum() == 0, 'Infs in temperature'
+            # assert np.isnan(self.mass_fractions['MMW']).sum() == 0, 'NaNs in MMW'
+            # assert np.isinf(self.mass_fractions['MMW']).sum() == 0, 'Infs in MMW'
+            # assert np.isnan(self.params['log_g']).sum() == 0, 'NaNs in log_g'
+            
             atm_i.calc_flux(
                 self.temperature, 
                 self.mass_fractions, 
-                gravity=10**self.params['log_g'], 
+                gravity=10.0**self.params['log_g'], 
                 mmw=self.mass_fractions['MMW'], 
                 Kzz=self.K_zz, 
                 fsed=self.f_sed, 
@@ -273,13 +280,16 @@ class pRT_model:
                 contribution=get_contr, 
                 )
             wave_i = nc.c / atm_i.freq
-            flux_i = atm_i.flux
-
-            # Convert [erg cm^{-2} s^{-1} Hz^{-1}] -> [erg cm^{-2} s^{-1} cm^{-1}]
-            flux_i *= nc.c / (wave_i**2)
+            # flux_i = np.nan_to_num(atm_i.flux, nan=0.0)
+            # flux_i = np.where(np.isinf(flux_i), 0.0, flux_i)
+            overflow = np.log(atm_i.flux) > 20
+            atm_i.flux[overflow] = 0.0
+            
+            flux_i = atm_i.flux *  nc.c / (wave_i**2)
 
             # Convert [erg cm^{-2} s^{-1} cm^{-1}] -> [erg cm^{-2} s^{-1} nm^{-1}]
-            flux_i /= 1e7
+            # flux_i /= 1e7
+            flux_i = flux_i * 1e-7
 
             # Convert [cm] -> [nm]
             wave_i *= 1e7

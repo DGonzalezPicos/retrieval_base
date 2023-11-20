@@ -217,7 +217,9 @@ class Spectrum:
                 residuals = flux_i - filtered_flux_i
 
                 # Sigma-clip the residuals
-                mask_clipped = (np.abs(residuals) > sigma*np.std(residuals))
+                mask_clipped = np.isnan(residuals) 
+                mask_clipped |= (np.abs(residuals) > sigma*np.nanstd(residuals))
+                # mask_clipped = (np.abs(residuals) > sigma*np.std(residuals))
 
                 sigma_clip_bounds[1,i,self.mask_isfinite[mask_wave]] = filtered_flux_i
                 sigma_clip_bounds[0,i] = sigma_clip_bounds[1,i] - sigma*np.std(residuals)

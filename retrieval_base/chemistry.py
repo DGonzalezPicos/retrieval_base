@@ -18,10 +18,10 @@ class Chemistry:
     # Dictionary with info per molecular/atomic species
     # (pRT_name, pyfc_name, mass, number of (C,O,H) atoms
     species_info = {
-        '12CO':    ('CO_main_iso',             'C1O1',     12.011 + 15.999,            (1,1,0)), 
-       #'12CO':    ('CO_high',                 'C1O1',     12.011 + 15.999,            (1,1,0)), 
-        '13CO':    ('CO_36',                   None,       13.003355 + 15.999,         (1,1,0)), 
-       #'13CO':    ('CO_36_high',              None,       13.003355 + 15.999,         (1,1,0)), 
+        # '12CO':    ('CO_main_iso',             'C1O1',     12.011 + 15.999,            (1,1,0)), 
+       '12CO':    ('CO_high',                 'C1O1',     12.011 + 15.999,            (1,1,0)), 
+        # '13CO':    ('CO_36',                   None,       13.003355 + 15.999,         (1,1,0)), 
+       '13CO':    ('CO_36_high',              None,       13.003355 + 15.999,         (1,1,0)), 
         'C18O':    ('CO_28',                   None,       12.011 + 17.9991610,        (1,1,0)), 
         'C17O':    ('CO_27',                   None,       12.011 + 16.999131,         (1,1,0)), 
   

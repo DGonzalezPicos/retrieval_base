@@ -77,13 +77,15 @@ def pre_processing(conf, conf_data):
             mode='PHOENIX'
             )
         
-        # Interpolate onto the same wavelength grid as the target
-        d_std_spec.transm = np.interp(
-            d_spec.wave, d_std_spec.wave, d_std_spec.transm
-            )
-        d_std_spec.transm_err = np.interp(
-            d_spec.wave, d_std_spec.wave, d_std_spec.transm_err
-            )
+        # check if they have different wavelength grids
+        if not np.allclose(d_spec.wave, d_std_spec.wave):
+            # Interpolate onto the same wavelength grid as the target
+            d_std_spec.transm = np.interp(
+                d_spec.wave, d_std_spec.wave, d_std_spec.transm
+                )
+            d_std_spec.transm_err = np.interp(
+                d_spec.wave, d_std_spec.wave, d_std_spec.transm_err
+                )
         d_spec.add_transm(d_std_spec.transm, d_std_spec.transm_err)
 
     else:

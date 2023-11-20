@@ -34,7 +34,7 @@ config_data = {
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 50, 
+        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
 
@@ -67,7 +67,7 @@ free_params = {
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     'R_p': [(2.0, 4.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
-    #'epsilon_limb': [(0.1,1), r'$\epsilon_\mathrm{limb}$'], 
+    'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
     'vsini': [(4.,20.), r'$v\ \sin\ i$'], 
@@ -84,8 +84,8 @@ free_params = {
     'Fe/H': [(-1,1), r'[Fe/H]'], 
     # 'log_P_quench_CO_CH4': [(-5,3), r'$\log\ P_\mathrm{quench}(\mathrm{C})$'], 
     #'log_P_quench_N2_NH3': [(-5,2), r'$\log\ P_\mathrm{quench}(\mathrm{N})$'], 
-    'log_C13_12_ratio': [(-10,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
-    # 'log_O18_16_ratio': [(-10,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
+    'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
+    'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
     # 'log_O17_16_ratio': [(-10,0), r'$\log\ \mathrm{^{17}C/^{16}O}$'], 
     # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
     # 'log_HCl': [(-12,-2), r'$\log\ \mathrm{HCl}$'], 
@@ -171,10 +171,11 @@ chem_kwargs = dict(
 line_species = [
     'CO_high', 
     'CO_36_high', 
-    # 'CO_28', 
+    'CO_28', 
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
+    'Na_allard',
     # 'CH4_hargreaves_main_iso', 
     # 'NH3_coles_main_iso', 
 
@@ -186,10 +187,10 @@ line_species = [
     # 'CO2_main_iso', 
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O'
+    '12CO', '13CO', 'H2O', 'Na'
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O',
+    '12CO', '13CO', 'H2O', 'Na'
     ]
 
 ####################################################################################

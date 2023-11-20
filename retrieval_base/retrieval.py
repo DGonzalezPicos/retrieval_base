@@ -279,8 +279,8 @@ class Retrieval:
             evaluation=self.evaluation, 
             n_samples_to_use=2000, 
             prefix=self.conf.prefix, 
-            posterior_color='C0', 
-            bestfit_color='C1', 
+            posterior_color='k', 
+            bestfit_color='limegreen', 
             species_to_plot_VMR=self.conf.species_to_plot_VMR, 
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )

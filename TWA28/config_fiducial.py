@@ -7,12 +7,12 @@ file_params = 'config_fiducial.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'fiducial_ret_1'
+prefix = 'fiducial_ret_5'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
     'K2166': {
-        'w_set': 'K2166', 'wave_range': (2300, 2400), 
+        'w_set': 'K2166', 'wave_range': (2060, 2480), 
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './data/TWA28.dat', 
@@ -34,6 +34,7 @@ config_data = {
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
+        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
@@ -65,7 +66,7 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(2.0, 4.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -105,8 +106,8 @@ free_params = {
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.35), r'$\nabla_{T,0}$'], 
     'dlnT_dlnP_1': [(0.05,0.25), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.05,0.25), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(0.00,0.15), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_2': [(0.00,0.25), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_3': [(-0.05,0.15), r'$\nabla_{T,3}$'], 
     'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
     'T_0': [(3000,9000), r'$T_0$'], 
 }

@@ -11,6 +11,14 @@ import petitRADTRANS.nat_cst as nc
 
 import retrieval_base.auxiliary_functions as af
 
+# make borders thicker
+mpl.rcParams['axes.linewidth'] = 1.5
+mpl.rcParams['xtick.major.width'] = 1.5
+mpl.rcParams['ytick.major.width'] = 1.5
+mpl.rcParams['xtick.minor.width'] = 1.5
+mpl.rcParams['ytick.minor.width'] = 1.5
+
+
 def fig_order_subplots(n_orders, ylabel, xlabel=r'Wavelength (nm)'):
 
     fig, ax = plt.subplots(

@@ -22,6 +22,7 @@ class CallBack:
                  prefix=None, 
                  posterior_color='C0', 
                  bestfit_color='C1', 
+                 PT_color='orangered',
                  species_to_plot_VMR=['12CO', 'H2O', '13CO', 'CH4', 'NH3', 'C18O'], 
                  species_to_plot_CCF=['12CO', 'H2O', '13CO', 'CH4'], 
                  ):
@@ -42,12 +43,19 @@ class CallBack:
 
         self.posterior_color = posterior_color
         self.bestfit_color = bestfit_color
+        self.PT_color = PT_color
 
         self.envelope_cmap = mpl.colors.LinearSegmentedColormap.from_list(
             name='envelope_cmap', colors=['w', self.posterior_color], 
             )
+        self.PT_envelope_cmap = mpl.colors.LinearSegmentedColormap.from_list(
+            name='PT_envelope_cmap', colors=['w', self.PT_color], 
+            )
         self.envelope_colors = self.envelope_cmap([0.0,0.2,0.4,0.6,0.8])
         self.envelope_colors[0,-1] = 0.0
+        
+        self.PT_envelope_colors = self.PT_envelope_cmap([0.0,0.2,0.4,0.6,0.8])
+        self.PT_envelope_colors[0,-1] = 0.0
 
         self.species_to_plot_VMR = species_to_plot_VMR
         self.species_to_plot_CCF = species_to_plot_CCF
@@ -143,9 +151,9 @@ class CallBack:
             PT=self.PT, 
             pRT_atm=self.pRT_atm, 
             ax_PT=None, 
-            envelope_colors=self.envelope_colors, 
-            posterior_color=self.posterior_color, 
-            bestfit_color=self.bestfit_color, 
+            envelope_colors=self.PT_envelope_colors, 
+            posterior_color=self.PT_color, 
+            bestfit_color=self.bestfit_color,
             prefix=self.prefix
         )
 
@@ -377,12 +385,13 @@ class CallBack:
 
         # Number of parameters
         n_params = mask_params.sum()
-
+        labels = self.param_labels[mask_params]
+        assert len(labels) == n_params, f'len(labels)={len(labels)} != n_params={n_params}'
+        
         fig = corner.corner(
             self.posterior[:,mask_params], 
             fig=fig, 
             quiet=True, 
-
             labels=self.param_labels[mask_params], 
             show_titles=True, 
             use_math_text=True, 
@@ -394,6 +403,8 @@ class CallBack:
             max_n_ticks=3, 
 
             quantiles=[0.16,0.84], 
+            title_quantiles=[0.16, 0.5, 0.84],  # Add this line
+
             color=self.posterior_color, 
             linewidths=0.5, 
             hist_kwargs={'color':self.posterior_color}, 
@@ -491,6 +502,11 @@ class CallBack:
             )
 
         # Plot the best-fitting PT profile
+        x1, x2 = np.min(self.PT.temperature), np.max(self.PT.temperature)
+        x_pad = 0.05*(x2-x1)
+        x1 -= x_pad
+        x2 += x_pad
+        
         ax_PT = figs.fig_PT(
             PT=self.PT, 
             pRT_atm=self.pRT_atm, 
@@ -502,7 +518,8 @@ class CallBack:
             posterior_color=self.posterior_color, 
             bestfit_color=self.bestfit_color, 
             ylabel=None, 
-            yticks=[]
+            yticks=[],
+            xlim=(x1,x2), 
             )
 
         # Plot the integrated emission contribution function

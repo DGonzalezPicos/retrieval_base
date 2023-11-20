@@ -169,6 +169,10 @@ chem_kwargs = dict(
     ##use_rainout_cond = False,
 )
 
+# Rayleigh scattering and continuum opacities
+rayleigh_species=['H2','He']
+continuum_opacities=['H2-H2', 'H2-He', 'H-']
+
 line_species = [
     'CO_high', 
     'CO_36_high', 

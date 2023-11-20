@@ -384,6 +384,10 @@ class EqChemistry(Chemistry):
         # Add the H2 and He abundances
         self.mass_fractions['H2'] = pm_mass_fractions['H2']
         self.mass_fractions['He'] = pm_mass_fractions['He']
+        self.mass_fractions['H'] = pm_mass_fractions['H']
+        # Add H- and e-
+        self.mass_fractions['H-'] = pm_mass_fractions['H-']
+        self.mass_fractions['e-'] = pm_mass_fractions['e-']
 
         # Convert the free-chemistry VMRs to mass fractions
         for species_i in self.species_info.keys():

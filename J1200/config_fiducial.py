@@ -7,7 +7,7 @@ file_params = 'config_fiducial.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'fiducial_ret_6'
+prefix = 'fiducial_ret_1'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -15,18 +15,18 @@ config_data = {
         'w_set': 'K2166', 'wave_range': (2060, 2480), 
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
-        'file_target': './data/TWA28.dat', 
+        'file_target': './data/J1200.dat', 
         'file_std': './data/iSco_std.dat', 
         'file_wave': './data/iSco_std.dat', 
         'file_skycalc_transm': f'./data/skycalc_transm_K2166.dat', 
         
-        'file_molecfit_transm': './data/TWA28_molecfit_transm.dat', 
+        'file_molecfit_transm': './data/J1200_molecfit_transm.dat', 
         'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
 
         'filter_2MASS': '2MASS/2MASS.Ks', 
         'pwv': 5.0, 
         # adjust values below....!
-        'ra': 165.541335, 'dec': -34.50990, 'mjd': 60007.30274557,
+        'ra': 180.153309, 'dec': -78.75272, 'mjd': 60008.15139086,
         'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
         'T_std': 17_000, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
@@ -35,12 +35,11 @@ config_data = {
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
         'log_P_range': (-5,2), 'n_atm_layers': 30, 
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
 
 magnitudes = {
-    '2MASS/2MASS.Ks': (11.89, 0.02), # Cutri et al. 2003
+    '2MASS/2MASS.Ks': (11.60, 0.02), # Cutri et al. 2003
 }
 
 ####################################################################################
@@ -66,13 +65,13 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 6.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
-    'vsini': [(4.,20.), r'$v\ \sin\ i$'], 
-    'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
+    'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
+    'rv': [(-25,25), r'$v_\mathrm{rad}$'], 
 
     # Cloud properties
     # 'log_opa_base_gray': [(-10,5), r'$\log\ \kappa_{\mathrm{cl},0}$'], 
@@ -85,8 +84,8 @@ free_params = {
     'Fe/H': [(-1,1), r'[Fe/H]'], 
     # 'log_P_quench_CO_CH4': [(-5,3), r'$\log\ P_\mathrm{quench}(\mathrm{C})$'], 
     #'log_P_quench_N2_NH3': [(-5,2), r'$\log\ P_\mathrm{quench}(\mathrm{N})$'], 
-    'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
-    'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
+    'log_C13_12_ratio': [(-4,-1), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
+    'log_O18_16_ratio': [(-6, -1), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
     # 'log_O17_16_ratio': [(-10,0), r'$\log\ \mathrm{^{17}C/^{16}O}$'], 
     # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
     # 'log_HCl': [(-12,-2), r'$\log\ \mathrm{HCl}$'], 
@@ -114,7 +113,7 @@ free_params = {
 
 # Constants to use if prior is not given
 # distance in pc to parallax
-d_pc = 59.2 # pc
+d_pc = 101.06 # pc
 parallax = 1/d_pc
 parallax_mas = parallax * 1000
 constant_params = {
@@ -146,28 +145,7 @@ cloud_species = None
 #chem_mode  = 'SONORAchem'
 chem_mode  = 'eqchem'
 
-#import pyfastchem
-#fastchem_path = os.path.dirname(pyfastchem.__file__)
-chem_kwargs = dict(
-#     #spline_order   = 0
-
-#     # quench_setup = {
-#     #     'P_quench_CO_CH4': ['12CO', 'CH4', 'H2O', '13CO', 'C18O', 'C17O'], 
-#     #    #'P_quench_N2_NH3': ['N2', 'HCN', 'NH3'], 
-#     #    'P_quench_N2_NH3': ['N2', 'NH3'], 
-#         }, 
-
-    #path_SONORA_chem = '../SONORA_models/chemistry', 
-
-    #abundance_file = f'{fastchem_path}/input/element_abundances/asplund_2020.dat', 
-    #gas_data_file  = f'{fastchem_path}/input/logK/logK.dat', 
-    #cond_data_file = f'{fastchem_path}/input/logK/logK_condensates.dat', 
-    #verbose_level  = 1, 
-    #use_eq_cond      = True, 
-    ##use_eq_cond      = False, 
-    #use_rainout_cond = True,
-    ##use_rainout_cond = False,
-)
+chem_kwargs = dict()
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']

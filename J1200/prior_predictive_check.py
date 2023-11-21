@@ -37,7 +37,7 @@ def prior_check():
     ret = Retrieval(conf=conf, evaluation=False)
     order, det = 0,2
 
-    for i in [0.0, 0.5, 0.90]:
+    for i in [0.0, 0.5, 1.0]:
         ret.Param(i * np.ones(len(ret.Param.param_keys)))
 
         

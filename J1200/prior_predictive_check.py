@@ -1,12 +1,12 @@
 from retrieval_base.retrieval import pre_processing, Retrieval
 from retrieval_base.parameters import Parameters
-import config_fiducial as conf
+import config_freechem as conf
 
 import numpy as np
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-run_pre_processing = False
+run_pre_processing = True
 if run_pre_processing:
     for conf_data_i in conf.config_data.values():
         pre_processing(conf=conf, conf_data=conf_data_i)

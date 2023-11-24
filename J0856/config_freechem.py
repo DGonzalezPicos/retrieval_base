@@ -50,16 +50,11 @@ r_star = 0.29
 r_jup = r_star / 0.10045
 # Define the priors of the parameters
 free_params = {
-    # Data resolution
-    #'res': [(20000,200000), r'res'], 
-    #'log_res_J1226': [(4,5.2), r'$\log\ R_\mathrm{J}$'], 
 
     # Uncertainty scaling
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
     'log_a': [(-1,0.5), r'$\log\ a_\mathrm{K}$'], 
     'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
-    #'log_a_K2166': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
-    #'log_l_K2166': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -73,21 +68,18 @@ free_params = {
     'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
 
-    # Cloud properties
-    # 'log_opa_base_gray': [(-10,5), r'$\log\ \kappa_{\mathrm{cl},0}$'], 
-    # 'log_P_base_gray': [(-5,3), r'$\log\ P_{\mathrm{cl},0}$'], 
-    # 'f_sed_gray': [(0,20), r'$f_\mathrm{sed}$'], 
-    #'cloud_slope': [(-10,10), r'$\xi_\mathrm{cl}$'], 
-
     # Chemistry
     # 'C/O': [(0.15,1), r'C/O'], 
     # 'Fe/H': [(-1,1), r'[Fe/H]'], 
-    
-    # 'log_P_quench_CO_CH4': [(-5,3), r'$\log\ P_\mathrm{quench}(\mathrm{C})$'], 
-    #'log_P_quench_N2_NH3': [(-5,2), r'$\log\ P_\mathrm{quench}(\mathrm{N})$'], 
     # 'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
     # 'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
-    # 'log_O17_16_ratio': [(-10,0), r'$\log\ \mathrm{^{17}C/^{16}O}$'], 
+        
+    'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
+    'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
+    'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
+    
+    'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
+    
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
@@ -95,19 +87,6 @@ free_params = {
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
     'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
-    # 'log_HCl': [(-12,-2), r'$\log\ \mathrm{HCl}$'], 
-
-    'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
-    'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
-    'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
-    # 'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'], 
-
-    'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    #'log_CH4': [(-12,-2), r'$\log\ \mathrm{CH_4}$'], 
-    #'log_NH3': [(-12,-2), r'$\log\ \mathrm{NH_3}$'], 
-    #'log_H2S': [(-12,-2), r'$\log\ \mathrm{H_2S}$'], 
-    #'log_HCN': [(-12,-2), r'$\log\ \mathrm{HCN}$'], 
-    #'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], 
 
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 

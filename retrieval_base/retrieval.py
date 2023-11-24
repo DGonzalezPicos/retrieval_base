@@ -641,13 +641,15 @@ class Retrieval:
                 continue
 
         # Store the unquenched mass fractions
-        for line_species_i in self.Chem.unquenched_mass_fractions.keys():
-            self.Chem.unquenched_mass_fractions_posterior[line_species_i] = \
-                np.array(self.Chem.unquenched_mass_fractions_posterior[line_species_i])
+        if hasattr(self.Chem, 'unquenched_mass_fractions'):
 
-            self.Chem.unquenched_mass_fractions_envelopes[line_species_i] = af.quantiles(
-                self.Chem.unquenched_mass_fractions_posterior[line_species_i], q=q, axis=0
-                )
+            for line_species_i in self.Chem.unquenched_mass_fractions.keys():
+                self.Chem.unquenched_mass_fractions_posterior[line_species_i] = \
+                    np.array(self.Chem.unquenched_mass_fractions_posterior[line_species_i])
+
+                self.Chem.unquenched_mass_fractions_envelopes[line_species_i] = af.quantiles(
+                    self.Chem.unquenched_mass_fractions_posterior[line_species_i], q=q, axis=0
+                    )
 
         self.CB.return_PT_mf = False
 

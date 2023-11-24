@@ -101,6 +101,7 @@ class Chemistry:
         'Al': ('C23', r'Al'), 
         'Mg': ('C24', r'Mg'), 
         #'He': ('C22', r'He'), 
+        'CN': ('C25', r'CN'),
         }
 
     # Neglect certain species to find respective contribution

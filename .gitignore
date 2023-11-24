@@ -21,3 +21,6 @@ DENIS_J0255/retrieval_comparison.py
 HBDs/dataframe10-k.csv
 .gitignore
 TWA28/SPHINX_M_models.pdf
+J0856/CN_opacity_comparison.png
+.gitignore
+J0856/retrieval_evaluation.sh

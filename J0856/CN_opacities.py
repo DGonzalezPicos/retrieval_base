@@ -41,7 +41,7 @@ ab['13CO'] = ab['CO'] / 89.
 ab['CN'] = ab['CO'] / 1000.
 ab = {k: v for k, v in sorted(ab.items(), key=lambda item: item[1])}
 
-fig, ax = plt.subplots(1,1, figsize=(8,8))
+fig, ax = plt.subplots(1,1, figsize=(14,4))
 
 for i, s in enumerate(species.keys()):
     print(f'{s}: {species[s]}')
@@ -53,6 +53,6 @@ for i, s in enumerate(species.keys()):
 ax.set(xlabel='wavelength (nm)', ylabel=r'opacity (cm$^2$ g$^{-1}$)', yscale='log')
 ax.legend()
 plt.show()
-
+fig.savefig('CN_opacity_comparison.png', bbox_inches='tight', dpi=300)
 
                

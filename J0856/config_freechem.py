@@ -56,7 +56,7 @@ free_params = {
 
     # Uncertainty scaling
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
-    'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
+    'log_a': [(-1,0.5), r'$\log\ a_\mathrm{K}$'], 
     'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
     #'log_a_K2166': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
     #'log_l_K2166': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
@@ -82,12 +82,11 @@ free_params = {
     # Chemistry
     # 'C/O': [(0.15,1), r'C/O'], 
     # 'Fe/H': [(-1,1), r'[Fe/H]'], 
-    'log_12CO': [(-10,-1), r'$\log\ \mathrm{CO}$'],
-    'log_H2O': [(-10,-1), r'$\log\ \mathrm{H_2O}$'],
+    
     # 'log_P_quench_CO_CH4': [(-5,3), r'$\log\ P_\mathrm{quench}(\mathrm{C})$'], 
     #'log_P_quench_N2_NH3': [(-5,2), r'$\log\ P_\mathrm{quench}(\mathrm{N})$'], 
-    'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
-    'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
+    # 'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
+    # 'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
     # 'log_O17_16_ratio': [(-10,0), r'$\log\ \mathrm{^{17}C/^{16}O}$'], 
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
@@ -98,12 +97,12 @@ free_params = {
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
     # 'log_HCl': [(-12,-2), r'$\log\ \mathrm{HCl}$'], 
 
-    #'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
-    #'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
-    #'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
-    #'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'], 
+    'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
+    'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
+    'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
+    # 'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'], 
 
-    #'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
+    'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     #'log_CH4': [(-12,-2), r'$\log\ \mathrm{CH_4}$'], 
     #'log_NH3': [(-12,-2), r'$\log\ \mathrm{NH_3}$'], 
     #'log_H2S': [(-12,-2), r'$\log\ \mathrm{H_2S}$'], 

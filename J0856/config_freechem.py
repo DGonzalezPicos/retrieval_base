@@ -85,6 +85,7 @@ free_params = {
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    
     'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
 
@@ -165,10 +166,13 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
+    
     'Na_allard',
     'Mg',
+    'K',
     'Ca',
     'Ti',
+    
     'CN_main_iso',
     'HF_main_iso', 
     

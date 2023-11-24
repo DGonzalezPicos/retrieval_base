@@ -68,7 +68,7 @@ free_params = {
     'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
 
-    # Chemistry
+# Chemistry
     # 'C/O': [(0.15,1), r'C/O'], 
     # 'Fe/H': [(-1,1), r'[Fe/H]'], 
     # 'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
@@ -85,6 +85,7 @@ free_params = {
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    
     'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
 
@@ -158,6 +159,7 @@ chem_kwargs = dict(
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
 
+
 line_species = [
     'CO_high', 
     'CO_36_high', 
@@ -165,10 +167,13 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
+    
     'Na_allard',
     'Mg',
+    'K',
     'Ca',
     'Ti',
+    
     'CN_main_iso',
     'HF_main_iso', 
     

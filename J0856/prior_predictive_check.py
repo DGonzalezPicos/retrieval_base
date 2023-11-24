@@ -1,12 +1,13 @@
 from retrieval_base.retrieval import pre_processing, Retrieval
 from retrieval_base.parameters import Parameters
-import config_fiducial as conf
+# import config_eqchem as conf
+import config_freechem as conf
 
 import numpy as np
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-run_pre_processing = True
+run_pre_processing = False
 if run_pre_processing:
     for conf_data_i in conf.config_data.values():
         pre_processing(conf=conf, conf_data=conf_data_i)
@@ -35,9 +36,9 @@ def prior_check():
     ax_PT = fig.add_subplot(gs0[:4,3:])
     
     ret = Retrieval(conf=conf, evaluation=False)
-    order, det = 0,2
+    order, det = 2,2
 
-    for i in [0.0, 0.5, 0.90]:
+    for i in [0.0, 0.5, 1.0]:
         ret.Param(i * np.ones(len(ret.Param.param_keys)))
 
         

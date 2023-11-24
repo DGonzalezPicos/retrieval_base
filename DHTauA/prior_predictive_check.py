@@ -68,6 +68,7 @@ def prior_check():
     ax_res.axhline(0, color='k', ls='-', alpha=0.9) 
     ax.legend()
     plt.show()
+    fig.savefig('prior_predictive_check.png', bbox_inches='tight', dpi=300)
     return ret
      
      

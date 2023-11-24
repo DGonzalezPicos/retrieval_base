@@ -320,13 +320,15 @@ class Parameters:
             self.VMR_species = None
 
         elif self.chem_mode == 'free':
+            # print(f'[Parameters.read_chemistry_params]: Using free chemistry')
+            # print(f'[Parameters.read_chemistry_params]: self.Param.param_keys = {self.param_keys}')
             # Use free chemistry
             self.params['C/O'], self.params['Fe/H'] = None, None
 
             # Loop over all possible species
             self.VMR_species = {}
             for species_i in Chemistry.species_info.keys():
-
+                # print(f'[Parameters.read_chemistry_params]: {species_i}')
                 # If multiple VMRs are given
                 for j in range(3):
                     if f'log_{species_i}_{j}' in self.param_keys:

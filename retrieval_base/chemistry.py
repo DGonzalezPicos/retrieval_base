@@ -34,6 +34,7 @@ class Chemistry:
   
         'NH3':     ('NH3_coles_main_iso',      'H3N1',     14.0067 + 3*1.00784,        (0,0,3)), 
         'HCN':     ('HCN_main_iso',            'C1H1N1_1', 1.00784 + 12.011 + 14.0067, (1,0,1)), 
+        'CN' :     ('CN_main_iso',             'C1N1',     12.011 + 14.0067,           (1,0,0)),
        #'H2S':     ('H2S_main_iso',            'H2S1',     2*1.00784 + 32.065,         (0,0,2)), 
         'H2S':     ('H2S_ExoMol_main_iso',     'H2S1',     2*1.00784 + 32.065,         (0,0,2)), 
         'FeH':     ('FeH_main_iso',            'Fe1H1',    55.845 + 1.00784,           (0,0,1)), 
@@ -269,9 +270,14 @@ class FreeChemistry(Chemistry):
         # Add the H2 and He abundances
         self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
-
+        
+        self.mass_fractions['H-'] = 6e-9 # solar
+        self.mass_fractions['e-'] = 1e-10 # solar
+        
+    
         # Add to the H-bearing species
         H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
+        self.mass_fractions['H'] = H
 
         if VMR_wo_H2.any() > 1:
             # Other species are too abundant
@@ -388,6 +394,12 @@ class EqChemistry(Chemistry):
         # Add H- and e-
         self.mass_fractions['H-'] = pm_mass_fractions['H-']
         self.mass_fractions['e-'] = pm_mass_fractions['e-']
+        # For solar C/O and Fe/H:
+        # self.mass_fractions['H-'] = 6e-9 # solar
+        # self.mass_fractions['e-'] = 1e-10 # solar
+        
+        print(f'mass_fractions[e-] = {np.mean(self.mass_fractions["e-"]):.2e}')
+        print(f'mass_fractions[H-] = {np.mean(self.mass_fractions["H-"]):.2e}')
 
         # Convert the free-chemistry VMRs to mass fractions
         for species_i in self.species_info.keys():
@@ -404,6 +416,7 @@ class EqChemistry(Chemistry):
 
             VMR_i = 10**params.get(f'log_{species_i}')
             self.mass_fractions[line_species_i] = VMR_i * mass_i / self.mass_fractions['MMW']
+            print(f'{line_species_i} = {np.mean(VMR_i):.2e}')
 
     def quench_chemistry(self, quench_key='P_quench'):
 

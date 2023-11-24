@@ -7,7 +7,7 @@ file_params = 'config_fiducial.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'fiducial_ret_2'
+prefix = 'fiducial_ret_1'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -15,18 +15,18 @@ config_data = {
         'w_set': 'K2166', 'wave_range': (2060, 2480), 
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
-        'file_target': './data/DHTauA.dat', 
-        'file_std': './data/chiTau_std.dat', 
-        'file_wave': './data/chiTau_std.dat', 
+        'file_target': './data/J0856.dat', 
+        'file_std': './data/iSco_std.dat', 
+        'file_wave': './data/iSco_std.dat', 
         'file_skycalc_transm': f'./data/skycalc_transm_K2166.dat', 
         
-        'file_molecfit_transm': './data/DHTauA_molecfit_transm.dat', 
-        'file_std_molecfit_transm': './data/chiTau_std_molecfit_transm.dat', 
+        'file_molecfit_transm': './data/J0856_molecfit_transm.dat', 
+        'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
 
         'filter_2MASS': '2MASS/2MASS.Ks', 
         'pwv': 5.0, 
         # adjust values below....!
-        'ra': 67.422516, 'dec':26.54998 , 'mjd': 59945.15461034,
+        'ra': 134.057762, 'dec': -13.70612, 'mjd': 60008.03764053,
         'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
         'T_std': 17_000, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
@@ -39,7 +39,7 @@ config_data = {
     }
 
 magnitudes = {
-    '2MASS/2MASS.Ks': (8.20, 0.02), # Cutri et al. 2003
+    '2MASS/2MASS.Ks': (11.89, 0.02), # Cutri et al. 2003
 }
 
 ####################################################################################
@@ -65,13 +65,13 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 30.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(3.0,6.0), r'$\log\ g$'], 
+    'R_p': [(0.5, 5.0), r'$R_\mathrm{p}$'], 
+    'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
-    'vsini': [(2.,25.), r'$v\ \sin\ i$'], 
-    'rv': [(-25,25), r'$v_\mathrm{rad}$'], 
+    'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
+    'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
 
     # Cloud properties
     # 'log_opa_base_gray': [(-10,5), r'$\log\ \kappa_{\mathrm{cl},0}$'], 
@@ -82,12 +82,19 @@ free_params = {
     # Chemistry
     'C/O': [(0.15,1), r'C/O'], 
     'Fe/H': [(-1,1), r'[Fe/H]'], 
+    # 'log_12CO': [(-10,-2), r'$\log\ \mathrm{CO}$'],
+    # 'log_H2O': [(-10,-2), r'$\log\ \mathrm{H_2O}$'],
     # 'log_P_quench_CO_CH4': [(-5,3), r'$\log\ P_\mathrm{quench}(\mathrm{C})$'], 
     #'log_P_quench_N2_NH3': [(-5,2), r'$\log\ P_\mathrm{quench}(\mathrm{N})$'], 
-    'log_C13_12_ratio': [(-4,-1), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
-    'log_O18_16_ratio': [(-6, -1), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
+    'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
+    'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
     # 'log_O17_16_ratio': [(-10,0), r'$\log\ \mathrm{^{17}C/^{16}O}$'], 
-    # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+    'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
+    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
+    'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
     # 'log_HCl': [(-12,-2), r'$\log\ \mathrm{HCl}$'], 
 
     #'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
@@ -104,19 +111,18 @@ free_params = {
 
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
-    'dlnT_dlnP_1': [(0.08,0.40), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.05,0.40), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(0.00,0.40), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.05,0.35), r'$\nabla_{T,4}$'], 
-    'T_0': [(3000,20000), r'$T_0$'], 
+    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'], 
+    'dlnT_dlnP_2': [(0.05,0.30), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
+    'T_0': [(2000,10000), r'$T_0$'], 
 }
 
 # Constants to use if prior is not given
 # distance in pc to parallax
-# d_pc = 101.06 # pc
-# parallax = 1/d_pc
-# parallax_mas = parallax * 1000
-parallax_mas = 7.4936
+d_pc = 53.8 # pc
+parallax = 1/d_pc
+parallax_mas = parallax * 1000
 constant_params = {
     # General properties
     'parallax': parallax_mas, 
@@ -146,7 +152,28 @@ cloud_species = None
 #chem_mode  = 'SONORAchem'
 chem_mode  = 'eqchem'
 
-chem_kwargs = dict()
+#import pyfastchem
+#fastchem_path = os.path.dirname(pyfastchem.__file__)
+chem_kwargs = dict(
+#     #spline_order   = 0
+
+#     # quench_setup = {
+#     #     'P_quench_CO_CH4': ['12CO', 'CH4', 'H2O', '13CO', 'C18O', 'C17O'], 
+#     #    #'P_quench_N2_NH3': ['N2', 'HCN', 'NH3'], 
+#     #    'P_quench_N2_NH3': ['N2', 'NH3'], 
+#         }, 
+
+    #path_SONORA_chem = '../SONORA_models/chemistry', 
+
+    #abundance_file = f'{fastchem_path}/input/element_abundances/asplund_2020.dat', 
+    #gas_data_file  = f'{fastchem_path}/input/logK/logK.dat', 
+    #cond_data_file = f'{fastchem_path}/input/logK/logK_condensates.dat', 
+    #verbose_level  = 1, 
+    #use_eq_cond      = True, 
+    ##use_eq_cond      = False, 
+    #use_rainout_cond = True,
+    ##use_rainout_cond = False,
+)
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
@@ -160,21 +187,16 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     'Na_allard',
-    # 'CH4_hargreaves_main_iso', 
-    # 'NH3_coles_main_iso', 
-
-    # 'H2S_ExoMol_main_iso', 
-    # 'HF_main_iso', 
-    # 'HCl_main_iso', 
-
-    # 'HCN_main_iso', 
-    # 'CO2_main_iso', 
+    'Mg',
+    'Ca',
+    'Ti',
+    'HF_main_iso', 
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 'Na'
+    '12CO', '13CO', 'H2O', 'Na','Ca','Ti','HF'
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na'
+    '12CO', '13CO', 'H2O', 'Na', 'Ca', 'Ti', 'HF'
     ]
 
 ####################################################################################

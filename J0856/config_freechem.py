@@ -1,13 +1,13 @@
 import numpy as np
 import os
 
-file_params = 'config_fiducial.py'
+file_params = 'config_freechem.py'
 
 ####################################################################################
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'fiducial_ret_1'
+prefix = 'freechem_CN_1'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -80,14 +80,22 @@ free_params = {
     #'cloud_slope': [(-10,10), r'$\xi_\mathrm{cl}$'], 
 
     # Chemistry
-    'C/O': [(0.15,1), r'C/O'], 
-    'Fe/H': [(-1,1), r'[Fe/H]'], 
+    # 'C/O': [(0.15,1), r'C/O'], 
+    # 'Fe/H': [(-1,1), r'[Fe/H]'], 
+    'log_12CO': [(-10,-1), r'$\log\ \mathrm{CO}$'],
+    'log_H2O': [(-10,-1), r'$\log\ \mathrm{H_2O}$'],
     # 'log_P_quench_CO_CH4': [(-5,3), r'$\log\ P_\mathrm{quench}(\mathrm{C})$'], 
     #'log_P_quench_N2_NH3': [(-5,2), r'$\log\ P_\mathrm{quench}(\mathrm{N})$'], 
     'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
     'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
     # 'log_O17_16_ratio': [(-10,0), r'$\log\ \mathrm{^{17}C/^{16}O}$'], 
-    # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+    'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
+    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
+    'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
+    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
     # 'log_HCl': [(-12,-2), r'$\log\ \mathrm{HCl}$'], 
 
     #'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
@@ -143,7 +151,7 @@ cloud_species = None
 
 #chem_mode  = 'free'
 #chem_mode  = 'SONORAchem'
-chem_mode  = 'eqchem'
+chem_mode  = 'free'
 
 #import pyfastchem
 #fastchem_path = os.path.dirname(pyfastchem.__file__)
@@ -180,21 +188,18 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     'Na_allard',
-    # 'CH4_hargreaves_main_iso', 
-    # 'NH3_coles_main_iso', 
-
-    # 'H2S_ExoMol_main_iso', 
-    # 'HF_main_iso', 
-    # 'HCl_main_iso', 
-
-    # 'HCN_main_iso', 
-    # 'CO2_main_iso', 
+    'Mg',
+    'Ca',
+    'Ti',
+    'CN_main_iso',
+    'HF_main_iso', 
+    
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 'Na'
+    '12CO', '13CO', 'H2O', 'Na','Ca','Ti','HF', 'CN', 'Mg',
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na'
+    '12CO', '13CO', 'H2O', 'Na', 'Ca', 'Ti', 'HF', 'CN', 'Mg',
     ]
 
 ####################################################################################

@@ -59,7 +59,11 @@ class Chemistry:
         'Ca':      ('Ca',                      'Ca',       40.078,                     (0,0,0)), 
         'Al':      ('Al',                      'Al',       26.981539,                  (0,0,0)), 
         'Mg':      ('Mg',                      'Mg',       24.305,                     (0,0,0)), 
+        'Si':      ('Si',                      'Si',       28.085,                     (0,0,0)),
         'He':      ('He',                      'He',       4.002602,                   (0,0,0)), 
+        # ions
+        'CaII':   ('Ca+',                    'CaII',     40.078,                     (0,0,0)),
+        'FeII':   ('Fe+',                    'FeII',     55.845,                     (0,0,0)),
         }
 
     species_plot_info = {
@@ -100,8 +104,12 @@ class Chemistry:
         'Ca': ('C22', r'Ca'), 
         'Al': ('C23', r'Al'), 
         'Mg': ('C24', r'Mg'), 
+        'Si': ('C25', r'Si'),
         #'He': ('C22', r'He'), 
-        'CN': ('C25', r'CN'),
+        'CN': ('magenta', r'CN'),
+        # ions
+        'CaII': ('C26', r'CaII'),
+        'FeII': ('C27', r'FeII'),
         }
 
     # Neglect certain species to find respective contribution
@@ -144,6 +152,10 @@ class Chemistry:
         'Al': False, 
         'Mg': False, 
         #'He': False, 
+        'CN': False,
+        # ions
+        'CaII': False,
+        'FeII': False,
         }
 
     def __init__(self, line_species, pressure):

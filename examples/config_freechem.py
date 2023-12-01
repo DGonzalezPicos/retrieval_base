@@ -132,7 +132,28 @@ cloud_species = None
 #chem_mode  = 'SONORAchem'
 chem_mode  = 'free'
 
-chem_kwargs = dict()
+#import pyfastchem
+#fastchem_path = os.path.dirname(pyfastchem.__file__)
+chem_kwargs = dict(
+#     #spline_order   = 0
+
+#     # quench_setup = {
+#     #     'P_quench_CO_CH4': ['12CO', 'CH4', 'H2O', '13CO', 'C18O', 'C17O'], 
+#     #    #'P_quench_N2_NH3': ['N2', 'HCN', 'NH3'], 
+#     #    'P_quench_N2_NH3': ['N2', 'NH3'], 
+#         }, 
+
+    #path_SONORA_chem = '../SONORA_models/chemistry', 
+
+    #abundance_file = f'{fastchem_path}/input/element_abundances/asplund_2020.dat', 
+    #gas_data_file  = f'{fastchem_path}/input/logK/logK.dat', 
+    #cond_data_file = f'{fastchem_path}/input/logK/logK_condensates.dat', 
+    #verbose_level  = 1, 
+    #use_eq_cond      = True, 
+    ##use_eq_cond      = False, 
+    #use_rainout_cond = True,
+    ##use_rainout_cond = False,
+)
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']

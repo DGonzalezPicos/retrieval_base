@@ -7,6 +7,12 @@ import numpy as np
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+if 'dgonzalezpi' in os.getcwd():
+    print('Running on Snellius.. disabling interactive plotting')
+    import matplotlib
+    # disable interactive plotting
+    matplotlib.use('Agg')
+    
 run_pre_processing = False
 if run_pre_processing:
     for conf_data_i in conf.config_data.values():

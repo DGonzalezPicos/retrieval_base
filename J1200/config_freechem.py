@@ -60,7 +60,7 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(0.5, 6.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(0.5, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -176,13 +176,13 @@ line_species = [
     
     'CN_main_iso',
     'HF_main_iso', 
-    
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 'Na','Ca','Ti','HF', 'CN', 'Mg',
+    # '12CO', '13CO', 'H2O', 'Na','Ca','Ti','HF', 'CN', 'Mg',
+    '12CO', '13CO', 'H2O', 'Na', 'Mg', 'K', 'Ca', 'Ti', 'CN', 'HF',
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na', 'Ca', 'Ti', 'HF', 'CN', 'Mg',
+    '12CO', '13CO', 'H2O', 'Na', 'Mg', 'K', 'Ca', 'Ti', 'CN', 'HF',
     ]
 
 ####################################################################################

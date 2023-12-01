@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_CN_2'
+prefix = 'freechem_1'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -15,18 +15,18 @@ config_data = {
         'w_set': 'K2166', 'wave_range': (2060, 2480), 
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
-        'file_target': './data/J0856.dat', 
+        'file_target': './data/TWA28.dat', 
         'file_std': './data/iSco_std.dat', 
         'file_wave': './data/iSco_std.dat', 
         'file_skycalc_transm': f'./data/skycalc_transm_K2166.dat', 
         
-        'file_molecfit_transm': './data/J0856_molecfit_transm.dat', 
+        'file_molecfit_transm': './data/TWA28_molecfit_transm.dat', 
         'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
 
         'filter_2MASS': '2MASS/2MASS.Ks', 
         'pwv': 5.0, 
         # adjust values below....!
-        'ra': 134.057762, 'dec': -13.70612, 'mjd': 60008.03764053,
+        'ra': 165.541335, 'dec': -34.50990, 'mjd': 60007.30274557,
         'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
         'T_std': 17_000, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
@@ -34,6 +34,7 @@ config_data = {
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
+        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
@@ -50,45 +51,48 @@ r_star = 0.29
 r_jup = r_star / 0.10045
 # Define the priors of the parameters
 free_params = {
+    # Data resolution
+    #'res': [(20000,200000), r'res'], 
+    #'log_res_J1226': [(4,5.2), r'$\log\ R_\mathrm{J}$'], 
 
     # Uncertainty scaling
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
-    'log_a': [(-1,0.5), r'$\log\ a_\mathrm{K}$'], 
+    'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
     'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
+    #'log_a_K2166': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
+    #'log_l_K2166': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(0.5, 5.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
-    'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
+    'vsini': [(4.,20.), r'$v\ \sin\ i$'], 
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
 
     # Chemistry
-    # 'C/O': [(0.15,1), r'C/O'], 
-    # 'Fe/H': [(-1,1), r'[Fe/H]'], 
-    # 'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
-    # 'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
-        
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     
-    'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
-    # 'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
-    # 'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
     
+    # atomic species
+    'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
+    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
+    'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    
+    # additional molecules
     'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
-
+    
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
     'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'], 
@@ -100,7 +104,7 @@ free_params = {
 
 # Constants to use if prior is not given
 # distance in pc to parallax
-d_pc = 53.8 # pc
+d_pc = 59.2 # pc
 parallax = 1/d_pc
 parallax_mas = parallax * 1000
 constant_params = {
@@ -129,10 +133,10 @@ cloud_species = None
 ####################################################################################
 
 #chem_mode  = 'free'
-#chem_mode  = 'SONORAchem'
 chem_mode  = 'free'
 
-chem_kwargs = dict()
+chem_kwargs = dict(
+)
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
@@ -145,26 +149,20 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    
     'Na_allard',
-    # 'Mg',
-    # 'K',
-    # 'Ca',
-    # 'Ti',
+    'Mg',
+    'K',
+    'Ca',
+    'Ti',
     
     'CN_main_iso',
     'HF_main_iso', 
-    
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 'Na',
-    # 'Ca','Ti', 'Mg',
-    'CN', 'HF',
+    '12CO', '13CO', 'H2O', 'Na', 'Mg', 'K', 'Ca', 'Ti', 'CN', 'HF'
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na',
-    # 'Ca','Ti', 'Mg',
-    'CN', 'HF',
+    '12CO', '13CO', 'H2O', 'Na', 'Mg', 'K', 'Ca', 'Ti', 'CN', 'HF'
     ]
 
 ####################################################################################

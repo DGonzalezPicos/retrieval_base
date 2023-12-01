@@ -61,11 +61,11 @@ free_params = {
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     'R_p': [(0.5, 5.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(3.0,5.5), r'$\log\ g$'], 
-    'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
+    'log_g': [(3.0,4.0), r'$\log\ g$'], 
+    # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
-    'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
+    'vsini': [(4.,6.), r'$v\ \sin\ i$'], 
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
 
     # Chemistry
@@ -81,10 +81,14 @@ free_params = {
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
-    # 'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
-    # 'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
+    'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    'log_CaII':[(-12,-2), r'$\log\ \mathrm{CaII}$'],
+    'log_FeII':[(-12,-2), r'$\log\ \mathrm{FeII}$'],
+    'log_Si':[(-12,-2), r'$\log\ \mathrm{Si}$'],
     
     'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
@@ -106,7 +110,7 @@ parallax_mas = parallax * 1000
 constant_params = {
     # General properties
     'parallax': parallax_mas, 
-    # 'epsilon_limb': 0.65, 
+    'epsilon_limb': 0.65, 
 
     # PT profile
     'log_P_knots': [-5., -3., -1., 1., 2.], 
@@ -132,7 +136,28 @@ cloud_species = None
 #chem_mode  = 'SONORAchem'
 chem_mode  = 'free'
 
-chem_kwargs = dict()
+#import pyfastchem
+#fastchem_path = os.path.dirname(pyfastchem.__file__)
+chem_kwargs = dict(
+#     #spline_order   = 0
+
+#     # quench_setup = {
+#     #     'P_quench_CO_CH4': ['12CO', 'CH4', 'H2O', '13CO', 'C18O', 'C17O'], 
+#     #    #'P_quench_N2_NH3': ['N2', 'HCN', 'NH3'], 
+#     #    'P_quench_N2_NH3': ['N2', 'NH3'], 
+#         }, 
+
+    #path_SONORA_chem = '../SONORA_models/chemistry', 
+
+    #abundance_file = f'{fastchem_path}/input/element_abundances/asplund_2020.dat', 
+    #gas_data_file  = f'{fastchem_path}/input/logK/logK.dat', 
+    #cond_data_file = f'{fastchem_path}/input/logK/logK_condensates.dat', 
+    #verbose_level  = 1, 
+    #use_eq_cond      = True, 
+    ##use_eq_cond      = False, 
+    #use_rainout_cond = True,
+    ##use_rainout_cond = False,
+)
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
@@ -147,10 +172,13 @@ line_species = [
     'H2O_pokazatel_main_iso', 
     
     'Na_allard',
-    # 'Mg',
-    # 'K',
-    # 'Ca',
-    # 'Ti',
+    'Mg',
+    'K',
+    'Ca',
+    'Ti',
+    'Fe',
+    'Si',
+    
     
     'CN_main_iso',
     'HF_main_iso', 

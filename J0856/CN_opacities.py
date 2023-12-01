@@ -20,7 +20,7 @@ atmo = Radtrans(line_species = list(species.values()),
                             lbl_opacity_sampling=3,
                         )
 
-temperature = [2500.]
+temperature = [2600.]
 pressure_bar = [0.1]
 
 temp = np.array(temperature)
@@ -39,8 +39,8 @@ ab = pm.interpol_abundances(CO * np.ones_like(temp),
                                     temp,
                                     pressure_bar)
 ab['13CO'] = ab['CO'] / 89.
-# ab['CN'] = ab['CO'] / 1000.
-ab['Ca'] = 1e-3
+ab['CN'] = ab['CO'] / 100.
+ab['Ca'] = ab['CO']
 ab = {k: v for k, v in sorted(ab.items(), key=lambda item: item[1])}
 
 fig, ax = plt.subplots(1,1, figsize=(14,4))
@@ -50,7 +50,8 @@ for i, s in enumerate(species.keys()):
     if s not in ab.keys():
         print(f'WARNING: {s} not in ab.keys()')
         continue
-    alpha = 0.9 if s == 'Ca' else 0.3
+    # alpha = 0.9 if s == 'Ca' else 0.3
+    alpha = 0.9 if s == 'CN' else 0.3
     ax.plot(wlen_nm, ab[s] * opas[species[s]], lw=2.5, label=f'{s} ({float(ab[s]):.1e})', alpha=alpha)
 
 ax.set(xlabel='wavelength (nm)', ylabel=r'opacity (cm$^2$ g$^{-1}$)', yscale='log')

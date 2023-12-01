@@ -6,6 +6,7 @@ ATMO_2020_models/
 */retrieval_outputs/
 */plots/
 */logs/
+*.png
 
 transm_curves.pk
 species_config.ini

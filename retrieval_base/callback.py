@@ -277,7 +277,7 @@ class CallBack:
         if self.Param.chem_mode == 'free':
 
             for species_i, (line_species_i, mass_i, COH_i) in self.Chem.species_info.items():
-                
+                print(f'line_species_i = {line_species_i}', f'mass_i = {mass_i}', f'COH_i = {COH_i}')
                 # Add to the parameters to be plotted
                 if (line_species_i in self.Chem.line_species) and \
                     (f'log_{species_i}' in self.Param.param_keys):

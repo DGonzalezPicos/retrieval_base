@@ -27,11 +27,13 @@ def create_legend(colors, ax, loc=(1.02, 0.0), ls=None):
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 out_path = path / 'HBDs'
-targets = dict(J1200=2, TWA28=6, J0856=1)
+
+targets = dict(J1200='freechem_2', TWA28='freechem_1', J0856='freechem_CN_2')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
-plot_PT = False
-plot_chemistry = False
+prefix = 'freechem'
+plot_PT = True
+plot_chemistry = True
 
 df = pd.read_csv(out_path / 'dataframe10-k.csv')
 species = df.name.str.split().str[0].unique()
@@ -54,7 +56,7 @@ if plot_PT:
 
 order, det = 2,2
 
-def wrapper(order,det):
+def wrapper(order,det, plot_chemistry=False, plot_PT=False):
     fig_corner = None
     handles = []
 
@@ -65,7 +67,7 @@ def wrapper(order,det):
         
         
         # bestfit_params = 
-        retrieval_path = data_path / f'retrieval_outputs/fiducial_ret_{retrieval_id}'
+        retrieval_path = data_path / f'retrieval_outputs/{retrieval_id}'
         assert retrieval_path.exists(), f'Retrieval path {retrieval_path} does not exist.'
         # m_spec = np.load(retrieval_path / 'test_data/bestfit_m_spec_K1266.pkl')
         m_spec = pickle.load(open(retrieval_path / 'test_data/bestfit_m_spec_K2166.pkl', 'rb'))
@@ -93,7 +95,7 @@ def wrapper(order,det):
                 ax_PT.set(ylim=(PT.pressure.max(), PT.pressure.min()), ylabel='Pressure [bar]', xlabel='Temperature [K]',
                         yscale='log')
                 ax_PT.legend(frameon=False, fontsize=24)
-                fig_PT.savefig(out_path / 'plots/bestfit_PT.png', bbox_inches='tight', dpi=300)
+                fig_PT.savefig(out_path / f'plots/bestfit_{prefix}_PT.png', bbox_inches='tight', dpi=300)
             
         if plot_chemistry:
             
@@ -108,7 +110,7 @@ def wrapper(order,det):
             # Define the arguments for the hist function, make them filled and thick edge black
             hist_args = {"color": colors[target], "alpha": 0.4, "fill": True, "edgecolor": "k",
                          "linewidth": 1.5, "histtype": "stepfilled"}
-            limits = [(0.48, 0.65), (-1.,0.2), (10, 200)]  # replace with your actual limits
+            limits = [(0.50, 0.68), (-0.5, 0.8), (1, 200)]  # replace with your actual limits
             
             
             fig_corner = corner.corner(samples, labels=['C/O', 'Fe/H', '12C/13C'], 
@@ -139,7 +141,7 @@ def wrapper(order,det):
                 
                 
                 
-                fig_corner.savefig(out_path / 'plots/cornerplot_chemistry.png', bbox_inches='tight', dpi=300)
+                fig_corner.savefig(out_path / f'plots/cornerplot_{prefix}_chemistry.png', bbox_inches='tight', dpi=300)
             
             
             
@@ -204,7 +206,7 @@ def wrapper(order,det):
 
     # ax[0].legend()
     plt.show()
-    fig.savefig(out_path / f'plots/bestfit_spectra_order{order}_det{det}.png', bbox_inches='tight', dpi=300)
+    fig.savefig(out_path / f'plots/bestfit_{prefix}_spectra_order{order}_det{det}.png', bbox_inches='tight', dpi=300)
     
     # if plot_chemistry:
     #     return m_spec, d_spec, loglike, chem
@@ -220,4 +222,6 @@ detectors = [0,1,2]
 for order in orders:
     for det in detectors:
         # m_spec, d_spec, loglike, chem = wrapper(order,det)
-        m_spec, d_spec, loglike = wrapper(order,det)
+        plot_chemistry = True if (order+det) == 0 else False
+        plot_PT = True if (order+det) == 0 else False
+        m_spec, d_spec, loglike = wrapper(order,det, plot_chemistry=plot_chemistry, plot_PT=plot_PT)

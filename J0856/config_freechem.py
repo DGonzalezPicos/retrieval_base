@@ -39,7 +39,7 @@ config_data = {
     }
 
 magnitudes = {
-    '2MASS/2MASS.Ks': (11.89, 0.02), # Cutri et al. 2003
+    '2MASS/2MASS.Ks': (12.49, 0.02), # 2MASS
 }
 
 ####################################################################################
@@ -67,13 +67,8 @@ free_params = {
     # Velocities
     'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
-
+    
     # Chemistry
-    # 'C/O': [(0.15,1), r'C/O'], 
-    # 'Fe/H': [(-1,1), r'[Fe/H]'], 
-    # 'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
-    # 'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
-        
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 

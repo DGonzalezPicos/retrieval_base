@@ -28,7 +28,7 @@ def create_legend(colors, ax, loc=(1.02, 0.0), ls=None):
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 out_path = path / 'HBDs'
 
-targets = dict(J1200='freechem_2', TWA28='freechem_1', J0856='freechem_CN_2')
+targets = dict(J1200='freechem_2', TWA28='freechem_1', J0856='freechem_1')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 prefix = 'freechem'

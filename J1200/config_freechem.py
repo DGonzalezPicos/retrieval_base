@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_CN_1'
+prefix = 'freechem_3'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -57,10 +57,7 @@ free_params = {
     'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
 
     # General properties
-    # R = 0.29 [R_sun]
-    # convert to jupiter radii
-    # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(0.5, 10.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -69,11 +66,6 @@ free_params = {
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
 
 # Chemistry
-    # 'C/O': [(0.15,1), r'C/O'], 
-    # 'Fe/H': [(-1,1), r'[Fe/H]'], 
-    # 'log_C13_12_ratio': [(-4,0), r'$\log\ \mathrm{^{13}C/^{12}C}$'], 
-    # 'log_O18_16_ratio': [(-6,0), r'$\log\ \mathrm{^{18}O/^{16}O}$'], 
-        
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
@@ -85,9 +77,13 @@ free_params = {
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
     'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
+    'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+    'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
+    'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
@@ -131,33 +127,12 @@ cloud_species = None
 #chem_mode  = 'free'
 #chem_mode  = 'SONORAchem'
 chem_mode  = 'free'
-
-#import pyfastchem
-#fastchem_path = os.path.dirname(pyfastchem.__file__)
-chem_kwargs = dict(
-#     #spline_order   = 0
-
-#     # quench_setup = {
-#     #     'P_quench_CO_CH4': ['12CO', 'CH4', 'H2O', '13CO', 'C18O', 'C17O'], 
-#     #    #'P_quench_N2_NH3': ['N2', 'HCN', 'NH3'], 
-#     #    'P_quench_N2_NH3': ['N2', 'NH3'], 
-#         }, 
-
-    #path_SONORA_chem = '../SONORA_models/chemistry', 
-
-    #abundance_file = f'{fastchem_path}/input/element_abundances/asplund_2020.dat', 
-    #gas_data_file  = f'{fastchem_path}/input/logK/logK.dat', 
-    #cond_data_file = f'{fastchem_path}/input/logK/logK_condensates.dat', 
-    #verbose_level  = 1, 
-    #use_eq_cond      = True, 
-    ##use_eq_cond      = False, 
-    #use_rainout_cond = True,
-    ##use_rainout_cond = False,
-)
+chem_kwargs = dict()
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
+
 
 
 line_species = [
@@ -173,16 +148,24 @@ line_species = [
     'K',
     'Ca',
     'Ti',
+    'Fe',
     
     'CN_main_iso',
+    'HCN_main_iso',
     'HF_main_iso', 
+    'HCl_main_iso',
+    'H2S_ExoMol_main_iso',
+    
     ]
 species_to_plot_VMR = [
-    # '12CO', '13CO', 'H2O', 'Na','Ca','Ti','HF', 'CN', 'Mg',
-    '12CO', '13CO', 'H2O', 'Na', 'Mg', 'K', 'Ca', 'Ti', 'CN', 'HF',
+    '12CO', '13CO', 'H2O', 'Na',
+    'Mg', 'K', 'Ca', 'Ti', 'Fe',
+    'CN', 'HCN', 'HF', 'HCl', 'H2S',
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na', 'Mg', 'K', 'Ca', 'Ti', 'CN', 'HF',
+    '12CO', '13CO', 'H2O', 'Na',
+    'Mg', 'K', 'Ca', 'Ti', 'Fe',
+    'CN', 'HCN', 'HF', 'HCl', 'H2S',
     ]
 
 ####################################################################################

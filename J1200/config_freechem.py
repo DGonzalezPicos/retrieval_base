@@ -53,7 +53,7 @@ free_params = {
 
     # Uncertainty scaling
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
-    'log_a': [(-1,0.5), r'$\log\ a_\mathrm{K}$'], 
+    'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
     'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
 
     # General properties
@@ -74,11 +74,11 @@ free_params = {
     'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'], # TODO: add to chemistry file...
     
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
-    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
     # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
@@ -121,6 +121,8 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
+mask_lines = {'br_gamma': (2163, 2169)}
+
 ####################################################################################
 # Chemistry parameters
 ####################################################################################
@@ -146,11 +148,11 @@ line_species = [
     'H2O_181',
     
     'Na_allard',
-    'Mg',
-    'K',
+    # 'Mg',
+    # 'K',
     'Ca',
     'Ti',
-    'Fe',
+    # 'Fe',
     
     # 'CN_main_iso',
     # 'HCN_main_iso',
@@ -160,16 +162,16 @@ line_species = [
     
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 'Na',
-    'Mg', 'K', 'Ca', 'Ti', 
-    'Fe',
+    '12CO', '13CO', 'H2O', 
+    'Na','Ca', 'Ti', 
+    # 'Mg', 'K', 'Fe',
     'HF',
     ]
-species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na',
-    'Mg', 'K', 'Ca', 'Ti', 
-    # 'Fe',
-    'HF'
+species_to_plot_VMR = [
+    '12CO', '13CO', 'H2O', 
+    'Na','Ca', 'Ti', 
+    # 'Mg', 'K', 'Fe',
+    'HF',
     ]
 
 ####################################################################################

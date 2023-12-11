@@ -118,6 +118,18 @@ def pre_processing(conf, conf_data):
         molecfit=(conf_data.get('file_molecfit_transm') is not None)
         )
     del photom_2MASS
+    
+    # Mask emission lines in the target spectrum
+    if len(conf.mask_lines) > 0:
+        for key, value in conf.mask_lines.items():
+            # wave_flat = d_spec.wave.flatten()
+            # mask = (wave_flat > value[0]) & (wave_flat < value[1])
+            mask = (d_spec.wave > value[0]) & (d_spec.wave < value[1])
+            print(f'Masking {key}: {value[0]} - {value[1]} (n={mask.sum()})')
+
+            d_spec.flux[mask] = np.nan
+            d_spec.update_isfinite_mask(d_spec.flux)
+            
 
     # Apply sigma-clipping
     d_spec.sigma_clip_median_filter(

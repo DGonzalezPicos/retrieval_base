@@ -6,7 +6,13 @@ import numpy as np
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-run_pre_processing = False
+if 'dgonzalezpi' in os.getcwd():
+    print('Running on Snellius.. disabling interactive plotting')
+    import matplotlib
+    # disable interactive plotting
+    matplotlib.use('Agg')
+
+run_pre_processing = True
 if run_pre_processing:
     for conf_data_i in conf.config_data.values():
         pre_processing(conf=conf, conf_data=conf_data_i)

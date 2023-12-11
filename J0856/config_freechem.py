@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_2'
+prefix = 'freechem_3'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -16,12 +16,12 @@ config_data = {
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './data/J0856.dat', 
-        'file_std': './data/iSco_std.dat', 
-        'file_wave': './data/iSco_std.dat', 
-        'file_skycalc_transm': f'./data/skycalc_transm_K2166.dat', 
+        # 'file_std': './data/iSco_std.dat', 
+        'file_wave': './data/J0856_molecfit_transm.dat', 
+        'file_skycalc_transm': None, 
         
         'file_molecfit_transm': './data/J0856_molecfit_transm.dat', 
-        'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
+        # 'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
 
         'filter_2MASS': '2MASS/2MASS.Ks', 
         'pwv': 5.0, 
@@ -29,7 +29,7 @@ config_data = {
         'ra': 134.057762, 'dec': -13.70612, 'mjd': 60008.03764053,
         'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
-        'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
+        # 'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
@@ -231,5 +231,5 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 400
+n_live_points = 200
 n_iter_before_update = 400

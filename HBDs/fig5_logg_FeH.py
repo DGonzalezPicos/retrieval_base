@@ -21,7 +21,7 @@ def get_FeH(chem):
     for key, val in chem.mass_fractions_posterior.items():
         if key in ignore_keys:
             continue
-        print(f'Adding {key} to Z')
+        # print(f'Adding {key} to Z')
         Z += val.mean(axis=-1)
     # for Z/H = 0.0181 # Asplund et al. (2009)
     # log_FeH_solar = np.log10(0.0181 * 1e12) # = 10.257678574869184
@@ -47,7 +47,7 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_6', TWA28='freechem_1', J0856='freechem_1')
+targets = dict(J1200='freechem_6', TWA28='freechem_1', J0856='freechem_2')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
 # fig, ax = plt.subplots(1,1, figsize=(8,6))

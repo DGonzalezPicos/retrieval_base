@@ -48,65 +48,42 @@ def pre_processing(conf, conf_data):
         )
     d_spec.clip_det_edges()
     
-    d_std_spec = DataSpectrum(
-        wave=None, 
-        flux=None, 
-        err=None, 
-        ra=conf_data['ra_std'], 
-        dec=conf_data['dec_std'], 
-        mjd=conf_data['mjd_std'], 
-        pwv=conf_data['pwv'], 
-        file_target=conf_data['file_std'], 
-        file_wave=conf_data['file_std'], 
-        slit=conf_data['slit'], 
-        wave_range=conf_data['wave_range'], 
-        w_set=conf_data['w_set'], 
-        )
-    d_std_spec.clip_det_edges()
+    # d_std_spec = DataSpectrum(
+    #     wave=None, 
+    #     flux=None, 
+    #     err=None, 
+    #     ra=conf_data['ra_std'], 
+    #     dec=conf_data['dec_std'], 
+    #     mjd=conf_data['mjd_std'], 
+    #     pwv=conf_data['pwv'], 
+    #     file_target=conf_data['file_std'], 
+    #     file_wave=conf_data['file_std'], 
+    #     slit=conf_data['slit'], 
+    #     wave_range=conf_data['wave_range'], 
+    #     w_set=conf_data['w_set'], 
+    #     )
+    # d_std_spec.clip_det_edges()
 
     # Instance of the Photometry class for the given magnitudes
     photom_2MASS = Photometry(magnitudes=conf.magnitudes)
 
-    if conf_data.get('file_molecfit_transm') is None:
-        # Get transmission from telluric std and add to target's class
-        #d_std_spec.get_transmission(T=conf.T_std, ref_rv=0, mode='bb')
-        d_std_spec.get_transm(
-            T=conf_data['T_std'], log_g=conf_data['log_g_std'], 
-            ref_rv=conf_data['rv_std'], ref_vsini=conf_data['vsini_std'], 
-            #mode='bb'
-            mode='PHOENIX'
-            )
+   
         
-        # check if they have different wavelength grids
-        if not np.allclose(d_spec.wave, d_std_spec.wave):
-            # Interpolate onto the same wavelength grid as the target
-            d_std_spec.transm = np.interp(
-                d_spec.wave, d_std_spec.wave, d_std_spec.transm
-                )
-            d_std_spec.transm_err = np.interp(
-                d_spec.wave, d_std_spec.wave, d_std_spec.transm_err
-                )
-        d_spec.add_transm(d_std_spec.transm, d_std_spec.transm_err)
+    d_spec.load_molecfit_transm(
+        conf_data['file_molecfit_transm'], 
+        tell_threshold=conf_data['tell_threshold']
+        )
+    # d_std_spec.load_molecfit_transm(
+    #     conf_data['file_std_molecfit_transm'], 
+    #     T=conf_data['T_std'], 
+    #     tell_threshold=conf_data['tell_threshold']
+    #     )
+    
+    # #d_spec.transm = np.copy(d_std_spec.transm)
+    # d_spec.throughput = np.copy(d_spec.throughput)
+    assert hasattr(d_spec, 'throughput'), 'No throughput found in `d_spec`'
 
-    else:
-        #print(d_spec.wave[0])
-        #print(d_std_spec.wave[0])
-        # Load the molecfit transmission spectrum
-        d_spec.load_molecfit_transm(
-            conf_data['file_molecfit_transm'], 
-            T=0.0, 
-            tell_threshold=conf_data['tell_threshold']
-            )
-        d_std_spec.load_molecfit_transm(
-            conf_data['file_std_molecfit_transm'], 
-            T=conf_data['T_std'], 
-            tell_threshold=conf_data['tell_threshold']
-            )
-        
-        #d_spec.transm = np.copy(d_std_spec.transm)
-        d_spec.throughput = np.copy(d_std_spec.throughput)
-
-    del d_std_spec
+    # del d_std_spec
 
     # Apply flux calibration using the 2MASS broadband magnitude
     d_spec.flux_calib_2MASS(

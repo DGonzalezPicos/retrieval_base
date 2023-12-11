@@ -94,7 +94,7 @@ def pre_processing(conf, conf_data):
         # Load the molecfit transmission spectrum
         d_spec.load_molecfit_transm(
             conf_data['file_molecfit_transm'], 
-            T=1500, 
+            T=0.0, 
             tell_threshold=conf_data['tell_threshold']
             )
         d_std_spec.load_molecfit_transm(

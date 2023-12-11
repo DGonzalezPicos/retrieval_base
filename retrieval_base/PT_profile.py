@@ -1,4 +1,6 @@
 import numpy as np
+import math
+
 from scipy.interpolate import interp1d, splrep, splev, RegularGridInterpolator#, LinearNDInterpolator
 from scipy.interpolate import make_interp_spline
 
@@ -280,8 +282,14 @@ class PT_profile_free_gradient(PT_profile):
                 (ln_P_i1 - ln_P_i) * dlnT_dlnP_array[i]
                 )
             self.temperature.append(T_i1)
-
         self.temperature = np.array(self.temperature)[::-1]
+        
+        # Vectorized version (faster)
+        # T_i1 = np.exp(math.log(params['T_0']) + (self.flipped_ln_pressure[:-1] - self.flipped_ln_pressure[1:]) * dlnT_dlnP_array[:-1])
+        # self.temperature = np.concatenate(([params['T_0']], T_i1[::-1]))
+        # vec_temperature = np.exp(np.log(params['T_0']) + (self.flipped_ln_pressure[:-1] - self.flipped_ln_pressure[1:]) * dlnT_dlnP_array[:-1])
+        # vec_temperature = np.concatenate(([params['T_0']], vec_temperature[::-1]))
+        # assert np.allclose(self.temperature, vec_temperature)
 
         return self.temperature
         

@@ -29,7 +29,7 @@ config_data = {
         'ra': 180.153309, 'dec': -78.75272, 'mjd': 60008.15139086,
         'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
-        'T_std': 17_000, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
+        'T_std': 0., 'log_g_std': 0., 'rv_std': 0., 'vsini_std': 0., 
         
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
@@ -58,7 +58,7 @@ free_params = {
 
     # General properties
     'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(3.0,5.5), r'$\log\ g$'], 
+    'log_g': [(3.0,5.0), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
@@ -71,6 +71,7 @@ free_params = {
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
+    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'], # TODO: add to chemistry file...
     
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
@@ -79,11 +80,11 @@ free_params = {
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
     'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
-    'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
-    'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
+    # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
+    # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
-    'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
-    'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
+    # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
+    # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
@@ -142,6 +143,7 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
+    'H2O_181',
     
     'Na_allard',
     'Mg',
@@ -150,22 +152,24 @@ line_species = [
     'Ti',
     'Fe',
     
-    'CN_main_iso',
-    'HCN_main_iso',
+    # 'CN_main_iso',
+    # 'HCN_main_iso',
     'HF_main_iso', 
-    'HCl_main_iso',
-    'H2S_ExoMol_main_iso',
+    # 'HCl_main_iso',
+    # 'H2S_ExoMol_main_iso',
     
     ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O', 'Na',
-    'Mg', 'K', 'Ca', 'Ti', 'Fe',
-    'CN', 'HCN', 'HF', 'HCl', 'H2S',
+    'Mg', 'K', 'Ca', 'Ti', 
+    'Fe',
+    'HF',
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 'Na',
-    'Mg', 'K', 'Ca', 'Ti', 'Fe',
-    'CN', 'HCN', 'HF', 'HCl', 'H2S',
+    'Mg', 'K', 'Ca', 'Ti', 
+    # 'Fe',
+    'HF'
     ]
 
 ####################################################################################
@@ -188,15 +192,7 @@ cov_kwargs = dict(
 if free_params.get('log_l') is not None:
     cov_kwargs['max_separation'] = \
         cov_kwargs['trunc_dist'] * 10**free_params['log_l'][0][1]
-if free_params.get('l') is not None:
-    cov_kwargs['max_separation'] = \
-        cov_kwargs['trunc_dist'] * free_params['l'][0][1]
 
-if (free_params.get('log_l_K2166') is not None) and \
-    (free_params.get('log_l_J1226') is not None):
-    cov_kwargs['max_separation'] = cov_kwargs['trunc_dist'] * \
-        10**max([free_params['log_l_K2166'][0][1], \
-                 free_params['log_l_J1226'][0][1]])
 
 ####################################################################################
 # PT parameters

@@ -547,9 +547,12 @@ class DataSpectrum(Spectrum):
 
         mask_high_transm = (self.transm > tell_threshold)
 
-        # Retrieve a Planck spectrum for the given temperature
-        ref_flux = 2*nc.h*nc.c**2/(self.wave.flatten()**5) * \
-                    1/(np.exp(nc.h*nc.c/(self.wave*nc.kB*T)) - 1)
+        # NEW: test this, molecfit model is already divided by BB at T (dec 5 2023)
+        ref_flux = np.ones_like(self.transm)
+        if T > 1000.:
+            # Retrieve a Planck spectrum for the given temperature
+            ref_flux = 2*nc.h*nc.c**2/(self.wave.flatten()**5) * \
+                        1/(np.exp(nc.h*nc.c/(self.wave*nc.kB*T)) - 1)
         
         mask = (self.mask_isfinite & mask_high_transm)
         p = np.polyfit(

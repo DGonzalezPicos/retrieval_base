@@ -28,12 +28,14 @@ def create_legend(colors, ax, loc=(1.02, 0.0), ls=None):
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 out_path = path / 'HBDs'
 
-targets = dict(J1200='freechem_2', TWA28='freechem_1', J0856='freechem_1')
+targets = dict(J1200='freechem_4', TWA28='freechem_1', J0856='freechem_1')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 prefix = 'freechem'
 plot_PT = True
 plot_chemistry = True
+
+plot_vsini = False
 
 df = pd.read_csv(out_path / 'dataframe10-k.csv')
 species = df.name.str.split().str[0].unique()
@@ -41,7 +43,6 @@ species = df.name.str.split().str[0].unique()
 colors_s = plt.cm.tab20(np.linspace(0, 1, species.size))
 colors_s = dict(zip(species, colors_s))
 ls = dict(zip(species, ['-', '--']*(len(species)//2)))
-
 
 fig, ax = plt.subplots(len(targets)+1,1, figsize=(16,len(targets)*3.), sharex=True)
 ax_transm = ax[-1].twinx()
@@ -75,13 +76,22 @@ def wrapper(order,det, plot_chemistry=False, plot_PT=False):
         transm = np.load(retrieval_path / 'test_data/d_spec_transm_K2166.npy')
         loglike = pickle.load(open(retrieval_path / 'test_data/bestfit_LogLike_K2166.pkl', 'rb'))
         
+        
+        
         # load json file with bestfit parameters
         with open(retrieval_path / 'test_data/bestfit.json', 'r') as f:
             bestfit_params = json.load(f)
             
-        print(bestfit_params.keys())
+        equal_weighted_file = retrieval_path / 'test_post_equal_weights.dat'
+        posterior = np.loadtxt(equal_weighted_file)
+        posterior = posterior[:,:-1]
+        
         params = bestfit_params['params']
         RV = params['rv']
+        print(f'Posterior shape = {posterior.shape}')
+        samples = dict(zip(params.keys(), posterior.T))
+        print(samples)
+        # TODO: plot log_g, vsini to the posterior
         
         # print(params.keys())
         # RV = bestfit_params['params']['RV']
@@ -91,6 +101,15 @@ def wrapper(order,det, plot_chemistry=False, plot_PT=False):
             ax_PT.fill_betweenx(PT.pressure, PT.temperature_envelopes[0], PT.temperature_envelopes[-1], color=colors[target], alpha=0.2)
             ax_PT.fill_betweenx(PT.pressure, PT.temperature_envelopes[1], PT.temperature_envelopes[-2], color=colors[target], alpha=0.4)
             ax_PT.plot(PT.temperature, PT.pressure, color=colors[target], lw=2.5, label=target)
+            
+            if i == 0:
+                # plot integrated contribution function
+                icf = np.load(retrieval_path / 'test_data/bestfit_int_contr_em_K2166.npy')
+                print(f'shape of icf = {icf.shape}')
+                ax_icf = ax_PT.twiny()
+                ax_icf.plot(icf, PT.pressure, color='k', lw=2.5, label='ICF', ls='--', alpha=0.7)
+                ax_icf.set(xlim=(0, 1.1*icf.max()), xlabel='Contribution function')
+                
             if i == len(targets)-1:
                 ax_PT.set(ylim=(PT.pressure.max(), PT.pressure.min()), ylabel='Pressure [bar]', xlabel='Temperature [K]',
                         yscale='log')
@@ -110,7 +129,7 @@ def wrapper(order,det, plot_chemistry=False, plot_PT=False):
             # Define the arguments for the hist function, make them filled and thick edge black
             hist_args = {"color": colors[target], "alpha": 0.4, "fill": True, "edgecolor": "k",
                          "linewidth": 1.5, "histtype": "stepfilled"}
-            limits = [(0.50, 0.68), (-0.5, 0.8), (1, 200)]  # replace with your actual limits
+            limits = [(0.50, 0.68), (-1.0, 1.0), (1, 200)]  # replace with your actual limits
             
             
             fig_corner = corner.corner(samples, labels=['C/O', 'Fe/H', '12C/13C'], 
@@ -148,7 +167,7 @@ def wrapper(order,det, plot_chemistry=False, plot_PT=False):
         
         x = d_spec.wave[order,det]
         sample_rate = np.mean(np.diff(x))
-        print(f'sample rate = {sample_rate:.3e} nm')
+        # print(f'sample rate = {sample_rate:.3e} nm')
         y = d_spec.flux[order,det]
         err = d_spec.err[order,det] * loglike.beta[order,det,None]
         median_err = np.nanmedian(err)
@@ -169,8 +188,8 @@ def wrapper(order,det, plot_chemistry=False, plot_PT=False):
         # ax[-1].plot(x, res, lw=1., label='residuals', color=colors[target], alpha=0.8)
         ax[-1].plot(x, res_shift, lw=1., label='residuals (shifted)', color=colors[target], alpha=0.8)
     
-    print('Creating transmission plot')
-    ax_transm.plot(x, transm[order,det], lw=2., label='transmission', color='k', alpha=0.3)
+    # print('Creating transmission plot')
+    ax_transm.plot(x, transm[order,det], lw=2., label='transmission', color='k', alpha=0.1)
 
         # select species within wavelength range
     # select lines within the wavelength range
@@ -182,7 +201,7 @@ def wrapper(order,det, plot_chemistry=False, plot_PT=False):
     # sort lines by absorptance
     lines = lines.sort_values(by='absorptance', ascending=False)
     # select only lines with absorptance > 0.05
-    lines = lines[lines.absorptance > 0.02]
+    lines = lines[lines.absorptance > 0.03]
     # generate a range of alpha values proportional to absorptance
     alpha_lines = lines.absorptance / lines.absorptance.max()    
     

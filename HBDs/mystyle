@@ -1,0 +1,26 @@
+# Begin matplotlib style file
+
+# Set the figure size
+figure.figsize: 6, 4
+
+# Set the font
+font.family: serif
+font.serif: Times New Roman
+font.size: 12
+
+# Set the axes
+axes.labelsize: 12
+axes.titlesize: 14
+
+# Set the legend
+legend.fontsize: 10
+
+# Set the lines
+lines.linewidth: 2
+
+# Set the grid
+grid.color: #b0b0b0
+grid.linestyle: --
+grid.linewidth: 0.5
+
+# End matplotlib style file

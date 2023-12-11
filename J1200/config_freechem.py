@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_3'
+prefix = 'freechem_4'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -16,20 +16,20 @@ config_data = {
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './data/J1200.dat', 
-        'file_std': './data/iSco_std.dat', 
-        'file_wave': './data/iSco_std.dat', 
-        'file_skycalc_transm': f'./data/skycalc_transm_K2166.dat', 
+        # 'file_std': './data/iSco_std.dat', 
+        'file_wave': './data/J1200_molecfit_transm.dat', 
+        'file_skycalc_transm': None, 
         
         'file_molecfit_transm': './data/J1200_molecfit_transm.dat', 
-        'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
+        'file_std_molecfit_transm': None, 
         'filter_2MASS': '2MASS/2MASS.Ks', 
         
        'pwv': 5.0, 
         # adjust values below....!
         'ra': 180.153309, 'dec': -78.75272, 'mjd': 60008.15139086,
-        'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
+        # 'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
-        'T_std': 0., 'log_g_std': 0., 'rv_std': 0., 'vsini_std': 0., 
+        # 'T_std': 0., 'log_g_std': 0., 'rv_std': 0., 'vsini_std': 0., 
         
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
@@ -50,7 +50,6 @@ r_star = 0.29
 r_jup = r_star / 0.10045
 # Define the priors of the parameters
 free_params = {
-
     # Uncertainty scaling
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
     'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
@@ -58,14 +57,14 @@ free_params = {
 
     # General properties
     'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(3.0,5.0), r'$\log\ g$'], 
+    'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
     'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
 
-# Chemistry
+    # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
@@ -220,4 +219,4 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
-n_iter_before_update = 200
+n_iter_before_update = 400

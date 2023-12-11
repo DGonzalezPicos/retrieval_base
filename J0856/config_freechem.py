@@ -60,7 +60,7 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(0.5, 5.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.0), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -194,20 +194,9 @@ cov_kwargs = dict(
     # in memory
     prepare_for_covariance = True
 )
-
 if free_params.get('log_l') is not None:
     cov_kwargs['max_separation'] = \
         cov_kwargs['trunc_dist'] * 10**free_params['log_l'][0][1]
-if free_params.get('l') is not None:
-    cov_kwargs['max_separation'] = \
-        cov_kwargs['trunc_dist'] * free_params['l'][0][1]
-
-if (free_params.get('log_l_K2166') is not None) and \
-    (free_params.get('log_l_J1226') is not None):
-    cov_kwargs['max_separation'] = cov_kwargs['trunc_dist'] * \
-        10**max([free_params['log_l_K2166'][0][1], \
-                 free_params['log_l_J1226'][0][1]])
-
 ####################################################################################
 # PT parameters
 ####################################################################################

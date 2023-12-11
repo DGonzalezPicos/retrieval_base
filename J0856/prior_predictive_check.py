@@ -20,15 +20,6 @@ if run_pre_processing:
 
 run_prior_predictive_check = True
 
-# if run_prior_predictive_check:
-    
-    
-# change working directory to the path of the python script
-
-# generate model for each sample
-# ret = Retrieval(conf=conf, evaluation=False)
-# ret.Param(0.5 * np.ones(len(ret.Param.param_keys)))
-# ln_L = ret.PMN_lnL_func()
 def prior_check():
     import matplotlib.pyplot as plt
     import matplotlib.gridspec as gs
@@ -80,13 +71,3 @@ def prior_check():
      
 if run_prior_predictive_check:   
     ret = prior_check()
-
-
-
-run_PMN = False
-if run_PMN:
-    ret = Retrieval(
-                conf=conf, 
-                evaluation=False
-                )
-    ret.PMN_run()

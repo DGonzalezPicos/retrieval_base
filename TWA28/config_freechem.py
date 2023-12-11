@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_2'
+prefix = 'freechem_3'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -16,20 +16,17 @@ config_data = {
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './data/TWA28.dat', 
-        'file_std': './data/iSco_std.dat', 
-        'file_wave': './data/iSco_std.dat', 
-        'file_skycalc_transm': f'./data/skycalc_transm_K2166.dat', 
+        # 'file_std': './data/iSco_std.dat', 
+        'file_wave': './data/TWA28_molecfit_transm.dat', 
+        'file_skycalc_transm': None,
         
         'file_molecfit_transm': './data/TWA28_molecfit_transm.dat', 
-        'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
-
+        'file_std_molecfit_transm': None,
+        
         'filter_2MASS': '2MASS/2MASS.Ks', 
         'pwv': 5.0, 
         # adjust values below....!
         'ra': 165.541335, 'dec': -34.50990, 'mjd': 60007.30274557,
-        'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
-
-        'T_std': 17_000, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
@@ -79,20 +76,21 @@ free_params = {
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
+    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
-    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
-    'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
-    'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
+    # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
+    # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
-    'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
-    'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
-    
+    # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
+    # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
+
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
     'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'], 
@@ -128,6 +126,8 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
+mask_lines = {} 
+
 ####################################################################################
 # Chemistry parameters
 ####################################################################################
@@ -148,27 +148,33 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
+    'H2O_181',
     
     'Na_allard',
-    'Mg',
-    'K',
+    # 'Mg',
+    # 'K',
     'Ca',
     'Ti',
-    'Fe',
+    # 'Fe',
     
-    'CN_main_iso',
-    'HCN_main_iso',
+    # 'CN_main_iso',
+    # 'HCN_main_iso',
     'HF_main_iso', 
-    'HCl_main_iso',
-    'H2S_ExoMol_main_iso',
+    # 'HCl_main_iso',
+    # 'H2S_ExoMol_main_iso',
+    
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 'Na', 'Mg', 'K', 'Ca', 'Ti', 'CN', 'HF'
+    '12CO', '13CO', 'H2O', 
+    'Na','Ca', 'Ti', 
+    # 'Mg', 'K', 'Fe',
+    'HF',
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na',
-    'Mg', 'K', 'Ca', 'Ti', 'Fe',
-    'CN', 'HCN', 'HF', 'HCl', 'H2S',
+    '12CO', '13CO', 'H2O', 
+    'Na','Ca', 'Ti', 
+    # 'Mg', 'K', 'Fe',
+    'HF',
     ]
 
 ####################################################################################

@@ -13,11 +13,41 @@ import corner
 import pandas as pd
 import json
 
+def get_FeH(chem):
+    
+    ignore_keys = ['H','H2', 'He', 'H-', 'e-', 'MMW']
+    H = chem.mass_fractions_posterior['H'].mean(axis=-1)
+    Z = np.zeros_like(H)
+    for key, val in chem.mass_fractions_posterior.items():
+        if key in ignore_keys:
+            continue
+        print(f'Adding {key} to Z')
+        Z += val.mean(axis=-1)
+    # for Z/H = 0.0181 # Asplund et al. (2009)
+    # log_FeH_solar = np.log10(0.0181 * 1e12) # = 10.257678574869184
+    
+    # [Q/H] = log10(Q/H) - log10(Q/H)_solar # Young and Wheeler (2022)
+    log_FeH_solar = np.log10(0.0181) # = 10.257678574869184
+    FeH = np.log10(Z/H) - log_FeH_solar
+    return FeH
+
+def get_CH(chem):
+    H = chem.mass_fractions_posterior['H'].mean(axis=-1)
+    C = np.zeros_like(H)
+    keys_C = ['CO_high', 'CO_36_high', 'CO_28', 'CO_27']
+    for key, val in chem.mass_fractions_posterior.items():
+        if key in keys_C:
+            C = val.mean(axis=-1)
+            break
+    log_CH_solar = 8.43 - 12 # Asplund et al. (2021)
+    CH = np.log10(C/H) - log_CH_solar
+    return CH
+
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_4', TWA28='freechem_1', J0856='freechem_1')
+targets = dict(J1200='freechem_6', TWA28='freechem_1', J0856='freechem_1')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
 # fig, ax = plt.subplots(1,1, figsize=(8,6))
@@ -42,9 +72,12 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
     # logg = params['log_g']
     logg = posterior[:,3]
-    FeH = chem.FeH_posterior
+    # FeH = chem.FeH_posterior
+    # FeH = 
+    FeH = get_FeH(chem)
+    # FeH = get_CH(chem)
     print(f'Posterior shape = {posterior.shape}')
-    samples = np.array([logg, chem.FeH_posterior]).T
+    samples = np.array([logg, FeH]).T
 
     # samples_dict = dict(zip(params.keys(), posterior.T))
     # calculate correlation between logg and Fe/H
@@ -59,6 +92,8 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     labels = [r'$\log g$', r'$\mathrm{[Fe/H]}$']
     if i == 0:
         fig = None
+    limits = [(3.0, 5.0), (-1.0, 1.5)]  # replace with your actual limits
+
     fig = corner.corner(samples, labels=labels, quantiles=[0.5],
                         show_titles=False, 
                         title_kwargs={"fontsize": 12}, 
@@ -72,6 +107,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                                      'alpha': 0.6,
                                      'edgecolor': 'k'
                                      },
+                        range=limits,
                         fig=fig)
     
     
@@ -85,7 +121,7 @@ leg = fig.legend(handles=handles, labels=labels, loc=(0.57, 0.6),
                  frameon=False, prop={'weight':'bold', 'size': 16},
                  )
 plt.show()
-save= False
+save= True
 if save:
-    fig.savefig(out_path / f'fig5_logg_FeH_{target}.png', bbox_inches='tight', dpi=300)
+    fig.savefig(out_path / f'fig5_logg_FeH.png', bbox_inches='tight', dpi=300)
     plt.close()

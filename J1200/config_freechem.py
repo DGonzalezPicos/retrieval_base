@@ -71,7 +71,7 @@ free_params = {
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'], # TODO: add to chemistry file...
+    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
@@ -167,7 +167,7 @@ species_to_plot_VMR = [
     # 'Mg', 'K', 'Fe',
     'HF',
     ]
-species_to_plot_VMR = [
+species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 
     'Na','Ca', 'Ti', 
     # 'Mg', 'K', 'Fe',

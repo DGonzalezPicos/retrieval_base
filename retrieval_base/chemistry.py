@@ -410,8 +410,8 @@ class EqChemistry(Chemistry):
         # self.mass_fractions['H-'] = 6e-9 # solar
         # self.mass_fractions['e-'] = 1e-10 # solar
         
-        print(f'mass_fractions[e-] = {np.mean(self.mass_fractions["e-"]):.2e}')
-        print(f'mass_fractions[H-] = {np.mean(self.mass_fractions["H-"]):.2e}')
+        # print(f'mass_fractions[e-] = {np.mean(self.mass_fractions["e-"]):.2e}')
+        # print(f'mass_fractions[H-] = {np.mean(self.mass_fractions["H-"]):.2e}')
 
         # Convert the free-chemistry VMRs to mass fractions
         for species_i in self.species_info.keys():

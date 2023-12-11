@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_1'
+prefix = 'freechem_2'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -61,7 +61,7 @@ free_params = {
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     'R_p': [(0.5, 5.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(3.0,5.5), r'$\log\ g$'], 
+    'log_g': [(3.0,5.0), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
@@ -74,19 +74,22 @@ free_params = {
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    
+    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
-    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
-    'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
-    'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
-    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
-    'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
-    'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    
+    # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
+    # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
+    # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+    # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
+    # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
     'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
@@ -123,12 +126,14 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
+# mask_lines = {'br_gamma': (2163, 2169)}
+mask_lines = {}
+
+
 ####################################################################################
 # Chemistry parameters
 ####################################################################################
 
-#chem_mode  = 'free'
-#chem_mode  = 'SONORAchem'
 chem_mode  = 'free'
 
 chem_kwargs = dict()
@@ -144,30 +149,33 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    
+    'H2O_181',
+    'HF_main_iso', 
+
+
     'Na_allard',
-    'Mg',
-    'K',
     'Ca',
     'Ti',
-    'Fe',
+    # 'Mg',
+    # 'K',
+    # 'Fe',
     
-    'CN_main_iso',
-    'HCN_main_iso',
-    'HF_main_iso', 
-    'HCl_main_iso',
-    'H2S_ExoMol_main_iso',
+    # 'CN_main_iso',
+    # 'HCN_main_iso',
+    # 'HCl_main_iso',
+    # 'H2S_ExoMol_main_iso',
     
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 'Na',
-    'Mg', 'K', 'Ca', 'Ti', 'Fe',
-    'CN', 'HCN', 'HF', 'HCl', 'H2S',
+    '12CO', '13CO', 'H2O', 
+    'Na','Ca', 'Ti', 
+    # 'Mg', 'K', 'Fe',
+    'HF',
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'Na',
-    'Mg', 'K', 'Ca', 'Ti', 'Fe',
-    'CN', 'HCN', 'HF', 'HCl', 'H2S',
+    '12CO', '13CO', 'H2O', 'H2O_181',
+    'HF'
+    'Na', 'Ca', 'Ti',
     ]
 
 ####################################################################################
@@ -223,5 +231,5 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 200
-n_iter_before_update = 200
+n_live_points = 400
+n_iter_before_update = 400

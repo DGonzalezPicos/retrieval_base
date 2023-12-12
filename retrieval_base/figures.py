@@ -54,23 +54,40 @@ def fig_flux_calib_2MASS(wave,
                      'left':0.1, 'right':0.95, 'top':0.92, 'bottom':0.15, 
                      }
         )
+    
+    # poly_model /= np.nanmedian(poly_model)
+    # poly_model *= np.nanmedian(calib_flux)
+    if order_wlen_ranges is not None:
+        # Plot zoom-ins of the telluric correction
+        n_orders = order_wlen_ranges.shape[0]
+        labels = [r'$F_\mathrm{CRIRES}$',
+                  r'$F_\mathrm{CRIRES}/T_\mathrm{CRIRES}$',
+                  r'$T_\mathrm{CRIRES}$',]
+        for i in range(n_orders):
+            # Only plot within a wavelength range
+            wave_min = order_wlen_ranges[i,:].min() - 0.5
+            wave_max = order_wlen_ranges[i,:].max() + 0.5
 
-    #'''
-    ax[0].plot(wave, calib_flux_wo_tell_corr, c='k', lw=0.5, alpha=0.4, 
-               label=r'$F_\mathrm{CRIRES}$'
-               )
-    #'''
-    ax[0].plot(wave, calib_flux, c='k', lw=0.5, 
-               label=r'$F_\mathrm{CRIRES}/T_\mathrm{CRIRES}$'
-               )
+            mask_wave = np.arange(i*3*2048, (i+1)*3*2048, dtype=int)
+            ax[0].plot(wave[mask_wave], calib_flux_wo_tell_corr[mask_wave], c='k', lw=0.5, alpha=0.4, 
+                    label=labels[0] if i == 0 else None
+                    )
+            ax[0].plot(wave[mask_wave], calib_flux[mask_wave], c='k', lw=0.5, 
+                    label=labels[1] if i == 0 else None
+                    )
+            
+            ax[1].plot(wave[mask_wave], transm[mask_wave], c='k', lw=0.5, 
+                       label=labels[2] if i == 0 else None)
+            ax[1].plot(wave[mask_wave], poly_model[mask_wave], c='magenta', lw=1)
+            
     ax[0].set(#ylim=(0, 1.5*np.nanpercentile(calib_flux, q=95)), 
               ylabel=r'$F_\lambda\ (\mathrm{erg\ s^{-1}\ cm^{-2}\ nm^{-1}})$', 
               )
     ax[0].legend(loc='upper left')
     
-    ax[1].plot(wave, transm, c='k', lw=0.5, label=r'$T_\mathrm{CRIRES}$')
+    
     if isinstance(tell_threshold, np.ndarray):
-        ax[1].plot(wave, poly_model, c='gray', lw=1)
+        # ax[1].plot(wave, poly_model, c='magenta', lw=1)
         ax[1].plot(wave, tell_threshold, c='gray', lw=1, ls='--')
     else:
         ax[1].axhline(tell_threshold, c='gray', lw=1, ls='--')

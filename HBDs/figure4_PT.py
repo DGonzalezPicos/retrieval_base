@@ -17,7 +17,7 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_6', TWA28='freechem_1', J0856='freechem_1')
+targets = dict(J1200='freechem_7', TWA28='freechem_3', J0856='freechem_3')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(1,1, figsize=(8,6))
@@ -57,5 +57,5 @@ plt.show()
 
 save = True
 if save:
-    fig.savefig(out_path / f'fig4_bestfit_PT.png', bbox_inches='tight', dpi=300)
-    print(f'Saved figure in {out_path / f"fig4_bestfit_PT.png"}')
+    fig.savefig(out_path / f'fig4_bestfit_PT.pdf', bbox_inches='tight', dpi=300)
+    print(f'Saved figure in {out_path / f"fig4_bestfit_PT.pdf"}')

@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_7'
+prefix = 'freechem_8'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {

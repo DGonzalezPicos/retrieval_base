@@ -7,7 +7,7 @@ file_params = 'config_fiducial.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'fiducial_ret_6'
+prefix = 'fiducial_ret_7'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -27,14 +27,13 @@ config_data = {
         'pwv': 5.0, 
         # adjust values below....!
         'ra': 165.541335, 'dec': -34.50990, 'mjd': 60007.30274557,
-        'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
+        # 'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
-        'T_std': 17_000, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
+        # 'T_std': 17_000, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
@@ -56,11 +55,8 @@ free_params = {
     #'log_res_J1226': [(4,5.2), r'$\log\ R_\mathrm{J}$'], 
 
     # Uncertainty scaling
-    #'log_a': [(-18,-14), r'$\log\ a_1$'], 
     'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
     'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
-    #'log_a_K2166': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
-    #'log_l_K2166': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -73,13 +69,7 @@ free_params = {
     # Velocities
     'vsini': [(4.,20.), r'$v\ \sin\ i$'], 
     'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
-
-    # Cloud properties
-    # 'log_opa_base_gray': [(-10,5), r'$\log\ \kappa_{\mathrm{cl},0}$'], 
-    # 'log_P_base_gray': [(-5,3), r'$\log\ P_{\mathrm{cl},0}$'], 
-    # 'f_sed_gray': [(0,20), r'$f_\mathrm{sed}$'], 
-    #'cloud_slope': [(-10,10), r'$\xi_\mathrm{cl}$'], 
-
+    
     # Chemistry
     'C/O': [(0.15,1), r'C/O'], 
     'Fe/H': [(-1,1), r'[Fe/H]'], 
@@ -146,28 +136,7 @@ cloud_species = None
 #chem_mode  = 'SONORAchem'
 chem_mode  = 'eqchem'
 
-#import pyfastchem
-#fastchem_path = os.path.dirname(pyfastchem.__file__)
-chem_kwargs = dict(
-#     #spline_order   = 0
-
-#     # quench_setup = {
-#     #     'P_quench_CO_CH4': ['12CO', 'CH4', 'H2O', '13CO', 'C18O', 'C17O'], 
-#     #    #'P_quench_N2_NH3': ['N2', 'HCN', 'NH3'], 
-#     #    'P_quench_N2_NH3': ['N2', 'NH3'], 
-#         }, 
-
-    #path_SONORA_chem = '../SONORA_models/chemistry', 
-
-    #abundance_file = f'{fastchem_path}/input/element_abundances/asplund_2020.dat', 
-    #gas_data_file  = f'{fastchem_path}/input/logK/logK.dat', 
-    #cond_data_file = f'{fastchem_path}/input/logK/logK_condensates.dat', 
-    #verbose_level  = 1, 
-    #use_eq_cond      = True, 
-    ##use_eq_cond      = False, 
-    #use_rainout_cond = True,
-    ##use_rainout_cond = False,
-)
+chem_kwargs = dict()
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']

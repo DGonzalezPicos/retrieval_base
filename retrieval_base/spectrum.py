@@ -460,6 +460,7 @@ class DataSpectrum(Spectrum):
         self.flux = flux_ordered
         self.err  = err_ordered
         self.transm = transm_ordered
+        self.transm = np.where(self.transm<=0.0, 1.0, self.transm)
         self.flux_uncorr = flux_uncorr_ordered
 
         # Remove empty orders / detectors
@@ -561,7 +562,9 @@ class DataSpectrum(Spectrum):
         if len(molecfit) == 3:
             print(f'[load_molecfit_transm] Using continuum from Molecfit...')
             self.wave_transm, self.transm, self.cont_transm = np.loadtxt(file_transm, unpack=True)
-            self.transm_err = self.err/self.transm
+            
+            
+            self.transm_err = self.err/np.where(self.transm<=0.0, 1.0, self.transm) 
 
             print(f'Loaded wave, transm and continuum from molecfit with shapes:')
             print(f'wave: {self.wave_transm.shape}')
@@ -573,6 +576,11 @@ class DataSpectrum(Spectrum):
             
             # self.throughput = (self.flux / self.transm / self.cont_transm)[mask]
             self.throughput = self.cont_transm.reshape(np.shape(self.wave))
+            # thr_nans = np.isnan(self.throughput)
+            # zeros = self.throughput <= 0.0
+            # self.throughput[thr_nans | zeros] = 1.0
+            self.throughput /= np.nanmax(self.throughput)
+            
     
         '''
         import matplotlib.pyplot as plt
@@ -636,27 +644,18 @@ class DataSpectrum(Spectrum):
 
 
         # Apply correction for telluric transmission
-        tell_corr_flux = self.flux / self.transm / self.throughput
+        # tell_corr_flux = self.flux / self.transm / self.throughput
+        avoid_zeros = self.transm*self.throughput!=0
+        tell_corr_flux = np.divide(self.flux, self.transm * self.throughput, where=avoid_zeros)
+
         # Replace the deepest tellurics with NaNs
         tell_corr_flux[self.transm < tell_threshold] = np.nan
 
         # Update the NaN mask
         self.update_isfinite_mask(tell_corr_flux)
 
-        tell_corr_err = self.err / self.transm / self.throughput
-
-        # Apply correction for telluric transmission
-        tell_corr_flux = self.flux / self.transm
-        # Replace the deepest tellurics with NaNs
-        tell_threshold *= self.throughput
-        tell_corr_flux[(self.transm / np.nanmax(self.transm)) < tell_threshold] = np.nan
-        # Update the NaN mask
-        self.update_isfinite_mask(tell_corr_flux)
-
-        # tell_corr_err = np.sqrt((self.err/self.transm)**2 + \
-        #                         (tell_corr_flux*self.transm_err/self.transm)**2
-        #                         )
-        tell_corr_err = self.err / self.transm
+        # tell_corr_err = self.err / self.transm / self.throughput
+        tell_corr_err = np.divide(self.err, self.transm * self.throughput, where=avoid_zeros)
 
         # Read in the transmission curve of the broadband instrument
         wave_2MASS, transm_2MASS = photom_2MASS.transm_curves[filter_2MASS].T

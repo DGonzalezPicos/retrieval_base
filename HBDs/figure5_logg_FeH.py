@@ -47,7 +47,7 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_6', TWA28='freechem_1', J0856='freechem_3')
+targets = dict(J1200='freechem_7', TWA28='freechem_3', J0856='freechem_3')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
 # fig, ax = plt.subplots(1,1, figsize=(8,6))
@@ -123,5 +123,5 @@ leg = fig.legend(handles=handles, labels=labels, loc=(0.57, 0.6),
 plt.show()
 save= True
 if save:
-    fig.savefig(out_path / f'fig5_logg_FeH.png', bbox_inches='tight', dpi=300)
+    fig.savefig(out_path / f'fig5_logg_FeH.pdf', bbox_inches='tight', dpi=300)
     plt.close()

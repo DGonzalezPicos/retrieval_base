@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_3'
+prefix = 'freechem_4'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -47,16 +47,9 @@ r_star = 0.29
 r_jup = r_star / 0.10045
 # Define the priors of the parameters
 free_params = {
-    # Data resolution
-    #'res': [(20000,200000), r'res'], 
-    #'log_res_J1226': [(4,5.2), r'$\log\ R_\mathrm{J}$'], 
-
     # Uncertainty scaling
-    #'log_a': [(-18,-14), r'$\log\ a_1$'], 
     'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
     'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
-    #'log_a_K2166': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
-    #'log_l_K2166': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -197,15 +190,6 @@ cov_kwargs = dict(
 if free_params.get('log_l') is not None:
     cov_kwargs['max_separation'] = \
         cov_kwargs['trunc_dist'] * 10**free_params['log_l'][0][1]
-if free_params.get('l') is not None:
-    cov_kwargs['max_separation'] = \
-        cov_kwargs['trunc_dist'] * free_params['l'][0][1]
-
-if (free_params.get('log_l_K2166') is not None) and \
-    (free_params.get('log_l_J1226') is not None):
-    cov_kwargs['max_separation'] = cov_kwargs['trunc_dist'] * \
-        10**max([free_params['log_l_K2166'][0][1], \
-                 free_params['log_l_J1226'][0][1]])
 
 ####################################################################################
 # PT parameters
@@ -231,4 +215,4 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
-n_iter_before_update = 200
+n_iter_before_update = 400

@@ -2,7 +2,8 @@ __pycache__/
 *egg-info/
 
 ATMO_2020_models/
-*/data/
+Luhman_16/
+# */data/
 */retrieval_outputs/
 */plots/
 */logs/

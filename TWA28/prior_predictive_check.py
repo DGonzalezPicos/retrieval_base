@@ -17,7 +17,7 @@ if run_pre_processing:
     for conf_data_i in conf.config_data.values():
         pre_processing(conf=conf, conf_data=conf_data_i)
 
-run_prior_predictive_check = True
+run_prior_predictive_check = False
 
 # if run_prior_predictive_check:
     

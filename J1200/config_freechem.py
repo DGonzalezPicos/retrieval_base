@@ -50,20 +50,24 @@ r_star = 0.29
 r_jup = r_star / 0.10045
 # Define the priors of the parameters
 free_params = {
+
     # Uncertainty scaling
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
-    'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
-    'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
+    'log_a': [(-1,0.5), r'$\log\ a$'], 
+    'log_l': [(-2,-0.8), r'$\log\ l$'], 
 
     # General properties
+    # R = 0.29 [R_sun]
+    # convert to jupiter radii
+    # R = 0.29 * 9.73116 = 2.82 [R_jup]
     'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
-    'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
-    'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
-
+    'vsini': [(2,30), r'$v\ \sin\ i$'], 
+    'rv': [(-40,40), r'$v_\mathrm{rad}$'], 
+    
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
@@ -71,17 +75,19 @@ free_params = {
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
-    
+    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
     # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
-    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+    # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
     # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
@@ -145,6 +151,8 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     'H2O_181',
+    'HF_main_iso', 
+
     
     'Na_allard',
     # 'Mg',
@@ -155,7 +163,6 @@ line_species = [
     
     # 'CN_main_iso',
     # 'HCN_main_iso',
-    'HF_main_iso', 
     # 'HCl_main_iso',
     # 'H2S_ExoMol_main_iso',
     
@@ -220,3 +227,13 @@ sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
 n_iter_before_update = 400
+
+import json
+
+# get path of this file
+path = os.path.dirname(os.path.abspath(__file__))
+outpath = os.path.join(path, f'{prefix[2:]}data')
+outfile = os.path.join(outpath, file_params.replace('.py', '.txt'))
+with open(outfile, 'w') as file:
+    file.write(json.dumps({key: globals()[key] for key in save_attrs}))
+    

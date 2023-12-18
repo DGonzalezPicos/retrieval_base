@@ -8,6 +8,7 @@ Luhman_16/
 */plots/
 */logs/
 *.png
+*.tex
 
 transm_curves.pk
 species_config.ini

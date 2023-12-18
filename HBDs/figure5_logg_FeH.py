@@ -27,7 +27,7 @@ def get_FeH(chem):
     # log_FeH_solar = np.log10(0.0181 * 1e12) # = 10.257678574869184
     
     # [Q/H] = log10(Q/H) - log10(Q/H)_solar # Young and Wheeler (2022)
-    log_FeH_solar = np.log10(0.0181) # = 10.257678574869184
+    log_FeH_solar = np.log10(0.0181) # = (10.258 - 12.)
     FeH = np.log10(Z/H) - log_FeH_solar
     return FeH
 
@@ -47,7 +47,7 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_7', TWA28='freechem_3', J0856='freechem_3')
+targets = dict(J1200='freechem_8', TWA28='freechem_4', J0856='freechem_3')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
 # fig, ax = plt.subplots(1,1, figsize=(8,6))
@@ -74,8 +74,9 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     logg = posterior[:,3]
     # FeH = chem.FeH_posterior
     # FeH = 
-    FeH = get_FeH(chem)
+    # FeH = get_FeH(chem)
     # FeH = get_CH(chem)
+    FeH = chem.FeH_posterior
     print(f'Posterior shape = {posterior.shape}')
     samples = np.array([logg, FeH]).T
 
@@ -89,10 +90,11 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     
 
     # Make cornerplot with logg and Fe/H
-    labels = [r'$\log g$', r'$\mathrm{[Fe/H]}$']
+    labels = [r'$\log g$', r'$\mathrm{[C/H]}$']
     if i == 0:
         fig = None
-    limits = [(3.0, 5.0), (-1.0, 1.5)]  # replace with your actual limits
+    # limits = [(3.0, 5.0), (-1.0, 1.5)]  # replace with your actual limits
+    limits = [(3.0, 5.5), (-0.25, 2.5)]  # replace with your actual limits
 
     fig = corner.corner(samples, labels=labels, quantiles=[0.5],
                         show_titles=False, 
@@ -100,12 +102,14 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                         color=colors[target], 
                         plot_density=True,
                         plot_datapoints=False,
-                        smooth=1.0, 
-                        bins=20, 
-                        hist_kwargs={'density': True,
+                        plot_contours=True,
+                        smooth=2.0, 
+                        bins=40, 
+                        hist_kwargs={'density': False,
                                      'fill': True,
-                                     'alpha': 0.6,
-                                     'edgecolor': 'k'
+                                     'alpha': 0.7,
+                                     'edgecolor': 'k',
+                                    'linewidth': 1.0,
                                      },
                         range=limits,
                         fig=fig)

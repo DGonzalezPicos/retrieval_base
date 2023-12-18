@@ -17,7 +17,7 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_7', TWA28='freechem_3', J0856='freechem_3')
+targets = dict(J1200='freechem_8', TWA28='freechem_4', J0856='freechem_3')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(1,1, figsize=(8,6))
@@ -33,8 +33,10 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     PT = pickle.load(open(retrieval_path / 'test_data/bestfit_PT.pkl', 'rb'))
     ax.fill_betweenx(PT.pressure, PT.temperature_envelopes[0], PT.temperature_envelopes[-1], color=colors[target], alpha=0.2)
     ax.fill_betweenx(PT.pressure, PT.temperature_envelopes[1], PT.temperature_envelopes[-2], color=colors[target], alpha=0.4)
-    ax.plot(PT.temperature, PT.pressure, color=colors[target], lw=2.5, label=target)
-    
+    # ax.plot(PT.temperature, PT.pressure, color=colors[target], lw=2.5, label=target)
+    # ax.plot(PT.temperature_posterior[-1,:], PT.pressure, color=colors[target], lw=2.5, label=target)
+    ax.plot(PT.temperature_envelopes[3], PT.pressure, color=colors[target], lw=2.5, label=target)
+
     # plot integrated contribution function
     icf = np.load(retrieval_path / 'test_data/bestfit_int_contr_em_K2166.npy')
     print(f'shape of icf = {icf.shape}')

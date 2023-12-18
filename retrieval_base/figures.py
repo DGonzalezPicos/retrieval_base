@@ -850,7 +850,9 @@ def plot_ax_CCF(ax,
                 rv=np.arange(-1000,1000+1e-6,10), 
                 rv_to_exclude=(-100,100), 
                 color='k', 
-                label=None
+                label=None,
+                prefix=None,
+                species_h=None,
                 ):
 
     if pRT_atm_wo_species is not None:
@@ -875,6 +877,11 @@ def plot_ax_CCF(ax,
     CCF_SNR, m_ACF_SNR, excluded_CCF_SNR = af.CCF_to_SNR(
         rv, CCF.sum(axis=(0,1)), ACF=m_ACF.sum(axis=(0,1)), rv_to_exclude=rv_to_exclude
         )
+    # Store the CCF_SNR and m_ACF_SNR at each RV for later use
+    if species_h is not None:
+        array = np.array([rv, CCF_SNR, m_ACF_SNR]).T
+        np.save(prefix+f'data/CCF_{species_h}.npy', array)
+        print(f'- Saved CCF_{species_h}.npy')
 
     ax.axvline(0, lw=1, c='k', alpha=0.2)
     ax.axhline(0, lw=0.1, c='k')
@@ -999,7 +1006,9 @@ def fig_species_contribution(d_spec,
                 rv=rv_CCF, 
                 rv_to_exclude=rv_to_exclude, 
                 color=color_h, 
-                label=label_h
+                label=label_h,
+                prefix=prefix,
+                species_h=species_h,
                 )
 
             # Use a common ylim for all orders

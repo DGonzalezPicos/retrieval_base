@@ -47,22 +47,24 @@ r_star = 0.29
 r_jup = r_star / 0.10045
 # Define the priors of the parameters
 free_params = {
+
     # Uncertainty scaling
-    'log_a': [(-1,0.4), r'$\log\ a_\mathrm{K}$'], 
-    'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
+    #'log_a': [(-18,-14), r'$\log\ a_1$'], 
+    'log_a': [(-1,0.5), r'$\log\ a$'], 
+    'log_l': [(-2,-0.8), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
-    'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
-    'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
-
+    'vsini': [(2,30), r'$v\ \sin\ i$'], 
+    'rv': [(-40,40), r'$v_\mathrm{rad}$'], 
+    
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
@@ -70,17 +72,19 @@ free_params = {
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
-    
+    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
     # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
     # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
-    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
+    # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
     # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
@@ -92,7 +96,6 @@ free_params = {
     'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
     'T_0': [(2000,10000), r'$T_0$'], 
 }
-
 # Constants to use if prior is not given
 # distance in pc to parallax
 d_pc = 59.2 # pc

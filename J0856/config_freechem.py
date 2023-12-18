@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import pathlib
 
 file_params = 'config_freechem.py'
 
@@ -7,7 +8,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_3'
+prefix = 'freechem_4'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -27,14 +28,14 @@ config_data = {
         'pwv': 5.0, 
         # adjust values below....!
         'ra': 134.057762, 'dec': -13.70612, 'mjd': 60008.03764053,
-        'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
+        # 'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
         # 'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
+        'log_P_range': (-5,2), 'n_atm_layers': 50, 
         }, 
     }
 
@@ -53,20 +54,20 @@ free_params = {
 
     # Uncertainty scaling
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
-    'log_a': [(-1,0.5), r'$\log\ a_\mathrm{K}$'], 
-    'log_l': [(-2,-0.8), r'$\log\ l_\mathrm{K}$'], 
+    'log_a': [(-1,0.5), r'$\log\ a$'], 
+    'log_l': [(-2,-0.8), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(3.0,5.0), r'$\log\ g$'], 
+    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
+    'log_g': [(2.5,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
-    'vsini': [(2.,20.), r'$v\ \sin\ i$'], 
-    'rv': [(-22,22), r'$v_\mathrm{rad}$'], 
+    'vsini': [(2,30), r'$v\ \sin\ i$'], 
+    'rv': [(-40,40), r'$v_\mathrm{rad}$'], 
     
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
@@ -220,5 +221,33 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 200
+n_live_points = 1000
 n_iter_before_update = 400
+
+# generate a .txt version of this file
+
+# print all global variables
+save_attrs = ['config_data', 'magnitudes', 'free_params',
+              'd_pc', 'parallax', 'parallax_mas',
+              'constant_params', 'scale_flux', 'scale_err',
+              'apply_high_pass_filter', 'cloud_mode', 'cloud_species', 
+              'mask_lines', 'chem_mode', 'chem_kwargs', 'rayleigh_species', 
+              'continuum_opacities', 'line_species',
+               'cov_mode', 'cov_kwargs', 'PT_mode', 'PT_kwargs',
+               'const_efficiency_mode', 'sampling_efficiency',
+               'evidence_tolerance', 'n_live_points', 'n_iter_before_update']
+
+import json
+
+# get path of this file
+path = pathlib.Path(__file__).parent.absolute()
+outpath = path / f'{prefix[2:]}data'
+outfile = outpath / file_params.replace('.py', '.txt')
+outfile.parent.mkdir(parents=True, exist_ok=True)
+
+with open(outfile, 'w') as file:
+    file.write(json.dumps({key: globals()[key] for key in save_attrs}))
+    
+# # test loading the file with json
+with open(outfile, 'r') as file:
+    load_file = json.load(file)

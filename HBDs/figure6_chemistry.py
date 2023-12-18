@@ -1,5 +1,8 @@
 from retrieval_base.retrieval import pre_processing, Retrieval
 from retrieval_base.parameters import Parameters
+from retrieval_base.chemistry import Chemistry
+atomic_mass = {k:v[2] for k,v in Chemistry.species_info.items()}
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,12 +20,18 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_7', TWA28='freechem_3', J0856='freechem_3')
+targets = dict(J1200='freechem_8', TWA28='freechem_4', J0856='freechem_3')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(1,2, figsize=(8,4))
 n_bins = 30
-solar_system = {'C/O': 0.54, '12C/13C': 89}
+# solar_system = {'C/O': 0.54, '12C/13C': 89}
+# add solar values with uncertainties
+solar_system = {'C/O': (0.55, 0.02), # uncertainty propagated from Asplund et al. (2009)
+         '12C/13C': (86.8, 3.8)} # Asplund et al. (2009) from Scott et al. (2006) using CO lines
+# propagate uncertainty for C/O where log(C/H) = 8.43 +- 0.05 and log(O/H) = 8.69 +- 0.05
+
+
 
 for i, (target, retrieval_id) in enumerate(targets.items()):
     data_path = pathlib.Path('/home/dario/phd/retrieval_base') / f'{target}'
@@ -44,7 +53,13 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
     # logg = params['log_g']
     C_O = chem.CO_posterior
-    chem.C12C13_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_36_high'],axis=-1)
+    
+    posterior_12CO = chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / atomic_mass['12CO']
+    posterior_13CO = chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / atomic_mass['13CO']
+     
+    # chem.C12C13_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_36_high'],axis=-1)
+    chem.C12C13_posterior = posterior_12CO / posterior_13CO
+    
     chem.C16OC18O_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_28'],axis=-1)
     chem.H216OH218O_posterior = np.median(chem.mass_fractions_posterior['H2O_pokazatel_main_iso'] / chem.mass_fractions_posterior['H2O_181'],axis=-1)
     
@@ -54,20 +69,39 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
 
     ax[0].hist(C_O,  range=(0.45, 0.72), **hist_args)
     ax[1].hist(chem.C12C13_posterior, range=(10., 220.), **hist_args)
-    labels = ['Sun', 'ISM'] if i == 0 else [None, None]
-    for j, (key, val) in enumerate(solar_system.items()):
-        ax[j].axvline(val, color='magenta', ls='--', lw=2.5, alpha=0.8, label=labels[0])
-    ax[1].axvline(68, color='deepskyblue', ls='--', lw=2.5, alpha=0.8, label=labels[1])
-    
+    # labels = ['Sun', 'ISM'] if i == 0 else [None, None]
+
     if len(ax) > 2:
         ax[2].hist(chem.C16OC18O_posterior, range=(10., 1220.), **hist_args)
         ax[3].hist(chem.H216OH218O_posterior, range=(0., 2220.), **hist_args)
     
+    
+labels = ['Sun', 'ISM']
+
+for j, (key, val) in enumerate(solar_system.items()):
+    # ax[j].axvline(val, color='magenta', ls='--', lw=2.5, alpha=0.8, label=labels[0])
+    # ax[j].axvspan(val[0]-val[1], val[0]+val[1], color='magenta', alpha=0.1, label=labels[0])
+    # scatter point with errorbars
+    
+    if j == 0:
+        ax[j].errorbar(val[0], 300, xerr=val[1], color='magenta', 
+                        ls='none', 
+                        ms=5, marker='s',
+                        lw=2.5, alpha=0.8, label=labels[0])
+
+    else:
+        ax[j].axvline(val[0], color='magenta', ls='-', lw=3.5, alpha=0.5, label=labels[0])
+        
+    
+ax[1].axvline(68, color='deepskyblue', ls='--', lw=3.5, alpha=0.6, label=labels[1])
+
 # remove y-axis and top x-axis
 xlabels = [r'C/O', r'$^{12}$C/$^{13}$C', 
            r'C$^{16}$O/C$^{18}$O',
            r'H$_2^{16}$O/H$_2^{18}$O'
            ]
+
+
 for axi in ax:
     axi.yaxis.set_visible(False)
     axi.xaxis.set_ticks_position('bottom')

@@ -312,8 +312,8 @@ class FreeChemistry(Chemistry):
         # Compute the C/O ratio and metallicity
         self.CO = C/O
 
-        #log_CH_solar = 8.43 - 12 # Asplund et al. (2009)
-        log_CH_solar = 8.46 - 12 # Asplund et al. (2021)
+        log_CH_solar = 8.43 - 12 # Asplund et al. (2009)
+        # log_CH_solar = 8.46 - 12 # Asplund et al. (2021)
         self.FeH = np.log10(C/H) - log_CH_solar
         self.CH  = self.FeH
 

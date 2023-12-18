@@ -35,7 +35,7 @@ config_data = {
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 50, 
+        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
 
@@ -99,6 +99,7 @@ free_params = {
     'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
     'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
     'T_0': [(2000,10000), r'$T_0$'], 
+    'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
 }
 
 # Constants to use if prior is not given
@@ -221,7 +222,7 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 1000
+n_live_points = 200
 n_iter_before_update = 400
 
 # generate a .txt version of this file

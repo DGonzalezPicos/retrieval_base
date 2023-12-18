@@ -367,6 +367,17 @@ class Retrieval:
                 get_contr=self.CB.active, 
                 get_full_spectrum=self.evaluation, 
                 )
+            # apply linear slope --> not implemented...
+            if self.Param.params.get('f_slope') is not None:
+                f_slope = self.Param.params.get('f_slope')
+                print(f'Applying slope of {f_slope:.2e} to the model spectrum...')
+                print(f'Shape of the model spectrum: {self.m_spec[w_set].flux.shape}')
+
+                # m_spec_flux_flat = self.m_spec[w_set].flux.flatten()
+                # slope = np.linspace(1-f_slope, 1+f_slope, m_spec_flux_flat.size)
+                slope = np.linspace(1-f_slope, 1+f_slope, np.prod(self.m_spec[w_set].flux.shape))
+                self.m_spec[w_set].flux = self.m_spec[w_set].flux * slope.reshape(self.m_spec[w_set].flux.shape)
+                
         
             if (self.m_spec[w_set].flux <= 0).any() or \
                 (~np.isfinite(self.m_spec[w_set].flux)).any():

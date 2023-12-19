@@ -539,13 +539,20 @@ class DataSpectrum(Spectrum):
         self.update_isfinite_mask()
 
     def load_molecfit_transm(self, file_transm, 
-                             tell_threshold=0.0):
+                             tell_threshold=0.0,
+                             T=17300):
 
         # Load the pre-computed transmission from molecfit
         molecfit = np.loadtxt(file_transm).T
         
         # Confirm that we are using the same wavelength grid
         assert((self.wave == molecfit[0]).all())
+        
+        ref_flux = 1.0 # default
+        if T > 0.0:
+            # Retrieve a Planck spectrum for the given temperature
+            ref_flux = 2*nc.h*nc.c**2/(self.wave**5) * \
+                        1/(np.exp(nc.h*nc.c/(self.wave*nc.kB*T)) - 1)
         
         if len(molecfit) == 2:
             self.wave_transm, self.transm = molecfit
@@ -575,12 +582,14 @@ class DataSpectrum(Spectrum):
             mask = (self.mask_isfinite & mask_high_transm)
             
             # self.throughput = (self.flux / self.transm / self.cont_transm)[mask]
-            self.throughput = self.cont_transm.reshape(np.shape(self.wave))
+            # self.throughput = self.cont_transm.reshape(np.shape(self.wave))
             # thr_nans = np.isnan(self.throughput)
             # zeros = self.throughput <= 0.0
             # self.throughput[thr_nans | zeros] = 1.0
-            self.throughput /= self.wave_transm # IMPORTANT: divide by wavelength to get per nm
-            self.throughput /= np.nanmax(self.throughput)
+            # self.throughput /= self.wave_transm # IMPORTANT: divide by wavelength to get per nm
+            continuum = (self.cont_transm / self.wave_transm).reshape(np.shape(self.wave))
+            # self.throughput /= np.nanmax(self.throughput)
+            self.throughput = continuum / ref_flux # shape = (n_orders, n_dets, n_pixels)
             
     
         '''

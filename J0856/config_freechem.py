@@ -8,7 +8,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_6'
+prefix = 'freechem_7'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -31,7 +31,7 @@ config_data = {
         # 'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
         # 'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
-        
+        'T_std': 17_000, # i Sco = B3V
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
@@ -227,28 +227,30 @@ n_iter_before_update = 400
 
 # generate a .txt version of this file
 
-# print all global variables
-save_attrs = ['config_data', 'magnitudes', 'free_params',
-              'd_pc', 'parallax', 'parallax_mas',
-              'constant_params', 'scale_flux', 'scale_err',
-              'apply_high_pass_filter', 'cloud_mode', 'cloud_species', 
-              'mask_lines', 'chem_mode', 'chem_kwargs', 'rayleigh_species', 
-              'continuum_opacities', 'line_species',
-               'cov_mode', 'cov_kwargs', 'PT_mode', 'PT_kwargs',
-               'const_efficiency_mode', 'sampling_efficiency',
-               'evidence_tolerance', 'n_live_points', 'n_iter_before_update']
+if __name__ == '__main__':
+    # print all global variables
+    save_attrs = ['config_data', 'magnitudes', 'free_params',
+                'd_pc', 'parallax', 'parallax_mas',
+                'constant_params', 'scale_flux', 'scale_err',
+                'apply_high_pass_filter', 'cloud_mode', 'cloud_species', 
+                'mask_lines', 'chem_mode', 'chem_kwargs', 'rayleigh_species', 
+                'continuum_opacities', 'line_species',
+                'cov_mode', 'cov_kwargs', 'PT_mode', 'PT_kwargs',
+                'const_efficiency_mode', 'sampling_efficiency',
+                'evidence_tolerance', 'n_live_points', 'n_iter_before_update']
 
-import json
 
-# get path of this file
-path = pathlib.Path(__file__).parent.absolute()
-outpath = path / f'{prefix[2:]}data'
-outfile = outpath / file_params.replace('.py', '.txt')
-outfile.parent.mkdir(parents=True, exist_ok=True)
+    import json
 
-with open(outfile, 'w') as file:
-    file.write(json.dumps({key: globals()[key] for key in save_attrs}))
-    
-# # test loading the file with json
-with open(outfile, 'r') as file:
-    load_file = json.load(file)
+    # get path of this file
+    path = pathlib.Path(__file__).parent.absolute()
+    outpath = path / f'{prefix[2:]}data'
+    outfile = outpath / file_params.replace('.py', '.txt')
+    outfile.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(outfile, 'w') as file:
+        file.write(json.dumps({key: globals()[key] for key in save_attrs}))
+        
+    # # test loading the file with json
+    with open(outfile, 'r') as file:
+        load_file = json.load(file)

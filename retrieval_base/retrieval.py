@@ -71,7 +71,8 @@ def pre_processing(conf, conf_data):
         
     d_spec.load_molecfit_transm(
         conf_data['file_molecfit_transm'], 
-        tell_threshold=conf_data['tell_threshold']
+        tell_threshold=conf_data['tell_threshold'],
+        T=conf_data['T_std'],
         )
     # d_std_spec.load_molecfit_transm(
     #     conf_data['file_std_molecfit_transm'], 

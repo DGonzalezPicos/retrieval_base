@@ -370,8 +370,8 @@ class Retrieval:
             # apply linear slope --> not implemented...
             if self.Param.params.get('f_slope') is not None:
                 f_slope = self.Param.params.get('f_slope')
-                print(f'Applying slope of {f_slope:.2e} to the model spectrum...')
-                print(f'Shape of the model spectrum: {self.m_spec[w_set].flux.shape}')
+                # print(f'Applying slope of {f_slope:.2e} to the model spectrum...')
+                # print(f'Shape of the model spectrum: {self.m_spec[w_set].flux.shape}')
 
                 # m_spec_flux_flat = self.m_spec[w_set].flux.flatten()
                 # slope = np.linspace(1-f_slope, 1+f_slope, m_spec_flux_flat.size)

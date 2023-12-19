@@ -579,6 +579,7 @@ class DataSpectrum(Spectrum):
             # thr_nans = np.isnan(self.throughput)
             # zeros = self.throughput <= 0.0
             # self.throughput[thr_nans | zeros] = 1.0
+            self.throughput /= self.wave_transm # IMPORTANT: divide by wavelength to get per nm
             self.throughput /= np.nanmax(self.throughput)
             
     

@@ -250,6 +250,9 @@ if __name__ == '__main__':
     with open(outfile, 'w') as file:
         file.write(json.dumps({key: globals()[key] for key in save_attrs}))
         
+    file.close()
+    print(f'Wrote {outfile}')
+        
     # # # test loading the file with json
     # with open(outfile, 'r') as file:
     #     load_file = json.load(file)

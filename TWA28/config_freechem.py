@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_4'
+prefix = 'freechem_5'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -27,7 +27,8 @@ config_data = {
         'pwv': 5.0, 
         # adjust values below....!
         'ra': 165.541335, 'dec': -34.50990, 'mjd': 60007.30274557,
-        
+        'T_std': 17_000, # i Sco = B3V,
+
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
@@ -58,7 +59,7 @@ free_params = {
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(3.0,5.5), r'$\log\ g$'], 
+    'log_g': [(2.5,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
@@ -95,6 +96,7 @@ free_params = {
     'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
     'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
     'T_0': [(2000,10000), r'$T_0$'], 
+    'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
 }
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -140,22 +142,23 @@ continuum_opacities=['H2-H2', 'H2-He', 'H-']
 line_species = [
     'CO_high', 
     'CO_36_high', 
-    'CO_28', 
+    # 'CO_28', 
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    'H2O_181',
-    
+    # 'H2O_181',
+    'HF_main_iso', 
+
+
     'Na_allard',
-    # 'Mg',
-    # 'K',
     'Ca',
     'Ti',
+    # 'Mg',
+    # 'K',
     # 'Fe',
     
     # 'CN_main_iso',
     # 'HCN_main_iso',
-    'HF_main_iso', 
     # 'HCl_main_iso',
     # 'H2S_ExoMol_main_iso',
     
@@ -168,9 +171,9 @@ species_to_plot_VMR = [
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 
-    'Na','Ca', 'Ti', 
-    # 'Mg', 'K', 'Fe',
-    'HF',
+    # 'H2O_181',
+    'HF'
+    'Na', 'Ca', 'Ti',
     ]
 
 ####################################################################################
@@ -189,11 +192,9 @@ cov_kwargs = dict(
     # in memory
     prepare_for_covariance = True
 )
-
 if free_params.get('log_l') is not None:
-    cov_kwargs['max_separation'] = \
-        cov_kwargs['trunc_dist'] * 10**free_params['log_l'][0][1]
-
+    cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']
+    cov_kwargs['max_separation'] *= 10**free_params['log_l'][0][1]
 ####################################################################################
 # PT parameters
 ####################################################################################
@@ -219,3 +220,33 @@ sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
 n_iter_before_update = 400
+
+# generate a .txt version of this file
+
+if __name__ == '__main__':
+    # print all global variables
+    save_attrs = ['config_data', 'magnitudes', 'free_params',
+                'd_pc', 'parallax', 'parallax_mas',
+                'constant_params', 'scale_flux', 'scale_err',
+                'apply_high_pass_filter', 'cloud_mode', 'cloud_species', 
+                'mask_lines', 'chem_mode', 'chem_kwargs', 'rayleigh_species', 
+                'continuum_opacities', 'line_species',
+                'cov_mode', 'cov_kwargs', 'PT_mode', 'PT_kwargs',
+                'const_efficiency_mode', 'sampling_efficiency',
+                'evidence_tolerance', 'n_live_points', 'n_iter_before_update']
+
+
+    import json
+
+    # get path of this file
+    path = pathlib.Path(__file__).parent.absolute()
+    outpath = path / f'{prefix[2:]}data'
+    outfile = outpath / file_params.replace('.py', '.txt')
+    outfile.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(outfile, 'w') as file:
+        file.write(json.dumps({key: globals()[key] for key in save_attrs}))
+        
+    # # # test loading the file with json
+    # with open(outfile, 'r') as file:
+    #     load_file = json.load(file)

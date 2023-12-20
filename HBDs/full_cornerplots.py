@@ -20,7 +20,7 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_8', TWA28='freechem_4', J0856='freechem_3')
+targets = dict(J1200='freechem_8', TWA28='freechem_4', J0856='freechem_8')
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 # targets = dict(J0856='freechem_3')
 
@@ -67,11 +67,11 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
      
     chem.C12C13_posterior = posterior_12CO / posterior_13CO
     
-    posterior_C18O = chem.mass_fractions_posterior['CO_28'].mean(axis=-1) / atomic_mass['C18O']
-    chem.C18OC16O_posterior = posterior_12CO / posterior_C18O
+    # posterior_C18O = chem.mass_fractions_posterior['CO_28'].mean(axis=-1) / atomic_mass['C18O']
+    # chem.C18OC16O_posterior = posterior_12CO / posterior_C18O
     
-    posterior_H2O_181 = chem.mass_fractions_posterior['H2O_181'].mean(axis=-1) / atomic_mass['H2O_181']
-    chem.H216OH218O_posterior = chem.mass_fractions_posterior['H2O_pokazatel_main_iso'].mean(axis=-1) / posterior_H2O_181
+    # posterior_H2O_181 = chem.mass_fractions_posterior['H2O_181'].mean(axis=-1) / atomic_mass['H2O_181']
+    # chem.H216OH218O_posterior = chem.mass_fractions_posterior['H2O_pokazatel_main_iso'].mean(axis=-1) / posterior_H2O_181
     
     print(f'Posterior shape = {posterior.shape}')
     samples = np.array([CO, FeH, chem.C12C13_posterior, 

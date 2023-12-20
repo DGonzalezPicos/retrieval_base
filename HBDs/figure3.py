@@ -21,7 +21,7 @@ out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
 targets = dict(J1200='freechem_8', 
                TWA28='freechem_4', 
-               J0856='freechem_3'
+               J0856='freechem_8'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 

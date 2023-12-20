@@ -8,7 +8,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_7'
+prefix = 'freechem_9'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -46,9 +46,7 @@ magnitudes = {
 ####################################################################################
 # Model parameters
 ####################################################################################
-# solar to jupiter radii
-r_star = 0.29
-r_jup = r_star / 0.10045
+
 # Define the priors of the parameters
 free_params = {
 
@@ -147,11 +145,11 @@ continuum_opacities=['H2-H2', 'H2-He', 'H-']
 line_species = [
     'CO_high', 
     'CO_36_high', 
-    'CO_28', 
+    # 'CO_28', 
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    'H2O_181',
+    # 'H2O_181',
     'HF_main_iso', 
 
 
@@ -175,7 +173,8 @@ species_to_plot_VMR = [
     'HF',
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'H2O_181',
+    '12CO', '13CO', 'H2O', 
+    # 'H2O_181',
     'HF'
     'Na', 'Ca', 'Ti',
     ]
@@ -197,8 +196,8 @@ cov_kwargs = dict(
     prepare_for_covariance = True
 )
 if free_params.get('log_l') is not None:
-    cov_kwargs['max_separation'] = \
-        cov_kwargs['trunc_dist'] * 10**free_params['log_l'][0][1]
+    cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']
+    cov_kwargs['max_separation'] *= 10**free_params['log_l'][0][1]
 ####################################################################################
 # PT parameters
 ####################################################################################
@@ -251,6 +250,6 @@ if __name__ == '__main__':
     with open(outfile, 'w') as file:
         file.write(json.dumps({key: globals()[key] for key in save_attrs}))
         
-    # # test loading the file with json
-    with open(outfile, 'r') as file:
-        load_file = json.load(file)
+    # # # test loading the file with json
+    # with open(outfile, 'r') as file:
+    #     load_file = json.load(file)

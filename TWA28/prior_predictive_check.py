@@ -12,12 +12,12 @@ if 'dgonzalezpi' in os.getcwd():
     # disable interactive plotting
     matplotlib.use('Agg')
 
-run_pre_processing = True
+run_pre_processing = False
 if run_pre_processing:
     for conf_data_i in conf.config_data.values():
         pre_processing(conf=conf, conf_data=conf_data_i)
 
-run_prior_predictive_check = False
+run_prior_predictive_check = True
 
 # if run_prior_predictive_check:
     

@@ -376,10 +376,35 @@ class Retrieval:
 
                 # m_spec_flux_flat = self.m_spec[w_set].flux.flatten()
                 # slope = np.linspace(1-f_slope, 1+f_slope, m_spec_flux_flat.size)
-                slope = np.linspace(1-f_slope, 1+f_slope, np.prod(self.m_spec[w_set].flux.shape))
-                self.m_spec[w_set].flux = self.m_spec[w_set].flux * slope.reshape(self.m_spec[w_set].flux.shape)
+                # slope = np.linspace(1-f_slope, 1+f_slope, np.prod(self.m_spec[w_set].flux.shape))
+                wave_full = np.linspace(self.d_spec[w_set].wave.min(), 
+                                        self.d_spec[w_set].wave.max(), 
+                                        2 * self.d_spec[w_set].wave.size) 
+                slope_full = np.linspace(1-f_slope, 1+f_slope, wave_full.size)
+                self.slope = np.interp(self.d_spec[w_set].wave, wave_full, slope_full)
                 
-        
+                # # check slope
+                # import matplotlib.pyplot as plt
+                # fig, ax = plt.subplots(1,1, figsize=(8,6))
+                # n_orders, n_dets, _ = self.m_spec[w_set].flux.shape
+                # for order in range(n_orders):
+                #     for det in range(n_dets):
+                #         ax.plot(self.d_spec[w_set].wave[order,det], self.m_spec[w_set].flux[order,det], 
+                #                 color='k', alpha=0.6)
+
+                        
+                        
+                #         ax.plot(self.d_spec[w_set].wave[order,det], 
+                #                 self.m_spec[w_set].flux[order,det] * self.slope[order,det],
+                #                 color='blue')
+                #         ax.plot(self.d_spec[w_set].wave[order,det], 
+                #                 self.slope[order,det] * np.nanmedian(self.m_spec[w_set].flux[order,det]), 
+                #                 color='limegreen')
+                # plt.show()
+                
+                # apply slope
+                self.m_spec[w_set].flux = self.m_spec[w_set].flux * self.slope
+
             if (self.m_spec[w_set].flux <= 0).any() or \
                 (~np.isfinite(self.m_spec[w_set].flux)).any():
                 # Something is wrong in the spectrum

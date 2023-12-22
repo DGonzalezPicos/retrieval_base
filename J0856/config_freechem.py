@@ -35,7 +35,7 @@ config_data = {
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
+        'log_P_range': (-5,2), 'n_atm_layers': 50, 
         }, 
     }
 
@@ -70,10 +70,10 @@ free_params = {
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
-    'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
+    # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
 
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
@@ -97,7 +97,7 @@ free_params = {
     'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
     'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
     'T_0': [(2000,10000), r'$T_0$'], 
-    'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
+    # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
 }
 
 # Constants to use if prior is not given
@@ -167,10 +167,8 @@ line_species = [
     
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 
+    '12CO', '13CO', 'H2O', 'HF',
     'Na','Ca', 'Ti', 
-    # 'Mg', 'K', 'Fe',
-    'HF',
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 
@@ -221,7 +219,7 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 200
+n_live_points = 1000
 n_iter_before_update = 400
 
 # generate a .txt version of this file

@@ -7,8 +7,8 @@ atomic_mass = {k:v[2] for k,v in Chemistry.species_info.items()}
 import numpy as np
 import matplotlib.pyplot as plt
 # set fontsize to 16
-# plt.rcParams.update({'font.size': 16})
 plt.style.use('/home/dario/phd/retrieval_base/HBDs/my_science.mplstyle')
+plt.rcParams.update({'font.size': 16})
 
 import pathlib
 import pickle
@@ -20,7 +20,10 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_8', TWA28='freechem_4', J0856='freechem_8')
+targets = dict(J1200='freechem_9', 
+               TWA28='freechem_5', 
+               J0856='freechem_8'
+               )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(1,2, figsize=(8,4))
@@ -53,7 +56,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
     # logg = params['log_g']
     C_O = chem.CO_posterior
-    
+    print(f'C/O = {C_O.mean():.2f} +- {C_O.std():.2f}')
     posterior_12CO = chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / atomic_mass['12CO']
     posterior_13CO = chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / atomic_mass['13CO']
      

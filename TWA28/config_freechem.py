@@ -43,9 +43,7 @@ magnitudes = {
 ####################################################################################
 # Model parameters
 ####################################################################################
-# solar to jupiter radii
-r_star = 0.29
-r_jup = r_star / 0.10045
+
 # Define the priors of the parameters
 free_params = {
 
@@ -69,10 +67,10 @@ free_params = {
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
-    'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
+    # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
 
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
@@ -164,10 +162,8 @@ line_species = [
     
     ]
 species_to_plot_VMR = [
-    '12CO', '13CO', 'H2O', 
+    '12CO', '13CO', 'H2O', 'HF',
     'Na','Ca', 'Ti', 
-    # 'Mg', 'K', 'Fe',
-    'HF',
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 
@@ -235,7 +231,7 @@ if __name__ == '__main__':
                 'const_efficiency_mode', 'sampling_efficiency',
                 'evidence_tolerance', 'n_live_points', 'n_iter_before_update']
 
-
+    import pathlib
     import json
 
     # get path of this file

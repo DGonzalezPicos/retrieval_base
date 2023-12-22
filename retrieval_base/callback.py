@@ -175,6 +175,7 @@ class CallBack:
                     LogLike=self.LogLike[w_set], 
                     Cov=self.Cov[w_set], 
                     species_to_plot=self.species_to_plot_CCF, 
+                    rv_CCF=np.arange(-1000,1000+1e-6,1.), 
                     prefix=self.prefix, 
                     w_set=w_set, 
                     )

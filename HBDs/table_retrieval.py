@@ -7,12 +7,13 @@ from tabulate import tabulate
 
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
-targets = dict(J1200='freechem_8', 
-               TWA28='freechem_4', 
-               J0856='freechem_3')
+targets = dict(J1200='freechem_9', 
+               TWA28='freechem_5', 
+               J0856='freechem_8'
+               )
 
 # Load priors of the parameters
-config_path = '/home/dario/phd/retrieval_base/J0856/retrieval_outputs/freechem_3/test_data/'
+config_path = f"/home/dario/phd/retrieval_base/J0856/retrieval_outputs/{targets['J0856']}/test_data/"
 config_file = f'{config_path}config_freechem.txt'
 with open(config_file, 'r') as file:
     load_file = json.load(file)

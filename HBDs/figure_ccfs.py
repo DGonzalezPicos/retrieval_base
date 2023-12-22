@@ -18,8 +18,10 @@ import pandas as pd
 import json
 import copy
 
-targets = dict(J1200='freechem_8', TWA28='freechem_4', J0856='freechem_3')
-targets = dict(J0856='freechem_3')
+targets = dict(J1200='freechem_9', 
+               TWA28='freechem_5', 
+               J0856='freechem_8'
+               )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 w_set = 'K2166'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
@@ -34,7 +36,7 @@ species_plot_info = {k:v[0] for k,v in Chemistry.species_plot_info.items()}
 fig, ax = plt.subplots(len(line_species_to_plot), 1, figsize=(8,6), sharex=True)
 
 # rv = np.arange(-900,900+1e-6,1.)
-rv = np.arange(-200., 200., 4.)
+# rv = np.arange(-200., 200., 1.)
 for t, (target, retrieval_id) in enumerate(targets.items()):
     data_path = pathlib.Path('/home/dario/phd/retrieval_base') / f'{target}'
     print(data_path)
@@ -54,7 +56,13 @@ for t, (target, retrieval_id) in enumerate(targets.items()):
         ax[i].plot(rv, acf, color=colors[target], alpha=0.8, lw=1.5, ls='--')
 
 for i, axi in enumerate(ax):
-    axi.set_xlim(rv.min(), rv.max())
-    axi.text(s=Chemistry.species_plot_info[line_species_to_plot[i]][1], x=0.05, y=0.8,
+    ylim = axi.get_ylim()
+    axi.set(ylabel=('CCF [SNR]'), ylim=(ylim[0], ylim[1]*1.1))
+    # axi.set_xlim(rv.min(), rv.max())
+    axi.set_xlim(-500, 500)
+    axi.text(s=Chemistry.species_plot_info[line_species_to_plot[i]][1], x=0.05, y=0.7,
              transform=axi.transAxes, fontsize=22, weight='bold')
+    
+ax[-1].set(xlabel='$\Delta$RV [km/s]')
+fig.savefig(out_path / f'figure_ccfs.pdf', bbox_inches='tight')
 plt.show()

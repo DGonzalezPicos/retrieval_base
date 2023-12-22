@@ -172,8 +172,7 @@ species_to_plot_VMR = [
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 
-    # 'H2O_181',
-    'HF'
+    'HF',
     'Na', 'Ca', 'Ti',
     ]
 
@@ -220,7 +219,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 1000
-n_iter_before_update = 400
+n_iter_before_update = 1200
 
 # generate a .txt version of this file
 

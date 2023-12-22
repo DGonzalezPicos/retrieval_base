@@ -959,11 +959,13 @@ def fig_species_contribution(d_spec,
         label='Complete'
         )
         
-    for species_h in Chem.species_info.keys():
+    print('** figures.fig_species_contribution**')
+    print(f'- species to plot: {species_to_plot}')
+    for species_h in list(Chem.species_info.keys()):
         
         if species_h not in species_to_plot:
             continue
-
+        print(f'--> Plotting {species_h}')
         # Check if the line species was included in the model
         line_species_h = Chem.read_species_info(species_h, info_key='pRT_name')
         if line_species_h in Chem.line_species:

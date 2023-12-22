@@ -22,13 +22,14 @@ out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
 targets = dict(J1200='freechem_9', 
                TWA28='freechem_5', 
-               J0856='freechem_8'
+               J0856='freechem_9'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 # targets = dict(J0856='freechem_3')
 
 # fig, ax = plt.subplots(1,1, figsize=(8,6))
 # create custom legend
+max_samples = 6000
 for i, (target, retrieval_id) in enumerate(targets.items()):
     data_path = pathlib.Path('/home/dario/phd/retrieval_base') / f'{target}'
     print(data_path)
@@ -76,7 +77,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # posterior_H2O_181 = chem.mass_fractions_posterior['H2O_181'].mean(axis=-1) / atomic_mass['H2O_181']
     # chem.H216OH218O_posterior = chem.mass_fractions_posterior['H2O_pokazatel_main_iso'].mean(axis=-1) / posterior_H2O_181
     
-    print(f'Posterior shape = {posterior.shape}')
+    # print(f'Posterior shape = {posterior.shape}')
     samples = np.array([CO, FeH, chem.C12C13_posterior, 
                         # np.log10(chem.C18OC16O_posterior), 
                         # np.log10(chem.H216OH218O_posterior),
@@ -92,8 +93,11 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                         # a, l,
                         ]).T
 
-    
+    # if samples.shape[0] > max_samples:
+    #     print(f'Number of samples = {samples.shape[0]}. Taking only {max_samples} samples.')
 
+    #     samples = samples[:max_samples,:]
+    print(f'Number of samples = {samples.shape[0]}')
     # Make cornerplot with logg and Fe/H
     labels = [r'C/O', r'[Fe/H]', r'$^{12}$C/$^{13}$C',
                 # r'log C$^{16}$O/C$^{18}$O', r'log H$_2^{16}$O/H$_2^{18}$O', 

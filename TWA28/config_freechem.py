@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_5'
+prefix = 'freechem_6'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -94,7 +94,7 @@ free_params = {
     'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
     'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
     'T_0': [(2000,10000), r'$T_0$'], 
-    'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
+    # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
 }
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -167,8 +167,7 @@ species_to_plot_VMR = [
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 
-    # 'H2O_181',
-    'HF'
+    'HF',
     'Na', 'Ca', 'Ti',
     ]
 
@@ -214,8 +213,8 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 200
-n_iter_before_update = 400
+n_live_points = 1000
+n_iter_before_update = 1200
 
 # generate a .txt version of this file
 

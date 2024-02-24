@@ -278,7 +278,7 @@ class CallBack:
         if self.Param.chem_mode == 'free':
 
             for species_i, (line_species_i, _, mass_i, COH_i) in self.Chem.species_info.items():
-                print(f'line_species_i = {line_species_i}', f'mass_i = {mass_i}', f'COH_i = {COH_i}')
+                # print(f'line_species_i = {line_species_i}', f'mass_i = {mass_i}', f'COH_i = {COH_i}')
                 # Add to the parameters to be plotted
                 if (line_species_i in self.Chem.line_species) and \
                     (f'log_{species_i}' in self.Param.param_keys):
@@ -311,6 +311,30 @@ class CallBack:
                     (self.bestfit_params, [self.Chem.CO, self.Chem.CH])
                 )
                 included_params.extend(['C/O', 'C/H'])
+                
+                if 'log_13CO' in self.Param.param_keys:
+                    posterior_12CO = self.Chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / 28.0
+                    posterior_13CO = self.Chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / 29.0
+                    
+                    # chem.C12C13_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_36_high'],axis=-1)
+                    self.Chem.C12C13_posterior = posterior_12CO / posterior_13CO
+                    self.posterior = np.concatenate(
+                        (self.posterior, self.Chem.C12C13_posterior[:,None]), axis=1
+                        )
+                    self.Param.param_keys = np.concatenate(
+                        (self.Param.param_keys, ['C12C13'])
+                    )
+                    
+                    self.param_labels = np.concatenate(
+                        (self.param_labels, [r'$^{12}$C/$^{13}$C'])
+                        )
+                    self.bestfit_params = np.concatenate(
+                        (self.bestfit_params, [np.median(self.Chem.C12C13_posterior)])
+                    )
+                    included_params.append('C12C13')
+                    
+                    
+            
 
         elif self.Param.chem_mode in ['eqchem', 'fastchem', 'SONORAchem']:
             

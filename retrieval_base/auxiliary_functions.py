@@ -162,9 +162,9 @@ def CCF(d_spec,
             d_wave_ij = d_spec.wave[i,j,mask_ij]
             d_flux_ij = d_spec.flux[i,j,mask_ij]
 
-            if LogLike is not None:
-                # Scale the data instead of the models
-                d_flux_ij /= LogLike.f[i,j]
+            # if LogLike is not None:
+            #     # Scale the data instead of the models
+            #     d_flux_ij /= LogLike.f[i,j]
             
             if Cov is not None:
                 # Use the covariance matrix to weigh 
@@ -173,7 +173,8 @@ def CCF(d_spec,
 
             if m_spec_wo_species is not None:
                 # Perform the cross-correlation on the residuals
-                d_flux_ij -= m_spec_wo_species.flux[i,j,mask_ij]
+                d_flux_ij -= LogLike.f[:,i,j] @ m_spec_wo_species.flux[:,i,j,mask_ij]
+                # d_flux_ij -= np.sum(LogLike.f[:,i,j,None] * m_spec_wo_species.flux[:,i,j,mask_ij],axis=0)
 
             # Function to interpolate the observed spectrum
             d_interp_func = interp1d(

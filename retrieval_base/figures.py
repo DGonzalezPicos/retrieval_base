@@ -243,8 +243,8 @@ def fig_bestfit_model(
     ylim_spec = (np.nanmean(d_spec.flux)-3*np.nanstd(d_spec.flux), 
                  np.nanmean(d_spec.flux)+3*np.nanstd(d_spec.flux)
                 )
-    ylim_res = (1/4*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
-                1/4*(ylim_spec[1]-np.nanmean(d_spec.flux))
+    ylim_res = (1/5*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
+                1/5*(ylim_spec[1]-np.nanmean(d_spec.flux))
                 )
 
     for i in range(d_spec.n_orders):
@@ -999,14 +999,22 @@ def fig_species_contribution(d_spec,
             pRT_atm_h = pRT_atm_species[species_h]
             
             # Residual between data and model w/o species_i
-            d_res = d_spec.flux/LogLike.f[:,:,None] - m_spec_h.flux
-
+            # d_res = d_spec.flux/LogLike.f[:,:,None] - m_spec_h.flux
+            
+            print(f' Shape of d_spec.flux: {d_spec.flux.shape}')
+            print(f' Shape of LogLike.f: {LogLike.f.shape}')
+            print(f' Shape of m_spec_h.flux: {m_spec_h.flux.shape}')
+            
+            d_res = d_spec.flux - np.sum((LogLike.f[:,:,:,None] * m_spec_h.flux), axis=0)
+            print(f'Shape of d_res: {d_res.shape}')
+            
             low_pass_d_res = np.nan * np.ones_like(d_res)
             low_pass_d_res[d_spec.mask_isfinite] = gaussian_filter1d(d_res[d_spec.mask_isfinite], sigma=300)
             d_res -= low_pass_d_res
 
             # Residual between complete model and model w/o species_i
-            m_res = m_spec.flux - m_spec_h.flux
+            m_res = np.sum((LogLike.f[:,:,:,None] * m_spec_species[species_h].flux), axis=0) 
+            m_res -= np.sum((LogLike.f[:,:,:,None] * m_spec.flux), axis=0)
             #m_res = m_spec_h.flux_only
 
             low_pass_m_res = np.nan * np.ones_like(m_res)

@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_4'
+prefix = 'jwst_5'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -34,8 +34,8 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a': [(-2,0.3), r'$\log\ a$'], 
-    'log_l': [(-1, 1.0), r'$\log\ l$'], 
+    'log_a': [(-2,0.6), r'$\log\ a$'], 
+    'log_l': [(-1,0.5), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -52,10 +52,10 @@ free_params = {
     # Chemistry
     'log_12CO': [(-8,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-10,-2), r'$\log\ \mathrm{^{13}CO}$'], 
-    # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
+    'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-8,-2), r'$\log\ \mathrm{H_2O}$'], 
-    # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'],
 
     # PT profile
@@ -64,11 +64,11 @@ free_params = {
     'dlnT_dlnP_2': [(0.01,0.40), r'$\nabla_{T,2}$'], 
     # 'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
     # 'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
-    'dlnT_dlnP_3': [(-0.05,0.25), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.05,0.25), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_3': [(-0.05,0.40), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_4': [(-0.05,0.40), r'$\nabla_{T,4}$'],
     'T_0': [(3000,10000), r'$T_0$'], 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    'res': [(2000, 4000), r'$\mathrm{R}$'], # instrumental spectral resolution
+    'res': [(1500, 5000), r'$\mathrm{R}$'], # instrumental spectral resolution
 }
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -85,7 +85,7 @@ constant_params = {
 
     # PT profile
     'log_P_knots': [-6., -3., -1., 1., 2.], 
-    'N_knots': 10,
+    'N_knots': 7,
 }
 
 ####################################################################################
@@ -118,11 +118,11 @@ continuum_opacities=['H2-H2', 'H2-He', 'H-']
 line_species = [
     'CO_high', 
     'CO_36_high', 
-    # 'CO_28', 
+    'CO_28', 
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    # 'H2O_181',
+    'H2O_181',
     'CO2_main_iso',
     ]
 species_to_plot_VMR = [

@@ -9,6 +9,7 @@ rank = comm.Get_rank()
 import numpy as np
 import copy
 
+import matplotlib.pyplot as plt
 import pymultinest
 
 from .spectrum import DataSpectrum, Photometry
@@ -249,6 +250,56 @@ def pre_processing(conf, conf_data):
 
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
+    
+    
+def prior_check(conf, fig_name=None):
+    ret = Retrieval(conf=conf, evaluation=False)
+    order, det = 0,0 
+
+    fig = plt.figure(figsize=(16,8), layout='constrained')
+    gs0 = fig.add_gridspec(4,5, hspace=0.00, wspace=0.1)
+
+    ax = fig.add_subplot(gs0[:3,:3])
+    plt.setp(ax.get_xticklabels(), visible=False)
+    ax_res = fig.add_subplot(gs0[3,:3], sharex=ax)
+    ax_PT = fig.add_subplot(gs0[:4,3:])
+
+    for ix, i in enumerate([0.0, 0.5, 1.0]):
+        ret.Param(i * np.ones(len(ret.Param.param_keys)))
+
+            
+        sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+        print(sample)
+
+        ln_L = ret.PMN_lnL_func()
+        print(f'ln_L = {ln_L:.4e}\n')
+        x = ret.d_spec['G395H_F290LP'].wave[order,det]
+
+        f = ret.LogLike['G395H_F290LP'].f[order,det]
+        if ix == 0:
+            mask = ret.d_spec['G395H_F290LP'].mask_isfinite[order,det]
+            ax.plot(x, ret.d_spec['G395H_F290LP'].flux[order,det], lw=1.5, label='data', color='k')
+            
+        model = f * ret.m_spec['G395H_F290LP'].flux[order,det]
+        ax.plot(x, model, lw=2.5, label=f'logL = {ln_L:.3e}', ls='--')
+
+        res = ret.d_spec['G395H_F290LP'].flux[order,det] - model
+        res[~mask] = np.nan
+        ax_res.plot(x, res, lw=2.5)
+
+        ax_PT.plot(ret.PT.temperature, ret.PT.pressure, lw=4.5)
+            
+    ax_PT.set(yscale='log', ylim=(ret.PT.pressure.max(), ret.PT.pressure.min()),
+            ylabel='Pressure [bar]', xlabel='Temperature [K]')
+    ax_res.axhline(0, color='k', ls='-', alpha=0.9) 
+    ax.set(ylabel=f"Flux [{ret.d_spec['G395H_F290LP'].flux_unit}]")
+    ax_res.set(xlabel='Wavelength [nm]', ylabel='Residuals')
+    ax.legend()
+    if fig_name:
+        fig.savefig(fig_name)
+        print(f'--> Saved {fig_name}')
+    plt.close(fig)
+    # plt.show()
 
 class Retrieval:
 
@@ -306,13 +357,14 @@ class Retrieval:
                         self.Param.cov_mode, 
                         separation=self.d_spec[w_set].separation[i,j], 
                         err_eff=self.d_spec[w_set].err_eff[i,j], 
-                        flux_eff=self.d_spec[w_set].flux_eff[i,j], 
+                        # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
                         **self.conf.cov_kwargs
                         )
 
             del self.d_spec[w_set].separation, 
             del self.d_spec[w_set].err_eff, 
-            del self.d_spec[w_set].flux_eff
+            if hasattr(self.d_spec[w_set], 'flux_eff'):
+                del self.d_spec[w_set].flux_eff
             del self.d_spec[w_set].err
 
             self.LogLike[w_set] = LogLikelihood(
@@ -993,7 +1045,7 @@ class Retrieval:
     def PMN_run(self):
         
         # Pause the process to not overload memory on start-up
-        time.sleep(1.5*rank*len(self.d_spec))
+        time.sleep(0.2*rank*len(self.d_spec))
 
         # Run the MultiNest retrieval
         pymultinest.run(

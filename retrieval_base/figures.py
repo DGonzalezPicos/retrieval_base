@@ -236,8 +236,8 @@ def fig_bestfit_model(
         is_new_fig = False
 
     ylabel_spec = r'$F_\lambda$'+'\n'+r'$(\mathrm{erg\ s^{-1}\ cm^{-2}\ nm^{-1}})$'
-    if d_spec.high_pass_filtered:
-        ylabel_spec = r'$F_\lambda$ (high-pass filtered)'
+    # if d_spec.high_pass_filtered:
+    #     ylabel_spec = r'$F_\lambda$ (high-pass filtered)'
 
     # Use the same ylim, also for multiple axes
     ylim_spec = (np.nanmean(d_spec.flux)-4*np.nanstd(d_spec.flux), 
@@ -438,11 +438,11 @@ def fig_PT(PT,
            bestfit_color='C1', 
            ylabel=r'$P\ \mathrm{(bar)}$', 
            yticks=np.logspace(-6, 2, 9), 
-           xlim=(1,3500), 
+           xlim=(0,None), 
            show_ln_L_penalty=False, 
            prefix=None, 
-           contr_em_color={'J1226':'b', 'K2166':'r'}, 
-           opa_cloud_color={'J1226':'b', 'K2166':'r'}, 
+           contr_em_color={'J1226':'b', 'K2166':'r', 'G395H_F290LP':'g'}, 
+           opa_cloud_color={'J1226':'b', 'K2166':'r', 'G395H_F290LP':'g'}, 
            ):
     
     if ax_PT is None:

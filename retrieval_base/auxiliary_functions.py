@@ -5,7 +5,7 @@ import wget
 
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy.ndimage import gaussian_filter1d, generic_filter
+from scipy.ndimage import gaussian_filter1d, generic_filter, median_filter
 
 from astropy.io import fits
 
@@ -342,3 +342,32 @@ def blackbody(wave_cm, T):
     '''
     bb = 2*nc.h*nc.c**2/wave_cm**5 * 1/(np.exp(nc.h*nc.c/(wave_cm*nc.kB*T))-1)
     return bb
+
+def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=True):
+    '''Sigma clipping algorithm.
+    '''
+    
+    assert fun in ['median', 'gaussian'], 'fun must be either "median" or "gaussian"'
+    
+    mask_clip = np.isnan(y)
+    for i in range(max_iter):
+        std_y = np.nanstd(y[~mask_clip])
+        # mean_y = np.nanmean(y[~mask_clip])
+        # use median filter 
+        
+        if fun == 'median':
+            mean_y = median_filter(y, width, mode='nearest')
+        elif fun == 'gaussian':
+            mean_y = gaussian_filter1d(y, width / 2.355, mode='nearest')        
+        
+        clip = np.abs(y - mean_y) > sigma * std_y
+        if np.nansum(clip) == 0:
+            break
+        mask_clip = np.logical_or(mask_clip, clip)
+        
+    if replace:
+        y[mask_clip] = np.nan
+        return y
+    
+    
+    return mask_clip

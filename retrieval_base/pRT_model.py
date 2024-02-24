@@ -55,7 +55,8 @@ class pRT_model:
         self.d_wave          = d_spec.wave
         self.d_mask_isfinite = d_spec.mask_isfinite
         self.d_resolution    = d_spec.resolution
-        self.apply_high_pass_filter = d_spec.high_pass_filtered
+        # self.apply_high_pass_filter = d_spec.high_pass_filtered
+        self.apply_high_pass_filter = False
         self.w_set = d_spec.w_set
 
         self.line_species = line_species
@@ -284,7 +285,7 @@ class pRT_model:
             flux_i = np.where(np.isfinite(atm_i.flux), atm_i.flux, 0.0)
             overflow = np.log(atm_i.flux) > 20
             atm_i.flux[overflow] = 0.0
-            
+            # [erg cm^{-2} s^{-1} Hz^{-1}] -> [erg cm^{-2} s^{-1} cm^{-1}]
             flux_i = atm_i.flux *  nc.c / (wave_i**2)
 
             # Convert [erg cm^{-2} s^{-1} cm^{-1}] -> [erg cm^{-2} s^{-1} nm^{-1}]

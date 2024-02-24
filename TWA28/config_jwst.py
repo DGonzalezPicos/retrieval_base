@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_2'
+prefix = 'jwst_3'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -34,8 +34,8 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a': [(-2,0.2), r'$\log\ a$'], 
-    'log_l': [(-2,-0.1), r'$\log\ l$'], 
+    'log_a': [(-2,0.4), r'$\log\ a$'], 
+    'log_l': [(-2,-0.01), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -56,6 +56,7 @@ free_params = {
     
     'log_H2O': [(-8,-2), r'$\log\ \mathrm{H_2O}$'], 
     # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'],
 
     # PT profile
     'dlnT_dlnP_0': [(0.01, 0.40), r'$\nabla_{T,0}$'], 
@@ -67,6 +68,7 @@ free_params = {
     'dlnT_dlnP_4': [(-0.05,0.25), r'$\nabla_{T,4}$'],
     'T_0': [(3000,10000), r'$T_0$'], 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
+    'res': [(2000, 4000), r'$\mathrm{R}$'], # instrumental spectral resolution
 }
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -120,12 +122,14 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     # 'H2O_181',
+    'CO2_main_iso',
     ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O',
+    'CO2'
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 
+    '12CO', '13CO', 'H2O', 'CO2',
     ]
 
 ####################################################################################

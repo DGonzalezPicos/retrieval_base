@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_5'
+prefix = 'jwst_6'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -35,7 +35,7 @@ free_params = {
 
     # Uncertainty scaling
     'log_a': [(-2,0.6), r'$\log\ a$'], 
-    'log_l': [(-1,0.5), r'$\log\ l$'], 
+    'log_l': [(-1,0.2), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -50,12 +50,13 @@ free_params = {
     'rv': [(-40,40), r'$v_\mathrm{rad}$'], 
     
     # Chemistry
-    'log_12CO': [(-8,-2), r'$\log\ \mathrm{^{12}CO}$'], 
+    'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-10,-2), r'$\log\ \mathrm{^{13}CO}$'], 
     'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
+    'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'],
     
-    'log_H2O': [(-8,-2), r'$\log\ \mathrm{H_2O}$'], 
-    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
+    # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'],
 
     # PT profile
@@ -85,7 +86,7 @@ constant_params = {
 
     # PT profile
     'log_P_knots': [-6., -3., -1., 1., 2.], 
-    'N_knots': 7,
+    'N_knots': 5,
 }
 
 ####################################################################################
@@ -119,10 +120,10 @@ line_species = [
     'CO_high', 
     'CO_36_high', 
     'CO_28', 
-    # 'CO_27', 
+    'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    'H2O_181',
+    # 'H2O_181',
     'CO2_main_iso',
     ]
 species_to_plot_VMR = [
@@ -130,7 +131,11 @@ species_to_plot_VMR = [
     'CO2'
     ]
 species_to_plot_CCF = [
-    '12CO', '13CO', 'H2O', 'CO2',
+    '12CO', '13CO', 'H2O',
+    'CO2',
+    'H2O_181', 
+    'C18O', 
+    'C17O'
     ]
 
 ####################################################################################

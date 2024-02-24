@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.optimize import nnls
+
 
 class LogLikelihood:
 
@@ -34,19 +36,16 @@ class LogLikelihood:
         ln_L_penalty : float
             Penalty term to be added to the total log-likelihood. Default is 0.       
         '''
-        
-        #self.m_spec = m_spec
-
-        # Set up the total log-likelihood for this model 
-        # (= 0 if there is no penalty)
-        #self.ln_L = ln_L_penalty
         self.ln_L = 0
         self.chi_squared = 0
 
+        N_knots = m_spec.flux.shape[0]
         # Array to store the linear flux-scaling terms
-        self.f    = np.ones((self.d_spec.n_orders, self.d_spec.n_dets))
+        self.f    = np.ones((N_knots, self.d_spec.n_orders, self.d_spec.n_dets))
         # Array to store the uncertainty-scaling terms
         self.beta = np.ones((self.d_spec.n_orders, self.d_spec.n_dets))
+        
+        self.m_flux = np.nan * np.ones_like(self.d_spec.flux)
         
         if evaluation:
             # Arrays to store log-likelihood and chi-squared per pixel in
@@ -66,9 +65,10 @@ class LogLikelihood:
                 # Number of data points
                 N_ij = mask_ij.sum()
                 if N_ij == 0:
+                    print(f'No data points in order {i}, detector {j}')
                     continue
 
-                m_flux_ij = m_spec.flux[i,j,mask_ij]
+                m_flux_ij = m_spec.flux[:,i,j,mask_ij] # shape must be (n_knots, n_orders, n_dets, n_pixels)
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err
 
@@ -80,27 +80,36 @@ class LogLikelihood:
 
                 # Get the log of the determinant (log prevents over/under-flow)
                 Cov[i,j].get_logdet()
-
+                
                 # Set up the log-likelihood for this order/detector
                 # Chi-squared and optimal uncertainty scaling terms still need to be added
                 ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
-
-                # Without linear scaling of detectors
-                apply_flux_scaling = self.scale_flux and (not (i==0 and j==0) or not is_first_w_set)
-                if self.scale_flux_all: # override previous setting
-                    apply_flux_scaling = True
-                # if self.scale_flux and (not (i==0 and j==0) or not is_first_w_set):
-                if apply_flux_scaling:
-                    # Only scale the flux relative to the first order/detector
-
-                    # Scale the model flux to minimize the chi-squared error
-                    m_flux_ij_scaled, f_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij, Cov[i,j])
-                    res_ij = (d_flux_ij - m_flux_ij_scaled)
-
+                
+                
+                 # Without linear scaling of detectors
+                f_ij = 1
+                if N_knots > 1:
+                    f_ij = self.solve_linear(d_flux_ij, m_flux_ij, Cov[i,j])
+                    m_flux_ij_scaled = f_ij @ m_flux_ij
+                    
                 else:
                     # Without linear scaling of detectors
-                    f_ij = 1
+                    apply_flux_scaling = self.scale_flux and (not (i==0 and j==0) or not is_first_w_set)
+                    if self.scale_flux_all: # override previous setting
+                        apply_flux_scaling = True
+                    # if self.scale_flux and (not (i==0 and j==0) or not is_first_w_set):
+                    if apply_flux_scaling:
+                        # Only scale the flux relative to the first order/detector
 
+                        # Scale the model flux to minimize the chi-squared error
+                        m_flux_ij_scaled, f_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij[0], Cov[i,j])
+                    else:
+                        # No additional flux scaling
+                        m_flux_ij_scaled = m_flux_ij[0]
+                        
+                
+                # print(f'FLux scaling {f_ij}')
+                res_ij = (d_flux_ij - m_flux_ij_scaled)
                 # Chi-squared for the optimal linear scaling
                 inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
                 chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
@@ -124,8 +133,10 @@ class LogLikelihood:
                 self.chi_squared += np.nansum((res_ij/d_err_ij)**2)
 
                 # Store in the arrays
-                self.f[i,j]    = f_ij
+                self.f[:,i,j] = f_ij
+            
                 self.beta[i,j] = beta_ij
+                self.m_flux[i,j,mask_ij] = m_flux_ij_scaled
 
                 if evaluation:
                     # Following Peter McGill's advice
@@ -208,3 +219,15 @@ class LogLikelihood:
         # Find uncertainty scaling that maximizes log-likelihood
         beta_ij = np.sqrt(1/N_ij * chi_squared_ij_scaled)
         return beta_ij
+    
+    @staticmethod
+    def solve_linear(data, M, Cov):
+        '''Solution to the linear system of equations M^T * cov^-1 * M * f = M^T * cov^-1 * d
+        using scipy.nnls. This is a non-negative least-squares solver.
+        '''
+        lhs = np.dot(M, Cov.solve(M.T))
+        # Right-hand side
+        rhs = np.dot(M, Cov.solve(data))
+        # Solve
+        f, _ = nnls(lhs, rhs)
+        return f

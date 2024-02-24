@@ -240,11 +240,11 @@ def fig_bestfit_model(
     #     ylabel_spec = r'$F_\lambda$ (high-pass filtered)'
 
     # Use the same ylim, also for multiple axes
-    ylim_spec = (np.nanmean(d_spec.flux)-4*np.nanstd(d_spec.flux), 
-                 np.nanmean(d_spec.flux)+4*np.nanstd(d_spec.flux)
+    ylim_spec = (np.nanmean(d_spec.flux)-3*np.nanstd(d_spec.flux), 
+                 np.nanmean(d_spec.flux)+3*np.nanstd(d_spec.flux)
                 )
-    ylim_res = (1/3*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
-                1/3*(ylim_spec[1]-np.nanmean(d_spec.flux))
+    ylim_res = (1/4*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
+                1/4*(ylim_spec[1]-np.nanmean(d_spec.flux))
                 )
 
     for i in range(d_spec.n_orders):
@@ -281,8 +281,11 @@ def fig_bestfit_model(
                     r'$(\chi^2_\mathrm{red}$ (w/o $\sigma$-model)$=' + \
                     '{:.2f}'.format(LogLike.chi_squared_red) + \
                     r')$'
+                    
+            m_flux = LogLike.m_flux[i,j]
             ax_spec.plot(
-                d_spec.wave[i,j], LogLike.f[i,j]*m_spec.flux[i,j], 
+                # d_spec.wave[i,j], LogLike.f[i,j] @ m_spec.flux[i,j], 
+                d_spec.wave[i,j], m_flux,
                 c=bestfit_color, lw=1, label=label
                 )
             if m_spec.flux_envelope is not None:
@@ -293,7 +296,8 @@ def fig_bestfit_model(
             if mask_ij.any():
 
                 # Plot the residuals
-                res_ij = d_spec.flux[i,j] - LogLike.f[i,j]*m_spec.flux[i,j]
+                # res_ij = d_spec.flux[i,j] - LogLike.f[i,j] @ m_spec.flux[i,j]
+                res_ij = d_spec.flux[i,j] - m_flux
                 ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
                 ax_res.plot(
                     [d_spec.wave[i,j].min(), d_spec.wave[i,j].max()], 
@@ -770,7 +774,7 @@ def fig_residual_ACF(d_spec,
 
     # Create a spectrum residual object
     d_spec_res = copy.deepcopy(d_spec)
-    d_spec_res.flux = (d_spec.flux - m_spec.flux*LogLike.f[:,:,None])
+    d_spec_res.flux = (d_spec.flux - m_flux)
 
     # Cross-correlate the residuals with itself
     rv, ACF, _, _ = af.CCF(

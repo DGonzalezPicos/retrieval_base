@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_3'
+prefix = 'jwst_4'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -34,8 +34,8 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a': [(-2,0.4), r'$\log\ a$'], 
-    'log_l': [(-2,-0.01), r'$\log\ l$'], 
+    'log_a': [(-2,0.3), r'$\log\ a$'], 
+    'log_l': [(-1, 1.0), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -85,12 +85,13 @@ constant_params = {
 
     # PT profile
     'log_P_knots': [-6., -3., -1., 1., 2.], 
+    'N_knots': 10,
 }
 
 ####################################################################################
 #
 ####################################################################################
-
+# N_knots = 5
 scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
@@ -175,7 +176,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 100
-n_iter_before_update = 50
+n_iter_before_update = 1
 
 # generate a .txt version of this file
 

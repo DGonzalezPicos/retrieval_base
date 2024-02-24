@@ -12,6 +12,7 @@ from petitRADTRANS.retrieval import rebin_give_width as rgw
 
 import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
+from retrieval_base.spline_model import SplineModel
 
 class Spectrum:
 
@@ -846,6 +847,27 @@ class ModelSpectrum(Spectrum):
         self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
         if rebin:
             self.rebin(d_wave, replace_wave_flux=True)
+            
+    def spline_decomposition(self, N=9, replace_flux=False):
+                
+        # Create spline
+        sm = SplineModel(N_knots=N, spline_degree=3)
+        
+        if len(self.flux.shape) == 1:
+            self.sflux = sm(self.flux) # spline flux with shape (N, flux.size)
+        
+        else:
+            self.sflux = np.nan * np.ones((N, *self.flux.shape))
+            
+            for order in range(self.flux.shape[0]):
+                for det in range(self.flux.shape[1]):
+                    self.sflux[:, order, det] = sm(self.flux[order, det])
+                 
+        if replace_flux:
+            self.flux = self.sflux
+            return self.flux   
+        
+        return self.sflux
 
 class Photometry:
 

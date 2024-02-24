@@ -275,12 +275,13 @@ def prior_check(conf, fig_name=None):
         print(f'ln_L = {ln_L:.4e}\n')
         x = ret.d_spec['G395H_F290LP'].wave[order,det]
 
-        f = ret.LogLike['G395H_F290LP'].f[order,det]
+        # f = ret.LogLike['G395H_F290LP'].f[:,order,det]
         if ix == 0:
             mask = ret.d_spec['G395H_F290LP'].mask_isfinite[order,det]
             ax.plot(x, ret.d_spec['G395H_F290LP'].flux[order,det], lw=1.5, label='data', color='k')
             
-        model = f * ret.m_spec['G395H_F290LP'].flux[order,det]
+        # model = f @ ret.m_spec['G395H_F290LP'].flux[order,det]
+        model = ret.LogLike['G395H_F290LP'].m_flux[order,det]
         ax.plot(x, model, lw=2.5, label=f'logL = {ln_L:.3e}', ls='--')
 
         res = ret.d_spec['G395H_F290LP'].flux[order,det] - model
@@ -488,6 +489,19 @@ class Retrieval:
                 get_contr=self.CB.active, 
                 get_full_spectrum=self.evaluation, 
                 )
+            # Spline decomposition
+            self.N_knots = self.Param.params.get('N_knots', 1)
+            if self.N_knots > 1:
+                # print(f'Performing spline decomposition with {self.N_knots} knots...')
+                # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
+                self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
+                # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')
+            else:
+                # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
+                self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
+            
+            
+            
             # apply linear slope --> not implemented...
             if self.Param.params.get('f_slope') is not None:
                 f_slope = self.Param.params.get('f_slope')
@@ -525,10 +539,10 @@ class Retrieval:
                 # apply slope
                 self.m_spec[w_set].flux = self.m_spec[w_set].flux * self.slope
 
-            if (self.m_spec[w_set].flux <= 0).any() or \
-                (~np.isfinite(self.m_spec[w_set].flux)).any():
-                # Something is wrong in the spectrum
-                return -np.inf
+            # if (self.m_spec[w_set].flux <= 0).any() or \
+            #     (~np.isfinite(self.m_spec[w_set].flux)).any():
+            #     # Something is wrong in the spectrum
+            #     return -np.inf
 
             for i in range(self.d_spec[w_set].n_orders):
                 for j in range(self.d_spec[w_set].n_dets):

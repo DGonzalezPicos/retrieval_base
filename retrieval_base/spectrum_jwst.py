@@ -64,8 +64,8 @@ class SpectrumJWST:
             
             # [erg/s/cm2/Hz] --> [erg/s/cm2/cm]
             wave_cm = self.wave * 1e-7
-            self.flux *= nc.c / wave_cm**2
-            self.err  *= nc.c / wave_cm**2
+            self.flux *= nc.c / (wave_cm**2)
+            self.err  *= nc.c / (wave_cm**2)
             
             # [erg/s/cm2/cm] --> [erg/s/cm2/nm]
             self.flux *= 1e-7

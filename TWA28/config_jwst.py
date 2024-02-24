@@ -7,12 +7,12 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_1'
+prefix = 'jwst_2'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
     'G395H_F290LP': {
-        'w_set': 'G395H_F290LP', 'wave_range': (4000, 5300), 
+        'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
@@ -21,7 +21,7 @@ config_data = {
         'sigma_clip': 3,
         'sigma_clip_width': 50, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
+        'log_P_range': (-6,2), 'n_atm_layers': 30, 
         }, 
     }
 
@@ -34,8 +34,8 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a': [(-1,0.5), r'$\log\ a$'], 
-    'log_l': [(-2,-0.8), r'$\log\ l$'], 
+    'log_a': [(-2,0.2), r'$\log\ a$'], 
+    'log_l': [(-2,-0.1), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -58,12 +58,12 @@ free_params = {
     # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
-    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.05,0.30), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_0': [(0.01, 0.40), r'$\nabla_{T,0}$'], 
+    'dlnT_dlnP_1': [(0.01,0.40), r'$\nabla_{T,1}$'], 
+    'dlnT_dlnP_2': [(0.01,0.40), r'$\nabla_{T,2}$'], 
     # 'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
     # 'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
-    'dlnT_dlnP_3': [(0.00,0.25), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_3': [(-0.05,0.25), r'$\nabla_{T,3}$'], 
     'dlnT_dlnP_4': [(-0.05,0.25), r'$\nabla_{T,4}$'],
     'T_0': [(3000,10000), r'$T_0$'], 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
@@ -82,7 +82,7 @@ constant_params = {
     'vsini':1.,
 
     # PT profile
-    'log_P_knots': [-5., -3., -1., 1., 2.], 
+    'log_P_knots': [-6., -3., -1., 1., 2.], 
 }
 
 ####################################################################################

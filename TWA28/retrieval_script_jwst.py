@@ -17,7 +17,7 @@ for key in ['data', 'plots']:
     # print(f'--> Created {conf.prefix}{key}/')
     
     
-cwd = pathlib.Path(__file__).parent.absolute()
+cwd = str(pathlib.Path(__file__).parent.absolute())
 if 'dgonzalezpi' in cwd:
     print('Running on Snellius.. disabling interactive plotting')
     import matplotlib

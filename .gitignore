@@ -19,6 +19,9 @@ DENIS_J0255/Gibbs_kernel.ipynb
 DENIS_J0255/nod_pair_comparison.ipynb
 DENIS_J0255/retrieval_comparison.ipynb
 DENIS_J0255/retrieval_comparison.py
+# ignore all files in folder HBDs
+HBDs
+GQLupB
 
 */lem*
 HBDs/dataframe10-k.csv
@@ -28,3 +31,8 @@ J0856/CN_opacity_comparison.png
 .gitignore
 J0856/retrieval_evaluation.sh
 */data_old/
+*ames*
+data/
+*.fits
+*.pdf
+*.zip

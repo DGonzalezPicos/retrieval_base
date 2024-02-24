@@ -46,7 +46,12 @@ def fig_flux_calib_2MASS(wave,
                          order_wlen_ranges=None, 
                          prefix=None, 
                          w_set='', 
+                         fig_label='',
+                         T_star=None,
+                         T_companion=None,
                          ):
+    
+    fig_label = f'_{fig_label}' if fig_label != '' else fig_label
 
     fig, ax = plt.subplots(
         figsize=(10,4), nrows=2, sharex=True, 
@@ -80,6 +85,18 @@ def fig_flux_calib_2MASS(wave,
                        label=labels[2] if i == 0 else None)
             ax[1].plot(wave[mask_wave], poly_model[mask_wave], c='magenta', lw=1)
             
+    wave_cm = wave*1e-7
+    if T_star is not None:
+        bb = af.blackbody(wave_cm, T_star)
+        bb /= np.nanmedian(bb)
+        bb *= np.nanmedian(calib_flux)
+        ax[0].plot(wave, bb, c='orange', lw=3, alpha=0.3, label=r'$B_\lambda(T_\mathrm{star})$')
+    if T_companion is not None:
+        bb = af.blackbody(wave_cm, T_companion)
+        bb /= np.nanmedian(bb)
+        bb *= np.nanmedian(calib_flux)
+        ax[0].plot(wave, bb, c='brown', lw=3, alpha=0.3, label=r'$B_\lambda(T_\mathrm{companion})$')
+            
     ax[0].set(#ylim=(0, 1.5*np.nanpercentile(calib_flux, q=95)), 
               ylabel=r'$F_\lambda\ (\mathrm{erg\ s^{-1}\ cm^{-2}\ nm^{-1}})$', 
               )
@@ -98,7 +115,7 @@ def fig_flux_calib_2MASS(wave,
     ax[1].legend(loc='upper left')
 
     if prefix is not None:
-        plt.savefig(prefix+f'plots/flux_calib_tell_corr_{w_set}.pdf')
+        plt.savefig(prefix+f'plots/flux_calib_tell_corr_{w_set}{fig_label}.pdf')
     #plt.show()
     plt.close(fig)
 
@@ -124,11 +141,12 @@ def fig_flux_calib_2MASS(wave,
                 c='k', lw=0.5, alpha=0.4
                 )
             ax[i].plot(wave[mask_wave], calib_flux[mask_wave], c='k', lw=0.5)
+            # ax[i].plot(wave[mask_wave], poly_model[mask_wave], c='magenta', lw=1)
 
             ax[i].set(xlim=(wave_min, wave_max))
         
         if prefix is not None:
-            plt.savefig(prefix+f'plots/tell_corr_zoom_ins_{w_set}.pdf')
+            plt.savefig(prefix+f'plots/tell_corr_zoom_ins_{w_set}{fig_label}.pdf')
         #plt.show()
         plt.close(fig)
 
@@ -959,13 +977,13 @@ def fig_species_contribution(d_spec,
         label='Complete'
         )
         
-    print('** figures.fig_species_contribution**')
-    print(f'- species to plot: {species_to_plot}')
+    # print('** figures.fig_species_contribution **')
+    # print(f'- species to plot: {species_to_plot}')
     for species_h in list(Chem.species_info.keys()):
         
         if species_h not in species_to_plot:
             continue
-        print(f'--> Plotting {species_h}')
+        # print(f'--> Plotting {species_h}')
         # Check if the line species was included in the model
         line_species_h = Chem.read_species_info(species_h, info_key='pRT_name')
         if line_species_h in Chem.line_species:

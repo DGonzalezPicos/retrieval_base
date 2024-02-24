@@ -550,46 +550,50 @@ class DataSpectrum(Spectrum):
         
         ref_flux = 1.0 # default
         if T > 0.0:
-            # Retrieve a Planck spectrum for the given temperature
+            print(f'[load_molecfit_transm] Calculating blackbody spectrum at {T}...')
+            # Retrieve a Planck spectrum for the given temperature in units of [erg nm^-1]
             ref_flux = 2*nc.h*nc.c**2/(self.wave**5) * \
                         1/(np.exp(nc.h*nc.c/(self.wave*nc.kB*T)) - 1)
         
-        if len(molecfit) == 2:
-            self.wave_transm, self.transm = molecfit
-            mask = (self.mask_isfinite & mask_high_transm)
-            p = np.polyfit(
-                self.wave[mask].flatten(), 
-                (self.flux/self.transm / ref_flux)[mask].flatten(), deg=2
-                )
-            self.throughput = np.poly1d(p)(self.wave)
+        # if len(molecfit) == 2:
+        #     self.wave_transm, self.transm = molecfit
+        #     mask = (self.mask_isfinite & mask_high_transm)
+        #     p = np.polyfit(
+        #         self.wave[mask].flatten(), 
+        #         (self.flux/self.transm / ref_flux)[mask].flatten(), deg=2
+        #         )
+        #     self.throughput = np.poly1d(p)(self.wave)
         
         
         
         
-        if len(molecfit) == 3:
-            print(f'[load_molecfit_transm] Using continuum from Molecfit...')
-            self.wave_transm, self.transm, self.cont_transm = np.loadtxt(file_transm, unpack=True)
-            
-            
-            self.transm_err = self.err/np.where(self.transm<=0.0, 1.0, self.transm) 
+        # if len(molecfit) == 3:
+        assert len(molecfit) == 3
+        print(f'[load_molecfit_transm] Using continuum from Molecfit...')
+        self.wave_transm, self.transm, self.cont_transm = np.loadtxt(file_transm, unpack=True)
+        
+        
+        self.transm_err = self.err/np.where(self.transm<=0.0, 1.0, self.transm) 
 
-            print(f'Loaded wave, transm and continuum from molecfit with shapes:')
-            print(f'wave: {self.wave_transm.shape}')
-            print(f'transm: {self.transm.shape}')
-            print(f'cont: {self.cont_transm.shape}')
+        print(f'Loaded wave, transm and continuum from molecfit with shapes:')
+        print(f'wave: {self.wave_transm.shape}')
+        print(f'transm: {self.transm.shape}')
+        print(f'cont: {self.cont_transm.shape}')
 
-            mask_high_transm = (self.transm > tell_threshold)
-            mask = (self.mask_isfinite & mask_high_transm)
-            
-            # self.throughput = (self.flux / self.transm / self.cont_transm)[mask]
-            # self.throughput = self.cont_transm.reshape(np.shape(self.wave))
-            # thr_nans = np.isnan(self.throughput)
-            # zeros = self.throughput <= 0.0
-            # self.throughput[thr_nans | zeros] = 1.0
-            # self.throughput /= self.wave_transm # IMPORTANT: divide by wavelength to get per nm
-            continuum = (self.cont_transm / self.wave_transm).reshape(np.shape(self.wave))
-            # self.throughput /= np.nanmax(self.throughput)
-            self.throughput = continuum / ref_flux # shape = (n_orders, n_dets, n_pixels)
+        mask_high_transm = (self.transm > tell_threshold)
+        mask = (self.mask_isfinite & mask_high_transm)
+        
+        # self.throughput = (self.flux / self.transm / self.cont_transm)[mask]
+        # self.throughput = self.cont_transm.reshape(np.shape(self.wave))
+        # thr_nans = np.isnan(self.throughput)
+        # zeros = self.throughput <= 0.0
+        # self.throughput[thr_nans | zeros] = 1.0
+        # self.throughput /= self.wave_transm # IMPORTANT: divide by wavelength to get per nm
+        continuum = (self.cont_transm / self.wave_transm).reshape(np.shape(self.wave))
+        # self.throughput /= np.nanmax(self.throughput)
+        # Divide by blackbody curve
+        self.throughput = continuum / ref_flux # shape = (n_orders, n_dets, n_pixels)
+        # self.throughput = np.ones_like(self.flux) # testing...
             
     
         '''
@@ -649,7 +653,8 @@ class DataSpectrum(Spectrum):
             replace_flux_err=True, 
             prefix=None, 
             file_skycalc_transm=None, # deprecated
-            molecfit=True # deprecated: always True
+            molecfit=True, # deprecated: always True
+            fig_label='',
             ):
 
 
@@ -686,6 +691,7 @@ class DataSpectrum(Spectrum):
 
         # Conversion factor turning [counts] -> [erg s^-1 cm^-2 nm^-1]
         calib_factor = photom_2MASS.fluxes[filter_2MASS][0] / broadband_flux_CRIRES
+        setattr(self, 'calib_factor', calib_factor) # save the calibration factor
 
         # Apply the flux calibration
         calib_flux = tell_corr_flux * calib_factor

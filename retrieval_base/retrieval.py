@@ -46,56 +46,124 @@ def pre_processing(conf, conf_data):
         wave_range=conf_data['wave_range'], 
         w_set=conf_data['w_set'], 
         )
-    d_spec.clip_det_edges()
     
-    # d_std_spec = DataSpectrum(
-    #     wave=None, 
-    #     flux=None, 
-    #     err=None, 
-    #     ra=conf_data['ra_std'], 
-    #     dec=conf_data['dec_std'], 
-    #     mjd=conf_data['mjd_std'], 
-    #     pwv=conf_data['pwv'], 
-    #     file_target=conf_data['file_std'], 
-    #     file_wave=conf_data['file_std'], 
-    #     slit=conf_data['slit'], 
-    #     wave_range=conf_data['wave_range'], 
-    #     w_set=conf_data['w_set'], 
-    #     )
-    # d_std_spec.clip_det_edges()
-
-    # Instance of the Photometry class for the given magnitudes
-    photom_2MASS = Photometry(magnitudes=conf.magnitudes)
-
-   
-        
+    n_edge_pixels = conf_data.get('n_edge_pixels', 30)
+    d_spec.clip_det_edges(n_edge_pixels)
     d_spec.load_molecfit_transm(
-        conf_data['file_molecfit_transm'], 
-        tell_threshold=conf_data['tell_threshold'],
-        T=conf_data['T_std'],
-        )
-    # d_std_spec.load_molecfit_transm(
-    #     conf_data['file_std_molecfit_transm'], 
-    #     T=conf_data['T_std'], 
-    #     tell_threshold=conf_data['tell_threshold']
-    #     )
-    
-    # #d_spec.transm = np.copy(d_std_spec.transm)
-    # d_spec.throughput = np.copy(d_spec.throughput)
+            conf_data['file_molecfit_transm'], 
+            tell_threshold=conf_data['tell_threshold'],
+            T=conf_data['T_std'],
+            )
+
     assert hasattr(d_spec, 'throughput'), 'No throughput found in `d_spec`'
+    
+    
+    
+    if hasattr(conf, 'magnitudes_std'):
+        print(f'Using magnitudes_std: {conf.magnitudes_std}')
+        d_std_spec = DataSpectrum(
+            wave=None, 
+            flux=None, 
+            err=None, 
+            ra=conf_data['ra_std'], 
+            dec=conf_data['dec_std'], 
+            mjd=conf_data['mjd_std'], 
+            pwv=conf_data['pwv'], 
+            file_target=conf_data['file_std'], 
+            file_wave=conf_data['file_std'], 
+            slit=conf_data['slit'], 
+            wave_range=conf_data['wave_range'], 
+            w_set=conf_data['w_set'], 
+            )
+        d_std_spec.clip_det_edges(n_edge_pixels)
+        
+        
+        photom_2MASS = Photometry(magnitudes=conf.magnitudes_std)
+        d_std_spec.load_molecfit_transm(
+            conf_data['file_std_molecfit_transm'],
+            T=conf_data['T_std'],
+            tell_threshold=conf_data['tell_threshold']
+            )
+        d_std_spec.flux_calib_2MASS(
+            photom_2MASS, 
+            conf_data['filter_2MASS'], 
+            tell_threshold=conf_data['tell_threshold'], 
+            prefix=conf.prefix, 
+            molecfit=True,
+            fig_label='std',
+            )
+        calib_factor = d_std_spec.calib_factor
+        if conf_data.get('off_axis_scale'):
+            calib_factor *= conf_data['off_axis_scale']
+        
+        d_spec.flux_uncorr = (d_spec.flux / d_spec.throughput) * calib_factor
+        # Apply flux calibration to data
+        avoid_zeros = d_spec.transm*d_spec.throughput > 0.01
+        d_spec.flux = np.divide(
+            d_spec.flux,
+            d_spec.transm*d_spec.throughput,
+            where=avoid_zeros
+            )
+        d_spec.err = np.divide(
+            d_spec.err,
+            d_spec.transm*d_spec.throughput,
+            where=avoid_zeros
+            )
+        
+        # Replace deep telluric lines with nans
+        d_spec.flux[d_spec.transm < conf_data['tell_threshold']] = np.nan
+        d_spec.update_isfinite_mask(d_spec.flux)
 
-    # del d_std_spec
+        # Multiply by the calibration factor
+        d_spec.flux *= calib_factor
+        d_spec.err *= calib_factor
+        
+        # check if key "file_off_axis_correction.dat" in config_data
+        if conf_data.get('file_offaxis_correction'):
+            print(f'Applying off-axis correction from {conf_data["file_offaxis_correction"]}')
+            # load off-axis correction
+            wave_offaxis, corr_offaxis = np.loadtxt(conf_data['file_offaxis_correction'], unpack=True)
+            assert np.all(wave_offaxis == d_spec.wave), 'Wave grids do not match'
+            # apply correction
+            d_spec.flux /= corr_offaxis
+            d_spec.err /= corr_offaxis
+        # Off-axis blaze function correction
+        
+        # Plot the flux calibration
+        figs.fig_flux_calib_2MASS(
+            wave=d_spec.wave, 
+            calib_flux=d_spec.flux, 
+            calib_flux_wo_tell_corr=d_spec.flux_uncorr, 
+            #calib_flux_wo_tell_corr=self.flux*calib_factor, 
+            #transm=self.transm/self.throughput, 
+            transm=d_spec.transm, 
+            poly_model=d_spec.throughput, 
+            wave_2MASS=photom_2MASS.transm_curves[conf_data['filter_2MASS']].T[0], 
+            transm_2MASS=photom_2MASS.transm_curves[conf_data['filter_2MASS']].T[1], 
+            tell_threshold=conf_data['tell_threshold'], 
+            order_wlen_ranges=d_spec.order_wlen_ranges, 
+            prefix=conf.prefix, 
+            w_set=d_spec.w_set, 
+            T_star=4200.,
+            T_companion=2600.,
+            )
+        
+        
+    else:
 
-    # Apply flux calibration using the 2MASS broadband magnitude
-    d_spec.flux_calib_2MASS(
-        photom_2MASS, 
-        conf_data['filter_2MASS'], 
-        tell_threshold=conf_data['tell_threshold'], 
-        prefix=conf.prefix, 
-        file_skycalc_transm=conf_data['file_skycalc_transm'], 
-        molecfit=(conf_data.get('file_molecfit_transm') is not None)
-        )
-    del photom_2MASS
+        # Instance of the Photometry class for the given magnitudes
+        photom_2MASS = Photometry(magnitudes=conf.magnitudes)
+
+
+        # Apply flux calibration using the 2MASS broadband magnitude
+        d_spec.flux_calib_2MASS(
+            photom_2MASS, 
+            conf_data['filter_2MASS'], 
+            tell_threshold=conf_data['tell_threshold'], 
+            prefix=conf.prefix, 
+            molecfit=True,
+            )
+        del photom_2MASS
     
     # Mask emission lines in the target spectrum
     if len(conf.mask_lines) > 0:

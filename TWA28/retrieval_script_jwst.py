@@ -8,6 +8,12 @@ from retrieval_base.parameters import Parameters
 
 import config_jwst as conf
 
+
+# create output directory
+
+for key in ['data', 'plots']:
+    pathlib.Path(f'{conf.prefix}{key}/').mkdir(parents=True, exist_ok=True)
+    # print(f'--> Created {conf.prefix}{key}/')
 if __name__ == '__main__':
 
     # Instantiate the parser

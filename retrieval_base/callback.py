@@ -180,26 +180,26 @@ class CallBack:
                     w_set=w_set, 
                     )
             
-                # Plot the auto-correlation of the residuals
-                figs.fig_residual_ACF(
-                    d_spec=self.d_spec[w_set], 
-                    m_spec=self.m_spec[w_set], 
-                    LogLike=self.LogLike[w_set], 
-                    Cov=self.Cov[w_set], 
-                    bestfit_color=self.bestfit_color, 
-                    prefix=self.prefix, 
-                    w_set=w_set, 
-                    )
+                # # Plot the auto-correlation of the residuals --> Disable for now...
+                # figs.fig_residual_ACF(
+                #     d_spec=self.d_spec[w_set], 
+                #     m_spec=self.m_spec[w_set], 
+                #     LogLike=self.LogLike[w_set], 
+                #     Cov=self.Cov[w_set], 
+                #     bestfit_color=self.bestfit_color, 
+                #     prefix=self.prefix, 
+                #     w_set=w_set, 
+                #     )
 
-                # Plot the covariance matrices
-                all_cov = figs.fig_cov(
-                    LogLike=self.LogLike[w_set], 
-                    Cov=self.Cov[w_set], 
-                    d_spec=self.d_spec[w_set], 
-                    cmap=self.envelope_cmap, 
-                    prefix=self.prefix, 
-                    w_set=w_set, 
-                    )
+                # Plot the covariance matrices --> Disable for now...
+                # all_cov = figs.fig_cov(
+                #     LogLike=self.LogLike[w_set], 
+                #     Cov=self.Cov[w_set], 
+                #     d_spec=self.d_spec[w_set], 
+                #     cmap=self.envelope_cmap, 
+                #     prefix=self.prefix, 
+                #     w_set=w_set, 
+                #     )
 
             # Plot the abundances in a corner-plot
             self.fig_abundances_corner()

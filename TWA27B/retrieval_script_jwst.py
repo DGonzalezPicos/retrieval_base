@@ -40,7 +40,8 @@ if args.pre_processing:
     spec = SpectrumJWST(file=f'jwst/{target}_g395h-f290lp.fits')
     spec.split_grism(4155., keep=1)
     # spec.sigma_clip(sigma=3, width=5, max_iter=5, fun='median')
-    spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
+    spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median', 
+                    fig_name=f'{conf.prefix}plots/sigma_clip_{spec.w_set}.pdf')
     spec.reshape(1,1)
     spec.prepare_for_covariance()
 

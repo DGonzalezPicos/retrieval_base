@@ -416,4 +416,10 @@ class Parameters:
             low, high = self.param_priors[key_i]
             cube[i] = high
         return cube
+    
+    # @property
+    # def random_sample(self):
+    #     '''Get a random sample from the prior.'''
+    #     cube = np.random.rand(self.n_params)
+    #     return self.__call__(cube)
         

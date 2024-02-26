@@ -96,11 +96,41 @@ class SpectrumJWST:
         
         return self
     
-    def sigma_clip(self, array=None, sigma=3, width=5, max_iter=5, fun='median'):
+    def sigma_clip(self, array=None, sigma=3, width=5, max_iter=5, fun='median', fig_name=False):
         '''Sigma clip the spectrum'''
         array = self.flux if array is None else array
         clip = af.sigma_clip(array, sigma=sigma, width=width, 
                               max_iter=max_iter, fun=fun, replace=False)
+        
+        if fig_name:
+            fig, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=True,
+                                   gridspec_kw={'top': 0.95, 'bottom': 0.1,
+                                                'hspace':0.1,
+                                                'left': 0.08, 'right': 0.98})
+            # ax.plot(self.wave, self.flux, label='Original', color='k')
+            ax[0].plot(self.wave, np.where(~clip, np.nan, self.flux), 
+                    label=f'Clipped sigma={sigma:.1f}', color='r')
+            ax[0].fill_between(self.wave, np.where(~clip, np.nan, self.flux-self.err),
+                            np.where(~clip, np.nan, self.flux+self.err), alpha=0.15, color='r', lw=0)
+            
+            f = np.where(clip, np.nan, self.flux)
+            for axi in ax:
+                axi.plot(self.wave, f, label='Data', color='k')
+                axi.fill_between(self.wave, f-self.err, f+self.err, alpha=0.15, color='k', lw=0)
+                axi.plot(self.wave, np.where(~clip, np.nan, self.flux), color='r')
+                axi.legend()
+            ax[0].set(ylabel=f'Flux [{self.flux_unit}]')
+            
+            wave_range = (np.min(self.wave), np.max(self.wave))
+            xpad = 0.002 * (wave_range[1] - wave_range[0])
+            xlim = (wave_range[0]-xpad, wave_range[1]+xpad)
+            
+            ax[1].set(xlabel=f'Wavelength [{self.wave_unit}]', 
+                      ylabel=f'Flux [{self.flux_unit}]', xlim=xlim)
+            fig.savefig(fig_name)
+            print(f'--> Saved {fig_name}')
+            plt.close(fig)
+        
         print(f'Clipped {np.sum(clip)} points')
         self.flux[clip] = np.nan
         return self

@@ -88,7 +88,7 @@ class Chemistry:
         'TiO': ('C13', r'TiO'), 
         'VO': ('C15', r'VO'), 
         'AlO': ('C14', r'AlO'), 
-        'CO2': ('C9', r'CO$_2$'),
+        'CO2': ('magenta', r'CO$_2$'),
 
         'HF': ('C14', r'HF'), 
         'HCl': ('C15', r'HCl'), 
@@ -105,7 +105,7 @@ class Chemistry:
         'Mg': ('C24', r'Mg'), 
         'Si': ('C25', r'Si'),
         #'He': ('C22', r'He'), 
-        'CN': ('magenta', r'CN'),
+        'CN': ('purple', r'CN'),
         # ions
         'CaII': ('C26', r'CaII'),
         'FeII': ('C27', r'FeII'),

@@ -25,6 +25,11 @@ HBDs/dataframe10-k.csv
 .gitignore
 TWA28/SPHINX_M_models.pdf
 J0856/CN_opacity_comparison.png
-.gitignore
 J0856/retrieval_evaluation.sh
 */data_old/
+data/ames*
+data/companion_data
+*.fits
+*.zip
+*.pdf
+*.Vega

@@ -66,12 +66,15 @@ class Chemistry:
         }
 
     species_plot_info = {
-        '12CO': ('C2', r'$^{12}$CO'), 
-        '13CO': ('chocolate', r'$^{13}$CO'), 
+        # '12CO': ('green', r'$^{12}$CO'), 
+        '12CO': ('#71bf6e', r'$^{12}$CO'),
+        # '13CO': ('chocolate', r'$^{13}$CO'), 
+        '13CO': ('#e30b5d', r'$^{13}$CO'), 
         'C18O': ('C6', r'C$^{18}$O'), 
         'C17O': ('C7', r'C$^{17}$O'), 
 
-        'H2O': ('deepskyblue', r'H$_2$O'), 
+        # 'H2O': ('deepskyblue', r'H$_2$O'), 
+        'H2O': ('#3881bb', r'H$_2$O'), 
         'H2O_181': ('C7', r'H$_2^{18}$O'), 
         'HDO': ('b', r'HDO'), 
 
@@ -90,17 +93,21 @@ class Chemistry:
         'AlO': ('C14', r'AlO'), 
         'CO2': ('C9', r'CO$_2$'),
 
-        'HF': ('C14', r'HF'), 
+        # 'HF': ('C14', r'HF'), 
+         'HF': ('#00ced1', r'HF'), 
         'HCl': ('C15', r'HCl'), 
         
         #'H2': ('C16', r'H$_2$'), 
         'HD': ('C17', r'HD'), 
 
         'K': ('C18', r'K'), 
-        'Na': ('C19', r'Na'), 
-        'Ti': ('C20', r'Ti'), 
+        # 'Na': ('purple', r'Na'), 
+        'Na': ('#daa520', r'Na'), 
+        # 'Ti': ('olive', r'Ti'), 
+        'Ti': ('#ff8e56', r'Ti'), 
         'Fe': ('C21', r'Fe'), 
-        'Ca': ('red', r'Ca'), 
+        # 'Ca': ('red', r'Ca'), 
+        'Ca': ('#984ea3', r'Ca'), 
         'Al': ('C23', r'Al'), 
         'Mg': ('C24', r'Mg'), 
         'Si': ('C25', r'Si'),
@@ -325,7 +332,23 @@ class FreeChemistry(Chemistry):
         self.remove_species()
 
         return self.mass_fractions
-
+    
+    def VMRs_envelopes(self):
+        
+        assert hasattr(self, 'mass_fractions_envelopes'), 'Mass fractions not yet evaluated.'
+        
+        self.VMRs_envelopes = {}
+        MMW = self.mass_fractions_envelopes['MMW'][3].mean()
+        for line_species_i, key in zip(self.line_species, self.VMRs.keys()):
+            
+            # get atomic mass
+            mu_i = self.read_species_info(key, 'mass')
+            # print(f'mu_{key} = {mu_i}')
+            # mu_i = 1.
+            self.VMRs_envelopes[key] = self.mass_fractions_envelopes[line_species_i] * (MMW / mu_i)
+        return self.VMRs_envelopes
+    
+    
 class EqChemistry(Chemistry):
 
     def __init__(self, line_species, pressure, quench_setup={}, **kwargs):

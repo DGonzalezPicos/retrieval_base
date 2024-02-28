@@ -7,13 +7,13 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_7'
+prefix = 'freechem_8'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
     'K2166': {
-        'w_set': 'K2166', 'wave_range': (2060, 2480), 
-        # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
+        # 'w_set': 'K2166', 'wave_range': (2060, 2480), 
+        'w_set': 'K2166', 'wave_range': (1985, 2480), 
 
         'file_target': './data/TWA28.dat', 
         # 'file_std': './data/iSco_std.dat', 
@@ -29,10 +29,10 @@ config_data = {
         'ra': 165.541335, 'dec': -34.50990, 'mjd': 60007.30274557,
         'T_std': 17_000, # i Sco = B3V,
 
-        'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
-        'tell_threshold': 0.7, 'sigma_clip_width': 8, 
+        'slit': 'w_0.4', 'lbl_opacity_sampling': 5, 
+        'tell_threshold': 0.5, 'sigma_clip_width': 8, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 50, 
+        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
 
@@ -70,16 +70,16 @@ free_params = {
     # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'], 
 
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
     
-    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
-    # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
     # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
@@ -144,16 +144,16 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    'H2O_181',
+    # 'H2O_181',
     'HF_main_iso', 
 
 
     'Na_allard',
     'Ca',
     'Ti',
-    # 'Mg',
-    # 'K',
-    # 'Fe',
+    'Mg',
+    'K',
+    'Fe',
     
     # 'CN_main_iso',
     # 'HCN_main_iso',
@@ -164,11 +164,12 @@ line_species = [
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O', 'HF',
     'Na','Ca', 'Ti', 
+    'K', 'Mg', 'Fe
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 
     'HF',
-    'Na', 'Ca', 'Ti',
+    # 'Na', 'Ca', 'Ti',
     ]
 
 ####################################################################################
@@ -214,8 +215,8 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
-# n_iter_before_update = int(n_live_points*1.2)
-n_iter_before_update = 1
+n_iter_before_update = int(n_live_points*1.2)
+# n_iter_before_update = 1
 
 # generate a .txt version of this file
 

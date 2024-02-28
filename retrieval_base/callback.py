@@ -15,6 +15,10 @@ import retrieval_base.figures as figs
 
 class CallBack:
 
+    plot_histograms = False
+    plot_cov_matrix = False
+    plot_residual_ACF = False
+    
     def __init__(self, 
                  d_spec, 
                  evaluation=False, 
@@ -154,7 +158,8 @@ class CallBack:
             envelope_colors=self.PT_envelope_colors, 
             posterior_color=self.PT_color, 
             bestfit_color=self.bestfit_color,
-            prefix=self.prefix
+            prefix=self.prefix,
+            xlim=(1, None),
         )
 
         # Make a summary figure
@@ -181,25 +186,26 @@ class CallBack:
                     )
             
                 # Plot the auto-correlation of the residuals
-                figs.fig_residual_ACF(
-                    d_spec=self.d_spec[w_set], 
-                    m_spec=self.m_spec[w_set], 
-                    LogLike=self.LogLike[w_set], 
-                    Cov=self.Cov[w_set], 
-                    bestfit_color=self.bestfit_color, 
-                    prefix=self.prefix, 
-                    w_set=w_set, 
-                    )
-
-                # Plot the covariance matrices
-                all_cov = figs.fig_cov(
-                    LogLike=self.LogLike[w_set], 
-                    Cov=self.Cov[w_set], 
-                    d_spec=self.d_spec[w_set], 
-                    cmap=self.envelope_cmap, 
-                    prefix=self.prefix, 
-                    w_set=w_set, 
-                    )
+                if self.plot_residual_ACF:
+                    figs.fig_residual_ACF(
+                        d_spec=self.d_spec[w_set], 
+                        m_spec=self.m_spec[w_set], 
+                        LogLike=self.LogLike[w_set], 
+                        Cov=self.Cov[w_set], 
+                        bestfit_color=self.bestfit_color, 
+                        prefix=self.prefix, 
+                        w_set=w_set, 
+                        )
+                if self.plot_cov_matrix:
+                    # Plot the covariance matrices
+                    all_cov = figs.fig_cov(
+                        LogLike=self.LogLike[w_set], 
+                        Cov=self.Cov[w_set], 
+                        d_spec=self.d_spec[w_set], 
+                        cmap=self.envelope_cmap, 
+                        prefix=self.prefix, 
+                        w_set=w_set, 
+                        )
 
             # Plot the abundances in a corner-plot
             self.fig_abundances_corner()
@@ -528,20 +534,20 @@ class CallBack:
 
         #plt.show()
         if self.evaluation:
-
-            for i in range(ax.shape[0]):
-                # Plot the histograms separately
-                figs.fig_hist_posterior(
-                    posterior_i=self.posterior[:,i], 
-                    param_range_i=self.param_range[i], 
-                    param_quantiles_i=self.param_quantiles[i], 
-                    param_key_i=self.Param.param_keys[i], 
-                    posterior_color=self.posterior_color, 
-                    title=self.param_labels[i], 
-                    bins=20, 
-                    prefix=self.prefix
-                    )
-            
+            if self.plot_histograms:
+                for i in range(ax.shape[0]):
+                    # Plot the histograms separately
+                    figs.fig_hist_posterior(
+                        posterior_i=self.posterior[:,i], 
+                        param_range_i=self.param_range[i], 
+                        param_quantiles_i=self.param_quantiles[i], 
+                        param_key_i=self.Param.param_keys[i], 
+                        posterior_color=self.posterior_color, 
+                        title=self.param_labels[i], 
+                        bins=20, 
+                        prefix=self.prefix
+                        )
+                
             fig.savefig(self.prefix+'plots/final_summary.pdf')
             fig.savefig(self.prefix+f'plots/final_summary.png', dpi=100)
 

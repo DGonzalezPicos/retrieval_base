@@ -336,3 +336,41 @@ def read_results(prefix, n_params):
         )
 
     return res
+
+
+def weigh_alpha(contr_em, pressure, temperature, ax, alpha_min=0.8, 
+                T_max=None, plot=False, n_layers=300):
+    ''' Overplot white areas on the temperature-pressure diagram to indicate
+    where the emission contribution is low. This is done by weighing the
+    opacity by the emission contribution and then setting a minimum opacity
+    value.
+    '''
+
+    contr_em_weigh = contr_em / contr_em.max()
+    contr_em_weigh_interp = interp1d(pressure, contr_em_weigh)
+
+    # extended vector (oversampled)
+    p = np.logspace(np.log10(pressure.min()), np.log10(pressure.max()), n_layers)
+    
+    if T_max is None:
+        T_max = np.max(temperature)
+    t = np.linspace(0, T_max, p.size)
+    if isinstance(alpha_min, float):
+        alpha_min_vec = np.ones_like(p) * alpha_min
+    else:
+        alpha_min_vec = np.array(alpha_min)
+    
+    alpha_list = []
+    for i_p in range(len(p)-1):
+        mean_press = np.mean([p[i_p], p[i_p+1]])
+        # print(f'{i_p}: alpha_min = {alpha_min_vec[i_p]}')
+        alpha = min(1. - contr_em_weigh_interp(mean_press), alpha_min_vec[i_p])
+        # print(f'{i_p}: alpha = {alpha}')
+        if plot:
+            ax.fill_between(t, p[i_p+1], p[i_p], color='white',alpha=alpha,
+                            lw=0, 
+                            rasterized=True, 
+                            zorder=4,
+                            )
+        alpha_list.append(alpha)
+    return alpha_list

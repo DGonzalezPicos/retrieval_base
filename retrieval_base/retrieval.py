@@ -278,6 +278,8 @@ class Retrieval:
             )
 
         self.plot_ccf = plot_ccf
+        self.CB.plot_ccf = plot_ccf
+        
         if (rank == 0) and self.evaluation and self.plot_ccf:
             self.pRT_atm_broad = {}
             for w_set in conf.config_data.keys():
@@ -357,7 +359,7 @@ class Retrieval:
         for h, w_set in enumerate(list(self.conf.config_data.keys())):
             
             pRT_atm_to_use = self.pRT_atm[w_set]
-            if self.evaluation:
+            if self.evaluation and self.plot_ccf:
                 # Retrieve the model spectrum, with the wider pRT model
                 pRT_atm_to_use = self.pRT_atm_broad[w_set]
         

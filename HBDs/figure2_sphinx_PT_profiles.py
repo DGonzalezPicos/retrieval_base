@@ -21,8 +21,8 @@ from retrieval_base.parameters import Parameters
 from retrieval_base.PT_profile import PT_profile_free_gradient
 from retrieval_base.auxiliary_functions import quantiles
 
-outdir = pathlib.Path(__file__).parent.absolute()
-print(f'Outdir is {outdir}')
+out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
+print(f'Outdir is {out_path}')
 def load_sphinx_thermal_profile(Teff=2600.0, log_g=4.0, logZ=0.0, C_O=0.50):
         
     path = pathlib.Path('/home/dario/phd/SPHINX_MODELS_MLT_1/ATMS/')
@@ -109,7 +109,7 @@ ret = Retrieval(conf=conf, evaluation=False)
 temp_list = []
 temp_knots = []
 
-n_samples = int(1e2)
+n_samples = int(1e3)
 for i in range(n_samples):
     ret.Param(np.random.uniform(size=len(ret.Param.param_keys)))
 
@@ -188,6 +188,6 @@ leg = ax[0].legend(handles=legend_elements, loc='upper right', fontsize=15,
 # ax[0].legend()
 # ax[0].set_title('Self-consistent SPHINX-M models', fontsize=16, x=1.08, y=1.05)  
 plt.show()
-if n_samples > 5e3:
+if n_samples > 9e2:
     print('Saving figure...')
-    fig.savefig(outdir / 'fig2_SPHINX_M_PT.pdf', bbox_inches='tight')
+    fig.savefig(out_path / 'fig2_SPHINX_M_PT.pdf', bbox_inches='tight')

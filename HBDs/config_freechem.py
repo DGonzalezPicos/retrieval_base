@@ -89,11 +89,11 @@ free_params = {
     'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.00, 0.30), r'$\nabla_{T,0}$'], 
+    'dlnT_dlnP_0': [(0.05, 0.35), r'$\nabla_{T,0}$'], 
     'dlnT_dlnP_1': [(0.00,0.25), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.00,0.25), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
+    'dlnT_dlnP_2': [(0.00,0.30), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_3': [(-0.05,0.25), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_4': [(-0.05,0.25), r'$\nabla_{T,4}$'], 
     'T_0': [(3000,9000), r'$T_0$'], 
 }
 

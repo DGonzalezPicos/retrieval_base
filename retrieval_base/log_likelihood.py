@@ -63,7 +63,8 @@ class LogLikelihood:
 
                 # Number of data points
                 N_ij = mask_ij.sum()
-                if N_ij == 0:
+                # if N_ij == 0:
+                if N_ij < 200:
                     continue
 
                 m_flux_ij = m_spec.flux[i,j,mask_ij]

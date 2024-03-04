@@ -34,8 +34,8 @@ config_data = {
         # 'T_std': 0., 'log_g_std': 0., 'rv_std': 0., 'vsini_std': 0., 
         'T_std': 17_000, # i Sco = B3V
 
-        'slit': 'w_0.4', 'lbl_opacity_sampling': 5, 
-        'tell_threshold': 0.65, 'sigma_clip_width': 12, 
+        'slit': 'w_0.4', 'lbl_opacity_sampling': 10, 
+        'tell_threshold': 0.70, 'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
@@ -82,9 +82,9 @@ free_params = {
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
     
-    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
     # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
-    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
     # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
@@ -159,9 +159,9 @@ line_species = [
     'Na_allard',
     'Ca',
     'Ti',
-    'Mg',
+    # 'Mg',
     # 'K',
-    'Fe',
+    # 'Fe',
     
     # 'CN_main_iso',
     # 'HCN_main_iso',

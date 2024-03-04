@@ -6,11 +6,11 @@ import pathlib
 plt.style.use('/home/dario/phd/retrieval_base/HBDs/my_science.mplstyle')
 
 # plt.style.use('HBDs/my_science.mplstyle')
-plt.rcParams['text.usetex'] = False
+# plt.rcParams['text.usetex'] = False
 # must use environment: Python 3.11.4 ('pycrires': conda)
 
-target = 'J0856'
-prefix = 'freechem_3'
+target = 'TWA28'
+prefix = 'freechem_9'
 
 # current working directory
 path = pathlib.Path('/home/dario/phd/retrieval_base')
@@ -25,7 +25,7 @@ flux_uncorr = np.load(data_path / 'd_spec_flux_uncorr_K2166.npy')
 transm = np.load(data_path / 'd_spec_transm_K2166.npy')
 n_orders, n_dets, _ = flux.shape
 
-fig, ax = plt.subplots(n_orders, 1, figsize=(16,8), sharey=True,
+fig, ax = plt.subplots(n_orders, 1, figsize=(14,10), sharey=True,
                        gridspec_kw={'hspace':0.30})
 # create gridspec for the figure showing two subplots below one wide subplot
 # import matplotlib.gridspec as gridspec

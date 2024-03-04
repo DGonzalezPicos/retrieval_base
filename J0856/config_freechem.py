@@ -8,13 +8,15 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_9'
+prefix = 'freechem_10'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
     'K2166': {
-        'w_set': 'K2166', 'wave_range': (2060, 2480), 
+        # 'w_set': 'K2166', 'wave_range': (2060, 2480), 
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
+        'w_set': 'K2166', 'wave_range': (1985, 2480), 
+
 
         'file_target': './data/J0856.dat', 
         # 'file_std': './data/iSco_std.dat', 
@@ -32,10 +34,10 @@ config_data = {
 
         # 'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         'T_std': 17_000, # i Sco = B3V
-        'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
-        'tell_threshold': 0.7, 'sigma_clip_width': 8, 
+        'slit': 'w_0.4', 'lbl_opacity_sampling': 10, 
+        'tell_threshold': 0.70, 'sigma_clip_width': 12, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 50, 
+        'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
     }
 
@@ -91,11 +93,11 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
-    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.05,0.30), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
+    'dlnT_dlnP_0': [(0.04, 0.34), r'$\nabla_{T,0}$'], 
+    'dlnT_dlnP_1': [(0.02,0.26), r'$\nabla_{T,1}$'], 
+    'dlnT_dlnP_2': [(0.02,0.28), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_3': [(0.00,0.24), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_4': [(-0.06,0.24), r'$\nabla_{T,4}$'], 
     'T_0': [(2000,10000), r'$T_0$'], 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
 }
@@ -218,8 +220,8 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 1000
-n_iter_before_update = 1200
+n_live_points = 200
+n_iter_before_update = int(n_live_points*4)
 
 # generate a .txt version of this file
 

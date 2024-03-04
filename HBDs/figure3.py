@@ -37,11 +37,9 @@ for order in orders:
 
 
     handles = []
-
     for i, (target, retrieval_id) in enumerate(targets.items()):
         data_path = pathlib.Path('/home/dario/phd/retrieval_base') / f'{target}'
         print(data_path)
-        
         
         
         # bestfit_params = 
@@ -52,7 +50,13 @@ for order in orders:
         d_spec = pickle.load(open(retrieval_path / 'test_data/d_spec_K2166.pkl', 'rb'))
         transm = np.load(retrieval_path / 'test_data/d_spec_transm_K2166.npy')
         loglike = pickle.load(open(retrieval_path / 'test_data/bestfit_LogLike_K2166.pkl', 'rb'))
+        cov = pickle.load(open(retrieval_path / 'test_data/bestfit_Cov_K2166.pkl', 'rb'))
         
+        # snr = np.nanmedian(d_spec.flux[order]/d_spec.err[order])
+        # err = d_spec.err[order] * loglike.beta[order,:,None]
+        # snr = np.nanmedian(d_spec.flux[order]/err)
+        
+        # print(f' {target} --> median SNR = {snr:.2f}')
         # average pixel size
         sample_rate = np.mean(np.diff(d_spec.wave[order,0]))
         print(f'order {order} --> sample rate = {sample_rate:.3e} nm')
@@ -71,10 +75,20 @@ for order in orders:
             sample_rate = np.mean(np.diff(x))
             # print(f'sample rate = {sample_rate:.3e} nm')
             y = d_spec.flux[order,det] * 1e15
-            err = d_spec.err[order,det] * loglike.beta[order,det,None] * 1e15
-            median_err = np.nanmedian(err)
+            # estimate SNR of the spectrum (from pipeline)
+            
+            # err = d_spec.err[order,det] * loglike.beta[order,det,None] * 1e15
+            # median_err = np.nanmedian(err)
+            finite = d_spec.mask_isfinite[order,det]
+            # cov[order,det].get_covariance_matrix()
+            err = np.nan * np.ones_like(y)
+            err[finite] = np.sqrt(np.diag(cov[order,det].get_dense_cov())) * loglike.beta[order,det,None] * 1e15
+            snr = np.nanmedian(y[finite]/err[finite])
+            print(f' {target} --> median SNR of detector {det} = {snr:.2f}')
             # scatter median error to show uncertainty
             det_err.append(np.nanmean(err))
+            # print(f' median error of detector {det} = {np.nanmedian(err):.2f} x 10^-15 erg s^-1cm^-2nm^-1')
+            
             
             m = m_spec.flux[order,det] * loglike.f[order,det,None] * 1e15
             ax[i].plot(x, y, lw=1.2, color='k')

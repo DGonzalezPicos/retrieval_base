@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_8'
+prefix = 'freechem_9'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -30,7 +30,7 @@ config_data = {
         'T_std': 17_000, # i Sco = B3V,
 
         'slit': 'w_0.4', 'lbl_opacity_sampling': 5, 
-        'tell_threshold': 0.5, 'sigma_clip_width': 8, 
+        'tell_threshold': 0.65, 'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
@@ -77,9 +77,9 @@ free_params = {
     'log_Ca':[(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti':[(-12,-2), r'$\log\ \mathrm{Ti}$'],
     
-    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
-    'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'],
+    # 'log_Fe':[(-12,-2), r'$\log\ \mathrm{Fe}$'],
     
     # 'log_CN':[(-12,-2), r'$\log\ \mathrm{CN}$'],
     # 'log_HCN':[(-12,-2), r'$\log\ \mathrm{HCN}$'],
@@ -88,12 +88,12 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.10, 0.40), r'$\nabla_{T,0}$'], 
-    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.05,0.30), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(-0.05,0.20), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.05,0.20), r'$\nabla_{T,4}$'], 
-    'T_0': [(2000,10000), r'$T_0$'], 
+    'dlnT_dlnP_0': [(0.00, 0.30), r'$\nabla_{T,0}$'], 
+    'dlnT_dlnP_1': [(0.00,0.25), r'$\nabla_{T,1}$'], 
+    'dlnT_dlnP_2': [(0.00,0.25), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_3': [(0.00,0.20), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_4': [(-0.05,0.15), r'$\nabla_{T,4}$'], 
+    'T_0': [(3000,9000), r'$T_0$'], 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
 }
 # Constants to use if prior is not given
@@ -107,7 +107,7 @@ constant_params = {
     # 'epsilon_limb': 0.65, 
 
     # PT profile
-    'log_P_knots': [-6., -3., -1., 1., 2.], 
+    'log_P_knots': [-5., -3., -1., 1., 2.], 
 }
 
 ####################################################################################
@@ -151,9 +151,9 @@ line_species = [
     'Na_allard',
     'Ca',
     'Ti',
-    'Mg',
-    'K',
-    'Fe',
+    # 'Mg',
+    # 'K',
+    # 'Fe',
     
     # 'CN_main_iso',
     # 'HCN_main_iso',
@@ -164,7 +164,7 @@ line_species = [
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O', 'HF',
     'Na','Ca', 'Ti', 
-    'K', 'Mg', 'Fe
+    # 'K', 'Mg', 'Fe',
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O', 

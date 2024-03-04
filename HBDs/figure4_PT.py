@@ -17,13 +17,13 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_9', 
-               TWA28='freechem_5', 
+targets = dict(J1200='freechem_10', 
+               TWA28='freechem_8', 
                J0856='freechem_9'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
-fig, ax = plt.subplots(1,1, figsize=(8,6))
+fig, ax = plt.subplots(1,1, figsize=(6,6), constrained_layout=True)
 
 for i, (target, retrieval_id) in enumerate(targets.items()):
     data_path = pathlib.Path('/home/dario/phd/retrieval_base') / f'{target}'
@@ -47,15 +47,15 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # make the zero on the right side of the axis
     ax_icf.plot(icf, PT.pressure, color=colors[target], lw=2.5, label='ICF', ls='-', alpha=0.3)
     ax_icf.fill_betweenx(PT.pressure, icf, 0., color=colors[target], alpha=0.2)
-    ax_icf.invert_xaxis()
-    ax_icf.set(xlim=(3.*icf.max(), 0.))
+    # ax_icf.invert_xaxis()
+    ax_icf.set(xlim=(0, 4.5*icf.max()))
     # remove xticks from ax_icf
     ax_icf.set_xticks([])
         
 ax.set(ylim=(PT.pressure.max(), PT.pressure.min()), ylabel='Pressure [bar]', xlabel='Temperature [K]',
         yscale='log')
 ax.set_xlim(900., 4500.)
-ax.legend(frameon=False, prop={'weight':'bold', 'size': 22})
+ax.legend(frameon=False, prop={'weight':'bold', 'size': 20})
 # remove minor yticks
 ax.minorticks_off()
 plt.show()

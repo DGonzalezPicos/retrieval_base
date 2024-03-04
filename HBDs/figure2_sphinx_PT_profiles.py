@@ -38,7 +38,7 @@ files = sorted(path.glob('*.txt'))
 print(f'Number of files: {len(list(files))}')
 # Teff_2000.0_logg_4.0_logZ_+0.0_CtoO_0.3_atms.txt
 
-target = 'J0856'
+target = 'TWA28'
 # change working directory
 os.chdir(f'/home/dario/phd/retrieval_base/{target}')
 print(f'Current working directory is {os.getcwd()}')
@@ -71,7 +71,8 @@ ax[1].tick_params(axis='y', which='major', left=True, right=False)
 
 
 Teff_grid = np.arange(2000.0, 3000.1, 100.0)
-logg_grid = [4.0, 4.50]
+# logg_grid = [4.0, 4.50]
+logg_grid = [4.0]
 
 cmap = getattr(plt.cm, 'inferno')
 colors = cmap(np.linspace(0, 1, Teff_grid.size))
@@ -108,7 +109,7 @@ ret = Retrieval(conf=conf, evaluation=False)
 temp_list = []
 temp_knots = []
 
-n_samples = int(1e4)
+n_samples = int(1e2)
 for i in range(n_samples):
     ret.Param(np.random.uniform(size=len(ret.Param.param_keys)))
 
@@ -177,8 +178,9 @@ from matplotlib.legend_handler import HandlerTuple
 
 legend_elements = [Patch(facecolor='blue', edgecolor='k', alpha=0.2, label='3-$\sigma$ envelope'),
                      Patch(facecolor='blue', edgecolor='k', alpha=0.5, label='1-$\sigma$ envelope'),
-                     Line2D([0], [0], color='k', lw=3., ls='-', label='log g=4.0'),
-                     Line2D([0], [0], color='k', lw=3., ls=':', label='log g=4.5')][::-1]
+                    #  Line2D([0], [0], color='k', lw=3., ls='-', label='log g=4.0'),
+                    #  Line2D([0], [0], color='k', lw=3., ls=':', label='log g=4.5'),
+                     ][::-1]
 # add to legend
 leg = ax[0].legend(handles=legend_elements, loc='upper right', fontsize=15,
                    frameon=False, labelspacing=0.8, borderpad=0.5, handletextpad=0.5, ncol=1)
@@ -186,4 +188,6 @@ leg = ax[0].legend(handles=legend_elements, loc='upper right', fontsize=15,
 # ax[0].legend()
 # ax[0].set_title('Self-consistent SPHINX-M models', fontsize=16, x=1.08, y=1.05)  
 plt.show()
-fig.savefig(outdir / 'fig2_SPHINX_M_PT.pdf', bbox_inches='tight')
+if n_samples > 5e3:
+    print('Saving figure...')
+    fig.savefig(outdir / 'fig2_SPHINX_M_PT.pdf', bbox_inches='tight')

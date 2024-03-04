@@ -10,7 +10,8 @@ if __name__ == '__main__':
     parser.add_argument('--pre_processing', '-p', action='store_true')
     parser.add_argument('--retrieval', '-r', action='store_true')
     parser.add_argument('--evaluation', '-e', action='store_true')
-    parser.add_argument('--synthetic', action='store_true')
+    parser.add_argument('--ccf', '-ccf', action='store_true', help='Cross-correlation function', default=False)
+    # parser.add_argument('--synthetic', action='store_true')
     args = parser.parse_args()
 
     if args.pre_processing:
@@ -27,8 +28,10 @@ if __name__ == '__main__':
     if args.evaluation:
         ret = Retrieval(
             conf=conf, 
-            evaluation=args.evaluation
+            evaluation=args.evaluation,
+            plot_ccf=args.ccf
             )
+            
         ret.PMN_callback_func(
             n_samples=None, 
             n_live=None, 
@@ -41,11 +44,4 @@ if __name__ == '__main__':
             ln_Z_err=None, 
             nullcontext=None
             )
-
-    if args.synthetic:
-        ret = Retrieval(
-            conf=conf, 
-            evaluation=args.evaluation
-            )
-        ret.synthetic_spectrum()
 

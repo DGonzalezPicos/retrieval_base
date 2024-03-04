@@ -30,7 +30,7 @@ class Chemistry:
        #'HDO':     ('HDO_voronin',             None,       1.00784 + 2.014 + 15.999,   (0,1,2)), 
   
         'CH4':     ('CH4_hargreaves_main_iso', 'C1H4',     12.011 + 4*1.00784,         (1,0,4)), 
-       #'13CH4':   ('CH4_31111_hargreaves',    None,       13.003355 + 4*1.00784,      (1,0,4)), 
+       '13CH4':   ('CH4_31111_hargreaves',    None,       13.003355 + 4*1.00784,      (1,0,4)), 
   
         'NH3':     ('NH3_coles_main_iso',      'H3N1',     14.0067 + 3*1.00784,        (0,0,3)), 
         'HCN':     ('HCN_main_iso',            'C1H1N1_1', 1.00784 + 12.011 + 14.0067, (1,0,1)), 
@@ -47,6 +47,7 @@ class Chemistry:
     
         'HF':      ('HF_main_iso',             'F1H1',     1.00784 + 18.998403,        (0,0,1)), 
         'HCl':     ('HCl_main_iso',            'Cl1H1',    1.00784 + 35.453,           (0,0,1)), 
+        'C2H2':  ('C2H2_main_iso',           'C2H2',     2*12.011 + 2*1.00784,       (2,0,2)),
         
         'H2':      ('H2',                      'H2',       2*1.00784,                  (0,0,2)), 
        #'HD':      ('H2_12',                   None,       1.00784 + 2.014,            (0,0,2)), 
@@ -113,6 +114,8 @@ class Chemistry:
         'Si': ('C25', r'Si'),
         #'He': ('C22', r'He'), 
         'CN': ('magenta', r'CN'),
+        'C2H2': ('magenta', r'C$_2$H$_2$'),
+        # '13CH4': ('magenta', r'$^{13}$CH$_4$'),
         # ions
         'CaII': ('C26', r'CaII'),
         'FeII': ('C27', r'FeII'),

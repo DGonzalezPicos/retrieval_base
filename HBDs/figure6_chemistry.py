@@ -20,18 +20,21 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_9', 
-               TWA28='freechem_5', 
+targets = dict(J1200='freechem_10', 
+               TWA28='freechem_8', 
                J0856='freechem_9'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
-fig, ax = plt.subplots(1,2, figsize=(8,4))
+fig, ax = plt.subplots(2,1, figsize=(6,6))
 n_bins = 30
 # solar_system = {'C/O': 0.54, '12C/13C': 89}
 # add solar values with uncertainties
-solar_system = {'C/O': (0.55, 0.02), # uncertainty propagated from Asplund et al. (2009)
-         '12C/13C': (86.8, 3.8)} # Asplund et al. (2009) from Scott et al. (2006) using CO lines
+solar_system = {
+        'C/O': (0.59, 0.08), # updated value from Asplund et al. (2021)
+        # 'C/O': (0.55, 0.02), # uncertainty propagated from Asplund et al. (2009)
+         '12C/13C': (89.3, 0.2), # reference terrestrial value from Meija et al. (2016)
+         } # Asplund et al. (2009) from Scott et al. (2006) using CO lines
 # propagate uncertainty for C/O where log(C/H) = 8.43 +- 0.05 and log(O/H) = 8.69 +- 0.05
 
 
@@ -67,11 +70,19 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # chem.H216OH218O_posterior = np.median(chem.mass_fractions_posterior['H2O_pokazatel_main_iso'] / chem.mass_fractions_posterior['H2O_181'],axis=-1)
     
     hist_args = {"color": colors[target], "alpha": 0.6, "fill": True, "edgecolor": "k",
-                         "linewidth": 2.0, "histtype": "stepfilled", "density": False,
+                         "linewidth": 2.0, "histtype": "stepfilled", "density": True,
                          'bins': n_bins}
 
-    ax[0].hist(C_O,  range=(0.45, 0.72), **hist_args)
+    ax[0].hist(C_O,  range=(0.50, 0.70), **hist_args)
+    
+    no_fill_args = hist_args.copy()
+    no_fill_args['fill'] = False
+    no_fill_args['alpha'] = 0.7
+    
+    ax[0].hist(C_O,  range=(0.50, 0.70), **no_fill_args)
+
     ax[1].hist(chem.C12C13_posterior, range=(10., 220.), **hist_args)
+    ax[1].hist(chem.C12C13_posterior, range=(10., 220.), **no_fill_args)
     # labels = ['Sun', 'ISM'] if i == 0 else [None, None]
 
     if len(ax) > 2:
@@ -79,7 +90,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         ax[3].hist(chem.H216OH218O_posterior, range=(0., 2220.), **hist_args)
     
     
-labels = ['Sun', 'ISM']
+labels = ['Solar', 'ISM']
 
 for j, (key, val) in enumerate(solar_system.items()):
     # ax[j].axvline(val, color='magenta', ls='--', lw=2.5, alpha=0.8, label=labels[0])
@@ -87,7 +98,7 @@ for j, (key, val) in enumerate(solar_system.items()):
     # scatter point with errorbars
     
     if j == 0:
-        ax[j].errorbar(val[0], 300, xerr=val[1], color='magenta', 
+        ax[j].errorbar(val[0], 14, xerr=val[1], color='magenta', 
                         ls='none', 
                         ms=5, marker='s',
                         lw=2.5, alpha=0.8, label=labels[0])
@@ -95,8 +106,11 @@ for j, (key, val) in enumerate(solar_system.items()):
     else:
         ax[j].axvline(val[0], color='magenta', ls='-', lw=3.5, alpha=0.5, label=labels[0])
         
-    
-ax[1].axvline(68, color='deepskyblue', ls='--', lw=3.5, alpha=0.6, label=labels[1])
+
+ISM_C_ratio = (69, 6) # Wilson (1999)
+# ax[1].axvline(68, color='deepskyblue', ls='--', lw=3.5, alpha=0.6, label=labels[1])
+ax[1].axvspan(ISM_C_ratio[0]-ISM_C_ratio[1], ISM_C_ratio[0]+ISM_C_ratio[1], color='deepskyblue', 
+              alpha=0.3, label=labels[1])
 
 # remove y-axis and top x-axis
 xlabels = [r'C/O', r'$^{12}$C/$^{13}$C', 

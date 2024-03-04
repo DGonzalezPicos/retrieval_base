@@ -184,7 +184,7 @@ def pre_processing(conf, conf_data):
 
 class Retrieval:
 
-    def __init__(self, conf, evaluation):
+    def __init__(self, conf, evaluation, plot_ccf=False):
 
         self.conf = conf
         self.evaluation = evaluation
@@ -277,7 +277,8 @@ class Retrieval:
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )
 
-        if (rank == 0) and self.evaluation:
+        self.plot_ccf = plot_ccf
+        if (rank == 0) and self.evaluation and self.plot_ccf:
             self.pRT_atm_broad = {}
             for w_set in conf.config_data.keys():
                 
@@ -839,7 +840,7 @@ class Retrieval:
         self.Param.read_chemistry_params()
         self.Param.read_cloud_params()
 
-        if self.evaluation:
+        if self.evaluation and self.plot_ccf:
             # Get each species' contribution to the spectrum
             self.get_species_contribution()
 
@@ -851,7 +852,7 @@ class Retrieval:
             self.m_spec[w_set].flux_envelope = None
 
         pRT_atm_to_use = self.pRT_atm
-        if self.evaluation:
+        if self.evaluation and self.plot_ccf:
             # Retrieve the model spectrum, with the wider pRT model
             pRT_atm_to_use = self.pRT_atm_broad
             #self.m_spec.flux_envelope = flux_envelope
@@ -867,7 +868,8 @@ class Retrieval:
     def PMN_run(self):
         
         # Pause the process to not overload memory on start-up
-        time.sleep(1.5*rank*len(self.d_spec))
+        # time.sleep(1.5*rank*len(self.d_spec))
+        time.sleep(2)
 
         # Run the MultiNest retrieval
         pymultinest.run(

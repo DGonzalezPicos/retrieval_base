@@ -53,8 +53,8 @@ for t, (target, retrieval_id) in enumerate(targets.items()):
         assert file.exists(), f'CCF file {file} does not exist.'
         rv, ccf,acf = np.load(file).T
         
-        ax[i].plot(rv, ccf, color=colors[target], alpha=0.9, lw=lw)
-        ax[i].plot(rv, acf, color=colors[target], alpha=0.9, lw=lw, ls='--')
+        ax[i].plot(rv, ccf, color=colors[target], alpha=0.8, lw=lw)
+        ax[i].plot(rv, acf, color=colors[target], alpha=0.7, lw=lw, ls='--')
 
 for i, axi in enumerate(ax):
     ylim = axi.get_ylim()

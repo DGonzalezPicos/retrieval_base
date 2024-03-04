@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_9'
+prefix = 'freechem_10'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -215,7 +215,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
-n_iter_before_update = int(n_live_points*1.2)
+n_iter_before_update = int(n_live_points*3)
 # n_iter_before_update = 1
 
 # generate a .txt version of this file

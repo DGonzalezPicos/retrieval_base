@@ -110,7 +110,7 @@ class Chemistry:
         # 'Ca': ('red', r'Ca'), 
         'Ca': ('#984ea3', r'Ca'), 
         'Al': ('C23', r'Al'), 
-        'Mg': ('C24', r'Mg'), 
+        'Mg': ('#845224', r'Mg'), 
         'Si': ('C25', r'Si'),
         #'He': ('C22', r'He'), 
         'CN': ('magenta', r'CN'),

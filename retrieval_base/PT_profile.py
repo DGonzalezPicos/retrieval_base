@@ -277,10 +277,11 @@ class PT_profile_free_gradient(PT_profile):
             ln_P_i1 = self.flipped_ln_pressure[i+1]
             ln_P_i  = self.flipped_ln_pressure[i]
             
-            T_i1 = np.exp(
-                np.log(self.temperature[-1]) + \
-                (ln_P_i1 - ln_P_i) * dlnT_dlnP_array[i]
-                )
+            # T_i1 = np.exp(
+            #     np.log(self.temperature[-1]) + \
+            #     (ln_P_i1 - ln_P_i) * dlnT_dlnP_array[i]
+            #     )
+            T_i1 = self.temperature[i] * np.exp((ln_P_i1 - ln_P_i) * dlnT_dlnP_array[i])
             self.temperature.append(T_i1)
         self.temperature = np.array(self.temperature)[::-1]
         

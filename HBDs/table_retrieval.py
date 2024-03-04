@@ -7,9 +7,9 @@ from tabulate import tabulate
 
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
-targets = dict(J1200='freechem_10', 
-               TWA28='freechem_6', 
-               J0856='freechem_9'
+targets = dict(J1200='freechem_12', 
+               TWA28='freechem_9', 
+               J0856='freechem_10'
                )
 
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/')
@@ -61,6 +61,7 @@ table = [[val[1], descriptions[key], f"[{val[0][0]}, {val[0][1]}]"] for (key, va
 headers = ["Parameter", "Description", "Prior Range"]
 
 GP_eq_block = {}
+C_O_eq_block = {}
 for i, (target, retrieval_id) in enumerate(targets.items()):
     data_path = path / f'{target}'
     headers += [target]
@@ -102,6 +103,14 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     GP_eq_block[target] += 'l & = ' + f"{l:.4f}^{{+{dl_up:.4f}}}_{{-{dl_low:.4f}}}"
     GP_eq_block[target] += '\\approx ' + f"{l_pixels:.1f} \\text{{ pixels}} \\\\ \n"
     
+    # C_O = 
+    chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
+    C_O = chem.CO_posterior
+    C_O_quantiles = np.quantile(C_O, [0.16, 0.5, 0.84])
+    C_O_low = C_O_quantiles[1] - C_O_quantiles[0]
+    C_O_up = C_O_quantiles[2] - C_O_quantiles[1]
+    C_O_eq_block[target] = f'\mathrm{{C/O}}_\\text{{{target}}} & = ' + f"{C_O_quantiles[1]:.2f}^{{+{C_O_up:.2f}}}_{{-{C_O_low:.2f}}}"
+    C_O_eq_block[target] += '\\\\ \n'
     
     j = -1
     for j_i, (key, val) in enumerate(bestfit_params.items()):
@@ -150,6 +159,19 @@ with open(out_path / "equations/GP_eq.tex", "w") as f:
     f.write(GP_eq)
     print(f'Equation saved to {out_path / "equations/GP_eq.tex"}')
 print(GP_eq)
+
+
+# make C_O_eq --> #TODO: check this equation generation works
+C_O_eq = '\\begin{align*}\n'
+for target in targets_id:
+    C_O_eq += C_O_eq_block[target]
+# save 
+C_O_eq += '\end{align*}'
+# save equation
+with open(out_path / "equations/C_O_eq.tex", "w") as f:
+    f.write(C_O_eq)
+    print(f'Equation saved to {out_path / "equations/C_O_eq.tex"}')
+    
 
 # Print or save the LaTeX table
 # print(latex_table)

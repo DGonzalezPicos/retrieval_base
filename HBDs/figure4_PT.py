@@ -17,9 +17,9 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_10', 
+targets = dict(J1200='freechem_12', 
                TWA28='freechem_9', 
-               J0856='freechem_9'
+               J0856='freechem_10'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
@@ -45,7 +45,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     print(f'shape of icf = {icf.shape}')
     ax_icf = ax.twiny()
     # make the zero on the right side of the axis
-    ax_icf.plot(icf, PT.pressure, color=colors[target], lw=2.5, label='ICF', ls='-', alpha=0.3)
+    ax_icf.plot(icf, PT.pressure, color=colors[target], lw=2.5, label='ICF', ls='-', alpha=0.7)
     ax_icf.fill_betweenx(PT.pressure, icf, 0., color=colors[target], alpha=0.2)
     # ax_icf.invert_xaxis()
     ax_icf.set(xlim=(0, 4.5*icf.max()))

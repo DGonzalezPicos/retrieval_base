@@ -20,14 +20,14 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_10', 
-               TWA28='freechem_8', 
-               J0856='freechem_9'
+targets = dict(J1200='freechem_12', 
+               TWA28='freechem_9', 
+               J0856='freechem_10'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(2,1, figsize=(6,6))
-n_bins = 30
+n_bins = 40
 # solar_system = {'C/O': 0.54, '12C/13C': 89}
 # add solar values with uncertainties
 solar_system = {
@@ -73,16 +73,18 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                          "linewidth": 2.0, "histtype": "stepfilled", "density": True,
                          'bins': n_bins}
 
-    ax[0].hist(C_O,  range=(0.50, 0.70), **hist_args)
+    C_O_range = (0.48, 0.68)
+    C_ratio_range = (0., 180.)
+    ax[0].hist(C_O,  range=C_O_range, **hist_args)
     
     no_fill_args = hist_args.copy()
     no_fill_args['fill'] = False
     no_fill_args['alpha'] = 0.7
     
-    ax[0].hist(C_O,  range=(0.50, 0.70), **no_fill_args)
+    ax[0].hist(C_O,  range=C_O_range, **no_fill_args)
 
-    ax[1].hist(chem.C12C13_posterior, range=(10., 220.), **hist_args)
-    ax[1].hist(chem.C12C13_posterior, range=(10., 220.), **no_fill_args)
+    ax[1].hist(chem.C12C13_posterior, range=C_ratio_range, **hist_args)
+    ax[1].hist(chem.C12C13_posterior, range=C_ratio_range, **no_fill_args)
     # labels = ['Sun', 'ISM'] if i == 0 else [None, None]
 
     if len(ax) > 2:

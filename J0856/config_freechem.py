@@ -34,10 +34,10 @@ config_data = {
 
         # 'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         'T_std': 17_000, # i Sco = B3V
-        'slit': 'w_0.4', 'lbl_opacity_sampling': 10, 
+        'slit': 'w_0.4', 'lbl_opacity_sampling': 5, 
         'tell_threshold': 0.70, 'sigma_clip_width': 12, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
+        'log_P_range': (-5,2), 'n_atm_layers': 50, 
         }, 
     }
 
@@ -219,9 +219,9 @@ PT_kwargs = dict(
 
 const_efficiency_mode = True
 sampling_efficiency = 0.05
-evidence_tolerance = 0.5
-n_live_points = 200
-n_iter_before_update = int(n_live_points*4)
+evidence_tolerance = 0.1
+n_live_points = 1000
+n_iter_before_update = int(n_live_points*10)
 
 # generate a .txt version of this file
 

@@ -31,13 +31,13 @@ config_data = {
         'T_std': 17_000, # i Sco = B3V
 
         'slit': 'w_0.4', 
-        'lbl_opacity_sampling': 10, 
+        'lbl_opacity_sampling': 5, 
         'tell_threshold': 0.65,
         'tell_grow': 11,
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 30, 
+        'n_atm_layers': 50, 
         }, 
     }
 
@@ -93,15 +93,14 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.08, 0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_0': [(0.06, 0.40), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
     'dlnT_dlnP_2': [(0.06,0.24), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.06,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
     'dlnT_dlnP_4': [(0.04,0.15), r'$\nabla_{T,4}$'],  # 10 mbar
     'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
     'dlnT_dlnP_6': [(0.00,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
     'T_0': [(3000,10000), r'$T_0$'], 
-}
 
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -222,8 +221,8 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 200
-n_iter_before_update = int(n_live_points*3)
+n_live_points = 1000
+n_iter_before_update = int(n_live_points*30)
 
 # generate a .txt version of this file
 

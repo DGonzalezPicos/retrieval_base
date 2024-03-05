@@ -35,13 +35,13 @@ config_data = {
         # 'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         'T_std': 17_000, # i Sco = B3V
         'slit': 'w_0.4', 
-        'lbl_opacity_sampling': 10, 
+        'lbl_opacity_sampling': 5, 
         'tell_threshold': 0.65,
         'tell_grow': 11,
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 30, 
+        'n_atm_layers': 50, 
         }, 
     }
 
@@ -97,8 +97,8 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
    # PT profile
-    'dlnT_dlnP_0': [(0.08, 0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+   'dlnT_dlnP_0': [(0.06, 0.40), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
     'dlnT_dlnP_2': [(0.06,0.24), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.06,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
     'dlnT_dlnP_4': [(0.04,0.15), r'$\nabla_{T,4}$'],  # 10 mbar
@@ -225,8 +225,8 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 200
-n_iter_before_update = int(n_live_points*5)
+n_live_points = 1000
+n_iter_before_update = int(n_live_points*50)
 
 # generate a .txt version of this file
 

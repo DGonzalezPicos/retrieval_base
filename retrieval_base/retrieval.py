@@ -47,22 +47,6 @@ def pre_processing(conf, conf_data):
         w_set=conf_data['w_set'], 
         )
     d_spec.clip_det_edges()
-    
-    # d_std_spec = DataSpectrum(
-    #     wave=None, 
-    #     flux=None, 
-    #     err=None, 
-    #     ra=conf_data['ra_std'], 
-    #     dec=conf_data['dec_std'], 
-    #     mjd=conf_data['mjd_std'], 
-    #     pwv=conf_data['pwv'], 
-    #     file_target=conf_data['file_std'], 
-    #     file_wave=conf_data['file_std'], 
-    #     slit=conf_data['slit'], 
-    #     wave_range=conf_data['wave_range'], 
-    #     w_set=conf_data['w_set'], 
-    #     )
-    # d_std_spec.clip_det_edges()
 
     # Instance of the Photometry class for the given magnitudes
     photom_2MASS = Photometry(magnitudes=conf.magnitudes)
@@ -74,23 +58,14 @@ def pre_processing(conf, conf_data):
         tell_threshold=conf_data['tell_threshold'],
         T=conf_data['T_std'],
         )
-    # d_std_spec.load_molecfit_transm(
-    #     conf_data['file_std_molecfit_transm'], 
-    #     T=conf_data['T_std'], 
-    #     tell_threshold=conf_data['tell_threshold']
-    #     )
-    
-    # #d_spec.transm = np.copy(d_std_spec.transm)
-    # d_spec.throughput = np.copy(d_spec.throughput)
     assert hasattr(d_spec, 'throughput'), 'No throughput found in `d_spec`'
-
-    # del d_std_spec
 
     # Apply flux calibration using the 2MASS broadband magnitude
     d_spec.flux_calib_2MASS(
         photom_2MASS, 
         conf_data['filter_2MASS'], 
-        tell_threshold=conf_data['tell_threshold'], 
+        tell_threshold=conf_data.get('tell_threshold', 0.70),
+        tell_grow=conf_data.get('tell_grow', 0),
         prefix=conf.prefix, 
         file_skycalc_transm=conf_data['file_skycalc_transm'], 
         molecfit=(conf_data.get('file_molecfit_transm') is not None)
@@ -115,13 +90,12 @@ def pre_processing(conf, conf_data):
         filter_width=conf_data['sigma_clip_width'], 
         prefix=conf.prefix
         )
-    #d_spec.sigma_clip_poly(sigma=3, prefix=conf.prefix)
 
     # Crop the spectrum
     d_spec.crop_spectrum()
 
     # Remove the ghost signatures
-    d_spec.mask_ghosts(wave_to_mask=conf_data.get('wave_to_mask'))
+    # d_spec.mask_ghosts(wave_to_mask=conf_data.get('wave_to_mask'))
 
     # Re-shape the spectrum to a 3-dimensional array
     d_spec.reshape_orders_dets()
@@ -175,7 +149,7 @@ def pre_processing(conf, conf_data):
         rayleigh_species=conf.rayleigh_species,
         continuum_opacities=conf.continuum_opacities,
         log_P_range=conf_data.get('log_P_range'), 
-        n_atm_layers=conf_data.get('n_atm_layers'), 
+        n_atm_layers=conf_data.get('n_atm_layers', 30), 
         rv_range=conf.free_params['rv'][0], 
         )
 

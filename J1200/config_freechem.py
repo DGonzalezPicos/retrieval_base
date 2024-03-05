@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_12'
+prefix = 'freechem_14'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -34,8 +34,11 @@ config_data = {
         # 'T_std': 0., 'log_g_std': 0., 'rv_std': 0., 'vsini_std': 0., 
         'T_std': 17_000, # i Sco = B3V
 
-        'slit': 'w_0.4', 'lbl_opacity_sampling': 10, 
-        'tell_threshold': 0.70, 'sigma_clip_width': 12, 
+        'slit': 'w_0.4', 
+        'lbl_opacity_sampling': 10, 
+        'tell_threshold': 0.65,
+        'tell_grow': 11,
+        'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 'n_atm_layers': 30, 
         }, 
@@ -93,13 +96,14 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.04, 0.34), r'$\nabla_{T,0}$'], 
-    'dlnT_dlnP_1': [(0.02,0.26), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.02,0.28), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(0.00,0.24), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.06,0.24), r'$\nabla_{T,4}$'], 
-    'T_0': [(2000,10000), r'$T_0$'], 
-    # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
+    'dlnT_dlnP_0': [(0.08, 0.40), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.06,0.24), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.06,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.04,0.15), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
+    'dlnT_dlnP_6': [(0.00,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
+    'T_0': [(3000,10000), r'$T_0$'], 
 }
 
 # Constants to use if prior is not given
@@ -113,7 +117,7 @@ constant_params = {
     # 'epsilon_limb': 0.65, 
 
     # PT profile
-    'log_P_knots': [-5., -3., -1., 1., 2.], 
+    'log_P_knots': [-5., -3., -2, -1., 0., 1., 2.], 
 }
 
 ####################################################################################
@@ -128,7 +132,7 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
-mask_lines = {'br_gamma': (2163, 2169)}
+mask_lines = {'br_gamma': (2162.8, 2169.6)}
 
 ####################################################################################
 # Chemistry parameters
@@ -222,7 +226,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
-n_iter_before_update = int(n_live_points*4)
+n_iter_before_update = int(n_live_points*3)
 
 # generate a .txt version of this file
 

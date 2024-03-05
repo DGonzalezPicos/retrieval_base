@@ -94,11 +94,11 @@ free_params = {
 
     # PT profile
     'dlnT_dlnP_0': [(0.04, 0.34), r'$\nabla_{T,0}$'], 
-    'dlnT_dlnP_1': [(0.02,0.26), r'$\nabla_{T,1}$'], 
-    'dlnT_dlnP_2': [(0.02,0.28), r'$\nabla_{T,2}$'], 
-    'dlnT_dlnP_3': [(0.00,0.24), r'$\nabla_{T,3}$'], 
-    'dlnT_dlnP_4': [(-0.06,0.24), r'$\nabla_{T,4}$'], 
-    'T_0': [(2000,10000), r'$T_0$'], 
+    'dlnT_dlnP_1': [(0.04,0.22), r'$\nabla_{T,1}$'], 
+    'dlnT_dlnP_2': [(0.02,0.38), r'$\nabla_{T,2}$'], 
+    'dlnT_dlnP_3': [(0.02,0.30), r'$\nabla_{T,3}$'], 
+    'dlnT_dlnP_4': [(-0.06,0.32), r'$\nabla_{T,4}$'], 
+    'T_0': [(4000,10000), r'$T_0$'], 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
 }
 

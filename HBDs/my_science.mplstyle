@@ -45,3 +45,5 @@ xtick.labelsize : 16
 ytick.labelsize : 16
 legend.fontsize : 16
 font.size : 16
+# add padding to xaxis label 
+#xtick.major.pad : 8

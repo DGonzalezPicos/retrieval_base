@@ -61,13 +61,13 @@ logZ = 0.0
 sign = '+' if logZ >= 0 else '-'
 
 C_O = 0.5
-fig, ax = plt.subplots(1,2, figsize=(8, 6), sharey=True, 
-                       gridspec_kw={'width_ratios': [3, 2], 'wspace': 0.02})
+fig, (ax1, ax0) = plt.subplots(1,2, figsize=(8, 6), sharey=True, 
+                       gridspec_kw={'width_ratios': [2,3], 'wspace': 0.02})
 # remove minor ticks in y-axis (left and right)
-ax[0].tick_params(axis='y', which='minor', left=False, right=False)
-ax[0].tick_params(axis='y', which='major', right=False)
-ax[1].tick_params(axis='y', which='minor', left=False, right=False)
-ax[1].tick_params(axis='y', which='major', left=True, right=False)
+ax0.tick_params(axis='y', which='minor', left=False, right=False)
+ax0.tick_params(axis='y', which='major', right=False)
+ax1.tick_params(axis='y', which='minor', left=False, right=False)
+ax1.tick_params(axis='y', which='major', left=True, right=False)
 
 
 Teff_grid = np.arange(2000.0, 3000.1, 100.0)
@@ -79,9 +79,9 @@ colors = cmap(np.linspace(0, 1, Teff_grid.size))
 
 # generate colorbar
 
-im = ax[1].scatter([], [], c=[], cmap=cmap, vmin=Teff_grid.min(), vmax=Teff_grid.max())
+im = ax0.scatter([], [], c=[], cmap=cmap, vmin=Teff_grid.min(), vmax=Teff_grid.max())
 # make colorbar wider, do not include minor ticks
-cbar = fig.colorbar(im, ax=ax[1], label='Effective temperature (K)', pad=0.03, aspect=15)
+cbar = fig.colorbar(im, ax=ax0, label='Effective temperature (K)', pad=0.03, aspect=15)
 cbar.ax.set(ylabel='Effective temperature (K)')
 cbar.ax.tick_params(which='minor', length=0)
 
@@ -94,11 +94,11 @@ for i, Teff in enumerate(Teff_grid):
         # t, p = np.loadtxt(file, unpack=True)
         t,p = load_sphinx_thermal_profile(Teff, logg, logZ)
         # ax.plot(t, p, label=f'Teff={Teff_i}, logg={logg}, logZ={logZ}, C/O={C_O}')
-        ax[0].plot(t,p, ls=ls, color=colors[i], label=label, lw=3.)
+        ax0.plot(t,p, ls=ls, color=colors[i], label=label, lw=3.)
         dlnT_dlnP = np.gradient(np.log10(t), np.log10(p))
         
        
-        ax[1].plot(dlnT_dlnP, p, ls=ls, color=colors[i], lw=3., alpha=0.9)
+        ax1.plot(dlnT_dlnP, p, ls=ls, color=colors[i], lw=3., alpha=0.9)
 
 
 PT = PT_profile_free_gradient(pressure=pressure)
@@ -107,7 +107,11 @@ ret = Retrieval(conf=conf, evaluation=False)
 # uniform random sample
 
 temp_list = []
+dlnT_dlnP_list = []
 temp_knots = []
+
+# plot some random PT profiles
+fig_PT, ax_PT = plt.subplots(1,1, figsize=(8, 6))
 
 n_samples = int(1e3)
 for i in range(n_samples):
@@ -122,7 +126,24 @@ for i in range(n_samples):
                 'dlnT_dlnP_knots': t_knots}
     
     temp_knots.append(t_knots)
-    temp_list.append(ret.PT(sample_PT))
+    temperature = ret.PT(sample_PT)
+    temp_list.append(temperature)
+    dlnT_dlnP_list.append(ret.PT.dlnT_dlnP_array)
+    # check for negative values
+    assert np.all(ret.PT.dlnT_dlnP_array > 0), f'Negative dlnT/dlnP values at iteration {i}'
+    # temp_list.append(ret.PT(sample_PT))
+    if i % (n_samples // 10) == 0:
+        ax_PT.plot(temperature, pressure, alpha=0.75, lw=2.)
+        
+ax_PT.set(xlabel='Temperature (K)', ylabel='Pressure (bar)', yscale='log')
+# ax_PT.set_yticks(10**logP_knots)
+# ax_PT.set_yticklabels([f'$10^{{{int(x)}}}$' for x in logP_knots])
+ax_PT.set(xlim=(0.0, 9000.), ylim=(1e2, 1e-5))
+ax_PT.set_title('Random PT profiles')
+fig_PT.savefig(out_path / 'fig2_SPHINX_M_PT_random_profiles.pdf', bbox_inches='tight')
+print(f'Saving figure {out_path / "fig2_SPHINX_M_PT_random_profiles.pdf"}')
+# plt.show()
+plt.close(fig_PT)
 
 
 # calculate envelopes
@@ -135,22 +156,26 @@ temp_quantiles = []
 # temp_quantiles.append(np.quantile(temp_list, sigma2quantile[1], axis=0))
 
 from scipy.interpolate import CubicSpline
-for s in [1,3]:
+for s in [5]:
     quantile = sigma2quantile[s]
     lower_bounds = np.quantile(temp_list, 1.0 - quantile, axis=0)
     upper_bounds = np.quantile(temp_list, quantile, axis=0)
    
     # temp_quantiles.append(left_envelope)
-    # ax[0].fill_betweenx(pressure, left_envelope, right_envelope, alpha=0.2, color='blue')
+    # ax0.fill_betweenx(pressure, left_envelope, right_envelope, alpha=0.2, color='blue')
     
-    ax[0].fill_betweenx(pressure, lower_bounds, upper_bounds, alpha=0.2, color='blue')
+    ax0.fill_betweenx(pressure, lower_bounds, upper_bounds, alpha=0.2, color='blue')
 
-
-    knots_lower = np.quantile(temp_knots, quantile, axis=0)
-    knots_upper = np.quantile(temp_knots, 1.0 - quantile, axis=0)
-    left_envelope = CubicSpline(logP_knots[::-1], knots_lower[::-1])(np.log10(pressure))
-    right_envelope = CubicSpline(logP_knots[::-1], knots_upper[::-1])(np.log10(pressure))
-    ax[1].fill_betweenx(pressure, left_envelope, right_envelope, alpha=0.2, color='blue')
+    # calculate envelopes for dlnT_dlnP
+    lower_bounds_dlnT_dlnP = np.quantile(dlnT_dlnP_list, 1.0 - quantile, axis=0)
+    upper_bounds_dlnT_dlnP = np.quantile(dlnT_dlnP_list, quantile, axis=0)
+    ax1.fill_betweenx(pressure, lower_bounds_dlnT_dlnP, upper_bounds_dlnT_dlnP, alpha=0.2, color='blue')
+    
+    # knots_lower = np.quantile(temp_knots, quantile, axis=0)
+    # knots_upper = np.quantile(temp_knots, 1.0 - quantile, axis=0)
+    # left_envelope = CubicSpline(logP_knots[::-1], knots_lower[::-1])(np.log10(pressure))
+    # right_envelope = CubicSpline(logP_knots[::-1], knots_upper[::-1])(np.log10(pressure))
+    # ax1.fill_betweenx(pressure, left_envelope, right_envelope, alpha=0.2, color='blue')
     
 plot_horizontal_lines = False
 if plot_horizontal_lines:
@@ -162,32 +187,38 @@ if plot_horizontal_lines:
 # set yticks to logP_knots
 
 # add latex xlabel with nabla
-# ax[1].set(xlabel='dlnT/dlnP', yscale='log')
-ax[0].set(xlim=(0.0, 9000.), ylim=(1e2, 1e-5),
-          xlabel='Temperature (K)', ylabel='Pressure (bar)',
+# ax1.set(xlabel='dlnT/dlnP', yscale='log')
+ax0.set(xlim=(0.0, 9000.), ylim=(1e2, 1e-5),
+          xlabel='Temperature (K)',
+        #   ylabel='Pressure (bar)',
           yscale='log')
-# ax[0].set_yticks(10**logP_knots)
-# ax[0].set_yticklabels([f'$10^{{{int(x)}}}$' for x in logP_knots])
+# ax0.set_yticks(10**logP_knots)
+# ax0.set_yticklabels([f'$10^{{{int(x)}}}$' for x in logP_knots])
 
 
-ax[1].set(xlabel=r'$\nabla T$', yscale='log')
+ax1.set(xlabel=r'$\nabla T$', yscale='log', ylabel='Pressure (bar)')
 # add custom legend with the 1-sigma and 3-sigma envelopes
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 from matplotlib.legend_handler import HandlerTuple
 
-legend_elements = [Patch(facecolor='blue', edgecolor='k', alpha=0.2, label='3-$\sigma$ envelope'),
-                     Patch(facecolor='blue', edgecolor='k', alpha=0.5, label='1-$\sigma$ envelope'),
+legend_elements = [
+                    Patch(facecolor='blue', edgecolor='k', alpha=0.3, label='Prior\nsamples'),
+                    # Patch(facecolor='blue', edgecolor='k', alpha=0.2, label='3-$\sigma$ envelope'),
+                    #  Patch(facecolor='blue', edgecolor='k', alpha=0.5, label='1-$\sigma$ envelope'),
                     #  Line2D([0], [0], color='k', lw=3., ls='-', label='log g=4.0'),
                     #  Line2D([0], [0], color='k', lw=3., ls=':', label='log g=4.5'),
                      ][::-1]
 # add to legend
-leg = ax[0].legend(handles=legend_elements, loc='upper right', fontsize=15,
+leg = ax0.legend(handles=legend_elements, loc='upper right', fontsize=15,
                    frameon=False, labelspacing=0.8, borderpad=0.5, handletextpad=0.5, ncol=1)
 
-# ax[0].legend()
-# ax[0].set_title('Self-consistent SPHINX-M models', fontsize=16, x=1.08, y=1.05)  
-plt.show()
+# ax0.legend()
+# ax0.set_title('Self-consistent SPHINX-M models', fontsize=16, x=1.08, y=1.05)  
 if n_samples > 9e2:
     print('Saving figure...')
     fig.savefig(out_path / 'fig2_SPHINX_M_PT.pdf', bbox_inches='tight')
+    plt.close(fig)
+else:
+    plt.show()
+    print('Not saving figure...')

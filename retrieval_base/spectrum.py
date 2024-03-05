@@ -646,6 +646,7 @@ class DataSpectrum(Spectrum):
             photom_2MASS, 
             filter_2MASS, 
             tell_threshold=0.2, 
+            tell_grow=0,
             replace_flux_err=True, 
             prefix=None, 
             file_skycalc_transm=None, # deprecated
@@ -658,9 +659,15 @@ class DataSpectrum(Spectrum):
         avoid_zeros = self.transm*self.throughput!=0
         tell_corr_flux = np.divide(self.flux, self.transm * self.throughput, where=avoid_zeros)
 
+        deep_tellurics = (self.transm < tell_threshold)
+        if tell_grow > 0:
+            # Grow telluric mask
+            deep_tellurics = np.convolve(deep_tellurics, np.ones(tell_grow), mode='same') > 0
+        
+        
+        print(f' - Masking deep telluric lines {deep_tellurics.sum()} pixels...')
         # Replace the deepest tellurics with NaNs
-        tell_corr_flux[self.transm < tell_threshold] = np.nan
-
+        tell_corr_flux[deep_tellurics] = np.nan
         # Update the NaN mask
         self.update_isfinite_mask(tell_corr_flux)
 

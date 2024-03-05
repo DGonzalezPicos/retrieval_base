@@ -89,8 +89,8 @@ free_params = {
     'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.08, 0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.08,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_0': [(0.06, 0.40), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
     'dlnT_dlnP_2': [(0.06,0.24), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.06,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
     'dlnT_dlnP_4': [(0.04,0.15), r'$\nabla_{T,4}$'],  # 10 mbar

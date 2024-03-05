@@ -264,6 +264,10 @@ class PT_profile_free_gradient(PT_profile):
         self.P_knots = params['P_knots']
 
         # Perform interpolation over dlnT/dlnP gradients
+        # print(f'Interpolating dlnT/dlnP with {self.PT_interp_mode} interpolation')
+        # print(f'shape of params["log_P_knots"] = {params["log_P_knots"].shape}')
+        # print(f'shape of params["dlnT_dlnP_knots"] = {params["dlnT_dlnP_knots"].shape}')
+        # print(f'interp kind = {self.PT_interp_mode}')
         interp_func = interp1d(
             params['log_P_knots'], params['dlnT_dlnP_knots'], 
             kind=self.PT_interp_mode

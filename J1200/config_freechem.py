@@ -212,10 +212,10 @@ PT_kwargs = dict(
     conv_adiabat = True, 
 
     ln_L_penalty_order = 3, 
-    PT_interp_mode = 'quadratic', 
+    PT_interp_mode = 'linear', 
 
     enforce_PT_corr = False, 
-    n_T_knots = 5, 
+    n_T_knots = len(constant_params['log_P_knots']), 
 )
 
 ####################################################################################

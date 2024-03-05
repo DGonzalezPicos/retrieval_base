@@ -26,12 +26,8 @@ config_data = {
         'file_std_molecfit_transm': None, 
         'filter_2MASS': '2MASS/2MASS.Ks', 
         
-       'pwv': 5.0, 
         # adjust values below....!
         'ra': 180.153309, 'dec': -78.75272, 'mjd': 60008.15139086,
-        # 'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
-
-        # 'T_std': 0., 'log_g_std': 0., 'rv_std': 0., 'vsini_std': 0., 
         'T_std': 17_000, # i Sco = B3V
 
         'slit': 'w_0.4', 
@@ -40,7 +36,8 @@ config_data = {
         'tell_grow': 11,
         'sigma_clip_width': 12, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
+        'log_P_range': (-5,2), 
+        'n_atm_layers': 30, 
         }, 
     }
 

@@ -48,8 +48,8 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
 targets = dict(J1200='freechem_16', 
-               TWA28='freechem_12', 
-               J0856='freechem_13'
+               TWA28='freechem_13', 
+               J0856='freechem_14'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
@@ -74,7 +74,8 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     params = bestfit_params['params']
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
     # logg = params['log_g']
-    logg = posterior[:,3] if i > 0 else posterior[:,2]
+    # logg = posterior[:,3] # with R_p in params
+    logg = posterior[:,2] # no R_p in params
     # FeH = chem.FeH_posterior
     # FeH = 
     # FeH = get_FeH(chem)
@@ -97,7 +98,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     if i == 0:
         fig = None
     # limits = [(3.0, 5.0), (-1.0, 1.5)]  # replace with your actual limits
-    limits = [(2.7, 4.15), (-0.70, 0.70)]  # replace with your actual limits
+    limits = [(3.0, 4.1), (-0.35, 0.35)]  # replace with your actual limits
 
     fig = corner.corner(samples, labels=labels, quantiles=[0.5],
                         show_titles=False, 
@@ -117,25 +118,26 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                         range=limits,
                         fig=fig)
     if i == 0:
-        ylim = np.array([ax.get_ylim() for ax in fig.get_axes()])[[0,-1]]
+        ylim = np.array([ax.get_ylim() for ax in fig.get_axes()])
         print(ylim)
     else:
         # check if new ylims are larger than previous ones
-        ylim_new = np.array([ax.get_ylim() for ax in fig.get_axes()])[[0,-1]]
+        ylim_new = np.array([ax.get_ylim() for ax in fig.get_axes()])
+
         ylim[0,0] = np.minimum(ylim[0,0], ylim_new[0,0])
         ylim[1,1] = np.maximum(ylim[1,1], ylim_new[1,1])
         print(ylim)
 #         ylim = [[min(a), max(b)] for a, b in zip(ylim, ylim_new)]
 #         print(ylim)
 
-count = -1
-for j, axi in enumerate(fig.get_axes()):
+# count = -1
+# for j, axi in enumerate(fig.get_axes()):
     # axi.set_xlim(limits[0])
-    if j in [0, 3]:
-        count +=1
-        # axi.set_xlabel(labels[0])
-        # print(ylim[count])
-        axi.set_ylim(ylim[count])
+    # if j in [0, 3]:
+    # count +=1
+    # axi.set_xlabel(labels[0])
+    # print(ylim[count])
+    # axi.set_ylim(ylim[j])
 
     
     

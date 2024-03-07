@@ -18,8 +18,8 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
 targets = dict(J1200='freechem_16', 
-               TWA28='freechem_12', 
-               J0856='freechem_13'
+               TWA28='freechem_13', 
+               J0856='freechem_14'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
@@ -38,7 +38,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     ax.fill_betweenx(PT.pressure, PT.temperature_envelopes[1], PT.temperature_envelopes[-2], color=colors[target], alpha=0.4)
     # ax.plot(PT.temperature, PT.pressure, color=colors[target], lw=2.5, label=target)
     # ax.plot(PT.temperature_posterior[-1,:], PT.pressure, color=colors[target], lw=2.5, label=target)
-    ax.plot(PT.temperature_envelopes[3], PT.pressure, color=colors[target], lw=2.5, label=target)
+    ax.plot(PT.temperature_envelopes[3], PT.pressure, color=colors[target], lw=2.0, label=target)
 
     # plot integrated contribution function
     icf = np.load(retrieval_path / 'test_data/bestfit_int_contr_em_K2166.npy')
@@ -54,7 +54,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         
 ax.set(ylim=(PT.pressure.max(), PT.pressure.min()), ylabel='Pressure [bar]', xlabel='Temperature [K]',
         yscale='log')
-ax.set_xlim(900., 4500.)
+ax.set_xlim(900., 5000.)
 ax.legend(frameon=False, prop={'weight':'bold', 'size': 20})
 # remove minor yticks
 ax.minorticks_off()

@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_16'
+prefix = 'freechem_18'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -31,13 +31,13 @@ config_data = {
         'T_std': 17_000, # i Sco = B3V
 
         'slit': 'w_0.4', 
-        'lbl_opacity_sampling': 10, # set to 5 for accuracy, 10 for speed
+        'lbl_opacity_sampling': 5, # set to 5 for accuracy, 10 for speed
         'tell_threshold': 0.65,
         'tell_grow': 11,
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 25, # set to 50 for accuracy, 25 for speed
+        'n_atm_layers': 50, # set to 50 for accuracy, 25 for speed
         }, 
     }
 
@@ -94,10 +94,15 @@ free_params = {
 
     # PT profile
     'dlnT_dlnP_0': [(0.00, 0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.00,0.30), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.00,0.30), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.00,0.30), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.00,0.30), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_1': [(0.00, 0.30), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.00, 0.30), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.00, 0.30), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.00, 0.30), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.00, 0.30), r'$\nabla_{T,5}$'],  # 1 mbar
+    'dlnT_dlnP_6': [(0.00, 0.30), r'$\nabla_{T,6}$'],  # 0.01 mbar
+    'dlnT_dlnP_7': [(0.00, 0.30), r'$\nabla_{T,7}$'],  # 0.01 mbar
+
+    
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
     # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
     'T_0': [(3000,10000), r'$T_0$'], 
@@ -108,7 +113,12 @@ free_params = {
 d_pc = 101.06 # pc
 parallax = 1/d_pc
 parallax_mas = parallax * 1000
-N_knots = 5
+
+dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
+N_knots = len(dlnT_dlnP)
+log_P_knots = np.linspace(-5,2,N_knots).tolist()
+print(f'Number of PT knots: {len(dlnT_dlnP)}')
+print(f'PT knots: {log_P_knots}')
 PT_interp_mode = 'linear'
 constant_params = {
     # General properties
@@ -117,7 +127,7 @@ constant_params = {
     'R_p': 6.80, # from previous runs... does not matter because of flux scaling
 
     # PT profile
-    'log_P_knots': np.linspace(-5,2,N_knots), 
+    'log_P_knots': log_P_knots, 
 }
 
 ####################################################################################

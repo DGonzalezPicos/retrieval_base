@@ -19,9 +19,9 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_12', 
-               TWA28='freechem_9', 
-               J0856='freechem_10'
+targets = dict(J1200='freechem_15', 
+               TWA28='freechem_12', 
+               J0856='freechem_13'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
@@ -29,6 +29,8 @@ prefix = 'freechem'
 
 orders = np.arange(6)
 # orders = [3]
+snr_dict = dict(J1200=np.zeros((6,3)), TWA28=np.zeros((6,3)), J0856=np.zeros((6,3)))
+fig_snr, ax_snr = plt.subplots(1,1, figsize=(6,6), constrained_layout=True)
 
 for order in orders:
     fig, ax = plt.subplots(len(targets)+1,1, figsize=(16,6), sharex=True,
@@ -84,7 +86,11 @@ for order in orders:
             err = np.nan * np.ones_like(y)
             err[finite] = np.sqrt(np.diag(cov[order,det].get_dense_cov())) * loglike.beta[order,det,None] * 1e15
             snr = np.nanmedian(y[finite]/err[finite])
-            print(f' {target} --> median SNR of detector {det} = {snr:.2f}')
+            # snr_dict[target][order,det] = snr
+            label = f'{target}' if (order+det) == 0 else None
+            if finite.sum() > 200:
+                ax_snr.scatter(np.median(x), snr, color=colors[target], s=50, label=label)
+                print(f' {target} --> median SNR of detector {det} = {snr:.2f} @ {np.median(x):.2f} nm')
             # scatter median error to show uncertainty
             det_err.append(np.nanmean(err))
             # print(f' median error of detector {det} = {np.nanmedian(err):.2f} x 10^-15 erg s^-1cm^-2nm^-1')
@@ -126,9 +132,22 @@ for order in orders:
     ax[-1].set_xlim(d_spec.wave[order].min()-0.2, d_spec.wave[order].max()+2.5)
 
     # ax[0].legend()
-    plt.show()
+    # plt.show()
     fig.savefig(out_path / f'fig3_order{order}.pdf', bbox_inches='tight', dpi=300)
     print('- Saved figure to ', out_path / f'fig3_order{order}.pdf')
+    plt.close(fig)
+    
+# save SNR fig
+ax_snr.set(xlabel='Wavelength [nm]', ylabel='SNR')
+ax_snr.legend(frameon=False, prop={'weight':'bold', 'size': 20})
+fig_snr.savefig(out_path / f'fig3_snr.pdf', bbox_inches='tight', dpi=300)
+print('- Saved SNR figure to ', out_path / f'fig3_snr.pdf')
+    # save SNR to a file
+    # import pandas as pd
+    # snr_df = pd.DataFrame(snr_dict)
+    # snr_df.to_csv(out_path / 'snr.csv')
+    # print('- Saved SNR to ', out_path / 'snr.csv')
+    
 
 
 

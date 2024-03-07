@@ -1,15 +1,19 @@
 import numpy as np
 import pathlib
 import json
-
+import pickle
 from tabulate import tabulate
 
-
+def save_equation(equation, filename):
+    with open(filename, "w") as f:
+        f.write(equation)
+        print(f'Equation saved to {filename}')
+        
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
-targets = dict(J1200='freechem_12', 
-               TWA28='freechem_9', 
-               J0856='freechem_10'
+targets = dict(J1200='freechem_15', 
+               TWA28='freechem_12', 
+               J0856='freechem_13'
                )
 
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/')
@@ -45,9 +49,11 @@ descriptions = {'log_a': 'GP amplitude',
                 'log_Ti': 'log mixing ratio of Ti',
                 'dlnT_dlnP_0': 'temperature gradient at $10^2$ bar',
                 'dlnT_dlnP_1': 'temperature gradient at $10^{1}$ bar',
-                'dlnT_dlnP_2': 'temperature gradient at $10^{-1}$ bar',
-                'dlnT_dlnP_3': 'temperature gradient at $10^{-3}$ bar',
-                'dlnT_dlnP_4': 'temperature gradient at $10^{-5}$ bar',
+                'dlnT_dlnP_2': 'temperature gradient at $10^{0}$ bar',
+                'dlnT_dlnP_3': 'temperature gradient at $10^{-1}$ bar',
+                'dlnT_dlnP_4': 'temperature gradient at $10^{-2}$ bar',
+                'dlnT_dlnP_5': 'temperature gradient at $10^{-3}$ bar',
+                'dlnT_dlnP_6': 'temperature gradient at $10^{-5}$ bar',
                 'T_0': 'temperature at $10^{2}$ bar',
                 }
 
@@ -55,13 +61,15 @@ descriptions = {'log_a': 'GP amplitude',
 # priors_table = [(label, f"[{low}, {high}]", desc) for label, (low, high), desc in free_params.values()]
 
 ignore_params = ['R_p']
-table = [[val[1], descriptions[key], f"[{val[0][0]}, {val[0][1]}]"] for (key, val) in free_params.items()
+table = [[val[1], descriptions[key], f"[{val[0][0]:.2f}, {val[0][1]:.2f}]"] for (key, val) in free_params.items()
          if key not in ignore_params]
 # Define the headers
 headers = ["Parameter", "Description", "Prior Range"]
 
 GP_eq_block = {}
 C_O_eq_block = {}
+vsini_eq_block = {}
+C_ratio_eq_block = {}
 for i, (target, retrieval_id) in enumerate(targets.items()):
     data_path = path / f'{target}'
     headers += [target]
@@ -109,8 +117,33 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     C_O_quantiles = np.quantile(C_O, [0.16, 0.5, 0.84])
     C_O_low = C_O_quantiles[1] - C_O_quantiles[0]
     C_O_up = C_O_quantiles[2] - C_O_quantiles[1]
-    C_O_eq_block[target] = f'\mathrm{{C/O}}_\\text{{{target}}} & = ' + f"{C_O_quantiles[1]:.2f}^{{+{C_O_up:.2f}}}_{{-{C_O_low:.2f}}}"
+    # add space to target
+    target_s =' ' + target
+    C_O_eq_block[target] = f'\mathrm{{C/O}}_\\text{{{target_s}}} & = ' + f"{C_O_quantiles[1]:.2f}^{{+{C_O_up:.2f}}}_{{-{C_O_low:.2f}}}"
     C_O_eq_block[target] += '\\\\ \n'
+    
+    vsini_low = bestfit_params['vsini'][1] - bestfit_params['vsini'][0]
+    vsini_up = bestfit_params['vsini'][2] - bestfit_params['vsini'][1]
+    vsini_eq_block[target] = f'v\\sin{{i}}_\\text{{{target_s}}} & = '
+    # check for number of decimals
+    if abs(vsini_up) < 5e-2 or abs(vsini_low) < 5e-2:
+        vsini_eq_block[target] += f"{vsini:.2f}^{{+{vsini_up:.2f}}}_{{-{vsini_low:.2f}}}"
+    else:
+        vsini_eq_block[target] += f"{vsini:.1f}^{{+{vsini_up:.1f}}}_{{-{vsini_low:.1f}}}"
+    vsini_eq_block[target] += '\\text{{ km s}}^{{-1}}'
+    
+    # C_ratio 
+    CO_12 = chem.mass_fractions_posterior['CO_high'] * 36. 
+    CO_13 = chem.mass_fractions_posterior['CO_36_high'] * 37.
+    C_ratio = CO_12 / CO_13
+    C_ratio_quantiles = np.quantile(C_ratio, [0.16, 0.5, 0.84])
+    C_ratio_low = C_ratio_quantiles[1] - C_ratio_quantiles[0]
+    C_ratio_up = C_ratio_quantiles[2] - C_ratio_quantiles[1]
+    C_ratio_eq_block[target] = f'\mathrm{{\\textsuperscript{{12}}C/\\textsuperscript{{13}}C}}_\\text{{{target_s}}} & = '
+    C_ratio_eq_block[target] += f"{C_ratio_quantiles[1]:.0f}^{{+{C_ratio_up:.0f}}}_{{-{C_ratio_low:.0f}}}"
+    C_ratio_eq_block[target] += '\\\\ \n'
+    
+    
     
     j = -1
     for j_i, (key, val) in enumerate(bestfit_params.items()):
@@ -155,14 +188,16 @@ for target in targets_id:
 
 GP_eq += '\end{align*}'
 # save equation
-with open(out_path / "equations/GP_eq.tex", "w") as f:
-    f.write(GP_eq)
-    print(f'Equation saved to {out_path / "equations/GP_eq.tex"}')
-print(GP_eq)
+# with open(out_path / "equations/GP_eq.tex", "w") as f:
+#     f.write(GP_eq)
+#     print(f'Equation saved to {out_path / "equations/GP_eq.tex"}')
+save_equation(GP_eq, out_path / "equations/GP_eq.tex")
+# print(GP_eq)
 
 
 # make C_O_eq --> #TODO: check this equation generation works
 C_O_eq = '\\begin{align*}\n'
+targets_id = ['J1200', 'J0856', 'TWA28']
 for target in targets_id:
     C_O_eq += C_O_eq_block[target]
 # save 
@@ -172,6 +207,29 @@ with open(out_path / "equations/C_O_eq.tex", "w") as f:
     f.write(C_O_eq)
     print(f'Equation saved to {out_path / "equations/C_O_eq.tex"}')
     
+# vsini equation, first one block for TWA28, then a block with J1200 and J0856
+vsini_eq_TWA28 = vsini_eq_block['TWA28']
+vsini_eq = '\\begin{align*}\n'
+vsini_eq += vsini_eq_TWA28
+vsini_eq += '\end{align*}'
+# save equation
+save_equation(vsini_eq, out_path / "equations/vsini_eq_TWA28.tex")
+
+# vsini equation for J1200 and J0856
+vsini_eq = '\\begin{align*}\n'
+vsini_eq += vsini_eq_block['J1200']
+vsini_eq += '\\\\ \n'
+vsini_eq += vsini_eq_block['J0856']
+vsini_eq += '\end{align*}'
+save_equation(vsini_eq, out_path / "equations/vsini_eq_J1200_J0856.tex")
+
+# 12C/13C equation block
+C_ratio_eq = '\\begin{align*}\n'
+for target in targets_id:
+    C_ratio_eq += C_ratio_eq_block[target]
+C_ratio_eq += '\end{align*}'
+save_equation(C_ratio_eq, out_path / "equations/C_ratio_eq.tex")
+
 
 # Print or save the LaTeX table
 # print(latex_table)

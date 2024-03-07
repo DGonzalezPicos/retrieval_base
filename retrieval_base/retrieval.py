@@ -39,7 +39,7 @@ def pre_processing(conf, conf_data):
         ra=conf_data['ra'], 
         dec=conf_data['dec'], 
         mjd=conf_data['mjd'], 
-        pwv=conf_data['pwv'], 
+        pwv=conf_data.get('pwv', 5.0), 
         file_target=conf_data['file_target'], 
         file_wave=conf_data['file_wave'], 
         slit=conf_data['slit'], 
@@ -155,7 +155,11 @@ def pre_processing(conf, conf_data):
 
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
-
+    
+    
+    
+   
+                
 class Retrieval:
 
     def __init__(self, conf, evaluation, plot_ccf=False):
@@ -404,7 +408,8 @@ class Retrieval:
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 
                 self.Cov[w_set], 
-                is_first_w_set=(h==0), 
+                # is_first_w_set=(h==0), # retrieve radius from first order (old)
+                is_first_w_set=False, # apply flux scaling to all orders (new)
                 #ln_L_penalty=ln_L_penalty, 
                 evaluation=self.evaluation, 
                 )
@@ -929,3 +934,10 @@ class Retrieval:
 
         # Save as pickle
         af.pickle_save(self.conf.prefix+'data/d_spec.pkl', self.d_spec)
+        
+    def prior_check(self):
+        # w_set = 
+        for h, w_set in enumerate(list(self.conf.config_data.keys())):
+
+            figs.fig_prior_check(self, w_set, fig_name=self.conf.prefix+f'plots/prior_check_{w_set}.pdf')
+        return self

@@ -61,7 +61,7 @@ logZ = 0.0
 sign = '+' if logZ >= 0 else '-'
 
 C_O = 0.5
-fig, (ax1, ax0) = plt.subplots(1,2, figsize=(8, 6), sharey=True, 
+fig, (ax1, ax0) = plt.subplots(1,2, figsize=(6, 4), sharey=True, 
                        gridspec_kw={'width_ratios': [2,3], 'wspace': 0.02})
 # remove minor ticks in y-axis (left and right)
 ax0.tick_params(axis='y', which='minor', left=False, right=False)
@@ -130,7 +130,7 @@ for i in range(n_samples):
     temp_list.append(temperature)
     dlnT_dlnP_list.append(ret.PT.dlnT_dlnP_array)
     # check for negative values
-    assert np.all(ret.PT.dlnT_dlnP_array > 0), f'Negative dlnT/dlnP values at iteration {i}'
+    # assert np.all(ret.PT.dlnT_dlnP_array > 0), f'Negative dlnT/dlnP values at iteration {i}'
     # temp_list.append(ret.PT(sample_PT))
     if i % (n_samples // 10) == 0:
         ax_PT.plot(temperature, pressure, alpha=0.75, lw=2.)
@@ -217,7 +217,7 @@ leg = ax0.legend(handles=legend_elements, loc='upper right', fontsize=15,
 # ax0.set_title('Self-consistent SPHINX-M models', fontsize=16, x=1.08, y=1.05)  
 if n_samples > 9e2:
     print('Saving figure...')
-    fig.savefig(out_path / 'fig2_SPHINX_M_PT.pdf', bbox_inches='tight')
+    fig.savefig(out_path / 'fig2_SPHINX_M_PT_soft_priors.pdf', bbox_inches='tight')
     plt.close(fig)
 else:
     plt.show()

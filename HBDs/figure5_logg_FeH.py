@@ -47,9 +47,9 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_12', 
-               TWA28='freechem_9', 
-               J0856='freechem_10'
+targets = dict(J1200='freechem_15', 
+               TWA28='freechem_12', 
+               J0856='freechem_13'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
@@ -97,7 +97,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     if i == 0:
         fig = None
     # limits = [(3.0, 5.0), (-1.0, 1.5)]  # replace with your actual limits
-    limits = [(2.8, 4.5), (-0.25, 0.80)]  # replace with your actual limits
+    limits = [(2.7, 4.15), (-0.70, 0.70)]  # replace with your actual limits
 
     fig = corner.corner(samples, labels=labels, quantiles=[0.5],
                         show_titles=False, 

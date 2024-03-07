@@ -16,19 +16,30 @@ import json
 
 import pyfastchem
 from astropy import constants as const
-
+def load_sphinx_thermal_profile(Teff=2600.0, log_g=4.0, logZ=0.0, C_O=0.50):
+        
+    path = pathlib.Path('/home/dario/phd/SPHINX_MODELS_MLT_1/ATMS/')
+    sign = '+' if logZ >= 0 else '-'
+    file = path / f'Teff_{Teff:.1f}_logg_{log_g}_logZ_{sign}{abs(logZ)}_CtoO_{C_O}_atms.txt'
+    assert file.exists(), f'File {file} does not exist.'
+    t, p = np.loadtxt(file, unpack=True)
+    return t, p
 
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_12', 
-               TWA28='freechem_9', 
-               J0856='freechem_10'
+targets = dict(J1200='freechem_15', 
+               TWA28='freechem_12', 
+               J0856='freechem_13'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
-
+sphinx_models = dict(J1200=(2400.0, 4.0, -0.5, 0.50), 
+                     TWA28=(2300.0, 4.0, 0.0, 0.50), 
+                     J0856=(2200.0, 4.0, 0.0, 0.50)
+                     )
+overplot_shinx = False
 
 mode = 'basic' # basic, rainout
 
@@ -79,7 +90,12 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # ax_PT.plot(PT.temperature, PT.pressure, color=colors[target], lw=2.5, label=target)
     # ax_PT.plot(PT.temperature_posterior[-1,:], PT.pressure, color=colors[target], lw=2.5, label=target)
     ax_PT.plot(PT.temperature_envelopes[3], PT.pressure, color=colors[target], lw=2.5, label=target)
-
+    # # overplot sphinx model
+    if overplot_shinx:
+        sphinx_temp, sphinx_pres = load_sphinx_thermal_profile(*sphinx_models[target])
+        ax_PT.plot(sphinx_temp, sphinx_pres, color='k', lw=2.5, ls=':', label='SPHINX')
+    
+    
     # plot integrated contribution function
     icf = np.load(retrieval_path / 'test_data/bestfit_int_contr_em_K2166.npy')
     print(f'shape of icf = {icf.shape}')

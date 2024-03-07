@@ -20,9 +20,9 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_12', 
-               TWA28='freechem_9', 
-               J0856='freechem_10'
+targets = dict(J1200='freechem_15', 
+               TWA28='freechem_12', 
+               J0856='freechem_13'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 # targets = dict(J0856='freechem_3')
@@ -99,7 +99,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     #     samples = samples[:max_samples,:]
     print(f'Number of samples = {samples.shape[0]}')
     # Make cornerplot with logg and Fe/H
-    labels = [r'C/O', r'[Fe/H]', r'$^{12}$C/$^{13}$C',
+    labels = [r'C/O', r'[C/H]', r'$^{12}$C/$^{13}$C',
                 # r'log C$^{16}$O/C$^{18}$O', r'log H$_2^{16}$O/H$_2^{18}$O', 
                 r'log HF', r'log Na', r'log Ca', r'log Ti', 
                 r'$\log g$', r'$v \sin i$', r'$\epsilon_{\rm limb}$', r'$v_{\rm rad}$',

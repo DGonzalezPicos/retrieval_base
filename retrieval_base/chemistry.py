@@ -79,11 +79,11 @@ class Chemistry:
         'H2O_181': ('C7', r'H$_2^{18}$O'), 
         'HDO': ('b', r'HDO'), 
 
-        'CH4': ('C4', r'CH$_4$'), 
-        '13CH4': ('purple', r'$^{13}$CH$_4$'), 
+        'CH4': ('#ff71ce', r'CH$_4$'), 
+        '13CH4': ('magenta', r'$^{13}$CH$_4$'), 
         
-        'NH3': ('C8', r'NH$_3$'), 
-        'HCN': ('C10', r'HCN'), 
+        'NH3': ('#b967ff', r'NH$_3$'), 
+        'HCN': ('orange', r'HCN'), 
         'H2S': ('C11', r'H$_2$S'), 
         'FeH': ('C12', r'FeH'), 
         'CrH': ('C15', r'CrH'), 
@@ -114,7 +114,7 @@ class Chemistry:
         'Si': ('C25', r'Si'),
         #'He': ('C22', r'He'), 
         'CN': ('magenta', r'CN'),
-        'C2H2': ('magenta', r'C$_2$H$_2$'),
+        'C2H2': ('#50FF45', r'C$_2$H$_2$'),
         # '13CH4': ('magenta', r'$^{13}$CH$_4$'),
         # ions
         'CaII': ('C26', r'CaII'),

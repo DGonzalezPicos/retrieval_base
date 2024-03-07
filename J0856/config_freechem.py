@@ -98,12 +98,12 @@ free_params = {
 
    # PT profile
    'dlnT_dlnP_0': [(0.06, 0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.06,0.24), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.06,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.04,0.15), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_1': [(0.04,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.04,0.24), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.02,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.02,0.15), r'$\nabla_{T,4}$'],  # 10 mbar
     'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
-    'dlnT_dlnP_6': [(0.00,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
+    'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
     'T_0': [(3000,10000), r'$T_0$'], 
 }
 

@@ -20,10 +20,11 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_12', 
-               TWA28='freechem_9', 
-               J0856='freechem_10'
-               )
+targets = dict(J0856='freechem_13',
+                TWA28='freechem_12',
+                J1200='freechem_15'
+                )
+
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(2,1, figsize=(6,6))
@@ -69,12 +70,12 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # chem.C16OC18O_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_28'],axis=-1)
     # chem.H216OH218O_posterior = np.median(chem.mass_fractions_posterior['H2O_pokazatel_main_iso'] / chem.mass_fractions_posterior['H2O_181'],axis=-1)
     
-    hist_args = {"color": colors[target], "alpha": 0.6, "fill": True, "edgecolor": "k",
+    hist_args = {"color": colors[target], "alpha": 0.5, "fill": True, "edgecolor": "k",
                          "linewidth": 2.0, "histtype": "stepfilled", "density": True,
                          'bins': n_bins}
 
-    C_O_range = (0.48, 0.68)
-    C_ratio_range = (0., 180.)
+    C_O_range = (0.50, 0.70)
+    C_ratio_range = (0., 250.)
     ax[0].hist(C_O,  range=C_O_range, **hist_args)
     
     no_fill_args = hist_args.copy()
@@ -139,6 +140,8 @@ labels = [f'{target}' for target in targets.keys()]
 # leg = fig.legend(handles=handles, labels=labels, loc=(0.57, 0.6),
 #                  frameon=False, prop={'weight':'bold', 'size': 16},
 #                  )
+ax[0].set(xlim=(0.50, 0.70))
+ax[1].set(xlim=(0, 250))
 ax[1].legend(frameon=False, prop={'weight':'bold', 'size': 16}, loc='upper right')
 fig.tight_layout()
 plt.show()

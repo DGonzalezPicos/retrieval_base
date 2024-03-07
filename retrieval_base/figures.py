@@ -1090,3 +1090,54 @@ def fig_species_contribution(d_spec,
     if prefix is not None:
         fig_CCF.savefig(prefix+f'plots/species/CCF_{w_set}.pdf')
     plt.close(fig_CCF)
+    
+    
+def fig_prior_check(ret, w_set, fig_name=None):
+    
+    assert hasattr(ret, 'd_spec'), 'Retrieval object does not have d_spec attribute.'
+    d_spec = ret.d_spec[w_set]
+    n_orders = d_spec.n_orders
+    fig = plt.figure(figsize=(16, 10))
+    # create a gridspec object
+    gs = fig.add_gridspec(n_orders, 2, width_ratios=[3,1], wspace=0.02, hspace=0.25, bottom=0.08, top=0.94, left=0.06, right=0.94)
+    ax_PT = fig.add_subplot(gs[:,1])
+    # move yticks and label from ax_PT to right side
+    ax_PT.yaxis.tick_right()
+    ax_PT.yaxis.set_label_position('right')
+    ax_spec = [fig.add_subplot(gs[order,0]) for order in range(n_orders)]
+    
+    colors = ['C0', 'C1', 'C2']
+    theta = [0.0, 0.5, 1.0] # lower edge, center, upper edge
+    for i, theta_i in enumerate(theta):        
+        
+        ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
+        sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+        print(sample)
+        ln_L = ret.PMN_lnL_func()
+        print(f'ln(L) = {ln_L:.2e}\n')
+        
+        for order in range(d_spec.n_orders):
+            for det in range(d_spec.n_dets):
+                mask_ij = d_spec.mask_isfinite[order, det]
+                x = d_spec.wave[order, det]
+                
+                label = f'ln(L)={ln_L:.2e}' if (order+det) == 0 else None
+                f = ret.LogLike[w_set].f[order, det]
+                beta = ret.LogLike[w_set].beta[order, det] # not using this...
+                # print(f' f={f:.2e}')
+                ax_spec[order].plot(x, ret.m_spec[w_set].flux[order, det] * f, color=colors[i], alpha=0.85, label=label)
+                ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
+                if i == 0:
+                    ax_spec[order].plot(x, d_spec.flux[order, det], color='k', alpha=0.3)
+        
+        ax_spec[-1].set(xlabel='Wavelength (nm)')
+    
+    ax_PT.set(xlabel='Temperature (K)', ylabel='Pressure (bar)',
+                yscale='log', ylim=(np.max(ret.PT.pressure), np.min(ret.PT.pressure)))
+    # add one ylabel for all subplots
+    fig.text(0.02, 0.5, 'Flux (erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$)', va='center', rotation='vertical')
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f'Figure saved as {fig_name}')
+        plt.close(fig)
+    return fig, ax_PT, ax_spec

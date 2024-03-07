@@ -8,7 +8,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_13'
+prefix = 'freechem_14'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -27,21 +27,19 @@ config_data = {
         # 'file_std_molecfit_transm': './data/iSco_std_molecfit_transm.dat', 
 
         'filter_2MASS': '2MASS/2MASS.Ks', 
-        'pwv': 5.0, 
         # adjust values below....!
         'ra': 134.057762, 'dec': -13.70612, 'mjd': 60008.03764053,
         # 'ra_std': 247.552759, 'dec_std': -25.11518, 'mjd_std': 60007.24715561, 
 
-        # 'T_std': 0, 'log_g_std': 2.3, 'rv_std': 31.00, 'vsini_std': 280, 
         'T_std': 17_000, # i Sco = B3V
         'slit': 'w_0.4', 
-        'lbl_opacity_sampling': 5, 
+        'lbl_opacity_sampling': 10, 
         'tell_threshold': 0.65,
         'tell_grow': 11,
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 50, 
+        'n_atm_layers': 25, 
         }, 
     }
 
@@ -65,7 +63,7 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
+    # 'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(2.5,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -96,14 +94,14 @@ free_params = {
     # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
-   # PT profile
-   'dlnT_dlnP_0': [(0.06, 0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.04,0.22), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.04,0.24), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.02,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.02,0.15), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
-    'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
+  # PT profile
+    'dlnT_dlnP_0': [(0.00, 0.40), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.00,0.30), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.00,0.30), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.00,0.30), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.00,0.30), r'$\nabla_{T,4}$'],  # 10 mbar
+    # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
+    # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
     'T_0': [(3000,10000), r'$T_0$'], 
 }
 
@@ -112,13 +110,16 @@ free_params = {
 d_pc = 53.8 # pc
 parallax = 1/d_pc
 parallax_mas = parallax * 1000
+N_knots = 5
+PT_interp_mode = 'linear'
 constant_params = {
     # General properties
     'parallax': parallax_mas, 
     # 'epsilon_limb': 0.65, 
+    'R_p': 2.6, # from previous runs... does not matter because of flux scaling
 
     # PT profile
-    'log_P_knots': [-5., -3., -2, -1., 0., 1., 2.], 
+    'log_P_knots': np.linspace(-5,2,N_knots), 
 }
 
 ####################################################################################
@@ -212,7 +213,7 @@ PT_kwargs = dict(
     conv_adiabat = True, 
 
     ln_L_penalty_order = 3, 
-    PT_interp_mode = 'linear', 
+    PT_interp_mode = PT_interp_mode, 
 
     enforce_PT_corr = False, 
     n_T_knots = len(constant_params['log_P_knots']), 
@@ -225,7 +226,7 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 1000
+n_live_points = 200
 n_iter_before_update = int(n_live_points*50)
 
 # generate a .txt version of this file

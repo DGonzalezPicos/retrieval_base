@@ -47,7 +47,7 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_15', 
+targets = dict(J1200='freechem_16', 
                TWA28='freechem_12', 
                J0856='freechem_13'
                )
@@ -74,7 +74,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     params = bestfit_params['params']
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
     # logg = params['log_g']
-    logg = posterior[:,3]
+    logg = posterior[:,3] if i > 0 else posterior[:,2]
     # FeH = chem.FeH_posterior
     # FeH = 
     # FeH = get_FeH(chem)
@@ -116,6 +116,27 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                                      },
                         range=limits,
                         fig=fig)
+    if i == 0:
+        ylim = np.array([ax.get_ylim() for ax in fig.get_axes()])[[0,-1]]
+        print(ylim)
+    else:
+        # check if new ylims are larger than previous ones
+        ylim_new = np.array([ax.get_ylim() for ax in fig.get_axes()])[[0,-1]]
+        ylim[0,0] = np.minimum(ylim[0,0], ylim_new[0,0])
+        ylim[1,1] = np.maximum(ylim[1,1], ylim_new[1,1])
+        print(ylim)
+#         ylim = [[min(a), max(b)] for a, b in zip(ylim, ylim_new)]
+#         print(ylim)
+
+count = -1
+for j, axi in enumerate(fig.get_axes()):
+    # axi.set_xlim(limits[0])
+    if j in [0, 3]:
+        count +=1
+        # axi.set_xlabel(labels[0])
+        # print(ylim[count])
+        axi.set_ylim(ylim[count])
+
     
     
     # fig.suptitle(target, fontsize=16)

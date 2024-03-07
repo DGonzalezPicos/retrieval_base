@@ -19,11 +19,10 @@ import json
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
-
-targets = dict(J0856='freechem_13',
-                TWA28='freechem_12',
-                J1200='freechem_15'
-                )
+targets = dict(J1200='freechem_16', 
+               TWA28='freechem_12', 
+               J0856='freechem_13'
+               )
 
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 

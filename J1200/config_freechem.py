@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_18'
+prefix = 'freechem_19'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -97,10 +97,10 @@ free_params = {
     'dlnT_dlnP_1': [(0.00, 0.30), r'$\nabla_{T,1}$'],  # 10 bar
     'dlnT_dlnP_2': [(0.00, 0.30), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.00, 0.30), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.00, 0.30), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(0.00, 0.30), r'$\nabla_{T,5}$'],  # 1 mbar
-    'dlnT_dlnP_6': [(0.00, 0.30), r'$\nabla_{T,6}$'],  # 0.01 mbar
-    'dlnT_dlnP_7': [(0.00, 0.30), r'$\nabla_{T,7}$'],  # 0.01 mbar
+    # 'dlnT_dlnP_4': [(0.00, 0.30), r'$\nabla_{T,4}$'],  # 10 mbar
+    # 'dlnT_dlnP_5': [(0.00, 0.30), r'$\nabla_{T,5}$'],  # 1 mbar
+    # 'dlnT_dlnP_6': [(0.00, 0.30), r'$\nabla_{T,6}$'],  # 0.01 mbar
+    # 'dlnT_dlnP_7': [(0.00, 0.30), r'$\nabla_{T,7}$'],  # 0.01 mbar
 
     
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
@@ -119,7 +119,7 @@ N_knots = len(dlnT_dlnP)
 log_P_knots = np.linspace(-5,2,N_knots).tolist()
 print(f'Number of PT knots: {len(dlnT_dlnP)}')
 print(f'PT knots: {log_P_knots}')
-PT_interp_mode = 'linear'
+PT_interp_mode = 'quadratic'
 constant_params = {
     # General properties
     'parallax': parallax_mas, 

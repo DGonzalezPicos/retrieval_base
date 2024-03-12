@@ -266,14 +266,14 @@ def fig_bestfit_model(
                     r')$'
                     
             # PLot model (check if spline decomposition used during retrieval)
-            if hasattr(ret.LogLike[w_set], 'phi'):
-                    m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
-                    m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
+            if hasattr(LogLike, 'phi'):
+                    m_flux_spline = SplineModel(N_knots=LogLike.N_knots, spline_degree=3)(m_spec.flux[i,j])
+                    m_flux = LogLike.phi[i,j] @ m_flux_spline
                     
             else:
                 
-                f = ret.LogLike[w_set].f[order, det]
-                m_flux = ret.m_spec[w_set].flux[order, det] * f
+                f = LogLike.f[i,j]
+                m_flux = m_spec.flux[i,j] * f
                     
             ax_spec.plot(
                 d_spec.wave[i,j], m_flux, 
@@ -287,7 +287,8 @@ def fig_bestfit_model(
             if mask_ij.any():
 
                 # Plot the residuals
-                res_ij = d_spec.flux[i,j] - LogLike.f[i,j]*m_spec.flux[i,j]
+                # res_ij = d_spec.flux[i,j] - LogLike.f[i,j]*m_spec.flux[i,j]
+                res_ij = d_spec.flux[i,j] - m_flux
                 ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
                 ax_res.plot(
                     [d_spec.wave[i,j].min(), d_spec.wave[i,j].max()], 
@@ -295,6 +296,7 @@ def fig_bestfit_model(
                 )
 
                 if m_spec.flux_envelope is not None:
+                    print(f'[fig_bestfig_model] flux_envelope --> Not implemented')
                     ax_res.plot(
                         d_spec.wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.f[i,j]*m_spec.flux[i,j], 
                         c='C0', lw=1

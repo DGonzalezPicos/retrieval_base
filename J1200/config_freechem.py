@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_26'
+prefix = 'freechem_27'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -32,8 +32,8 @@ config_data = {
 
         'slit': 'w_0.4', 
         'lbl_opacity_sampling': 5, # set to 5 for accuracy, 10 for speed
-        'tell_threshold': 0.70,
-        'tell_grow': 11,
+        'tell_threshold': 0.50,
+        'tell_grow': 21,
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
@@ -119,7 +119,7 @@ N_knots = len(dlnT_dlnP)
 log_P_knots = np.linspace(-5,2,N_knots).tolist()
 print(f'Number of PT knots: {len(dlnT_dlnP)}')
 print(f'PT knots: {log_P_knots}')
-PT_interp_mode = 'linear'
+PT_interp_mode = 'quadratic'
 constant_params = {
     # General properties
     'parallax': parallax_mas, 

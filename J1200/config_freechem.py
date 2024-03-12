@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_27'
+prefix = 'freechem_28'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -37,7 +37,7 @@ config_data = {
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 30, # set to 50 for accuracy, 25 for speed
+        'n_atm_layers': 50, # set to 50 for accuracy, 25 for speed
         }, 
     }
 
@@ -105,7 +105,7 @@ free_params = {
     
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
     # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
-    'T_0': [(3000,10000), r'$T_0$'], 
+    'T_0': [(4000,10000), r'$T_0$'], 
 }
 
 # Constants to use if prior is not given
@@ -119,7 +119,7 @@ N_knots = len(dlnT_dlnP)
 log_P_knots = np.linspace(-5,2,N_knots).tolist()
 print(f'Number of PT knots: {len(dlnT_dlnP)}')
 print(f'PT knots: {log_P_knots}')
-PT_interp_mode = 'quadratic'
+PT_interp_mode = 'linear'
 constant_params = {
     # General properties
     'parallax': parallax_mas, 
@@ -137,7 +137,7 @@ constant_params = {
 scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
-N_spline_knots = 5
+N_spline_knots = 3
 
 # cloud_mode = 'gray'
 cloud_mode = None

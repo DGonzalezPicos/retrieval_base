@@ -49,6 +49,8 @@ class LogLikelihood:
 
         # Array to store the linear flux-scaling terms
         self.f    = np.ones((self.d_spec.n_orders, self.d_spec.n_dets))
+        if self.N_knots > 1:
+            self.phi = np.ones((self.d_spec.n_orders, self.d_spec.n_dets, self.N_knots))
         # Array to store the uncertainty-scaling terms
         self.beta = np.ones((self.d_spec.n_orders, self.d_spec.n_dets))
         
@@ -104,6 +106,7 @@ class LogLikelihood:
                         # print(f' SPline coefficients {phi}')
                         # take the central point of the spline
                         f_ij = 2 * phi[self.N_knots//2]
+                        self.phi[i,j] = phi
                         m_flux_ij_scaled = phi @ m_flux_ij_spline
                     
                     # Recalculate the residuals

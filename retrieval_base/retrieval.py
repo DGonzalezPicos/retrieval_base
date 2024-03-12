@@ -226,7 +226,6 @@ class Retrieval:
             del self.d_spec[w_set].err
 
             N_spline_knots = self.conf.N_spline_knots if hasattr(self.conf, 'N_spline_knots') else 1
-                
             self.LogLike[w_set] = LogLikelihood(
                 self.d_spec[w_set], 
                 n_params=self.Param.n_params, 

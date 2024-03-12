@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_24'
+prefix = 'freechem_26'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -32,7 +32,7 @@ config_data = {
 
         'slit': 'w_0.4', 
         'lbl_opacity_sampling': 5, # set to 5 for accuracy, 10 for speed
-        'tell_threshold': 0.65,
+        'tell_threshold': 0.70,
         'tell_grow': 11,
         'sigma_clip_width': 12, 
     
@@ -98,9 +98,9 @@ free_params = {
     'dlnT_dlnP_2': [(0.00, 0.35), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.00, 0.35), r'$\nabla_{T,3}$'],  # 0.1 bar
     'dlnT_dlnP_4': [(0.00, 0.35), r'$\nabla_{T,4}$'],  # 10 mbar
-    # 'dlnT_dlnP_5': [(0.00, 0.30), r'$\nabla_{T,5}$'],  # 1 mbar
-    # 'dlnT_dlnP_6': [(0.00, 0.30), r'$\nabla_{T,6}$'],  # 0.01 mbar
-    # 'dlnT_dlnP_7': [(0.00, 0.30), r'$\nabla_{T,7}$'],  # 0.01 mbar
+    'dlnT_dlnP_5': [(0.00, 0.35), r'$\nabla_{T,5}$'],  # 1 mbar
+    'dlnT_dlnP_6': [(0.00, 0.35), r'$\nabla_{T,6}$'],  # 0.01 mbar
+    'dlnT_dlnP_7': [(0.00, 0.35), r'$\nabla_{T,7}$'],  # 0.01 mbar
 
     
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
@@ -137,7 +137,7 @@ constant_params = {
 scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
-N_spline_knots = 7
+N_spline_knots = 5
 
 # cloud_mode = 'gray'
 cloud_mode = None

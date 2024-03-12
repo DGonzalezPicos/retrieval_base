@@ -10,6 +10,7 @@ import copy
 import petitRADTRANS.nat_cst as nc
 
 import retrieval_base.auxiliary_functions as af
+from retrieval_base.spline_model import SplineModel
 
 # make borders thicker
 mpl.rcParams['axes.linewidth'] = 1.5
@@ -263,8 +264,19 @@ def fig_bestfit_model(
                     r'$(\chi^2_\mathrm{red}$ (w/o $\sigma$-model)$=' + \
                     '{:.2f}'.format(LogLike.chi_squared_red) + \
                     r')$'
+                    
+            # PLot model (check if spline decomposition used during retrieval)
+            if hasattr(ret.LogLike[w_set], 'phi'):
+                    m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
+                    m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
+                    
+            else:
+                
+                f = ret.LogLike[w_set].f[order, det]
+                m_flux = ret.m_spec[w_set].flux[order, det] * f
+                    
             ax_spec.plot(
-                d_spec.wave[i,j], LogLike.f[i,j]*m_spec.flux[i,j], 
+                d_spec.wave[i,j], m_flux, 
                 c=bestfit_color, lw=1, label=label
                 )
             if m_spec.flux_envelope is not None:
@@ -1122,10 +1134,20 @@ def fig_prior_check(ret, w_set, fig_name=None):
                 x = d_spec.wave[order, det]
                 
                 label = f'ln(L)={ln_L:.2e}' if (order+det) == 0 else None
-                f = ret.LogLike[w_set].f[order, det]
+                if hasattr(ret.LogLike[w_set], 'phi'):
+                    m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
+                    m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
+                    
+                else:
+                    
+                    f = ret.LogLike[w_set].f[order, det]
+                    m_flux = ret.m_spec[w_set].flux[order, det] * f
+                    
+                ax_spec[order].plot(x, m_flux, color=colors[i], alpha=0.85, label=label)
+                # f = ret.LogLike[w_set].f[order, det]
                 beta = ret.LogLike[w_set].beta[order, det] # not using this...
                 # print(f' f={f:.2e}')
-                ax_spec[order].plot(x, ret.m_spec[w_set].flux[order, det] * f, color=colors[i], alpha=0.85, label=label)
+                # ax_spec[order].plot(x, ret.m_spec[w_set].flux[order, det] * f, color=colors[i], alpha=0.85, label=label)
                 ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
                 if i == 0:
                     ax_spec[order].plot(x, d_spec.flux[order, det], color='k', alpha=0.3)
@@ -1237,11 +1259,15 @@ def fig_free_parameter(ret, free_parameter,
                 x = d_spec.wave[order, det]
                 
                 label = f'ln(L)={ln_L:.3e}' if (order+det) == 0 else None
-                # label = f'chi2={chi2:.2f}' if (order+det) == 0 else None
-                f = ret.LogLike[w_set].f[order, det]
-                # beta = ret.LogLike[w_set].beta[order, det] # not using this...
-                # print(f' f={f:.2e}')
-                ax_spec[order].plot(x, ret.m_spec[w_set].flux[order, det] * f, color=colors[i], alpha=0.85, label=label)
+                if hasattr(ret.LogLike[w_set], 'phi'):
+                    m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
+                    m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
+                    
+                else:
+                    f = ret.LogLike[w_set].f[order, det]
+                    m_flux = ret.m_spec[w_set].flux[order, det] * f
+                    
+                ax_spec[order].plot(x, m_flux, color=colors[i], alpha=0.85, label=label)
                 
                 if i == 0:
                     ax_spec[order].plot(x, d_spec.flux[order, det], color='k', alpha=0.3)

@@ -225,11 +225,14 @@ class Retrieval:
             del self.d_spec[w_set].flux_eff
             del self.d_spec[w_set].err
 
+            N_spline_knots = self.conf.N_spline_knots if hasattr(self.conf, 'N_spline_knots') else 1
+                
             self.LogLike[w_set] = LogLikelihood(
                 self.d_spec[w_set], 
                 n_params=self.Param.n_params, 
                 scale_flux=self.conf.scale_flux, 
                 scale_err=self.conf.scale_err, 
+                N_spline_knots=N_spline_knots,
                 )
 
         self.PT = get_PT_profile_class(

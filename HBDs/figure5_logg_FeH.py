@@ -47,9 +47,15 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_16', 
-               TWA28='freechem_13', 
-               J0856='freechem_14'
+## long retrievals with N_layers=50, lbl=5, custom PT knots and priors (quadratic interpolation):
+# 1. J1200: freechem_15
+# 2. TWA28: freechem_12
+# 3. J0856: freechem_13
+
+
+targets = dict(J1200='freechem_15', 
+               TWA28='freechem_12', 
+               J0856='freechem_13'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
@@ -75,7 +81,10 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
     # logg = params['log_g']
     # logg = posterior[:,3] # with R_p in params
-    logg = posterior[:,2] # no R_p in params
+    logg = posterior[:,3] # no R_p in params
+    if (logg.min()) < 2.5 or (logg.max() > 5.5):
+        print(f' Using idx=3 for log g')
+        logg = posterior[:,3]
     # FeH = chem.FeH_posterior
     # FeH = 
     # FeH = get_FeH(chem)
@@ -98,7 +107,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     if i == 0:
         fig = None
     # limits = [(3.0, 5.0), (-1.0, 1.5)]  # replace with your actual limits
-    limits = [(3.0, 4.1), (-0.35, 0.35)]  # replace with your actual limits
+    limits = [(2.8, 4.2), (-0.7, 0.7)]  # replace with your actual limits
 
     fig = corner.corner(samples, labels=labels, quantiles=[0.5],
                         show_titles=False, 

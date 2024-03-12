@@ -34,7 +34,8 @@ config_data = {
         'slit': 'w_0.4', 'lbl_opacity_sampling': 3, 
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
-        'log_P_range': (-5,2), 'n_atm_layers': 30, 
+        'log_P_range': (-5,2),
+        'n_atm_layers': 30, 
         }, 
     }
 
@@ -89,11 +90,15 @@ free_params = {
     'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-   'dlnT_dlnP_0': [(0.00, 0.40), r'$\nabla_{T,0}$'], # 100 bar
+    # PT profile
+    'dlnT_dlnP_0': [(0.00,0.40), r'$\nabla_{T,0}$'], # 100 bar
     'dlnT_dlnP_1': [(0.00,0.30), r'$\nabla_{T,1}$'],  # 10 bar
     'dlnT_dlnP_2': [(0.00,0.30), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.00,0.30), r'$\nabla_{T,3}$'],  # 0.1 bar
     'dlnT_dlnP_4': [(0.00,0.30), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.00,0.30), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(0.00,0.30), r'$\nabla_{T,6}$'],  # 10 mbar
+
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
     # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
     'T_0': [(3000,10000), r'$T_0$'], 
@@ -105,7 +110,13 @@ d_pc = 53.8 # pc
 parallax = 1/d_pc
 parallax_mas = parallax * 1000
 
-N_knots = 5
+dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
+# N_knots = len(dlnT_dlnP)
+# log_P_knots = np.linspace(-5,2,N_knots).tolist()
+log_P_knots = [-5., -3., -1., -0.5, 0., 1., 2.]
+N_knots = len(log_P_knots)
+# print(f'Number of PT knots: {len(dlnT_dlnP)}')
+print(f'PT knots: {log_P_knots}')
 PT_interp_mode = 'linear'
 constant_params = {
     # General properties
@@ -113,7 +124,7 @@ constant_params = {
     # 'epsilon_limb': 0.65, 
 
     # PT profile
-    'log_P_knots': np.linspace(-5,2,N_knots), 
+    'log_P_knots': log_P_knots, 
 }
 
 ####################################################################################
@@ -218,7 +229,7 @@ PT_kwargs = dict(
     PT_interp_mode = PT_interp_mode, 
 
     enforce_PT_corr = False, 
-    n_T_knots = 5, 
+    n_T_knots = N_knots, 
 )
 
 ####################################################################################

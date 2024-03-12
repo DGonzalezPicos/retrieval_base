@@ -1141,3 +1141,134 @@ def fig_prior_check(ret, w_set, fig_name=None):
         print(f'Figure saved as {fig_name}')
         plt.close(fig)
     return fig, ax_PT, ax_spec
+
+def fig_free_parameter(ret, free_parameter,
+                       fixed_parameters={},
+                       N_points=4, 
+                       w_set='K2166',
+                       cmap='viridis',
+                       fig_name=None):
+    ''' Generate spectra with fixed parameters and varying one parameter 
+    Same layout as fig_prior_check '''
+    assert hasattr(ret, 'd_spec'), 'Retrieval object does not have d_spec attribute.'
+    d_spec = ret.d_spec[w_set]
+    n_orders = d_spec.n_orders
+    
+    for key_i in list(fixed_parameters.keys()):
+        if key_i.startswith('log_'):
+            linear_key = key_i.replace('log_', '')
+            fixed_parameters[linear_key] = 10**fixed_parameters[key_i]
+    # print(f'Fixed parameters: {fixed_parameters}')
+    fig = plt.figure(figsize=(16, 10))
+    # create a gridspec object
+    gs = fig.add_gridspec(n_orders, 2, width_ratios=[3,1], wspace=0.02, hspace=0.25, bottom=0.08, top=0.94, left=0.06, right=0.94)
+    ax_PT = fig.add_subplot(gs[:,1])
+    # move yticks and label from ax_PT to right side
+    ax_PT.yaxis.tick_right()
+    ax_PT.yaxis.set_label_position('right')
+    ax_spec = [fig.add_subplot(gs[order,0]) for order in range(n_orders)]
+    
+    # Use central value from priors as default
+    ret.Param(0.5 * np.ones(len(ret.Param.param_keys)))
+    sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+    
+    assert free_parameter in sample.keys(), f'Parameter {free_parameter} not found in free parameters.'
+    bounds = ret.Param.param_priors[free_parameter]
+    free_parameter_range = np.linspace(bounds[0], bounds[1], N_points)
+    print(f' Varying {free_parameter} from {bounds[0]} to {bounds[1]}')
+    # colors = plt.cm.viridis(np.linspace(0, 1, len(free_parameter_range)))
+    colors = getattr(plt.cm, cmap)(np.linspace(0, 1.0, len(free_parameter_range)))
+    # # check if free
+    temperature_ref = np.ones_like(ret.PT.pressure)
+    
+    ret.CB.active = True # to compute the emission contribution function
+    for i, theta_i in enumerate(free_parameter_range):        
+        
+        ret.Param.params.update(fixed_parameters)
+        ret.Param.params.update({free_parameter: theta_i})
+        if free_parameter.startswith('log_'):
+            linear_key = free_parameter.replace('log_', '')
+            ret.Param.params.update({linear_key: 10**theta_i})
+            
+        ret.Param.read_PT_params()
+        ret.Param.read_uncertainty_params()
+        ret.Param.read_chemistry_params()
+        ret.Param.read_cloud_params()
+        
+        new_samples = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+        print(new_samples)
+        ln_L = ret.PMN_lnL_func()
+        print(f'ln(L) = {ln_L:.2e}\n')
+        # chi2 = ret.LogLike[w_set].chi_squared_red
+        
+        temperature = ret.PT.temperature
+        ret.CB.active = False
+        if np.any(temperature_ref != temperature) or free_parameter=='log_g':
+            print(f' Plotting temperature for {free_parameter}={theta_i}')
+            # ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
+            # ret.PT.plot
+            ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
+            if free_parameter.startswith('dlnT_dlnP'):
+                print(f' Adding hline for {free_parameter}')
+                knot_id = int(free_parameter[-1])
+                ax_PT.axhline(ret.PT.P_knots[::-1][knot_id], color='magenta', alpha=0.50, ls='-')
+            
+            if hasattr(ret.pRT_atm[w_set], 'int_contr_em'):
+
+                # Add the integrated emission contribution function
+                ax_contr = ax_PT.twiny()
+                fig_contr_em(
+                    ax_contr, 
+                    ret.pRT_atm[w_set].int_contr_em, 
+                    None, # integrated_contr_em_per_order, 
+                    ret.PT.pressure, 
+                    bestfit_color=colors[i]
+                    )
+        
+            # if hasattr
+            # ax_twin = ax_PT.twinx()
+            
+            temperature_ref = np.copy(temperature)
+            ret.CB.active = True
+
+        for order in range(d_spec.n_orders):
+            for det in range(d_spec.n_dets):
+                mask_ij = d_spec.mask_isfinite[order, det]
+                x = d_spec.wave[order, det]
+                
+                label = f'ln(L)={ln_L:.3e}' if (order+det) == 0 else None
+                # label = f'chi2={chi2:.2f}' if (order+det) == 0 else None
+                f = ret.LogLike[w_set].f[order, det]
+                # beta = ret.LogLike[w_set].beta[order, det] # not using this...
+                # print(f' f={f:.2e}')
+                ax_spec[order].plot(x, ret.m_spec[w_set].flux[order, det] * f, color=colors[i], alpha=0.85, label=label)
+                
+                if i == 0:
+                    ax_spec[order].plot(x, d_spec.flux[order, det], color='k', alpha=0.3)
+        
+        ax_spec[-1].set(xlabel='Wavelength (nm)')
+    im = ax_spec[0].scatter([], [], c=[], cmap=cmap,
+                       vmin=free_parameter_range.min(), 
+                       vmax=free_parameter_range.max())
+    cbar = fig.colorbar(im, ax=[ax_spec[0], ax_PT], 
+                        label = free_parameter,
+                        aspect=40,
+                        orientation='horizontal', 
+                        location='top',                        
+                        pad=0.05)
+
+    ax_PT.set(xlabel='Temperature (K)', ylabel='Pressure (bar)',
+                yscale='log', ylim=(np.max(ret.PT.pressure), np.min(ret.PT.pressure)))
+    # copy legend from ax_spec[0] and show it on ax_PT
+    ax_PT.legend(*ax_spec[0].get_legend_handles_labels(), loc='upper right', framealpha=0.7, fontsize=16)
+
+    # add one ylabel for all subplots
+    fig.text(0.02, 0.5, 'Flux (erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$)', va='center', rotation='vertical')
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f'Figure saved as {fig_name}')
+        plt.close(fig)
+    return fig, ax_PT, ax_spec
+
+
+# if __name__ == '__main__':

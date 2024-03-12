@@ -1,5 +1,8 @@
 import numpy as np
 
+from scipy.optimize import nnls
+from retrieval_base.spline_model import SplineModel
+
 class LogLikelihood:
 
     def __init__(self, 
@@ -7,6 +10,7 @@ class LogLikelihood:
                  n_params, 
                  scale_flux=False, 
                  scale_err=False, 
+                 N_spline_knots=1,
                  ):
 
         # Observed spectrum is constant
@@ -18,6 +22,8 @@ class LogLikelihood:
 
         self.scale_flux   = scale_flux
         self.scale_err    = scale_err
+        
+        self.N_knots = N_spline_knots
         
     def __call__(self, m_spec, Cov, is_first_w_set=False, ln_L_penalty=0, evaluation=False):
         '''
@@ -88,8 +94,19 @@ class LogLikelihood:
                 if self.scale_flux and (not (i==0 and j==0) or not is_first_w_set):
                     # Only scale the flux relative to the first order/detector
 
-                    # Scale the model flux to minimize the chi-squared error
-                    m_flux_ij_scaled, f_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij, Cov[i,j])
+                    if self.N_knots <= 1:
+                        # Scale the model flux to minimize the chi-squared error
+                        m_flux_ij_scaled, f_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij, Cov[i,j])
+                    else:
+                        # print(f'Spline decomposition {self.N_knots}.')
+                        m_flux_ij_spline = SplineModel(N_knots=self.N_knots, spline_degree=3)(m_flux_ij)
+                        phi = nnls(np.dot(m_flux_ij_spline, Cov[i,j].solve(m_flux_ij_spline.T)), np.dot(m_flux_ij_spline, Cov[i,j].solve(d_flux_ij)))[0]
+                        # print(f' SPline coefficients {phi}')
+                        # take the central point of the spline
+                        f_ij = 2 * phi[self.N_knots//2]
+                        m_flux_ij_scaled = phi @ m_flux_ij_spline
+                    
+                    # Recalculate the residuals
                     res_ij = (d_flux_ij - m_flux_ij_scaled)
 
                 else:

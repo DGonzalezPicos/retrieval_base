@@ -51,6 +51,7 @@ pressure = np.logspace(np.min(logP_knots), np.max(logP_knots), n_layers)
 P_knots = 10.0**(logP_knots)
 N_knots = len(logP_knots)
 print(f' logP_knots: {logP_knots}')
+print(f'Number of layers: {n_layers}')
 
 # for gaussian prior plot
 yticks = logP_knots.max()-logP_knots

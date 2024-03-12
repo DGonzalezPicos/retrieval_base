@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_19'
+prefix = 'freechem_24'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -37,7 +37,7 @@ config_data = {
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 50, # set to 50 for accuracy, 25 for speed
+        'n_atm_layers': 30, # set to 50 for accuracy, 25 for speed
         }, 
     }
 
@@ -93,11 +93,11 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
     # PT profile
-    'dlnT_dlnP_0': [(0.00, 0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.00, 0.30), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.00, 0.30), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.00, 0.30), r'$\nabla_{T,3}$'],  # 0.1 bar
-    # 'dlnT_dlnP_4': [(0.00, 0.30), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_0': [(0.00, 0.35), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.00, 0.35), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.00, 0.35), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.00, 0.35), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.00, 0.35), r'$\nabla_{T,4}$'],  # 10 mbar
     # 'dlnT_dlnP_5': [(0.00, 0.30), r'$\nabla_{T,5}$'],  # 1 mbar
     # 'dlnT_dlnP_6': [(0.00, 0.30), r'$\nabla_{T,6}$'],  # 0.01 mbar
     # 'dlnT_dlnP_7': [(0.00, 0.30), r'$\nabla_{T,7}$'],  # 0.01 mbar
@@ -119,7 +119,7 @@ N_knots = len(dlnT_dlnP)
 log_P_knots = np.linspace(-5,2,N_knots).tolist()
 print(f'Number of PT knots: {len(dlnT_dlnP)}')
 print(f'PT knots: {log_P_knots}')
-PT_interp_mode = 'quadratic'
+PT_interp_mode = 'linear'
 constant_params = {
     # General properties
     'parallax': parallax_mas, 
@@ -137,6 +137,7 @@ constant_params = {
 scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
+N_spline_knots = 7
 
 # cloud_mode = 'gray'
 cloud_mode = None

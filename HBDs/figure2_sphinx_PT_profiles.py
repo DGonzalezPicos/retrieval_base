@@ -71,7 +71,8 @@ ax1.tick_params(axis='y', which='minor', left=False, right=False)
 ax1.tick_params(axis='y', which='major', left=True, right=False)
 
 
-Teff_grid = np.arange(2000.0, 3000.1, 100.0)
+# Teff_grid = np.arange(2000.0, 3000.1, 100.0)
+Teff_grid = np.arange(2000.0, 2900.1, 100.0)
 # logg_grid = [4.0, 4.50]
 logg_grid = [4.0]
 
@@ -102,7 +103,7 @@ for i, Teff in enumerate(Teff_grid):
         ax1.plot(dlnT_dlnP, p, ls=ls, color=colors[i], lw=3., alpha=0.9)
 
 
-PT = PT_profile_free_gradient(pressure=pressure)
+PT = PT_profile_free_gradient(pressure=pressure, PT_interp_mode=conf.PT_interp_mode)
 ret = Retrieval(conf=conf, evaluation=False)
 
 # uniform random sample
@@ -114,7 +115,7 @@ temp_knots = []
 # plot some random PT profiles
 fig_PT, ax_PT = plt.subplots(1,1, figsize=(8, 6))
 
-n_samples = int(1e3)
+n_samples = int(5e3)
 for i in range(n_samples):
     ret.Param(np.random.uniform(size=len(ret.Param.param_keys)))
 
@@ -127,9 +128,10 @@ for i in range(n_samples):
                 'dlnT_dlnP_knots': t_knots}
     
     temp_knots.append(t_knots)
-    temperature = ret.PT(sample_PT)
+    temperature = PT(sample_PT)
+    pressure = PT.pressure
     temp_list.append(temperature)
-    dlnT_dlnP_list.append(ret.PT.dlnT_dlnP_array)
+    dlnT_dlnP_list.append(PT.dlnT_dlnP_array)
     # check for negative values
     # assert np.all(ret.PT.dlnT_dlnP_array > 0), f'Negative dlnT/dlnP values at iteration {i}'
     # temp_list.append(ret.PT(sample_PT))
@@ -161,41 +163,27 @@ for s in [5]:
     quantile = sigma2quantile[s]
     lower_bounds = np.quantile(temp_list, 1.0 - quantile, axis=0)
     upper_bounds = np.quantile(temp_list, quantile, axis=0)
-   
-    # temp_quantiles.append(left_envelope)
-    # ax0.fill_betweenx(pressure, left_envelope, right_envelope, alpha=0.2, color='blue')
-    
+
     ax0.fill_betweenx(pressure, lower_bounds, upper_bounds, alpha=0.2, color='blue')
 
     # calculate envelopes for dlnT_dlnP
     lower_bounds_dlnT_dlnP = np.quantile(dlnT_dlnP_list, 1.0 - quantile, axis=0)
     upper_bounds_dlnT_dlnP = np.quantile(dlnT_dlnP_list, quantile, axis=0)
     ax1.fill_betweenx(pressure, lower_bounds_dlnT_dlnP, upper_bounds_dlnT_dlnP, alpha=0.2, color='blue')
+
     
-    # knots_lower = np.quantile(temp_knots, quantile, axis=0)
-    # knots_upper = np.quantile(temp_knots, 1.0 - quantile, axis=0)
-    # left_envelope = CubicSpline(logP_knots[::-1], knots_lower[::-1])(np.log10(pressure))
-    # right_envelope = CubicSpline(logP_knots[::-1], knots_upper[::-1])(np.log10(pressure))
-    # ax1.fill_betweenx(pressure, left_envelope, right_envelope, alpha=0.2, color='blue')
-    
-plot_horizontal_lines = False
+plot_horizontal_lines = True
 if plot_horizontal_lines:
     # plot horizontal lines 
     for i in range(N_knots):
-        [axi.axhline(10**logP_knots[i], color='k', ls='-', alpha=0.5) for axi in ax]
+        [axi.axhline(10**logP_knots[i], color='k', ls=':', alpha=0.5, zorder=0) for axi in [ax0, ax1]]
     
 
 # set yticks to logP_knots
-
-# add latex xlabel with nabla
-# ax1.set(xlabel='dlnT/dlnP', yscale='log')
 ax0.set(xlim=(0.0, 9000.), ylim=(1e2, 1e-5),
           xlabel='Temperature (K)',
         #   ylabel='Pressure (bar)',
           yscale='log')
-# ax0.set_yticks(10**logP_knots)
-# ax0.set_yticklabels([f'$10^{{{int(x)}}}$' for x in logP_knots])
-
 
 ax1.set(xlabel=r'$\nabla T$', yscale='log', ylabel='Pressure (bar)')
 # add custom legend with the 1-sigma and 3-sigma envelopes

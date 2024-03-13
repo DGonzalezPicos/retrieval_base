@@ -35,7 +35,7 @@ config_data = {
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 30, 
+        'n_atm_layers': 50, 
         }, 
     }
 
@@ -91,13 +91,14 @@ free_params = {
 
     # PT profile
     # PT profile
-    'dlnT_dlnP_0': [(0.00,0.40), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.00,0.30), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.00,0.30), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.00,0.30), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.00,0.30), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(0.00,0.30), r'$\nabla_{T,5}$'],  # 10 mbar
-    'dlnT_dlnP_6': [(0.00,0.30), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_0': [(0.08,0.32), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.06,0.28), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.06,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.06,0.28), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.02,0.22), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(0.00,0.18), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_7': [(0.00,0.18), r'$\nabla_{T,7}$'],  # 10 mbar
 
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
     # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
@@ -113,7 +114,7 @@ parallax_mas = parallax * 1000
 dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
 # N_knots = len(dlnT_dlnP)
 # log_P_knots = np.linspace(-5,2,N_knots).tolist()
-log_P_knots = [-5., -3., -1., -0.5, 0., 1., 2.]
+log_P_knots = [-5., -3., -1.75, -1.,-0.5, 0.25, 1., 2.]
 N_knots = len(log_P_knots)
 # print(f'Number of PT knots: {len(dlnT_dlnP)}')
 print(f'PT knots: {log_P_knots}')

@@ -84,7 +84,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     logg = posterior[:,3] # no R_p in params
     if (logg.min()) < 2.5 or (logg.max() > 5.5):
         print(f' Using idx=3 for log g')
-        logg = posterior[:,3]
+        logg = posterior[:,2]
     # FeH = chem.FeH_posterior
     # FeH = 
     # FeH = get_FeH(chem)

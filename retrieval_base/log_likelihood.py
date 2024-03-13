@@ -5,6 +5,9 @@ from retrieval_base.spline_model import SplineModel
 
 class LogLikelihood:
 
+    # reference_order = 0 # bluest order
+    reference_order = 2
+    reference_det   = 0
     def __init__(self, 
                  d_spec, 
                  n_params, 
@@ -93,7 +96,7 @@ class LogLikelihood:
                 ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
 
                 # Without linear scaling of detectors
-                if self.scale_flux and (not (i==0 and j==0) or not is_first_w_set):
+                if self.scale_flux and not (i==self.reference_order and j==self.reference_det):
                     # Only scale the flux relative to the first order/detector
 
                     if self.N_knots <= 1:

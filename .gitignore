@@ -33,3 +33,4 @@ data/companion_data
 *.zip
 *.pdf
 *.Vega
+HBDs/test.py

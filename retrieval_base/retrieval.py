@@ -410,8 +410,8 @@ class Retrieval:
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 
                 self.Cov[w_set], 
-                # is_first_w_set=(h==0), # retrieve radius from first order (old)
-                is_first_w_set=False, # apply flux scaling to all orders (new)
+                is_first_w_set=(h==0), # retrieve radius from first order (old)
+                # is_first_w_set=False, # apply flux scaling to all orders (new)
                 #ln_L_penalty=ln_L_penalty, 
                 evaluation=self.evaluation, 
                 )

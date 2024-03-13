@@ -7,7 +7,8 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'freechem_29'
+prefix = 'freechem_30'
+# prefix = 'freechem_15' # best-fit for J1200
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -61,7 +62,7 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    # 'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(2.5,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -126,7 +127,7 @@ constant_params = {
     # General properties
     'parallax': parallax_mas, 
     # 'epsilon_limb': 0.65, 
-    'R_p': 6.80, # from previous runs... does not matter because of flux scaling
+    # 'R_p': 6.80, # from previous runs... does not matter because of flux scaling
 
     # PT profile
     'log_P_knots': log_P_knots, 

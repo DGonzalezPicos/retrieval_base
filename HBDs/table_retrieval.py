@@ -4,6 +4,9 @@ import json
 import pickle
 from tabulate import tabulate
 
+from retrieval_base.chemistry import Chemistry
+atomic_mass = {k:v[2] for k,v in Chemistry.species_info.items()}
+
 def save_equation(equation, filename):
     with open(filename, "w") as f:
         f.write(equation)
@@ -133,8 +136,8 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     vsini_eq_block[target] += '\\text{{ km s}}^{{-1}}'
     
     # C_ratio 
-    CO_12 = chem.mass_fractions_posterior['CO_high'] * 36. 
-    CO_13 = chem.mass_fractions_posterior['CO_36_high'] * 37.
+    CO_12 = chem.mass_fractions_posterior['CO_high'] / atomic_mass['12CO'] 
+    CO_13 = chem.mass_fractions_posterior['CO_36_high'] / atomic_mass['13CO']
     C_ratio = CO_12 / CO_13
     C_ratio_quantiles = np.quantile(C_ratio, [0.16, 0.5, 0.84])
     C_ratio_low = C_ratio_quantiles[1] - C_ratio_quantiles[0]

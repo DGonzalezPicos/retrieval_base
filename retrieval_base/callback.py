@@ -138,12 +138,13 @@ class CallBack:
 
         for w_set in self.LogLike.keys():
             print(f'\n--- {w_set} -------------------------')
-            if self.LogLike[w_set].scale_flux:
+            # if self.LogLike[w_set].scale_flux:
+            if hasattr(self.LogLike[w_set], 'phi'):
                 print('\nOptimal flux-scaling parameters:')
-                print(self.LogLike[w_set].f.round(2))
+                print(self.LogLike[w_set].phi.round(2))
             if self.LogLike[w_set].scale_err:
                 print('\nOptimal uncertainty-scaling parameters:')
-                print(self.LogLike[w_set].beta.round(2))
+                print(self.LogLike[w_set].s.round(2))
         
         self.bestfit_params = np.array(self.bestfit_params)
         
@@ -235,8 +236,8 @@ class CallBack:
             'pressure': self.PT.pressure.tolist(), 
         }
         for w_set in self.LogLike.keys():
-            dict_to_save[f'f_{w_set}'] = self.LogLike[w_set].f.tolist()
-            dict_to_save[f'beta_{w_set}'] = self.LogLike[w_set].beta.tolist()
+            dict_to_save[f'f_{w_set}'] = self.LogLike[w_set].phi.tolist()
+            dict_to_save[f'beta_{w_set}'] = self.LogLike[w_set].s.tolist()
 
         with open(self.prefix+'data/bestfit.json', 'w') as fp:
             json.dump(dict_to_save, fp, indent=4)

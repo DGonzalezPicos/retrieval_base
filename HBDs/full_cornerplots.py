@@ -70,6 +70,8 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     posterior_13CO = chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / atomic_mass['13CO']
      
     chem.C12C13_posterior = posterior_12CO / posterior_13CO
+    # print quantiles of C12C13
+    print(f'C12C13 quantiles: {np.quantile(chem.C12C13_posterior, [0.16, 0.5, 0.84])}')
     
     # posterior_C18O = chem.mass_fractions_posterior['CO_28'].mean(axis=-1) / atomic_mass['C18O']
     # chem.C18OC16O_posterior = posterior_12CO / posterior_C18O
@@ -102,7 +104,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     labels = [r'C/O', r'[C/H]', r'$^{12}$C/$^{13}$C',
                 # r'log C$^{16}$O/C$^{18}$O', r'log H$_2^{16}$O/H$_2^{18}$O', 
                 r'log HF', r'log Na', r'log Ca', r'log Ti', 
-                r'$\log g$', r'$v \sin i$', r'$\epsilon_{\rm limb}$', r'$v_{\rm rad}$',
+                r'$\log g$', r'$v \sin i$ [km s$^-1$]', r'$\epsilon_{\rm limb}$', r'$v_{\rm rad} [km s$^-1$]$',
                 ]
 
     pad_factor = 0.1

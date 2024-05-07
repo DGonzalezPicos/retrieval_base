@@ -48,8 +48,7 @@ def pre_processing(conf, conf_data):
         )
     d_spec.clip_det_edges()
 
-    # Instance of the Photometry class for the given magnitudes
-    photom_2MASS = Photometry(magnitudes=conf.magnitudes)
+    
 
    
         
@@ -59,18 +58,23 @@ def pre_processing(conf, conf_data):
         T=conf_data['T_std'],
         )
     assert hasattr(d_spec, 'throughput'), 'No throughput found in `d_spec`'
-
-    # Apply flux calibration using the 2MASS broadband magnitude
-    d_spec.flux_calib_2MASS(
-        photom_2MASS, 
-        conf_data['filter_2MASS'], 
-        tell_threshold=conf_data.get('tell_threshold', 0.70),
-        tell_grow=conf_data.get('tell_grow', 0),
-        prefix=conf.prefix, 
-        file_skycalc_transm=conf_data['file_skycalc_transm'], 
-        molecfit=(conf_data.get('file_molecfit_transm') is not None)
-        )
-    del photom_2MASS
+    
+    d_spec.telluric_correction(tell_threshold=conf_data.get('tell_threshold', 0.70),
+                            tell_grow=conf_data.get('tell_grow', 0),)
+    if not conf.normalize:
+        # Instance of the Photometry class for the given magnitudes
+        photom_2MASS = Photometry(magnitudes=conf.magnitudes)
+        # Apply flux calibration using the 2MASS broadband magnitude
+        d_spec.flux_calib_2MASS(
+            photom_2MASS, 
+            conf_data['filter_2MASS'], 
+            # tell_threshold=conf_data.get('tell_threshold', 0.70),
+            # tell_grow=conf_data.get('tell_grow', 0),
+            prefix=conf.prefix, 
+            file_skycalc_transm=conf_data['file_skycalc_transm'], 
+            molecfit=(conf_data.get('file_molecfit_transm') is not None)
+            )
+        del photom_2MASS
     
     # Mask emission lines in the target spectrum
     if len(conf.mask_lines) > 0:
@@ -99,6 +103,8 @@ def pre_processing(conf, conf_data):
 
     # Re-shape the spectrum to a 3-dimensional array
     d_spec.reshape_orders_dets()
+    d_spec.fill_nans(min_finite_pixels=200)
+    
 
     # Apply barycentric correction
     d_spec.bary_corr()
@@ -111,6 +117,11 @@ def pre_processing(conf, conf_data):
             sigma=300, 
             replace_flux_err=True
             )
+    if conf.normalize:
+        args_norm = dict(fun='median', tell_threshold=0.4)
+        print(f' Normalizing the spectrum using {args_norm["fun"]} method')
+        d_spec.normalize_flux_per_order(**args_norm)
+        d_spec.args_norm = args_norm
 
     # Prepare the wavelength separation and average squared error arrays
     d_spec.prepare_for_covariance(
@@ -286,6 +297,7 @@ class Retrieval:
         self.m_spec_species  = None
         self.pRT_atm_species = None
         self.LogLike_species = None
+        self.N_veiling = getattr(self.conf, 'N_veiling', 0)
 
     def PMN_lnL_func(self, cube=None, ndim=None, nparams=None):
 
@@ -304,6 +316,7 @@ class Retrieval:
             except:
                 # Something went wrong with interpolating
                 temperature = self.PT(self.Param.params)
+                print('Temperature interpolation failed... returning -np.inf')
                 return -np.inf
 
         if (temperature.min() < 150) and (self.Param.chem_mode=='fastchem'):
@@ -312,6 +325,7 @@ class Retrieval:
         
         if temperature.min() < 0:
             # Negative temperatures are rejected
+            print(f' Negative temperatures: {temperature.min()}... returning -np.inf')
             return -np.inf
 
         # Retrieve the ln L penalty (=0 by default)
@@ -328,6 +342,7 @@ class Retrieval:
 
         if not isinstance(mass_fractions, dict):
             # Non-H2 abundances added up to > 1
+            print(f' Non-H2 abundances added up to > 1... returning -np.inf')
             return -np.inf
 
         if self.CB.return_PT_mf:
@@ -351,46 +366,18 @@ class Retrieval:
                 get_contr=self.CB.active, 
                 get_full_spectrum=self.evaluation, 
                 )
-            # apply linear slope --> not implemented...
-            if self.Param.params.get('f_slope') is not None:
-                f_slope = self.Param.params.get('f_slope')
-                # print(f'Applying slope of {f_slope:.2e} to the model spectrum...')
-                # print(f'Shape of the model spectrum: {self.m_spec[w_set].flux.shape}')
-
-                # m_spec_flux_flat = self.m_spec[w_set].flux.flatten()
-                # slope = np.linspace(1-f_slope, 1+f_slope, m_spec_flux_flat.size)
-                # slope = np.linspace(1-f_slope, 1+f_slope, np.prod(self.m_spec[w_set].flux.shape))
-                wave_full = np.linspace(self.d_spec[w_set].wave.min(), 
-                                        self.d_spec[w_set].wave.max(), 
-                                        2 * self.d_spec[w_set].wave.size) 
-                slope_full = np.linspace(1-f_slope, 1+f_slope, wave_full.size)
-                self.slope = np.interp(self.d_spec[w_set].wave, wave_full, slope_full)
-                
-                # # check slope
-                # import matplotlib.pyplot as plt
-                # fig, ax = plt.subplots(1,1, figsize=(8,6))
-                # n_orders, n_dets, _ = self.m_spec[w_set].flux.shape
-                # for order in range(n_orders):
-                #     for det in range(n_dets):
-                #         ax.plot(self.d_spec[w_set].wave[order,det], self.m_spec[w_set].flux[order,det], 
-                #                 color='k', alpha=0.6)
-
-                        
-                        
-                #         ax.plot(self.d_spec[w_set].wave[order,det], 
-                #                 self.m_spec[w_set].flux[order,det] * self.slope[order,det],
-                #                 color='blue')
-                #         ax.plot(self.d_spec[w_set].wave[order,det], 
-                #                 self.slope[order,det] * np.nanmedian(self.m_spec[w_set].flux[order,det]), 
-                #                 color='limegreen')
-                # plt.show()
-                
-                # apply slope
-                self.m_spec[w_set].flux = self.m_spec[w_set].flux * self.slope
+            
+            # quick plot of spectrum
+            # import matplotlib.pyplot as plt
+            # plt.plot(self.d_spec[w_set].wave[3,1], self.d_spec[w_set].flux[3,1], label='data')
+            # plt.plot(self.d_spec[w_set].wave[3,1], self.m_spec[w_set].flux[3,1], label='model')
+            # plt.legend()
+            # plt.show()
 
             if (self.m_spec[w_set].flux <= 0).any() or \
                 (~np.isfinite(self.m_spec[w_set].flux)).any():
                 # Something is wrong in the spectrum
+                print(f' Negative/NaN fluxes... returning -np.inf')
                 return -np.inf
 
             for i in range(self.d_spec[w_set].n_orders):
@@ -405,13 +392,19 @@ class Retrieval:
                         order=i, det=j, 
                         **self.conf.cov_kwargs, 
                         )
+                    
+            if self.d_spec[w_set].normalized:
+                self.m_spec[w_set].normalize_flux_per_order(**self.d_spec[w_set].args_norm)
+                
+            if self.N_veiling > 0:
+                self.m_spec[w_set].add_veiling(self.N_veiling)
 
             # Retrieve the log-likelihood
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 
                 self.Cov[w_set], 
-                is_first_w_set=(h==0), # retrieve radius from first order (old)
-                # is_first_w_set=False, # apply flux scaling to all orders (new)
+                # is_first_w_set=(h==0), # retrieve radius from first order (old)
+                is_first_w_set=False, # apply flux scaling to all orders (new)
                 #ln_L_penalty=ln_L_penalty, 
                 evaluation=self.evaluation, 
                 )
@@ -840,6 +833,9 @@ class Retrieval:
             pRT_atm_to_use = self.pRT_atm_broad
             #self.m_spec.flux_envelope = flux_envelope
 
+        # pickle save self.m_spec_species
+        af.pickle_save(self.conf.prefix+'data/m_spec_species.pkl', self.m_spec_species)
+        print(f' Saved m_spec_species.pkl to {self.conf.prefix}data/')
         # Call the CallBack class and make summarizing figures
         self.CB(
             self.Param, self.LogLike, self.Cov, self.PT, self.Chem, 
@@ -852,7 +848,7 @@ class Retrieval:
         
         # Pause the process to not overload memory on start-up
         # time.sleep(1.5*rank*len(self.d_spec))
-        time.sleep(2)
+        time.sleep(1)
 
         # Run the MultiNest retrieval
         pymultinest.run(

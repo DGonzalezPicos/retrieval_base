@@ -12,6 +12,7 @@ from petitRADTRANS.retrieval import rebin_give_width as rgw
 
 import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
+from retrieval_base.spline_model import SplineModel
 
 class Spectrum:
 
@@ -46,6 +47,8 @@ class Spectrum:
             ])
         }
     n_pixels = 2048
+    reshaped = False
+    normalized = False
 
     def __init__(self, wave, flux, err=None, w_set='K2166'):
 
@@ -299,6 +302,35 @@ class Spectrum:
         integral2 = np.trapz(wave*flux, wave)
 
         return integral1/integral2
+    
+    def normalize_flux_per_order(self, fun='median', tell_threshold=0.30):
+        
+        deep_lines = self.transm < tell_threshold if hasattr(self, 'transm') else np.zeros_like(self.flux, dtype=bool)
+        f = np.where(deep_lines, np.nan, self.flux)
+        self.norm = getattr(np, f'nan{fun}')(f, axis=-1)
+        value = self.norm[...,None] # median flux per order
+        self.flux /= value
+        if getattr(self, 'err', None) is not None:
+            self.err /= value
+            
+        self.normalized = True
+        return self
+    
+    def fill_nans(self, min_finite_pixels=100, debug=True):
+        '''Fill NaNs order-detector pairs with less than `min_finite_pixels` finite pixels'''
+        assert self.reshaped, 'The spectrum has not been reshaped yet!'
+        
+        for order in range(self.n_orders):
+            for det in range(self.n_dets):
+                mask_ij = self.mask_isfinite[order,det]
+                if mask_ij.sum() < min_finite_pixels:
+                    if debug:
+                        print(f'[fill_nans] Order {order}, detector {det} has only {mask_ij.sum()} finite pixels! Setting all to NaN.')
+                    self.flux[order,det,:] = np.nan * np.ones_like(self.flux[order,det,:])
+                    # self.err[order,det,~mask_ij] = np.nanmedian(self.err[order,det,mask_ij])
+        self.update_isfinite_mask()
+        return self
+    
 
 class DataSpectrum(Spectrum):
 
@@ -468,6 +500,8 @@ class DataSpectrum(Spectrum):
 
         # Update the isfinite mask
         self.update_isfinite_mask()
+        self.reshaped = True
+        return self
 
     def clear_empty_orders_dets(self):
 
@@ -640,6 +674,37 @@ class DataSpectrum(Spectrum):
 
         # Update the isfinite mask
         self.update_isfinite_mask(transm)
+        
+    def telluric_correction(self, tell_threshold=0.2, tell_grow=0, replace_flux_err=True):
+            
+        assert hasattr(self, 'transm'), f'No telluric transmission found...'
+        assert hasattr(self, 'throughput'), f'No throughput found...'
+        assert tell_threshold >= 0.0, f'Invalid telluric threshold: {tell_threshold}'
+        # Apply correction for telluric transmission
+        avoid_zeros = self.transm*self.throughput!=0
+        tell_corr_flux = np.divide(self.flux, self.transm * self.throughput, where=avoid_zeros)
+        
+        deep_tellurics = (self.transm < tell_threshold)
+        if tell_grow > 0:
+            # Grow telluric mask
+            deep_tellurics = np.convolve(deep_tellurics, np.ones(tell_grow), mode='same') > 0
+        
+        print(f' - Masking deep telluric lines {deep_tellurics.sum()} pixels...')
+        # Replace the deepest tellurics with NaNs
+        tell_corr_flux[deep_tellurics] = np.nan
+        # Update the NaN mask
+        self.update_isfinite_mask(tell_corr_flux)
+
+        # tell_corr_err = self.err / self.transm / self.throughput
+        tell_corr_err = np.divide(self.err, self.transm * self.throughput, where=avoid_zeros)
+        
+        self.tell_threshold = tell_threshold
+        if replace_flux_err:
+            self.flux_uncorr = np.copy(self.flux)
+            self.flux = tell_corr_flux
+            self.err  = tell_corr_err
+            
+        return self
 
     def flux_calib_2MASS(
             self, 
@@ -653,26 +718,26 @@ class DataSpectrum(Spectrum):
             molecfit=True # deprecated: always True
             ):
 
-
+        assert hasattr(self, 'tell_threshold'), f'Run `telluric_correction` first...'
         # Apply correction for telluric transmission
         # tell_corr_flux = self.flux / self.transm / self.throughput
-        avoid_zeros = self.transm*self.throughput!=0
-        tell_corr_flux = np.divide(self.flux, self.transm * self.throughput, where=avoid_zeros)
+        # avoid_zeros = self.transm*self.throughput!=0
+        # tell_corr_flux = np.divide(self.flux, self.transm * self.throughput, where=avoid_zeros)
 
-        deep_tellurics = (self.transm < tell_threshold)
-        if tell_grow > 0:
-            # Grow telluric mask
-            deep_tellurics = np.convolve(deep_tellurics, np.ones(tell_grow), mode='same') > 0
+        # deep_tellurics = (self.transm < tell_threshold)
+        # if tell_grow > 0:
+        #     # Grow telluric mask
+        #     deep_tellurics = np.convolve(deep_tellurics, np.ones(tell_grow), mode='same') > 0
         
         
-        print(f' - Masking deep telluric lines {deep_tellurics.sum()} pixels...')
-        # Replace the deepest tellurics with NaNs
-        tell_corr_flux[deep_tellurics] = np.nan
-        # Update the NaN mask
-        self.update_isfinite_mask(tell_corr_flux)
+        # print(f' - Masking deep telluric lines {deep_tellurics.sum()} pixels...')
+        # # Replace the deepest tellurics with NaNs
+        # tell_corr_flux[deep_tellurics] = np.nan
+        # # Update the NaN mask
+        # self.update_isfinite_mask(tell_corr_flux)
 
-        # tell_corr_err = self.err / self.transm / self.throughput
-        tell_corr_err = np.divide(self.err, self.transm * self.throughput, where=avoid_zeros)
+        # # tell_corr_err = self.err / self.transm / self.throughput
+        # tell_corr_err = np.divide(self.err, self.transm * self.throughput, where=avoid_zeros)
 
         # Read in the transmission curve of the broadband instrument
         wave_2MASS, transm_2MASS = photom_2MASS.transm_curves[filter_2MASS].T
@@ -682,7 +747,7 @@ class DataSpectrum(Spectrum):
         transm_2MASS = interp_func(self.wave)
 
         # Apply broadband transmission to the CRIRES spectrum
-        integrand1 = (tell_corr_flux*transm_2MASS)[self.mask_isfinite]
+        integrand1 = (self.flux*transm_2MASS)[self.mask_isfinite]
         integral1  = np.trapz(integrand1, self.wave[self.mask_isfinite])
             
         integrand2 = transm_2MASS[self.mask_isfinite]
@@ -695,8 +760,9 @@ class DataSpectrum(Spectrum):
         calib_factor = photom_2MASS.fluxes[filter_2MASS][0] / broadband_flux_CRIRES
 
         # Apply the flux calibration
-        calib_flux = tell_corr_flux * calib_factor
-        calib_err  = tell_corr_err * calib_factor
+        calib_flux = self.flux * calib_factor
+        calib_err  = self.err * calib_factor
+        self.calib_factor = calib_factor
 
         # Plot the flux calibration
         figs.fig_flux_calib_2MASS(
@@ -842,6 +908,19 @@ class ModelSpectrum(Spectrum):
         self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
         if rebin:
             self.rebin(d_wave, replace_wave_flux=True)
+            
+    def add_veiling(self, N=1):
+        ''' Generate new attribute to store veiling model '''
+        assert N > 0, f'Number of knots must be greater than 0 ({N} not allowed)'
+        self.N_veiling = int(N)
+        
+        # simple flat model with shape (N_veiling, 2048)
+        # the model is the same for all order-dets but the amplitudes are different (to be fitted in `log_likelihood.py`)
+        if self.N_veiling > 1:
+            self.M_veiling = SplineModel(self.N_veiling, spline_degree=3)(np.ones((self.flux.shape[-1])))
+        else:
+            self.M_veiling = np.ones((self.flux.shape[-1]))[None,:] # shape (1, 2048)
+        return self
 
 class Photometry:
 

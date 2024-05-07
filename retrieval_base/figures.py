@@ -266,14 +266,16 @@ def fig_bestfit_model(
                     r')$'
                     
             # PLot model (check if spline decomposition used during retrieval)
-            if hasattr(LogLike, 'phi'):
-                    m_flux_spline = SplineModel(N_knots=LogLike.N_knots, spline_degree=3)(m_spec.flux[i,j])
-                    m_flux = LogLike.phi[i,j] @ m_flux_spline
+            # if hasattr(LogLike, 'phi'):
+            #         m_flux_spline = SplineModel(N_knots=LogLike.N_knots, spline_degree=3)(m_spec.flux[i,j])
+            #         m_flux = LogLike.phi[i,j] @ m_flux_spline
                     
-            else:
+            # else:
                 
-                f = LogLike.f[i,j]
-                m_flux = m_spec.flux[i,j] * f
+            #     f = LogLike.phi[i,j]
+            #     m_flux = m_spec.flux[i,j] * f
+            
+            m_flux = LogLike.m[i,j] 
                     
             ax_spec.plot(
                 d_spec.wave[i,j], m_flux, 
@@ -287,7 +289,7 @@ def fig_bestfit_model(
             if mask_ij.any():
 
                 # Plot the residuals
-                # res_ij = d_spec.flux[i,j] - LogLike.f[i,j]*m_spec.flux[i,j]
+                # res_ij = d_spec.flux[i,j] - LogLike.phi[i,j]*m_spec.flux[i,j]
                 res_ij = d_spec.flux[i,j] - m_flux
                 ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
                 ax_res.plot(
@@ -298,7 +300,7 @@ def fig_bestfit_model(
                 if m_spec.flux_envelope is not None:
                     print(f'[fig_bestfig_model] flux_envelope --> Not implemented')
                     ax_res.plot(
-                        d_spec.wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.f[i,j]*m_spec.flux[i,j], 
+                        d_spec.wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.phi[i,j]*m_spec.flux[i,j], 
                         c='C0', lw=1
                         )
 
@@ -314,7 +316,7 @@ def fig_bestfit_model(
                 cov = Cov[i,j].get_dense_cov()
                 
                 # Scale with the optimal uncertainty-scaling
-                cov *= LogLike.beta[i,j]**2
+                cov *= LogLike.s[i,j]**2
 
                 # Get the mean error from the trace
                 mean_scaled_err_ij = np.mean(np.diag(np.sqrt(cov)))
@@ -322,8 +324,8 @@ def fig_bestfit_model(
                 ax_res.errorbar(
                     d_spec.wave[i,j].min()-0.4, 0, yerr=1*mean_scaled_err_ij, 
                     fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
-                    #label=r'$\beta_{ij}\langle\sigma_{ij}\rangle$'
-                    label=r'$\beta_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
+                    #label=r'$\s_{ij}\langle\sigma_{ij}\rangle$'
+                    label=r'$\s_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
                     )
 
             if i==0 and j==0:
@@ -359,7 +361,7 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
             cov = Cov[i,j].get_dense_cov()
 
             # Scale with the optimal uncertainty scaling
-            cov *= LogLike.beta[i,j]**2
+            cov *= LogLike.s[i,j]**2
 
             # Insert the masked rows into the covariance matrix
             indices = np.arange(0, d_spec.n_pixels, 1)[~mask_ij]
@@ -766,7 +768,7 @@ def fig_residual_ACF(d_spec,
 
     # Create a spectrum residual object
     d_spec_res = copy.deepcopy(d_spec)
-    d_spec_res.flux = (d_spec.flux - m_spec.flux*LogLike.f[:,:,None])
+    d_spec_res.flux = (d_spec.flux - m_spec.flux*LogLike.phi[:,:,None])
 
     # Cross-correlate the residuals with itself
     rv, ACF, _, _ = af.CCF(
@@ -808,7 +810,7 @@ def fig_residual_ACF(d_spec,
             cov = Cov[i,j].get_dense_cov()
 
             # Scale with the optimal uncertainty-scaling
-            cov *= LogLike.beta[i,j]**2
+            cov *= LogLike.s[i,j]**2
 
             # Take the mean along each diagonal
             ks = np.arange(0, len(cov), 1)
@@ -991,7 +993,7 @@ def fig_species_contribution(d_spec,
             pRT_atm_h = pRT_atm_species[species_h]
             
             # Residual between data and model w/o species_i
-            d_res = d_spec.flux/LogLike.f[:,:,None] - m_spec_h.flux
+            d_res = d_spec.flux/LogLike.phi[:,:,None] - m_spec_h.flux
 
             low_pass_d_res = np.nan * np.ones_like(d_res)
             low_pass_d_res[d_spec.mask_isfinite] = gaussian_filter1d(d_res[d_spec.mask_isfinite], sigma=300)
@@ -1133,21 +1135,21 @@ def fig_prior_check(ret, w_set, fig_name=None):
         for order in range(d_spec.n_orders):
             for det in range(d_spec.n_dets):
                 mask_ij = d_spec.mask_isfinite[order, det]
+                if mask_ij.sum() == 0:
+                    continue
                 x = d_spec.wave[order, det]
                 
                 label = f'ln(L)={ln_L:.2e}' if (order+det) == 0 else None
-                if hasattr(ret.LogLike[w_set], 'phi'):
-                    m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
-                    m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
+                assert hasattr(ret.LogLike[w_set], 'phi'), 'LogLike object does not have phi attribute.'
+                # m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
+                # m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
+                m_flux = ret.LogLike[w_set].m[order,det]
+                print(f' phi ({i}, {order}, {det}) = {ret.LogLike[w_set].phi[order, det]}')
                     
-                else:
-                    
-                    f = ret.LogLike[w_set].f[order, det]
-                    m_flux = ret.m_spec[w_set].flux[order, det] * f
                     
                 ax_spec[order].plot(x, m_flux, color=colors[i], alpha=0.85, label=label)
-                # f = ret.LogLike[w_set].f[order, det]
-                beta = ret.LogLike[w_set].beta[order, det] # not using this...
+                # f = ret.LogLike[w_set].phi[order, det]
+                s = ret.LogLike[w_set].s[order, det] # not using this...
                 # print(f' f={f:.2e}')
                 # ax_spec[order].plot(x, ret.m_spec[w_set].flux[order, det] * f, color=colors[i], alpha=0.85, label=label)
                 ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
@@ -1266,8 +1268,8 @@ def fig_free_parameter(ret, free_parameter,
                     m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
                     
                 else:
-                    f = ret.LogLike[w_set].f[order, det]
-                    m_flux = ret.m_spec[w_set].flux[order, det] * f
+                    phi = ret.LogLike[w_set].phi[order, det]
+                    m_flux = ret.m_spec[w_set].flux[order, det] * phi
                     
                 ax_spec[order].plot(x, m_flux, color=colors[i], alpha=0.85, label=label)
                 

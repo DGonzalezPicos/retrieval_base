@@ -247,18 +247,22 @@ def fig_bestfit_model(
             xlim = (d_spec.wave.min()-0.5, 
                     d_spec.wave.max()+0.5)
 
-        ax_spec.set(xlim=xlim, xticks=[], ylim=ylim_spec)
+        ax_spec.set(xlim=xlim, xticks=[],
+                    # ylim=ylim_spec,
+                    )
         ax_res.set(xlim=xlim, ylim=ylim_res)
 
         for j in range(d_spec.n_dets):
         
             mask_ij = d_spec.mask_isfinite[i,j]
-            if mask_ij.any():
-                # Show the observed and model spectra
-                ax_spec.plot(
-                    d_spec.wave[i,j], d_spec.flux[i,j], 
-                    c='k', lw=0.5, label='Observation'
-                    )
+            if np.sum(mask_ij) == 0:
+                continue
+            # if mask_ij.any():
+            # Show the observed and model spectra
+            ax_spec.plot(
+                d_spec.wave[i,j], d_spec.flux[i,j], 
+                c='k', lw=0.5, label='Observation'
+                )
 
             label = 'Best-fit model ' + \
                     r'$(\chi^2_\mathrm{red}$ (w/o $\sigma$-model)$=' + \
@@ -283,11 +287,15 @@ def fig_bestfit_model(
                 )
             
             if hasattr(m_spec, "N_veiling"):
-                m_v = LogLike.phi[i,j,m_spec.N_knots:] @ m_spec.M_veiling[i,j]
+                N_knots = LogLike.N_knots
+                # print(f' N_knots = {N_knots}')
+                m_v = LogLike.phi[i,j,N_knots:] @ m_spec.M_veiling
+                m_v[~mask_ij] = np.nan
                 ax_spec.plot(d_spec.wave[i,j], m_v, c='magenta', lw=1, label='Veiling')
 
-                m_pRT = np.atleast_2d(m_spec.flux[i,j])
-                ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,m_spec.N_knots:] @ m_pRT, c='orange', lw=1, label='pRT')
+                m_pRT = m_spec.flux[i,j][None,:]
+                m_pRT[:,~mask_ij] = np.nan
+                ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,:N_knots] @ m_pRT, c='orange', lw=1, label='pRT')
                 
                 
             if m_spec.flux_envelope is not None:
@@ -295,47 +303,47 @@ def fig_bestfit_model(
                     d_spec.wave[i,j], m_spec.flux_envelope[3,i,j], c='C0', lw=1
                     )
 
-            if mask_ij.any():
+            # if mask_ij.any():
 
-                # Plot the residuals
-                # res_ij = d_spec.flux[i,j] - LogLike.phi[i,j]*m_spec.flux[i,j]
-                res_ij = d_spec.flux[i,j] - m_flux
-                ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
+            # Plot the residuals
+            # res_ij = d_spec.flux[i,j] - LogLike.phi[i,j]*m_spec.flux[i,j]
+            res_ij = d_spec.flux[i,j] - m_flux
+            ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
+            ax_res.plot(
+                [d_spec.wave[i,j].min(), d_spec.wave[i,j].max()], 
+                [0,0], c=bestfit_color, lw=1
+            )
+
+            if m_spec.flux_envelope is not None:
+                print(f'[fig_bestfig_model] flux_envelope --> Not implemented')
                 ax_res.plot(
-                    [d_spec.wave[i,j].min(), d_spec.wave[i,j].max()], 
-                    [0,0], c=bestfit_color, lw=1
+                    d_spec.wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.phi[i,j]*m_spec.flux[i,j], 
+                    c='C0', lw=1
+                    )
+
+            # Show the mean error
+            mean_err_ij = np.mean(Cov[i,j].err)
+            ax_res.errorbar(
+                d_spec.wave[i,j].min()-0.2, 0, yerr=1*mean_err_ij, 
+                fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
+                label=r'$\langle\sigma_{ij}\rangle$'
                 )
 
-                if m_spec.flux_envelope is not None:
-                    print(f'[fig_bestfig_model] flux_envelope --> Not implemented')
-                    ax_res.plot(
-                        d_spec.wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.phi[i,j]*m_spec.flux[i,j], 
-                        c='C0', lw=1
-                        )
+            # Get the covariance matrix
+            cov = Cov[i,j].get_dense_cov()
+            
+            # Scale with the optimal uncertainty-scaling
+            cov *= LogLike.s[i,j]**2
 
-                # Show the mean error
-                mean_err_ij = np.mean(Cov[i,j].err)
-                ax_res.errorbar(
-                    d_spec.wave[i,j].min()-0.2, 0, yerr=1*mean_err_ij, 
-                    fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
-                    label=r'$\langle\sigma_{ij}\rangle$'
-                    )
+            # Get the mean error from the trace
+            mean_scaled_err_ij = np.mean(np.diag(np.sqrt(cov)))
 
-                # Get the covariance matrix
-                cov = Cov[i,j].get_dense_cov()
-                
-                # Scale with the optimal uncertainty-scaling
-                cov *= LogLike.s[i,j]**2
-
-                # Get the mean error from the trace
-                mean_scaled_err_ij = np.mean(np.diag(np.sqrt(cov)))
-
-                ax_res.errorbar(
-                    d_spec.wave[i,j].min()-0.4, 0, yerr=1*mean_scaled_err_ij, 
-                    fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
-                    #label=r'$\s_{ij}\langle\sigma_{ij}\rangle$'
-                    label=r'$\s_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
-                    )
+            ax_res.errorbar(
+                d_spec.wave[i,j].min()-0.4, 0, yerr=1*mean_scaled_err_ij, 
+                fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
+                #label=r'$\s_{ij}\langle\sigma_{ij}\rangle$'
+                label=r'$\s_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
+                )
 
             if i==0 and j==0:
                 ax_spec.legend(

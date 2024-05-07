@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'rev_1'
+prefix = 'rev_2'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
@@ -131,8 +131,8 @@ scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
 normalize = True # normalize the spectrum per order (new 2024-05-07)
-N_spline_knots = 1
-N_veiling = 5
+N_spline_knots = 5
+N_veiling = 1
 
 # cloud_mode = 'gray'
 cloud_mode = None

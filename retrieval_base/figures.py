@@ -281,6 +281,15 @@ def fig_bestfit_model(
                 d_spec.wave[i,j], m_flux, 
                 c=bestfit_color, lw=1, label=label
                 )
+            
+            if hasattr(m_spec, "N_veiling"):
+                m_v = LogLike.phi[i,j,m_spec.N_knots:] @ m_spec.M_veiling[i,j]
+                ax_spec.plot(d_spec.wave[i,j], m_v, c='magenta', lw=1, label='Veiling')
+
+                m_pRT = np.atleast_2d(m_spec.flux[i,j])
+                ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,m_spec.N_knots:] @ m_pRT, c='orange', lw=1, label='pRT')
+                
+                
             if m_spec.flux_envelope is not None:
                 ax_spec.plot(
                     d_spec.wave[i,j], m_spec.flux_envelope[3,i,j], c='C0', lw=1

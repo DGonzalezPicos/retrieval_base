@@ -23,6 +23,11 @@ from .callback import CallBack
 import retrieval_base.figures as figs
 import retrieval_base.auxiliary_functions as af
 
+if 'dgonzalezpi' in os.getcwd():
+    # print('Running on Snellius.. disabling interactive plotting')
+    import matplotlib
+    # disable interactive plotting
+    matplotlib.use('Agg')
 def pre_processing(conf, conf_data):
 
     # Set up the output directories

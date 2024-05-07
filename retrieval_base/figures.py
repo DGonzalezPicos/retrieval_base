@@ -229,6 +229,7 @@ def fig_bestfit_model(
     ylim_res = (1/3*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
                 1/3*(ylim_spec[1]-np.nanmean(d_spec.flux))
                 )
+    N_knots = LogLike.N_knots # number of spline knots for spectrum
 
     for i in range(d_spec.n_orders):
 
@@ -287,13 +288,13 @@ def fig_bestfit_model(
                 )
             
             if hasattr(m_spec, "N_veiling"):
-                N_knots = LogLike.N_knots
                 # print(f' N_knots = {N_knots}')
                 m_v = LogLike.phi[i,j,N_knots:] @ m_spec.M_veiling
                 m_v[~mask_ij] = np.nan
                 ax_spec.plot(d_spec.wave[i,j], m_v, c='magenta', lw=1, label='Veiling')
 
-                m_pRT = m_spec.flux[i,j][None,:]
+                # m_pRT = m_spec.flux[i,j][None,:]
+                m_pRT = SplineModel(N_knots=N_knots, spline_degree=3)(pRT)(m_spec.flux[i,j]) if N_knots > 1 else m_spec.flux[i,j][None,:]
                 m_pRT[:,~mask_ij] = np.nan
                 ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,:N_knots] @ m_pRT, c='orange', lw=1, label='pRT')
                 

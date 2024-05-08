@@ -921,6 +921,18 @@ class ModelSpectrum(Spectrum):
         else:
             self.M_veiling = np.ones((self.flux.shape[-1]))[None,:] # shape (1, 2048)
         return self
+    
+    @staticmethod
+    def veiling_power_law(alpha, beta, wave, wave_min=None):
+        
+        wave_min = wave_min or wave.min()
+        
+        return  (alpha * (wave/wave_min)**beta)
+    
+    def add_veiling_power_law(self, alpha, beta, wave, wave_min=None):
+        # after normalizing the spectrum, add a veiling model
+        self.flux += self.veiling_power_law(alpha, beta, wave, wave_min)
+        return self
 
 class Photometry:
 

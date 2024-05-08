@@ -165,7 +165,6 @@ class CallBack:
             ax=ax[0], 
             ax_grad=ax[1],
             fig=fig,
-            xlim=None, 
             bestfit_color='C0',
             envelopes_color='C0',
             int_contr_em_color='red',
@@ -175,6 +174,7 @@ class CallBack:
             show_knots=True,
             show_text=True,
             fig_name=self.prefix+f'plots/PT_grad_profile.pdf',
+            xlim=(1000, 8000), # fix view
         )
 
         # Make a summary figure

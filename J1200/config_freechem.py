@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_1'
+run = 'rev_3'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -56,12 +56,16 @@ free_params = {
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
     'log_a': [(-1,0.5), r'$\log\ a$'], 
     'log_l': [(-2,-0.8), r'$\log\ l$'], 
+    
+    # veiling power law
+    'alpha': [(0.0, 2.), r'$\alpha$'],
+    'beta': [(0.0, 3.0), r'$\beta$'],
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
+    # 'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(2.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -117,10 +121,11 @@ parallax_mas = parallax * 1000
 dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
 # N_knots = len(dlnT_dlnP)
 # log_P_knots = np.linspace(-5,2,N_knots).tolist()
-# log_P_knots = [-5., -3., -1.75, -1.,-0.5, 0.25, 1., 2.]
+log_P_knots = [-5., -3., -1.5, -1.,-0.5, 0.0, 1., 2.]
 # assert len(log_P_knots) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
-N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
-
+# N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
+N_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)
+assert len(dlnT_dlnP) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 # print(f'Number of PT knots: {len(dlnT_dlnP)}')
 # print(f'PT knots: {log_P_knots}')
 PT_interp_mode = 'linear'
@@ -132,7 +137,8 @@ constant_params = {
     'R_p': 0.0, # no scaling of the radius --> normalize flux and model (new 2024-05-07)
 
     # PT profile
-    'log_P_knots': list(np.linspace(-5,2,N_knots)), # define as list to avoid issues with json
+    # 'log_P_knots': list(np.linspace(-5,2,N_knots)), # define as list to avoid issues with json
+    'log_P_knots': log_P_knots, # define as list to avoid issues with json
 }
 ####################################################################################
 #
@@ -142,8 +148,8 @@ scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
 normalize = True # normalize the spectrum per order (new 2024-05-07)
-N_spline_knots = 10
-N_veiling = 1
+N_spline_knots = 1
+N_veiling = 0
 
 # cloud_mode = 'gray'
 cloud_mode = None

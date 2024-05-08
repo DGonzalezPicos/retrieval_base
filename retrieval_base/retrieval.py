@@ -401,8 +401,15 @@ class Retrieval:
             if self.d_spec[w_set].normalized:
                 self.m_spec[w_set].normalize_flux_per_order(**self.d_spec[w_set].args_norm)
                 
+            self.m_spec[w_set].N_veiling = self.N_veiling
             if self.N_veiling > 0:
                 self.m_spec[w_set].add_veiling(self.N_veiling)
+                
+            if "alpha" in self.Param.params.keys():
+                self.m_spec[w_set].add_veiling_power_law(self.Param.params["alpha"],
+                                                        self.Param.params.get("beta", 0.0),
+                                                        self.d_spec[w_set].wave,
+                                                        self.d_spec[w_set].wave.min())
 
             # Retrieve the log-likelihood
             ln_L += self.LogLike[w_set](
@@ -833,8 +840,8 @@ class Retrieval:
             self.get_species_contribution()
 
         # Update class instances with best-fitting parameters
+        # self.CB.active = True
         self.PMN_lnL_func()
-        self.CB.active = False
 
         for w_set in self.conf.config_data.keys():
             self.m_spec[w_set].flux_envelope = None
@@ -851,6 +858,7 @@ class Retrieval:
         # Call the CallBack class and make summarizing figures
         
         self.copy_integrated_contribution_emission()
+        assert hasattr(self.PT, 'int_contr_em'), 'No integrated contribution emission found in PT'
         self.CB(
             self.Param, self.LogLike, self.Cov, self.PT, self.Chem, 
             self.m_spec, pRT_atm_to_use, posterior, 
@@ -886,9 +894,11 @@ class Retrieval:
         if hasattr(self.pRT_atm, 'int_contr_em'):
             print(f'Copying integrated contribution emission from pRT_atm to PT')
             self.PT.int_contr_em = np.copy(self.pRT_atm.int_contr_em)
-        if hasattr(self.m_spec, 'int_contr_em'):
-            print(f'Copying integrated contribution emission from m_spec to PT')
-            self.PT.int_contr_em = np.copy(self.m_spec.int_contr_em)
+        # if hasattr(self.m_spec, 'int_contr_em'):
+        for w_set in self.d_spec.keys():
+            if hasattr(self.m_spec[w_set], 'int_contr_em'):
+                print(f'Copying integrated contribution emission from m_spec[{w_set}] to PT')
+                self.PT.int_contr_em = np.copy(self.m_spec[w_set].int_contr_em)
         else:
             print(f'WARNING: No integrated contribution emission found in pRT_atm or m_spec')
         return self

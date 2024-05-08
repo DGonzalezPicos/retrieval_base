@@ -163,6 +163,8 @@ class pRT_model:
         m_spec = self.get_model_spectrum(
             get_contr=get_contr, get_full_spectrum=get_full_spectrum
             )
+        # if hasattr(self, 'int_contr_em'):
+        #     m_spec.int_contr_em = self.int_contr_em.copy()
         return m_spec
 
     def add_clouds(self):
@@ -255,7 +257,7 @@ class pRT_model:
 
         self.int_contr_em_per_order = np.zeros((self.d_wave.shape[0], len(self.pressure)))
 
-        self.CCF, self.m_ACF = [], []
+        # self.CCF, self.m_ACF = [], []
         self.wave_pRT_grid, self.flux_pRT_grid = [], []
 
         for i, atm_i in enumerate(self.atm):
@@ -338,7 +340,7 @@ class pRT_model:
             flux[i,:,:] = m_spec_i.flux
             
             if get_contr:
-
+                # print(f' Computing emission contribution and cloud opacity for order {i+1}/{self.d_wave.shape[0]}')
                 # Integrate the emission contribution function and cloud opacity
                 self.get_integrated_contr_em_and_opa_cloud(
                     atm_i, m_wave_i=wave_i, 
@@ -356,9 +358,12 @@ class pRT_model:
             multiple_orders=True, 
             high_pass_filtered=self.apply_high_pass_filter, 
             )
+        if get_contr:
+            print(f' Copying integrated emission contribution to ModelSpectrum')
+            m_spec.int_contr_em = self.int_contr_em.copy()
 
         # Convert to arrays
-        self.CCF, self.m_ACF = np.array(self.CCF), np.array(self.m_ACF)
+        # self.CCF, self.m_ACF = np.array(self.CCF), np.array(self.m_ACF)
         #self.wave_pRT_grid = np.array(self.wave_pRT_grid)
         #self.flux_pRT_grid = np.array(self.flux_pRT_grid)
 
@@ -437,3 +442,4 @@ class pRT_model:
                     flux=m_spec_i.flux[d_mask_i].flatten(), 
                     array=opa_cloud_ij.flux[d_mask_i].flatten(), 
                     )
+        return self

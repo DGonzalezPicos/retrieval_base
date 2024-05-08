@@ -19,6 +19,7 @@ class CallBack:
     plot_cov_matrix = False
     plot_residual_ACF = False
     plot_ccf = False
+    plot_summary = True
     
     def __init__(self, 
                  d_spec, 
@@ -87,6 +88,8 @@ class CallBack:
         self.Cov     = Cov
         self.PT      = PT
         self.Chem    = Chem
+        if not hasattr(self.Chem, 'VMRs_posterior'):
+            self.Chem.get_VMRs_posterior()
         self.m_spec  = m_spec
         self.pRT_atm = pRT_atm
 
@@ -165,7 +168,8 @@ class CallBack:
         )
 
         # Make a summary figure
-        self.fig_summary()
+        if self.plot_summary:
+            self.fig_summary()
 
         if self.evaluation:
             
@@ -209,9 +213,28 @@ class CallBack:
                         prefix=self.prefix, 
                         w_set=w_set, 
                         )
+                    
+                if self.m_spec[w_set].N_veiling > 0:
+                    # Plot the veiling spectrum
+                    figs.fig_veiling_factor(
+                        d_spec=self.d_spec[w_set],
+                        LogLike=self.LogLike[w_set], 
+                        color=self.bestfit_color,
+                        fig_name=self.prefix+f'plots/veiling_factors.pdf',
+                        )
 
             # Plot the abundances in a corner-plot
-            self.fig_abundances_corner()
+            # self.fig_abundances_corner()
+            figs.fig_chemistry(Chem=self.Chem,
+                                    fig=None,
+                                    species_to_plot=None,
+                                    color=self.bestfit_color,
+                                    smooth=None,
+                                    fontsize=14,
+                                    fig_name=self.prefix+f'plots/chemistry.pdf'
+            )
+            
+                
 
         # Remove attributes from memory
         del self.Param, self.LogLike, self.PT, self.Chem, self.m_spec, self.pRT_atm, self.posterior
@@ -302,11 +325,13 @@ class CallBack:
 
             # Add C/O and Fe/H to the parameters to be plotted
             if self.evaluation:
-                
+                                
                 # Add to the posterior
                 self.posterior = np.concatenate(
-                    (self.posterior, self.Chem.CO_posterior[:,None], 
-                     self.Chem.FeH_posterior[:,None]), axis=1
+                    (self.posterior, 
+                     self.Chem.CO_posterior[:,None], 
+                     self.Chem.FeH_posterior[:,None],
+                     iso_posteriors[:,None]), axis=1
                     )
                 # Add to the parameter keys
                 self.Param.param_keys = np.concatenate(
@@ -536,6 +561,7 @@ class CallBack:
         #ax_contr = self.fig_contr_em(ax_contr)
 
         #plt.show()
+        label = 'final' if self.evaluation else f'live_{self.cb_count}'
         if self.evaluation:
             if self.plot_histograms:
                 for i in range(ax.shape[0]):
@@ -551,12 +577,15 @@ class CallBack:
                         prefix=self.prefix
                         )
                 
-            fig.savefig(self.prefix+'plots/final_summary.pdf')
-            fig.savefig(self.prefix+f'plots/final_summary.png', dpi=100)
+        #     fig.savefig(self.prefix+'plots/final_summary.pdf')
+        #     # fig.savefig(self.prefix+f'plots/final_summary.png', dpi=100)
 
-        else:
-            fig.savefig(self.prefix+'plots/live_summary.pdf')
-            fig.savefig(self.prefix+f'plots/live_summary_{self.cb_count}.png', dpi=100)
+        # else:
+        #     fig.savefig(self.prefix+'plots/live_summary_{self.cb_count}.pdf')
+            
+            # fig.savefig(self.prefix+f'plots/live_summary_{self.cb_count}.png', dpi=100)
+        fig.savefig(self.prefix+f'plots/{label}_summary.pdf')
+        print(f'- Saved {self.prefix}plots/{label}_summary.pdf')
         plt.close(fig)
 
         for w_set in self.d_spec.keys():

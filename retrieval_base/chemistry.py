@@ -219,6 +219,36 @@ class Chemistry:
             return cls.species_plot_info[species][0]
         if info_key == 'label':
             return cls.species_plot_info[species][1]
+        
+    def get_VMRs_posterior(self):
+        
+        assert hasattr(self, 'mass_fractions_posterior')
+        self.VMRs_posterior = {}
+        info = self.species_info
+        MMW = self.mass_fractions_posterior['MMW'].mean()
+        for line_species_i in self.line_species:
+            key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]
+            # check key_i is not empty
+            # print(f' {line_species_i} ({key_i}) -> {info[key_i][2]}')
+            if len(key_i) == 0:
+                continue
+            mu = info[key_i][2] # atomic mass
+            # free-chemistry = constant VMR
+            # WARNING: equilibrium chemistry should use the mean value or something else
+            self.VMRs_posterior[key_i] = self.mass_fractions_posterior[line_species_i][:,0] * (MMW/ mu)
+            
+        if "13CO" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
+            self.VMRs_posterior["12_13CO"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["13CO"]
+        
+        if "H2O_181" in list(self.VMRs_posterior.keys()) and "H2O" in list(self.VMRs_posterior.keys()):
+            self.VMRs_posterior["H2_16_18O"] = self.VMRs_posterior["H2O"] / self.VMRs_posterior["H2O_181"]
+            
+        if hasattr(self, 'CO_posterior'):
+            self.VMRs_posterior["C/O"] = self.CO_posterior
+        if hasattr(self, 'FeH_posterior'):
+            self.VMRs_posterior["Fe/H"] = self.FeH_posterior
+        del self.mass_fractions_posterior
+        return self
 
 class FreeChemistry(Chemistry):
 

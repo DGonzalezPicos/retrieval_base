@@ -20,7 +20,8 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 targets = dict(J1200='freechem_15', 
-               TWA28='freechem_12', 
+            #    TWA28='freechem_12', 
+            TWA28='rev_2',
                J0856='freechem_13'
                ) 
 # invert order of targets

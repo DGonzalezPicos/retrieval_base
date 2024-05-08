@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 from scipy.ndimage import generic_filter, gaussian_filter1d
+from scipy.optimize import curve_fit
 
 import os
 import copy
+import corner
 
 import petitRADTRANS.nat_cst as nc
 
@@ -294,7 +296,7 @@ def fig_bestfit_model(
                 ax_spec.plot(d_spec.wave[i,j], m_v, c='magenta', lw=1, label='Veiling')
 
                 # m_pRT = m_spec.flux[i,j][None,:]
-                m_pRT = SplineModel(N_knots=N_knots, spline_degree=3)(pRT)(m_spec.flux[i,j]) if N_knots > 1 else m_spec.flux[i,j][None,:]
+                m_pRT = SplineModel(N_knots=N_knots, spline_degree=3)(m_spec.flux[i,j]) if N_knots > 1 else m_spec.flux[i,j][None,:]
                 m_pRT[:,~mask_ij] = np.nan
                 ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,:N_knots] @ m_pRT, c='orange', lw=1, label='pRT')
                 
@@ -1318,5 +1320,175 @@ def fig_free_parameter(ret, free_parameter,
         plt.close(fig)
     return fig, ax_PT, ax_spec
 
+def fig_veiling_factor(
+                d_spec,
+                LogLike,
+                color='orange',
+                fig_name=None,
+                       ):
+    
+    phi = LogLike.phi
+    N_knots = LogLike.N_knots # first N_knots are the spectrum
+    # take mean of the veiling factor per order
+    phi_veiling = phi[:,:,N_knots:]
+    # replace values of 1.0 with nan (skipped detectors)
+    phi_veiling = np.where(phi_veiling == 1.0, np.nan, phi_veiling)
+    phi_order_mean = np.nanmean(phi_veiling, axis=(1,2))
+    phi_order_std = np.nanstd(phi_veiling, axis=(1,2))
+    
+    wave_order = np.mean(d_spec.wave, axis=(1,2))
+    
+    # fit linear model to the veiling factor with uncertainty
+    # x = np.arange(len(phi_order_mean))
+    x = wave_order
+    y = phi_order_mean
+    yerr = phi_order_std
+    def model(x, a, b):
+        return a*x + b
+    popt, pcov = curve_fit(model, x, y, sigma=yerr)
+    R2 = np.corrcoef(y, model(x, *popt))[0,1]**2 # R-squared value    
+    
+    
+    fig, ax = plt.subplots(figsize=(9,5), tight_layout=True)
+    ax.errorbar(wave_order, phi_order_mean,
+                yerr=phi_order_std, 
+                fmt='o',
+                color=color)
+    if R2 > 0.5:
+        ax.plot(x, model(x, *popt), 'b--', label=f'y={popt[0]:.2f}x + {popt[1]:.2f}\nR$^2$={R2:.2f}')
+        ax.legend()
+
+    ax.set(xlabel='Wavelength / nm', ylabel='Veiling factor ' + r'$r_{\rm k}$')
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f'Figure saved as {fig_name}')
+        plt.close(fig)
+    return None
+
+
+def fig_chemistry(
+                  Chem,
+                  fig=None,
+                  species_to_plot=None,
+                  color='k',
+                  smooth=None,
+                  fontsize=14,
+                  fig_name=None,
+                  ):
+    
+    assert hasattr(Chem, 'VMRs_posterior'), 'No VMRs_posterior found'
+    
+    species_to_plot = list(Chem.VMRs_posterior.keys()) if species_to_plot is None else species_to_plot
+    assert len(species_to_plot) > 1, 'No species to plot'
+    if '12_13CO' in species_to_plot:
+        species_to_plot.remove('12CO')
+        species_to_plot.remove('13CO')
+    if 'H2_16_18O' in species_to_plot:
+        species_to_plot.remove('H2O_181')
+        
+        
+    if 'C/O' not in species_to_plot and 'C/O' in Chem.VMRs_posterior.keys():    
+        species_to_plot.append('C/O')
+        
+    if 'C/O' in species_to_plot:
+        species_to_plot.remove('H2O')
+    if 'Fe/H' not in species_to_plot and 'Fe/H' in Chem.VMRs_posterior.keys():
+        species_to_plot.append('[Fe/H]')
+        
+    samples = []
+    labels = []
+    for species in species_to_plot:
+        if species not in ['12_13CO', 'C/O', 'Fe/H']:
+            samples.append(np.log10(Chem.VMRs_posterior[species]))
+            labels.append(f'log {species}')
+            
+        else:
+            samples.append(Chem.VMRs_posterior[species])
+            labels.append(species)
+    
+    samples = np.array(samples).T
+    # rearrange samples array to have C/O, Fe/H, 12_13CO first
+    # samples = np.roll(samples, 3, axis=-1)
+    # labels = np.roll(labels, 3)
+    # replace with latex labels
+    samples_dict = dict(zip(labels, samples.T))
+    # change keys for latex labels for 12CO/13CO and H2O/H2O_181
+    if '12_13CO' in samples_dict.keys():
+        samples_dict['$^{12}$CO/$^{13}$CO\n'] = samples_dict.pop('12_13CO')
+    if 'log H2_16_18O' in samples_dict.keys():
+        samples_dict['log H$_2$$^{16}$O/H$_2$$^{18}$O\n'] = samples_dict.pop('log H2_16_18O')
+    if 'Fe/H' in samples_dict.keys():
+        samples_dict['[Fe/H]'] = samples_dict.pop('Fe/H')
+        
+    
+    samples = np.array(list(samples_dict.values())).T
+    labels = list(samples_dict.keys())
+    # ensure C/O and Fe/H are the first two labels and samples
+    new_samples = np.copy(samples)
+    new_labels = np.copy(labels)
+    
+    first_labels =['C/O', '[Fe/H]', '$^{12}$CO/$^{13}$CO\n', 'log H$_2$$^{16}$O/H$_2$$^{18}$O\n']
+    
+    for i, label in enumerate(first_labels):
+        if label in labels:
+            idx = labels.index(label)
+            new_samples = np.insert(new_samples, i, samples[:,idx], axis=1)
+            new_labels = np.insert(new_labels, i, label)
+            
+            # delete old
+            delete_idx = (idx+1) if (idx+1) > len(labels) else -1
+            new_samples = np.delete(new_samples, delete_idx, axis=1)
+            new_labels = np.delete(new_labels, delete_idx)
+            
+    samples, labels = new_samples, new_labels
+        
+    
+    # get quantiles for ranges
+    quantiles = np.array(
+            [af.quantiles(samples[:,i], q=[0.16,0.5,0.84]) \
+             for i in range(samples.shape[1])]
+             )
+        
+    ranges = np.array(
+        [(4*(q_i[0]-q_i[1])+q_i[1], 4*(q_i[2]-q_i[1])+q_i[1]) \
+            for q_i in quantiles]
+        )
+    
+    
+    # samples = np.log10(np.array([Chem.VMRs_posterior[species_i] for species_i in species_to_plot]))
+    print(f'Shape of samples array: {samples.shape}')
+    fig = corner.corner(
+        samples, 
+        labels=labels, 
+        title_kwargs={'fontsize': fontsize},
+        labelpad=0.25*samples.shape[0]/17,
+        bins=20,
+        max_n_ticks=3,
+        show_titles=True,
+        range=ranges,
+        
+        quantiles=[0.16,0.84],
+        title_quantiles=[0.16,0.5,0.84],
+        
+        color=color,
+        linewidths=0.5,
+        hist_kwargs={'color':color,
+                        'linewidth':0.5,
+                        'density':True,
+                        'histtype':'stepfilled',
+                        'alpha':0.5,
+                        },
+        
+        fill_contours=True,
+        smooth=smooth,
+        fig=fig,
+        )
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f' - Saved {fig_name}')
+    plt.close(fig)
+    return fig
+
+    
 
 # if __name__ == '__main__':

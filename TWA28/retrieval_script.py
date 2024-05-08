@@ -1,7 +1,20 @@
 import argparse
+import os
+cwd = os.getcwd()
+if 'dgonzalezpi' in cwd:
+    path = '/home/dgonzalezpi/retrieval_base/'
+if 'dario' in cwd:
+    path = '/home/dario/phd/retrieval_base/'
+    
 from retrieval_base.retrieval import pre_processing, Retrieval
-
+from retrieval_base.config import Config
 import config_freechem as conf
+
+
+
+config_file = 'config_freechem.txt'
+target = 'TWA28'
+run = 'rev_3' # important to set this to the correct run 
 
 if __name__ == '__main__':
 
@@ -16,6 +29,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.pre_processing:
+        assert conf.run == run, f'Run {run} does not match run in config file {conf.run}'
         for conf_data_i in conf.config_data.values():
             pre_processing(conf=conf, conf_data=conf_data_i)
             
@@ -28,6 +42,9 @@ if __name__ == '__main__':
         ret.prior_check()
 
     if args.retrieval:
+        conf = Config(path=path, target=target, run=run)
+        conf(config_file)
+    
         ret = Retrieval(
             conf=conf, 
             evaluation=args.evaluation
@@ -35,6 +52,9 @@ if __name__ == '__main__':
         ret.PMN_run()
 
     if args.evaluation:
+        conf = Config(path=path, target=target, run=run)
+        conf(config_file)
+    
         ret = Retrieval(
             conf=conf, 
             evaluation=args.evaluation,

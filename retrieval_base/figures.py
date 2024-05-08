@@ -289,7 +289,7 @@ def fig_bestfit_model(
                 c=bestfit_color, lw=1, label=label
                 )
             
-            if hasattr(m_spec, "N_veiling"):
+            if getattr(m_spec, "N_veiling", 0) > 0:
                 # print(f' N_knots = {N_knots}')
                 m_v = LogLike.phi[i,j,N_knots:] @ m_spec.M_veiling
                 m_v[~mask_ij] = np.nan
@@ -299,8 +299,7 @@ def fig_bestfit_model(
                 m_pRT = SplineModel(N_knots=N_knots, spline_degree=3)(m_spec.flux[i,j]) if N_knots > 1 else m_spec.flux[i,j][None,:]
                 m_pRT[:,~mask_ij] = np.nan
                 ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,:N_knots] @ m_pRT, c='orange', lw=1, label='pRT')
-                
-                
+            # if 
             if m_spec.flux_envelope is not None:
                 ax_spec.plot(
                     d_spec.wave[i,j], m_spec.flux_envelope[3,i,j], c='C0', lw=1

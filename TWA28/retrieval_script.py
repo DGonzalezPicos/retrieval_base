@@ -1,4 +1,5 @@
 import argparse
+import subprocess
 import os
 cwd = os.getcwd()
 if 'dgonzalezpi' in cwd:
@@ -30,6 +31,8 @@ if __name__ == '__main__':
 
     if args.pre_processing:
         assert conf.run == run, f'Run {run} does not match run in config file {conf.run}'
+        subprocess.run(['python', 'config_freechem.py'])
+        
         for conf_data_i in conf.config_data.values():
             pre_processing(conf=conf, conf_data=conf_data_i)
             

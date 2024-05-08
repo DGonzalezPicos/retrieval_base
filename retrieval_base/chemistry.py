@@ -225,7 +225,8 @@ class Chemistry:
         assert hasattr(self, 'mass_fractions_posterior')
         self.VMRs_posterior = {}
         info = self.species_info
-        MMW = self.mass_fractions_posterior['MMW'].mean()
+        MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
+
         for line_species_i in self.line_species:
             key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]
             # check key_i is not empty

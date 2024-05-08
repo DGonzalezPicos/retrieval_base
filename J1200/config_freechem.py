@@ -98,9 +98,9 @@ free_params = {
     'dlnT_dlnP_2': [(0.04,0.36), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.00,0.36), r'$\nabla_{T,3}$'],  # 0.1 bar
     'dlnT_dlnP_4': [(0.00,0.36), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(0.00,0.36), r'$\nabla_{T,5}$'],  # 10 mbar
-    'dlnT_dlnP_6': [(0.00,0.36), r'$\nabla_{T,6}$'],  # 10 mbar
-    'dlnT_dlnP_7': [(0.00,0.36), r'$\nabla_{T,7}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(-0.04,0.36), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(-0.04,0.36), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_7': [(-0.04,0.36), r'$\nabla_{T,7}$'],  # 10 mbar
 
 
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
@@ -245,7 +245,7 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 400
+n_live_points = 200
 n_iter_before_update = int(n_live_points*2)
 # n_iter_before_update = 1
     

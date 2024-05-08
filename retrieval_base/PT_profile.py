@@ -262,6 +262,8 @@ class PT_profile_free_gradient(PT_profile):
 
         self.T_knots = params['T_knots']
         self.P_knots = params['P_knots']
+        self.log_P_knots = np.log10(self.P_knots)
+
 
         # Perform interpolation over dlnT/dlnP gradients
         # print(f'Interpolating dlnT/dlnP with {self.PT_interp_mode} interpolation')

@@ -445,7 +445,132 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
 
     return all_cov
 
-def fig_PT(PT, 
+
+def fig_PT(PT,
+            ax=None, 
+            ax_grad=None,
+            fig=None,
+            xlim=None, 
+            bestfit_color='C0',
+            envelopes_color='C0',
+            int_contr_em_color='red',
+            text_color='gray',
+            # weigh_alpha=True,
+            show_photosphere=True,
+            show_knots=True,
+            show_text=True,
+            fig_name=None,
+    ):
+
+    is_new_fig = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(7,7))
+        is_new_fig = True
+        
+    assert hasattr(PT, 'temperature_envelopes'), 'No temperature envelopes found'
+    
+    p = PT.pressure
+    if hasattr(PT, 'int_contr_em'):
+        # Plot the integrated contribution emission
+        print(' - Plotting integrated contribution emission')
+        ax_twin = ax.twiny()
+        ax_twin.plot(
+            PT.int_contr_em, p, 
+            c=int_contr_em_color, lw=2, alpha=0.4,
+            )
+
+        
+        # if weigh_alpha:
+        #     af.weigh_alpha(PT.int_contr_em, p, np.linspace(0,10000,p.size), ax, alpha_min=0.5, plot=True)
+        # define photosphere as region where PT.int_contr_em > np.quantile(PT.int_contr_em, 0.9)
+        if show_photosphere:
+            photosphere = PT.int_contr_em > np.quantile(PT.int_contr_em, 0.95)
+            P_phot = np.mean(p[photosphere])
+            T_phot = np.mean(PT.temperature_envelopes[3][photosphere])
+            T_phot_err = np.std(PT.temperature_envelopes[3][photosphere])
+            # print(f' - Photospheric temperature: {T_phot:.1f} +- {T_phot_err:.1f} K')
+            # make empty marker
+            ax.scatter(T_phot, P_phot, c='red',
+                        marker='o', 
+                        s=50, 
+                        alpha=0.5,
+                        zorder=10,
+                        label=f'T$_\mathrm{{phot}}$ = {T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
+            
+            ax.legend(loc='upper right', fontsize=12)
+
+        # remove xticks
+        ax_twin.set_xticks([])
+        ax_twin.spines['top'].set_visible(False)
+        ax_twin.spines['bottom'].set_visible(False)
+        ax_twin.set(
+            # xlabel='Integrated contribution emission',
+            xlim=(0,np.max(PT.int_contr_em)*1.5),
+            )
+    if hasattr(PT, 'log_P_knots'):
+        
+        for i, log_P_knot in enumerate(PT.log_P_knots):
+            ax.axhline(10**log_P_knot, c=text_color, lw=1,
+                    ls='-' if i==len(PT.log_P_knots)//2 else '--',
+                    alpha=0.8,
+                    zorder=0)
+            
+    
+    if PT.temperature_envelopes is not None:     # Plot the PT confidence envelopes
+        for i in range(3):
+            ax.fill_betweenx(
+                y=p, x1=PT.temperature_envelopes[i], 
+                x2=PT.temperature_envelopes[-i-1], 
+                color=envelopes_color, ec='none', 
+                alpha=0.3,
+                )
+        # Plot the median PT
+        ax.plot(PT.temperature_envelopes[3], p, c=bestfit_color, lw=2,)
+        xlim = (0, PT.temperature_envelopes[-1].max()*1.06) if xlim is None else xlim
+        
+    else:
+        ax.plot(PT.temperature, p, c=bestfit_color, lw=2)
+        xlim = (0, PT.temperature.max()*1.06) if xlim is None else xlim
+
+    # if hasattr(PT, "dlnT_dlnP_envelopes") and ax_grad is not None:
+    if ax_grad is not None:
+        if hasattr(PT, "dlnT_dlnP_envelopes"):
+            for i in range(3):
+                ax_grad.fill_betweenx(
+                    y=p, 
+                    x1=PT.dlnT_dlnP_envelopes[i],
+                    x2=PT.dlnT_dlnP_envelopes[-i-1],
+                    color=envelopes_color, ec='none', 
+                    alpha=0.3,
+                    )
+                
+        else:
+            ax_grad.plot(PT.dlnT_dlnP_array, p, c=bestfit_color, lw=2)
+            
+        ax_grad.set(xlabel=r'$\nabla_T$',
+            ylim=(p.max(), p.min()), yscale='log',
+            # xlim=xlim,
+            yticks=[],
+            )
+
+    ax.set(xlabel='Temperature (K)', ylabel='Pressure (bar)',
+            ylim=(p.max(), p.min()), yscale='log',
+            # xlim=(0, None),
+            xlim=xlim,
+            )
+    
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f' - Saved {fig_name}')
+        plt.close(fig)
+
+    if is_new_fig:
+        return fig, ax
+    if ax_grad is not None:
+        return ax, ax_grad
+    return ax
+
+def old_fig_PT(PT, 
            pRT_atm, 
            #integrated_contr_em=None, 
            #integrated_contr_em_per_order=None, 

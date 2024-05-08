@@ -503,7 +503,7 @@ class Retrieval:
             self.Param.read_PT_params(cube=None)
             self.Param.read_uncertainty_params()
             self.Param.read_chemistry_params()
-            self.Param.read_cloud_params()
+            # self.Param.read_cloud_params()
 
             # Class instances with best-fitting parameters
             returned = self.PMN_lnL_func()
@@ -518,8 +518,11 @@ class Retrieval:
             if hasattr(self.Chem, 'unquenched_mass_fractions'):
                 unquenched_mass_fractions_i = self.Chem.unquenched_mass_fractions
 
+            dlnT_dlnP_array_i = self.PT.dlnT_dlnP_array if hasattr(self.PT, 'dlnT_dlnP_array') else None
+
             # Return the temperature, mass fractions, unquenched, C/O ratio and Fe/H
-            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, self.Chem.CO, self.Chem.FeH
+            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, \
+                    self.Chem.CO, self.Chem.FeH, dlnT_dlnP_array_i
         
         # Compute the mass fractions posterior in parallel
         returned = self.parallel_for_loop(func, posterior)
@@ -531,7 +534,8 @@ class Retrieval:
         mass_fractions_posterior, \
         unquenched_mass_fractions_posterior, \
         self.Chem.CO_posterior, \
-        self.Chem.FeH_posterior \
+        self.Chem.FeH_posterior, \
+        self.PT.dlnT_dlnP_posterior \
             = returned
         
         self.PT.temperature_posterior = np.array(self.PT.temperature_posterior)
@@ -574,6 +578,9 @@ class Retrieval:
         self.PT.temperature_envelopes = af.quantiles(
             self.PT.temperature_posterior, q=q, axis=0
             )
+        if self.conf.PT_mode in ['RCE', 'free_gradient']:
+                self.PT.dlnT_dlnP_envelopes = af.quantiles(np.array(self.PT.dlnT_dlnP_posterior),
+                                                        q=q, axis=0)
 
         self.Chem.mass_fractions_envelopes = {}
         self.Chem.unquenched_mass_fractions_envelopes = {}
@@ -591,15 +598,15 @@ class Retrieval:
                 continue
 
         # Store the unquenched mass fractions
-        if hasattr(self.Chem, 'unquenched_mass_fractions'):
+        # if hasattr(self.Chem, 'unquenched_mass_fractions'):
 
-            for line_species_i in self.Chem.unquenched_mass_fractions.keys():
-                self.Chem.unquenched_mass_fractions_posterior[line_species_i] = \
-                    np.array(self.Chem.unquenched_mass_fractions_posterior[line_species_i])
+        #     for line_species_i in self.Chem.unquenched_mass_fractions.keys():
+        #         self.Chem.unquenched_mass_fractions_posterior[line_species_i] = \
+        #             np.array(self.Chem.unquenched_mass_fractions_posterior[line_species_i])
 
-                self.Chem.unquenched_mass_fractions_envelopes[line_species_i] = af.quantiles(
-                    self.Chem.unquenched_mass_fractions_posterior[line_species_i], q=q, axis=0
-                    )
+        #         self.Chem.unquenched_mass_fractions_envelopes[line_species_i] = af.quantiles(
+        #             self.Chem.unquenched_mass_fractions_posterior[line_species_i], q=q, axis=0
+        #             )
 
         self.CB.return_PT_mf = False
 
@@ -842,6 +849,8 @@ class Retrieval:
         af.pickle_save(self.conf.prefix+'data/m_spec_species.pkl', self.m_spec_species)
         print(f' Saved m_spec_species.pkl to {self.conf.prefix}data/')
         # Call the CallBack class and make summarizing figures
+        
+        self.copy_integrated_contribution_emission()
         self.CB(
             self.Param, self.LogLike, self.Cov, self.PT, self.Chem, 
             self.m_spec, pRT_atm_to_use, posterior, 
@@ -870,6 +879,19 @@ class Retrieval:
             dump_callback=self.PMN_callback_func, 
             n_iter_before_update=self.conf.n_iter_before_update, 
             )
+        
+        
+    def copy_integrated_contribution_emission(self):
+        
+        if hasattr(self.pRT_atm, 'int_contr_em'):
+            print(f'Copying integrated contribution emission from pRT_atm to PT')
+            self.PT.int_contr_em = np.copy(self.pRT_atm.int_contr_em)
+        if hasattr(self.m_spec, 'int_contr_em'):
+            print(f'Copying integrated contribution emission from m_spec to PT')
+            self.PT.int_contr_em = np.copy(self.m_spec.int_contr_em)
+        else:
+            print(f'WARNING: No integrated contribution emission found in pRT_atm or m_spec')
+        return self
 
     def synthetic_spectrum(self):
         

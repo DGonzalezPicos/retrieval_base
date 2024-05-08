@@ -88,7 +88,7 @@ class CallBack:
         self.Cov     = Cov
         self.PT      = PT
         self.Chem    = Chem
-        if not hasattr(self.Chem, 'VMRs_posterior'):
+        if not hasattr(self.Chem, 'VMRs_posterior') and self.evaluation:
             self.Chem.get_VMRs_posterior()
         self.m_spec  = m_spec
         self.pRT_atm = pRT_atm

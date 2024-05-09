@@ -840,7 +840,7 @@ class Retrieval:
             self.get_species_contribution()
 
         # Update class instances with best-fitting parameters
-        self.CB.active = False
+        self.CB.active = self.evaluation
         self.PMN_lnL_func()
 
         for w_set in self.conf.config_data.keys():
@@ -857,6 +857,7 @@ class Retrieval:
         print(f' Saved m_spec_species.pkl to {self.conf.prefix}data/')
         # Call the CallBack class and make summarizing figures
         if self.evaluation:
+            # self.CB.active = True
             self.copy_integrated_contribution_emission()
             # assert hasattr(self.PT, 'int_contr_em'), 'No integrated contribution emission found in PT'
         self.CB(

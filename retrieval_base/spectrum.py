@@ -931,7 +931,8 @@ class ModelSpectrum(Spectrum):
     
     def add_veiling_power_law(self, alpha, beta, wave, wave_min=None):
         # after normalizing the spectrum, add a veiling model
-        self.flux += self.veiling_power_law(alpha, beta, wave, wave_min)
+        self.veiling_model = self.veiling_power_law(alpha, beta, wave, wave_min)
+        self.flux += self.veiling_model
         return self
 
 class Photometry:

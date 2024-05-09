@@ -299,7 +299,10 @@ def fig_bestfit_model(
                 m_pRT = SplineModel(N_knots=N_knots, spline_degree=3)(m_spec.flux[i,j]) if N_knots > 1 else m_spec.flux[i,j][None,:]
                 m_pRT[:,~mask_ij] = np.nan
                 ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,:N_knots] @ m_pRT, c='orange', lw=1, label='pRT')
-            # if 
+            if hasattr(m_spec, 'veiling_model'):
+                ax_spec.plot(d_spec.wave[i,j], m_spec.veiling_model[i,j]* np.mean(ret.LogLike[w_set].phi[order,det]), 
+                             c='magenta', lw=1, label='Veiling model')
+                # ax_spec.plot(d_spec.wave[i,j], m_spec.pRT_model[i,j], c='orange', lw=1, label='pRT model')
             if m_spec.flux_envelope is not None:
                 ax_spec.plot(
                     d_spec.wave[i,j], m_spec.flux_envelope[3,i,j], c='C0', lw=1
@@ -1299,6 +1302,10 @@ def fig_prior_check(ret, w_set, fig_name=None):
                 ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
                 if i == 0:
                     ax_spec[order].plot(x, d_spec.flux[order, det], color='k', alpha=0.3)
+                if hasattr(ret.m_spec[w_set], 'veiling_model'):
+                    ax_spec[order].plot(x, ret.m_spec[w_set].veiling_model[order,det] * np.mean(ret.LogLike[w_set].phi[order,det]),
+                                        c=colors[i], lw=1, ls='--', alpha=0.7,
+                                 label='Veiling model' if (order+det) == 0 else None)
         
         ax_spec[-1].set(xlabel='Wavelength (nm)')
     

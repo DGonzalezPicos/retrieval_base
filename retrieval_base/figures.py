@@ -300,7 +300,7 @@ def fig_bestfit_model(
                 m_pRT[:,~mask_ij] = np.nan
                 ax_spec.plot(d_spec.wave[i,j], LogLike.phi[i,j,:N_knots] @ m_pRT, c='orange', lw=1, label='pRT')
             if hasattr(m_spec, 'veiling_model'):
-                ax_spec.plot(d_spec.wave[i,j], m_spec.veiling_model[i,j]* np.mean(ret.LogLike[w_set].phi[order,det]), 
+                ax_spec.plot(d_spec.wave[i,j], m_spec.veiling_model[i,j]* np.mean(LogLike[w_set].phi[order,det]), 
                              c='magenta', lw=1, label='Veiling model')
                 # ax_spec.plot(d_spec.wave[i,j], m_spec.pRT_model[i,j], c='orange', lw=1, label='pRT model')
             if m_spec.flux_envelope is not None:

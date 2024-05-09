@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_3'
+run = 'rev_4'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -54,6 +54,10 @@ free_params = {
     #'log_a': [(-18,-14), r'$\log\ a_1$'], 
     'log_a': [(-1,0.5), r'$\log\ a$'], 
     'log_l': [(-2,-0.8), r'$\log\ l$'], 
+    
+     # veiling power law
+    'alpha': [(0.0, 2.), r'$\alpha$'],
+    'beta': [(0.0, 3.0), r'$\beta$'],
 
     # General properties
     # R = 0.29 [R_sun]
@@ -90,16 +94,15 @@ free_params = {
     # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
-      # PT profile
+       # PT profile
     'dlnT_dlnP_0': [(0.04,0.36), r'$\nabla_{T,0}$'], # 100 bar
     'dlnT_dlnP_1': [(0.04,0.36), r'$\nabla_{T,1}$'],  # 10 bar
     'dlnT_dlnP_2': [(0.04,0.36), r'$\nabla_{T,2}$'],  # 1 bar
     'dlnT_dlnP_3': [(0.00,0.36), r'$\nabla_{T,3}$'],  # 0.1 bar
     'dlnT_dlnP_4': [(0.00,0.36), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(0.00,0.36), r'$\nabla_{T,5}$'],  # 10 mbar
-    'dlnT_dlnP_6': [(0.00,0.36), r'$\nabla_{T,6}$'],  # 10 mbar
-    'dlnT_dlnP_7': [(0.00,0.36), r'$\nabla_{T,7}$'],  # 10 mbar
-
+    'dlnT_dlnP_5': [(-0.04,0.36), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(-0.04,0.36), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_7': [(-0.04,0.36), r'$\nabla_{T,7}$'],  # 10 mbar
 
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
     # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
@@ -110,7 +113,16 @@ free_params = {
 d_pc = 59.2 # pc
 parallax = 1/d_pc
 parallax_mas = parallax * 1000
-N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
+# N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
+
+dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
+# N_knots = len(dlnT_dlnP)
+# log_P_knots = np.linspace(-5,2,N_knots).tolist()
+log_P_knots = [-5., -3., -1.5, -1.,-0.5, 0.0, 1., 2.]
+# assert len(log_P_knots) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
+# N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
+N_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)
+assert len(dlnT_dlnP) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 PT_interp_mode = 'linear'
 constant_params = {
     # General properties
@@ -120,7 +132,9 @@ constant_params = {
     'R_p': 0.0, # no scaling of the radius --> normalize flux and model (new 2024-05-07)
 
     # PT profile
-    'log_P_knots': list(np.linspace(-5,2,N_knots)), # define as list to avoid issues with json
+    # 'log_P_knots': list(np.linspace(-5,2,N_knots)), # define as list to avoid issues with json
+    'log_P_knots': log_P_knots, # define as list to avoid issues with json
+
 }
 
 ####################################################################################
@@ -132,7 +146,7 @@ scale_err  = True
 apply_high_pass_filter = False
 normalize = True # normalize the spectrum per order (new 2024-05-07)
 N_spline_knots = 10
-N_veiling = 1
+N_veiling = 0
 
 # cloud_mode = 'gray'
 cloud_mode = None
@@ -229,7 +243,7 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 400
+n_live_points = 200
 n_iter_before_update = int(n_live_points*2)
 # n_iter_before_update = 1
     

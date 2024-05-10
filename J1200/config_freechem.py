@@ -97,19 +97,20 @@ free_params = {
     # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
-      # PT profile
-    'dlnT_dlnP_0': [(0.04,0.36), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.04,0.36), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.04,0.36), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.00,0.36), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.00,0.36), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(-0.04,0.36), r'$\nabla_{T,5}$'],  # 10 mbar
-    'dlnT_dlnP_6': [(-0.04,0.36), r'$\nabla_{T,6}$'],  # 10 mbar
-    'dlnT_dlnP_7': [(-0.04,0.36), r'$\nabla_{T,7}$'],  # 10 mbar
+         # PT profile
+    'dlnT_dlnP_0': [(0.00,0.34), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.00,0.34), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.00,0.34), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.00,0.34), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.00,0.34), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.00,0.34), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(0.00,0.34), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_7': [(0.00,0.34), r'$\nabla_{T,7}$'],  # 10 mbar
+    'dlnT_dlnP_8': [(0.00,0.34), r'$\nabla_{T,8}$'],  # 10 mbar
+    'dlnT_dlnP_9': [(0.00,0.34), r'$\nabla_{T,9}$'],  # 10 mbar
+    'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
+    'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
 
-
-    # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
-    # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
     'T_0': [(2000,10000), r'$T_0$'], 
 }
 

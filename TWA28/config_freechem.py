@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_4'
+run = 'rev_7_100'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -35,7 +35,7 @@ config_data = {
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 50, 
+        'n_atm_layers': 100, 
         }, 
     }
 
@@ -56,8 +56,8 @@ free_params = {
     'log_l': [(-2,-0.8), r'$\log\ l$'], 
     
      # veiling power law
-    'alpha': [(0.0, 2.), r'$\alpha$'],
-    'beta': [(0.0, 3.0), r'$\beta$'],
+    # 'alpha': [(0.0, 2.), r'$\alpha$'],
+    # 'beta': [(0.0, 3.0), r'$\beta$'],
 
     # General properties
     # R = 0.29 [R_sun]
@@ -95,14 +95,18 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
        # PT profile
-    'dlnT_dlnP_0': [(0.04,0.36), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.04,0.36), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.04,0.36), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.00,0.36), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.00,0.36), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(-0.04,0.36), r'$\nabla_{T,5}$'],  # 10 mbar
-    'dlnT_dlnP_6': [(-0.04,0.36), r'$\nabla_{T,6}$'],  # 10 mbar
-    'dlnT_dlnP_7': [(-0.04,0.36), r'$\nabla_{T,7}$'],  # 10 mbar
+    'dlnT_dlnP_0': [(0.00,0.34), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.00,0.34), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.00,0.34), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.00,0.34), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.00,0.34), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.00,0.34), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(0.00,0.34), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_7': [(0.00,0.34), r'$\nabla_{T,7}$'],  # 10 mbar
+    'dlnT_dlnP_8': [(0.00,0.34), r'$\nabla_{T,8}$'],  # 10 mbar
+    'dlnT_dlnP_9': [(0.00,0.34), r'$\nabla_{T,9}$'],  # 10 mbar
+    'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
+    'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
 
     # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
     # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
@@ -118,7 +122,9 @@ parallax_mas = parallax * 1000
 dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
 # N_knots = len(dlnT_dlnP)
 # log_P_knots = np.linspace(-5,2,N_knots).tolist()
-log_P_knots = [-5., -3., -1.5, -1.,-0.5, 0.0, 1., 2.]
+# log_P_knots = [-5., -3., -1.5, -1.,-0.5, 0.0, 1., 2.]
+# log_P_knots = [-5., -3., -1.5, -1.25, -0.75, -0.50, -0.25, 0.0, 1.0,  2.]
+log_P_knots = [-5, -3, -2.0, -1.625, -1.25, -0.875, -0.5, -0.125, 0.25, 0.625, 1.0, 2.0]
 # assert len(log_P_knots) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 # N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
 N_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)

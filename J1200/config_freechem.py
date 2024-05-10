@@ -66,6 +66,7 @@ free_params = {
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     # 'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
+    # 'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     'log_g': [(2.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 

@@ -21,10 +21,14 @@ out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 #                TWA28='freechem_13', 
 #                J0856='freechem_14'
 #                )
-targets = dict(J1200='freechem_15', 
-               TWA28='freechem_12', 
-               J0856='freechem_13'
-               )
+# targets = dict(J1200='freechem_15', 
+#                TWA28='freechem_12', 
+#                J0856='freechem_13'
+#                )
+targets = dict(J1200='rev_4',
+                TWA28='rev_4',
+                J0856='freechem_13',
+                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(1,1, figsize=(6,6), constrained_layout=True)

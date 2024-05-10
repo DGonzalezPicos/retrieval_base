@@ -263,10 +263,13 @@ class Spectrum:
         flux_even = np.interp(wave_even, xp=wave, fp=flux)
         
         # Rotational broadening of the model spectrum
-        flux_rot_broad = pyasl.fastRotBroad(wave_even, flux_even, 
-                                            epsilon=epsilon_limb, 
-                                            vsini=vsini
-                                            )
+        if vsini > 1.0:
+            flux_rot_broad = pyasl.fastRotBroad(wave_even, flux_even, 
+                                                epsilon=epsilon_limb, 
+                                                vsini=vsini
+                                                )
+        else:
+            flux_rot_broad = flux_even
         if replace_wave_flux:
             self.wave = wave_even
             self.flux = flux_rot_broad

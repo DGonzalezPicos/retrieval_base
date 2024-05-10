@@ -98,20 +98,20 @@ free_params = {
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
          # PT profile
-    'dlnT_dlnP_0': [(0.00,0.34), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.00,0.34), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.00,0.34), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.00,0.34), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.00,0.34), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(0.00,0.34), r'$\nabla_{T,5}$'],  # 10 mbar
-    'dlnT_dlnP_6': [(0.00,0.34), r'$\nabla_{T,6}$'],  # 10 mbar
-    'dlnT_dlnP_7': [(0.00,0.34), r'$\nabla_{T,7}$'],  # 10 mbar
-    'dlnT_dlnP_8': [(0.00,0.34), r'$\nabla_{T,8}$'],  # 10 mbar
-    'dlnT_dlnP_9': [(0.00,0.34), r'$\nabla_{T,9}$'],  # 10 mbar
-    'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
-    'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
+    'dlnT_dlnP_0': [(0.08,0.32), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.06,0.22), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.06,0.28), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.06,0.30), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.06,0.30), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(0.06,0.30), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_7': [(0.04,0.22), r'$\nabla_{T,7}$'],  # 10 mbar
+    'dlnT_dlnP_8': [(0.04,0.22), r'$\nabla_{T,8}$'],  # 10 mbar
+    'dlnT_dlnP_9': [(0.00,0.22), r'$\nabla_{T,9}$'],  # 10 mbar
+    # 'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
+    # 'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
 
-    'T_0': [(2000,10000), r'$T_0$'], 
+    'T_0': [(3000,9000), r'$T_0$'], 
 }
 
 # Constants to use if prior is not given
@@ -124,15 +124,16 @@ dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in ke
 # N_knots = len(dlnT_dlnP)
 # log_P_knots = np.linspace(-5,2,N_knots).tolist()
 # log_P_knots = [-5., -3., -1.5, -1.,-0.5, 0.0, 1., 2.]
-log_P_knots = [-5, -3, -2.0, -1.625, -1.25, -0.875, -0.5, -0.125, 0.25, 0.625, 1.0, 2.0]
-
+# log_P_knots = [-5, -3, -2.0, -1.625, -1.25, -0.875, -0.5, -0.125, 0.25, 0.625, 1.0, 2.0]
+# log_P_knots = [-5, -3, -2.0, -1.625, -1.25, -0.875, -0.5, -0.125, 0.25, 0.625, 1.0, 2.0]
+log_P_knots = [-5, -3, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.25, 2.0] # 10 knots
 # assert len(log_P_knots) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 # N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
 N_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)
 assert len(dlnT_dlnP) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 # print(f'Number of PT knots: {len(dlnT_dlnP)}')
 # print(f'PT knots: {log_P_knots}')
-PT_interp_mode = 'quadratic'
+PT_interp_mode = 'linear'
 constant_params = {
     # General properties
     'parallax': parallax_mas, 

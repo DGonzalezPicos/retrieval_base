@@ -113,7 +113,9 @@ dlnT_dlnP_list = []
 temp_knots = []
 
 # plot some random PT profiles
-fig_PT, ax_PT = plt.subplots(1,1, figsize=(8, 6))
+fig_PT, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(12, 6), 
+                                        sharey=True,
+                                        gridspec_kw={'wspace': 0.02})
 
 n_samples = int(5e3)
 for i in range(n_samples):
@@ -135,8 +137,12 @@ for i in range(n_samples):
     # check for negative values
     # assert np.all(ret.PT.dlnT_dlnP_array > 0), f'Negative dlnT/dlnP values at iteration {i}'
     # temp_list.append(ret.PT(sample_PT))
-    if i % (n_samples // 10) == 0:
+    if i % (n_samples // 5) == 0:
         ax_PT.plot(temperature, pressure, alpha=0.75, lw=2.)
+        ax_grad.plot(PT.dlnT_dlnP_array, pressure, alpha=0.75, lw=2.)
+        
+for i in range(N_knots):
+    [axi.axhline(10**logP_knots[i], color='k', ls=':', alpha=0.5, zorder=0) for axi in [ax_PT, ax_grad]]
         
 ax_PT.set(xlabel='Temperature (K)', ylabel='Pressure (bar)', yscale='log')
 # ax_PT.set_yticks(10**logP_knots)

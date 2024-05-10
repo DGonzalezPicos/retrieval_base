@@ -1,5 +1,6 @@
 from retrieval_base.retrieval import pre_processing, Retrieval
 from retrieval_base.parameters import Parameters
+from retrieval_base.config import Config
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -53,10 +54,14 @@ out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 # 3. J0856: freechem_13
 
 
-targets = dict(J1200='freechem_15', 
-               TWA28='freechem_12', 
-               J0856='freechem_13'
-               )
+# targets = dict(J1200='freechem_15', 
+#                TWA28='freechem_12', 
+#                J0856='freechem_13'
+#                )
+targets = dict(J1200='rev_5',
+                TWA28='rev_7_100',
+                J0856='rev_1',
+                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
 # fig, ax = plt.subplots(1,1, figsize=(8,6))
@@ -79,9 +84,13 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     
     params = bestfit_params['params']
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
+    
+    conf = Config(path, target=target, run=retrieval_id)('config_freechem.txt')
     # logg = params['log_g']
     # logg = posterior[:,3] # with R_p in params
-    logg = posterior[:,3] # no R_p in params
+    # find index of logg
+    logg_id = [i for i, key in enumerate(conf.free_params.keys()) if 'log_g' in key][0]
+    logg = posterior[:,logg_id] # no R_p in params
     if (logg.min()) < 2.5 or (logg.max() > 5.5):
         print(f' Using idx=3 for log g')
         logg = posterior[:,2]

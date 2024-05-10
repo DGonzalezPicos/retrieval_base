@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_4'
+run = 'rev_5'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -122,7 +122,9 @@ parallax_mas = parallax * 1000
 dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
 # N_knots = len(dlnT_dlnP)
 # log_P_knots = np.linspace(-5,2,N_knots).tolist()
-log_P_knots = [-5., -3., -1.5, -1.,-0.5, 0.0, 1., 2.]
+# log_P_knots = [-5., -3., -1.5, -1.,-0.5, 0.0, 1., 2.]
+log_P_knots = [-5, -3, -2.0, -1.625, -1.25, -0.875, -0.5, -0.125, 0.25, 0.625, 1.0, 2.0]
+
 # assert len(log_P_knots) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 # N_knots = 8 # PT knots = 8 (NEW 2024-05-07)
 N_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)

@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_5'
+run = 'rev_6'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -58,8 +58,8 @@ free_params = {
     'log_l': [(-2,-0.8), r'$\log\ l$'], 
     
     # veiling power law
-    'alpha': [(0.0, 2.), r'$\alpha$'],
-    'beta': [(0.0, 3.0), r'$\beta$'],
+    # 'alpha': [(0.0, 2.), r'$\alpha$'],
+    # 'beta': [(0.0, 3.0), r'$\beta$'],
 
     # General properties
     # R = 0.29 [R_sun]
@@ -132,7 +132,7 @@ N_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)
 assert len(dlnT_dlnP) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 # print(f'Number of PT knots: {len(dlnT_dlnP)}')
 # print(f'PT knots: {log_P_knots}')
-PT_interp_mode = 'linear'
+PT_interp_mode = 'quadratic'
 constant_params = {
     # General properties
     'parallax': parallax_mas, 

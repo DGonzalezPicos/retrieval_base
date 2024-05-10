@@ -270,11 +270,15 @@ class PT_profile_free_gradient(PT_profile):
         # print(f'shape of params["log_P_knots"] = {params["log_P_knots"].shape}')
         # print(f'shape of params["dlnT_dlnP_knots"] = {params["dlnT_dlnP_knots"].shape}')
         # print(f'interp kind = {self.PT_interp_mode}')
+        self.dlnT_dlnP_knots = params['dlnT_dlnP_knots']
         interp_func = interp1d(
-            params['log_P_knots'], params['dlnT_dlnP_knots'], 
+            params['log_P_knots'], self.dlnT_dlnP_knots, 
             kind=self.PT_interp_mode
             )
+        
+        # clip negative values to zero
         self.dlnT_dlnP_array = interp_func(np.log10(self.pressure))[::-1]
+        self.dlnT_dlnP_array = np.clip(self.dlnT_dlnP_array, 0, None)
 
         # Compute the temperatures based on the gradient
         self.temperature = [params['T_0'], ]
@@ -283,10 +287,6 @@ class PT_profile_free_gradient(PT_profile):
             ln_P_i1 = self.flipped_ln_pressure[i+1]
             ln_P_i  = self.flipped_ln_pressure[i]
             
-            # T_i1 = np.exp(
-            #     np.log(self.temperature[-1]) + \
-            #     (ln_P_i1 - ln_P_i) * dlnT_dlnP_array[i]
-            #     )
             T_i1 = self.temperature[i] * np.exp((ln_P_i1 - ln_P_i) * self.dlnT_dlnP_array[i])
             self.temperature.append(T_i1)
         self.temperature = np.array(self.temperature)[::-1]

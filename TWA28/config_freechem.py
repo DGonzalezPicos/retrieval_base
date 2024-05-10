@@ -108,8 +108,6 @@ free_params = {
     'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
     'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
 
-    # 'dlnT_dlnP_5': [(0.02,0.15), r'$\nabla_{T,5}$'],  # 1 mbar
-    # 'dlnT_dlnP_6': [(-0.04,0.20), r'$\nabla_{T,6}$'],  # 0.01 mbar
     'T_0': [(2000,10000), r'$T_0$'], 
 }
 # Constants to use if prior is not given

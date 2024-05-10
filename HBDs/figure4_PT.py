@@ -25,8 +25,8 @@ out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 #                TWA28='freechem_12', 
 #                J0856='freechem_13'
 #                )
-targets = dict(J1200='rev_4',
-                TWA28='rev_4',
+targets = dict(J1200='rev_5',
+                TWA28='rev_7_100',
                 J0856='freechem_13',
                 )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
@@ -62,8 +62,16 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         
 ax.set(ylim=(PT.pressure.max(), PT.pressure.min()), ylabel='Pressure [bar]', xlabel='Temperature [K]',
         yscale='log')
-ax.set_xlim(900., 5000.)
-ax.legend(frameon=False, prop={'weight':'bold', 'size': 20})
+ax.set_xlim(1000., 5000.)
+# increase padding of x-axis labels
+ax.tick_params(axis='x', pad=10)
+
+# adjust linewidth of handle
+ax.legend(frameon=False, prop={'weight':'bold', 'size': 20}, handlelength=2)
+# increase linewidth of handles in legend and alpha value
+for legobj in ax.legend_.legendHandles:
+    legobj.set_linewidth(3.0)
+    legobj.set_alpha(0.9)
 # remove minor yticks
 ax.minorticks_off()
 plt.show()

@@ -97,7 +97,7 @@ free_params = {
     # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
-         # PT profile
+    # PT profile
     'dlnT_dlnP_0': [(0.06,0.32), r'$\nabla_{T,0}$'], # 100 bar
     'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
     'dlnT_dlnP_2': [(0.06,0.26), r'$\nabla_{T,2}$'],  # 1 bar

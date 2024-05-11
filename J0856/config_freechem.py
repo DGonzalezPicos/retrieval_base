@@ -8,7 +8,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_1'
+run = 'rev_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -98,21 +98,22 @@ free_params = {
     # 'log_HCl':[(-12,-2), r'$\log\ \mathrm{HCl}$'],
     # 'log_H2S':[(-12,-2), r'$\log\ \mathrm{H_2S}$'],
 
-         # PT profile
-    'dlnT_dlnP_0': [(0.00,0.34), r'$\nabla_{T,0}$'], # 100 bar
-    'dlnT_dlnP_1': [(0.00,0.34), r'$\nabla_{T,1}$'],  # 10 bar
-    'dlnT_dlnP_2': [(0.00,0.34), r'$\nabla_{T,2}$'],  # 1 bar
-    'dlnT_dlnP_3': [(0.00,0.34), r'$\nabla_{T,3}$'],  # 0.1 bar
-    'dlnT_dlnP_4': [(0.00,0.34), r'$\nabla_{T,4}$'],  # 10 mbar
-    'dlnT_dlnP_5': [(0.00,0.34), r'$\nabla_{T,5}$'],  # 10 mbar
-    'dlnT_dlnP_6': [(0.00,0.34), r'$\nabla_{T,6}$'],  # 10 mbar
-    'dlnT_dlnP_7': [(0.00,0.34), r'$\nabla_{T,7}$'],  # 10 mbar
-    'dlnT_dlnP_8': [(0.00,0.34), r'$\nabla_{T,8}$'],  # 10 mbar
-    'dlnT_dlnP_9': [(0.00,0.34), r'$\nabla_{T,9}$'],  # 10 mbar
-    'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
-    'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
+     # PT profile
+    'dlnT_dlnP_0': [(0.06,0.32), r'$\nabla_{T,0}$'], # 100 bar
+    'dlnT_dlnP_1': [(0.06,0.22), r'$\nabla_{T,1}$'],  # 10 bar
+    'dlnT_dlnP_2': [(0.06,0.32), r'$\nabla_{T,2}$'],  # 1 bar
+    'dlnT_dlnP_3': [(0.06,0.32), r'$\nabla_{T,3}$'],  # 0.1 bar
+    'dlnT_dlnP_4': [(0.06,0.32), r'$\nabla_{T,4}$'],  # 10 mbar
+    'dlnT_dlnP_5': [(0.02,0.24), r'$\nabla_{T,5}$'],  # 10 mbar
+    'dlnT_dlnP_6': [(0.00,0.22), r'$\nabla_{T,6}$'],  # 10 mbar
+    'dlnT_dlnP_7': [(0.00,0.22), r'$\nabla_{T,7}$'],  # 10 mbar
+    # 'dlnT_dlnP_8': [(0.04,0.22), r'$\nabla_{T,8}$'],  # 10 mbar
+    # 'dlnT_dlnP_9': [(0.00,0.22), r'$\nabla_{T,9}$'],  # 10 mbar
+    # 'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
+    # 'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
 
-    'T_0': [(2000,10000), r'$T_0$'], 
+    'dlog_P':[(-0.8,0.8), r'$\Delta\log\ P$'],
+    'T_0': [(3000,9000), r'$T_0$'], 
 }
 
 # Constants to use if prior is not given
@@ -122,7 +123,9 @@ parallax = 1/d_pc
 parallax_mas = parallax * 1000
 
 dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
-log_P_knots = [-5, -3, -2.0, -1.625, -1.25, -0.875, -0.5, -0.125, 0.25, 0.625, 1.0, 2.0]
+# log_P_knots = [-5, -3, -2.0, -1.625, -1.25, -0.875, -0.5, -0.125, 0.25, 0.625, 1.0, 2.0]
+log_P_knots = [-5, -3, -2.0, -1.25, -0.5, 0.25, 1.0, 2.0] # 8 knots
+
 N_knots = len(log_P_knots) # PT knots = 12 (NEW 2024-05-10)
 assert len(dlnT_dlnP) == N_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 PT_interp_mode = 'linear'
@@ -145,7 +148,7 @@ scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
 normalize = True # normalize the spectrum per order (new 2024-05-07)
-N_spline_knots = 10
+N_spline_knots = 1
 N_veiling = 0
 
 # cloud_mode = 'gray'

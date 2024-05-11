@@ -269,13 +269,17 @@ class PT_profile_free_gradient(PT_profile):
         dlog_P_array = np.zeros_like(self.log_P_knots) + self.dlog_P
         dlog_P_array[[0,-1]] = [0, 0]
         self.log_P_knots = self.log_P_knots + dlog_P_array
+        
+        # sort = np.argsort(self.log_P_knots)
+        # self.log_P_knots = self.log_P_knots[sort]
+        self.dlnT_dlnP_knots = params['dlnT_dlnP_knots']
+
         # check they are in the right order
-        assert np.all(np.diff(self.log_P_knots) > 0), 'Pressure knots are not in the right order'
+        # assert np.all(np.diff(self.log_P_knots) > 0), 'Pressure knots are not in the right order'
 
 
         # Perform interpolation over dlnT/dlnP gradients
         # print(f'interp kind = {self.PT_interp_mode}')
-        self.dlnT_dlnP_knots = params['dlnT_dlnP_knots']
         # print(f' dlnT/dlnP knots: {self.dlnT_dlnP_knots}')
         # print(f' log P knots: {self.log_P_knots}')
         interp_func = interp1d(

@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_8'
+run = 'rev_9'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -111,6 +111,7 @@ free_params = {
     # 'dlnT_dlnP_10': [(0.00,0.34), r'$\nabla_{T,10}$'],  # 10 mbar
     # 'dlnT_dlnP_11': [(0.00,0.34), r'$\nabla_{T,11}$'],  # 10 mbar
 
+    'dlog_P':[(-0.8,0.8), r'$\Delta\log\ P$'],
     'T_0': [(3000,9000), r'$T_0$'], 
 }
 

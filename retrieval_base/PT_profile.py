@@ -262,17 +262,24 @@ class PT_profile_free_gradient(PT_profile):
 
         self.T_knots = params['T_knots']
         self.P_knots = params['P_knots']
-        self.log_P_knots = np.log10(self.P_knots)
+        # self.log_P_knots = np.log10(self.P_knots)
+        self.log_P_knots = params['log_P_knots']
+        # adjust only the intermediate knots, top and bottom knots are fixed
+        self.dlog_P = params.get('dlog_P', 0.0)
+        dlog_P_array = np.zeros_like(self.log_P_knots) + self.dlog_P
+        dlog_P_array[[0,-1]] = [0, 0]
+        self.log_P_knots = self.log_P_knots + dlog_P_array
+        # check they are in the right order
+        assert np.all(np.diff(self.log_P_knots) > 0), 'Pressure knots are not in the right order'
 
 
         # Perform interpolation over dlnT/dlnP gradients
-        # print(f'Interpolating dlnT/dlnP with {self.PT_interp_mode} interpolation')
-        # print(f'shape of params["log_P_knots"] = {params["log_P_knots"].shape}')
-        # print(f'shape of params["dlnT_dlnP_knots"] = {params["dlnT_dlnP_knots"].shape}')
         # print(f'interp kind = {self.PT_interp_mode}')
         self.dlnT_dlnP_knots = params['dlnT_dlnP_knots']
+        # print(f' dlnT/dlnP knots: {self.dlnT_dlnP_knots}')
+        # print(f' log P knots: {self.log_P_knots}')
         interp_func = interp1d(
-            params['log_P_knots'], self.dlnT_dlnP_knots, 
+            self.log_P_knots, self.dlnT_dlnP_knots, 
             kind=self.PT_interp_mode
             )
         

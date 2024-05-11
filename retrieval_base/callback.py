@@ -554,7 +554,8 @@ class CallBack:
             show_photosphere=True,
             show_knots=True,
             show_text=True,
-            xlim=(1000, 8000), # fix view
+            xlim=(1000, 7000), # fix view
+            xlim_grad=(-0.02, 0.34),
             # fig_name=self.prefix+f'plots/PT_grad_profile.pdf',
         )
         # remove yticks from ax_grad

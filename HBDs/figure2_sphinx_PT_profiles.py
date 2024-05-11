@@ -78,7 +78,7 @@ logg_grid = [4.0]
 
 cmap = getattr(plt.cm, 'inferno')
 colors = cmap(np.linspace(0, 1, Teff_grid.size))
-
+lw = 2.5
 # generate colorbar
 
 im = ax0.scatter([], [], c=[], cmap=cmap, vmin=Teff_grid.min(), vmax=Teff_grid.max())
@@ -96,11 +96,11 @@ for i, Teff in enumerate(Teff_grid):
         # t, p = np.loadtxt(file, unpack=True)
         t,p = load_sphinx_thermal_profile(Teff, logg, logZ)
         # ax.plot(t, p, label=f'Teff={Teff_i}, logg={logg}, logZ={logZ}, C/O={C_O}')
-        ax0.plot(t,p, ls=ls, color=colors[i], label=label, lw=3.)
+        ax0.plot(t,p, ls=ls, color=colors[i], label=label, lw=lw)
         dlnT_dlnP = np.gradient(np.log10(t), np.log10(p))
         
        
-        ax1.plot(dlnT_dlnP, p, ls=ls, color=colors[i], lw=3., alpha=0.9)
+        ax1.plot(dlnT_dlnP, p, ls=ls, color=colors[i], lw=lw, alpha=0.9)
 
 
 PT = PT_profile_free_gradient(pressure=pressure, PT_interp_mode=conf.PT_interp_mode)
@@ -147,6 +147,7 @@ for i in range(N_knots):
 ax_PT.set(xlabel='Temperature (K)', ylabel='Pressure (bar)', yscale='log')
 # ax_PT.set_yticks(10**logP_knots)
 # ax_PT.set_yticklabels([f'$10^{{{int(x)}}}$' for x in logP_knots])
+
 ax_PT.set(xlim=(0.0, 9000.), ylim=(1e2, 1e-5))
 ax_PT.set_title('Random PT profiles')
 fig_PT.savefig(out_path / 'fig2_SPHINX_M_PT_random_profiles.pdf', bbox_inches='tight')
@@ -186,27 +187,32 @@ if plot_horizontal_lines:
     
 
 # set yticks to logP_knots
-ax0.set(xlim=(0.0, 9000.), ylim=(1e2, 1e-5),
+ax0.set(xlim=(0.0, 6000.), ylim=(1e2, 1e-5),
           xlabel='Temperature (K)',
         #   ylabel='Pressure (bar)',
           yscale='log')
+ax0.set_xticks(np.arange(0, 6000, 2000))
 
 ax1.set(xlabel=r'$\nabla T$', yscale='log', ylabel='Pressure (bar)')
+ax1.set_xlim(0.0, 0.36)
 # add custom legend with the 1-sigma and 3-sigma envelopes
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 from matplotlib.legend_handler import HandlerTuple
 
 legend_elements = [
-                    Patch(facecolor='blue', edgecolor='k', alpha=0.3, label='Prior\nsamples'),
+                    Patch(facecolor='blue', edgecolor='k', alpha=0.3, label='Prior'),
                     # Patch(facecolor='blue', edgecolor='k', alpha=0.2, label='3-$\sigma$ envelope'),
                     #  Patch(facecolor='blue', edgecolor='k', alpha=0.5, label='1-$\sigma$ envelope'),
-                    #  Line2D([0], [0], color='k', lw=3., ls='-', label='log g=4.0'),
-                    #  Line2D([0], [0], color='k', lw=3., ls=':', label='log g=4.5'),
+                    #  Line2D([0], [0], color='k', lw=lw, ls='-', label='log g=4.0'),
+                    #  Line2D([0], [0], color='k', lw=lw, ls=':', label='log g=4.5'),
                      ][::-1]
-# add to legend
+# add to legend, make handle length shorter
 leg = ax0.legend(handles=legend_elements, loc='upper right', fontsize=15,
-                   frameon=False, labelspacing=0.8, borderpad=0.5, handletextpad=0.5, ncol=1)
+                   frameon=False, labelspacing=0.8, 
+                   borderpad=0.5, 
+                   handletextpad=0.5, ncol=1,
+                   handlelength=1.2,)
 
 # ax0.legend()
 # ax0.set_title('Self-consistent SPHINX-M models', fontsize=16, x=1.08, y=1.05)  

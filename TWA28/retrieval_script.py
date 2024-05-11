@@ -15,7 +15,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 target = 'TWA28'
-run = 'rev_7_100' # important to set this to the correct run 
+run = 'rev_8' # important to set this to the correct run 
 
 if __name__ == '__main__':
 

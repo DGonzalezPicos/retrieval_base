@@ -498,7 +498,7 @@ def fig_PT(PT,
                         s=50, 
                         alpha=0.5,
                         zorder=10,
-                        label=f'T$_\mathrm{{phot}}$ = {T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
+                        label=f'{T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
             
             ax.legend(loc='upper right', fontsize=12)
 

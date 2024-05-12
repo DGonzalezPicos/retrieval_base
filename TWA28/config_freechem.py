@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'rev_9'
+run = 'final_full'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -35,7 +35,7 @@ config_data = {
         'sigma_clip_width': 12, 
     
         'log_P_range': (-5,2), 
-        'n_atm_layers': 50, 
+        'n_atm_layers': 100, 
         }, 
     }
 
@@ -250,8 +250,8 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
-n_live_points = 200
-n_iter_before_update = int(n_live_points*2)
+n_live_points = 400
+n_iter_before_update = int(n_live_points*3)
 # n_iter_before_update = 1
     
 if __name__ == '__main__':

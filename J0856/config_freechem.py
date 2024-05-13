@@ -8,7 +8,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'final_full'
+run = 'final_no13CO'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -77,7 +77,7 @@ free_params = {
     
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
-    'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
+    # 'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
     # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
@@ -173,7 +173,7 @@ continuum_opacities=['H2-H2', 'H2-He', 'H-']
 
 line_species = [
     'CO_high', 
-    'CO_36_high', 
+    # 'CO_36_high', 
     # 'CO_28', 
     # 'CO_27', 
 

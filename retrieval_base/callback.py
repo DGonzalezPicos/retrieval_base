@@ -19,7 +19,7 @@ class CallBack:
     plot_cov_matrix = False
     plot_residual_ACF = False
     plot_ccf = False
-    plot_summary = True
+    plot_summary = False
     
     def __init__(self, 
                  d_spec, 
@@ -88,6 +88,8 @@ class CallBack:
         self.Cov     = Cov
         self.PT      = PT
         self.Chem    = Chem
+        
+        assert hasattr(self.Chem, 'mass_fractions_posterior'), 'Chemistry object does not have mass_fractions_posterior'
         if not hasattr(self.Chem, 'VMRs_posterior') and self.evaluation:
             self.Chem.get_VMRs_posterior()
         self.m_spec  = m_spec

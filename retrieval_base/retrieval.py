@@ -479,6 +479,7 @@ class Retrieval:
 
     def get_PT_mf_envelopes(self, posterior):
 
+        print(' Computing PT profile and mass fractions envelopes...')
         # Return the PT profile and mass fractions
         self.CB.return_PT_mf = True
 

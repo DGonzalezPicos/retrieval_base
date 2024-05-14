@@ -58,9 +58,9 @@ out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 #                TWA28='freechem_12', 
 #                J0856='freechem_13'
 #                )
-targets = dict(J1200='rev_5',
-                TWA28='rev_7_100',
-                J0856='rev_1',
+targets = dict(J1200='final_full',
+                TWA28='final_full',
+                J0856='final_full',
                 )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 corr_dict = dict()
@@ -91,9 +91,9 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # find index of logg
     logg_id = [i for i, key in enumerate(conf.free_params.keys()) if 'log_g' in key][0]
     logg = posterior[:,logg_id] # no R_p in params
-    if (logg.min()) < 2.5 or (logg.max() > 5.5):
-        print(f' Using idx=3 for log g')
-        logg = posterior[:,2]
+    # if (logg.min()) < 2.5 or (logg.max() > 5.5):
+        # print(f' Using idx=3 for log g')
+        # logg = posterior[:,2]
     # FeH = chem.FeH_posterior
     # FeH = 
     # FeH = get_FeH(chem)
@@ -116,7 +116,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     if i == 0:
         fig = None
     # limits = [(3.0, 5.0), (-1.0, 1.5)]  # replace with your actual limits
-    limits = [(2.8, 4.2), (-0.7, 0.7)]  # replace with your actual limits
+    limits = [(2.6, 4.3), (-0.501, 0.501)]  # replace with your actual limits
 
     fig = corner.corner(samples, labels=labels, quantiles=[0.5],
                         show_titles=False, 
@@ -125,13 +125,16 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                         plot_density=True,
                         plot_datapoints=False,
                         plot_contours=True,
-                        smooth=2.0, 
+                        fill_contours=True,
+                        smooth=1.5, 
                         bins=40, 
                         hist_kwargs={'density': True,
-                                     'fill': True,
-                                     'alpha': 0.7,
-                                     'edgecolor': 'k',
-                                    'linewidth': 1.4,
+                                     'histtype': 'stepfilled',
+                                    'alpha': 0.8,
+                                    'color': colors[target],
+                                    'linewidth': 1.2,
+                                    'zorder': 1,
+                                    'edgecolor':'black'
                                      },
                         range=limits,
                         fig=fig)

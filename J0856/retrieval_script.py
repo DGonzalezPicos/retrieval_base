@@ -15,7 +15,8 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 target = 'J0856'
-run = 'final_no13CO' # important to set this to the correct run 
+# run = 'final_no13CO' # important to set this to the correct run 
+run = 'final_noGP' # important to set this to the correct run
 
 if __name__ == '__main__':
 

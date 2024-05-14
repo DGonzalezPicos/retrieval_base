@@ -20,10 +20,15 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_15', 
-               TWA28='freechem_12', 
-               J0856='freechem_13'
-               )
+# targets = dict(J1200='freechem_15', 
+#                TWA28='freechem_12', 
+#                J0856='freechem_13'
+#                )
+targets = dict(J1200='final_full',
+                TWA28='final_full',
+                J0856='final_full',
+                )
+
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 # targets = dict(J0856='freechem_3')
 
@@ -50,29 +55,35 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
     a = posterior[:,0]
     l = posterior[:,1]
-    Rp = posterior[:,2]
-    logg = posterior[:,3]
-    epsilon = posterior[:,4]
-    vsini = posterior[:,5]
-    rv = posterior[:,6]
+    # Rp = posterior[:,2]
+    alpha = posterior[:,2]
+    beta = posterior[:,3]
+    logg = posterior[:,4]
+    epsilon = posterior[:,5]
+    vsini = posterior[:,6]
+    rv = posterior[:,7]
     
-    HF = chem.mass_fractions_posterior['HF_main_iso'].mean(axis=-1) / atomic_mass['HF']
-    Na = chem.mass_fractions_posterior['Na_allard'].mean(axis=-1) / atomic_mass['Na']
-    Ca = chem.mass_fractions_posterior['Ca'].mean(axis=-1) / atomic_mass['Ca']
-    Ti = chem.mass_fractions_posterior['Ti'].mean(axis=-1) / atomic_mass['Ti']
+    if hasattr(chem, 'VMRs_posterior'):
+        HF = chem.VMRs_posterior['HF']
+        Na = chem.VMRs_posterior['Na']
+        Ca = chem.VMRs_posterior['Ca']
+        Ti = chem.VMRs_posterior['Ti']
+        chem.C12C13_posterior = chem.VMRs_posterior['12_13CO']
+        chem.O16O18_posterior = chem.VMRs_posterior['H2_16_18O']
+    else:
+        HF = chem.mass_fractions_posterior['HF_main_iso'].mean(axis=-1) / atomic_mass['HF']
+        Na = chem.mass_fractions_posterior['Na_allard'].mean(axis=-1) / atomic_mass['Na']
+        Ca = chem.mass_fractions_posterior['Ca'].mean(axis=-1) / atomic_mass['Ca']
+        Ti = chem.mass_fractions_posterior['Ti'].mean(axis=-1) / atomic_mass['Ti']
     
-    
-    
+        posterior_12CO = chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / atomic_mass['12CO']
+        posterior_13CO = chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / atomic_mass['13CO']
+        
+        chem.C12C13_posterior = posterior_12CO / posterior_13CO
+        # print quantiles of C12C13
+        print(f'C12C13 quantiles: {np.quantile(chem.C12C13_posterior, [0.16, 0.5, 0.84])}')
     FeH = chem.FeH_posterior
     CO = chem.CO_posterior
-    
-    posterior_12CO = chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / atomic_mass['12CO']
-    posterior_13CO = chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / atomic_mass['13CO']
-     
-    chem.C12C13_posterior = posterior_12CO / posterior_13CO
-    # print quantiles of C12C13
-    print(f'C12C13 quantiles: {np.quantile(chem.C12C13_posterior, [0.16, 0.5, 0.84])}')
-    
     # posterior_C18O = chem.mass_fractions_posterior['CO_28'].mean(axis=-1) / atomic_mass['C18O']
     # chem.C18OC16O_posterior = posterior_12CO / posterior_C18O
     
@@ -80,7 +91,9 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # chem.H216OH218O_posterior = chem.mass_fractions_posterior['H2O_pokazatel_main_iso'].mean(axis=-1) / posterior_H2O_181
     
     # print(f'Posterior shape = {posterior.shape}')
-    samples = np.array([CO, FeH, chem.C12C13_posterior, 
+    samples = np.array([CO, FeH, 
+                        chem.C12C13_posterior, 
+                        chem.O16O18_posterior,
                         # np.log10(chem.C18OC16O_posterior), 
                         # np.log10(chem.H216OH218O_posterior),
                         np.log10(HF),
@@ -102,9 +115,10 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     print(f'Number of samples = {samples.shape[0]}')
     # Make cornerplot with logg and Fe/H
     labels = [r'C/O', r'[C/H]', r'$^{12}$C/$^{13}$C',
+              r'$^{16}$O/$^{18}$O', 
                 # r'log C$^{16}$O/C$^{18}$O', r'log H$_2^{16}$O/H$_2^{18}$O', 
                 r'log HF', r'log Na', r'log Ca', r'log Ti', 
-                r'$\log g$', r'$v \sin i$ [km s$^-1$]', r'$\epsilon_{\rm limb}$', r'$v_{\rm rad} [km s$^-1$]$',
+                r'$\log g$', r'$v \sin i$  / km s${^-1}$', r'$\epsilon_{\rm limb}$', r'$v_{\rm rad}$ / km s$^{-1}$',
                 ]
 
     pad_factor = 0.1

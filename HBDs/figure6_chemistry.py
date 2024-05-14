@@ -19,18 +19,23 @@ import json
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
-targets = dict(J1200='freechem_15', 
-            #    TWA28='freechem_12', 
-            TWA28='rev_2',
-               J0856='freechem_13'
-               ) 
+# targets = dict(J1200='freechem_15', 
+#             #    TWA28='freechem_12', 
+#             TWA28='rev_2',
+#                J0856='freechem_13'
+#                ) 
+
+targets = dict(J1200='final_full',
+                TWA28='final_full',
+                J0856='final_full',
+                )
 # invert order of targets
 targets = dict(reversed(list(targets.items())))
 
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
 fig, ax = plt.subplots(2,1, figsize=(6,6))
-n_bins = 40
+n_bins = 30
 # solar_system = {'C/O': 0.54, '12C/13C': 89}
 # add solar values with uncertainties
 solar_system = {
@@ -60,14 +65,20 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     
     params = bestfit_params['params']
     chem = pickle.load(open(retrieval_path / 'test_data/bestfit_Chem.pkl', 'rb'))
+    # chem.get_mass_fractions()
     # logg = params['log_g']
     C_O = chem.CO_posterior
     print(f'C/O = {C_O.mean():.2f} +- {C_O.std():.2f}')
-    posterior_12CO = chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / atomic_mass['12CO']
-    posterior_13CO = chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / atomic_mass['13CO']
+    if hasattr(chem, 'mass_fractions_posterior'):
+        posterior_12CO = chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / atomic_mass['12CO']
+        posterior_13CO = chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / atomic_mass['13CO']
+        chem.C12C13_posterior = posterior_12CO / posterior_13CO
+
+    if hasattr(chem, 'VMRs_posterior'):
+        chem.C12C13_posterior = chem.VMRs_posterior['12_13CO']
+       
      
     # chem.C12C13_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_36_high'],axis=-1)
-    chem.C12C13_posterior = posterior_12CO / posterior_13CO
     
     # chem.C16OC18O_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_28'],axis=-1)
     # chem.H216OH218O_posterior = np.median(chem.mass_fractions_posterior['H2O_pokazatel_main_iso'] / chem.mass_fractions_posterior['H2O_181'],axis=-1)
@@ -143,7 +154,7 @@ labels = [f'{target}' for target in targets.keys()]
 #                  frameon=False, prop={'weight':'bold', 'size': 16},
 #                  )
 ax[0].set(xlim=(0.50, 0.70))
-ax[1].set(xlim=(0, 250))
+ax[1].set(xlim=(0, 200))
 ax[1].legend(frameon=False, prop={'weight':'bold', 'size': 16}, loc='upper right')
 fig.tight_layout()
 plt.show()

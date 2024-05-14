@@ -87,13 +87,10 @@ class LogLikelihood:
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky()
+                # else:
+                #     # Covariance matrix is diagonal
+                #     Cov[i,j].make_matrix()
 
-                # Get the log of the determinant (log prevents over/under-flow)
-                Cov[i,j].get_logdet()
-
-                # Set up the log-likelihood for this order/detector
-                # Chi-squared and optimal uncertainty scaling terms still need to be added
-                ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
 
                 # Without linear scaling of detectors
                 # if self.scale_flux and not (i==self.reference_order and j==self.reference_det):
@@ -129,8 +126,13 @@ class LogLikelihood:
                     
                 # print(f' M_ij shape {M_ij.shape}')
                 # left-hand side and right-hand side of the linear system
-                LHS = np.dot(M_ij, Cov[i,j].solve(M_ij.T))
-                RHS = np.dot(M_ij, Cov[i,j].solve(d_flux_ij))
+                if Cov[i,j].is_matrix:
+                    LHS = np.dot(M_ij, Cov[i,j].solve(M_ij.T))
+                    RHS = np.dot(M_ij, Cov[i,j].solve(d_flux_ij))
+                else:
+                    inv_cov = np.diag(1/Cov[i,j].cov)
+                    LHS = np.dot(M_ij, np.dot(inv_cov, M_ij.T))
+                    RHS = np.dot(M_ij, np.dot(inv_cov, d_flux_ij))
                 try:
                     phi_ij = nnls(LHS, RHS)[0] 
                 except RuntimeError:
@@ -157,6 +159,15 @@ class LogLikelihood:
 
                 # Chi-squared for optimal linear scaling and uncertainty scaling
                 chi_squared_ij = 1/s2_ij * chi_squared_ij_scaled
+                
+                if not Cov[i,j].is_matrix:
+                    Cov[i,j].add_data_err_scaling(np.sqrt(s2_ij))
+                # Get the log of the determinant (log prevents over/under-flow)
+                Cov[i,j].get_logdet()
+                
+                # Set up the log-likelihood for this order/detector
+                # Chi-squared and optimal uncertainty scaling terms still need to be added
+                ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
 
                 # Add chi-squared and optimal uncertainty scaling terms to log-likelihood
                 ln_L_ij += -(N_ij/2*np.log(s2_ij) + 1/2*chi_squared_ij)

@@ -19,14 +19,15 @@ import json
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
-
+table_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/tables/')
 # targets = dict(J1200='freechem_15', 
 #                TWA28='freechem_12', 
 #                J0856='freechem_13'
 #                )
-targets = dict(J1200='final_full',
+targets = dict(
+                # J1200='final_full',
                 TWA28='final_full',
-                J0856='final_full',
+                # J0856='final_full',
                 )
 
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
@@ -64,6 +65,10 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     rv = posterior[:,7]
     
     if hasattr(chem, 'VMRs_posterior'):
+        CO_main = chem.VMRs_posterior['12CO']
+        CO_iso = chem.VMRs_posterior['13CO']
+        H2O_main = chem.VMRs_posterior['H2O']
+        H2O_iso = chem.VMRs_posterior['H2O_181']
         HF = chem.VMRs_posterior['HF']
         Na = chem.VMRs_posterior['Na']
         Ca = chem.VMRs_posterior['Ca']
@@ -91,11 +96,17 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # chem.H216OH218O_posterior = chem.mass_fractions_posterior['H2O_pokazatel_main_iso'].mean(axis=-1) / posterior_H2O_181
     
     # print(f'Posterior shape = {posterior.shape}')
-    samples = np.array([CO, FeH, 
-                        chem.C12C13_posterior, 
-                        chem.O16O18_posterior,
+    samples = np.array([
+                        # CO, 
+                        # FeH, 
+                        # chem.C12C13_posterior, 
+                        # np.log10(chem.O16O18_posterior),
                         # np.log10(chem.C18OC16O_posterior), 
                         # np.log10(chem.H216OH218O_posterior),
+                        np.log10(CO_main),
+                        np.log10(H2O_main),
+                        np.log10(CO_iso),
+                        np.log10(H2O_iso),
                         np.log10(HF),
                         np.log10(Na),
                         np.log10(Ca),
@@ -105,7 +116,8 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                         epsilon,
                         rv,
                         # Rp,
-                        # a, l,
+                        alpha, beta,
+                        a, l,
                         ]).T
 
     # if samples.shape[0] > max_samples:
@@ -114,18 +126,32 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     #     samples = samples[:max_samples,:]
     print(f'Number of samples = {samples.shape[0]}')
     # Make cornerplot with logg and Fe/H
-    labels = [r'C/O', r'[C/H]', r'$^{12}$C/$^{13}$C',
-              r'$^{16}$O/$^{18}$O', 
+    labels = [
+        # r'C/O', r'[C/H]', r'$^{12}$C/$^{13}$C',
+            #   r'$\log ^{16}$O/$^{18}$O', 
                 # r'log C$^{16}$O/C$^{18}$O', r'log H$_2^{16}$O/H$_2^{18}$O', 
+                r'log $^{12}$CO', r'log H$_2$O', r'log $^{13}$CO', r'log H$_2^{18}$O',
                 r'log HF', r'log Na', r'log Ca', r'log Ti', 
-                r'$\log g$', r'$v \sin i$  / km s${^-1}$', r'$\epsilon_{\rm limb}$', r'$v_{\rm rad}$ / km s$^{-1}$',
+                r'$\log g$', r'$v \sin i$'+ '\n'+r'[km s$^{-1}$]', r'$\epsilon_{\rm limb}$', r'$v_{\rm rad}$'+'\n'+ r'[km s$^{-1}$]',
+                r'$\alpha$', r'$\beta$',
+                r'log $a$', r'log $l$',
                 ]
+    
+    replace = {
+    # '$\Delta\log\ P$' : '$\log\Delta P$',
+    '$log H$_2$O$' : '$\log\ \mathrm{H_2^{16}O}$',
+    '$\alpha$' : '$r_0$',
+    '$\beta$' : '$\\alpha$',
+            }
+    labels = [replace.get(l, l) for l in labels]
 
-    pad_factor = 0.1
-    lims= [(np.min(samples[:,i]), np.max(samples[:,i])) for i in range(samples.shape[-1])]
+    pad_factor = 0.05
+    # lims= [(np.min(samples[:,i]), np.max(samples[:,i])) for i in range(samples.shape[-1])]
+    p = 0.05
+    lims = [(np.percentile(samples[:,i], p), np.percentile(samples[:,i], 100-p)) for i in range(samples.shape[-1])]
     pad = [(lims[i][1] - lims[i][0]) * pad_factor for i in range(samples.shape[-1])]
     lims = [(lims[i][0] - pad[i], lims[i][1] + pad[i]) for i in range(samples.shape[-1])]
-    lims[2] = (0, 200)
+    # lims[2] = (0, 200)
     
     fig = corner.corner(samples, labels=labels, color=colors[target],
                         range=lims,
@@ -135,6 +161,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                         plot_density=True,
                         plot_datapoints=False,
                         plot_contours=True,
+                        fill_contours=True,
                         smooth=1.5, 
                         bins=30, 
                         max_n_ticks=3,
@@ -170,7 +197,32 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
                         ha='center', va='bottom',
                         transform=fig.axes[i].transAxes)
         
-        
+    # add new axes for latex table in the upper right corner
+    # import matplotlib.text as text
+
+    # ax_table = fig.add_axes([0.65, 0.65, 0.3, 0.3])
+    # # load latex table
+    # table_file = table_path / f'{target}_comparison.tex'
+    # with open(table_file, 'r') as f:
+    #     table = f.read()
+    # ax_table.axis('off')
+    
+    # replace = {r"\\textbf{Model}": "Model",
+    #            r"\\textsuperscript{13}CO": "$^{13}$CO",
+    #             r"H\\textsubscript{2}\\textsuperscript{18}O": "H$_2^{18}$O",
+    #             r"ln B\\textsubscripts{m}" : "ln $B_m$",
+    # }
+    # # for k,v in replace.items():
+    # #     table = table.replace(k, v)
+    # from astropy.table import Table
+    # tab = Table.read(table_file).to_pandas()
+    # # replace keys
+    # tab = tab.rename(columns=replace)
+    
+    # # add this table to the figure
+    # ax_table.table(cellText=tab.values, colLabels=tab.columns, loc='center', cellLoc='center')
+    
+    
         
     fig.subplots_adjust(top=0.95)
     save= True

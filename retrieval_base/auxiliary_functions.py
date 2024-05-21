@@ -148,6 +148,8 @@ def CCF(d_spec,
             if m_wave_pRT_grid is None:
                 m_wave_i = m_spec.wave[i,j]
                 m_flux_i = m_spec.flux[i,j]
+                
+                # finite = np.isfinite(m_flux_i)
 
                 # Function to interpolate the model spectrum
                 m_interp_func = interp1d(
@@ -158,6 +160,8 @@ def CCF(d_spec,
                     
             # Select only the pixels within this order
             mask_ij = d_spec.mask_isfinite[i,j,:]
+            if np.sum(mask_ij) == 0:
+                continue
 
             d_wave_ij = d_spec.wave[i,j,mask_ij]
             d_flux_ij = d_spec.flux[i,j,mask_ij]

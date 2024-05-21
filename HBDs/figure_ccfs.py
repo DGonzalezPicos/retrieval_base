@@ -18,9 +18,10 @@ import pandas as pd
 import json
 import copy
 
-targets = dict(J1200='freechem_10', 
-               TWA28='freechem_6', 
-               J0856='freechem_9'
+targets = dict(
+            # J1200='final_full', 
+               TWA28='final_full', 
+            #    J0856='final_full'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 w_set = 'K2166'

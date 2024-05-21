@@ -510,7 +510,7 @@ def fig_PT(PT,
             # xlabel='Integrated contribution emission',
             xlim=(0,np.max(PT.int_contr_em)*1.5),
             )
-    if hasattr(PT, 'log_P_knots'):
+    if hasattr(PT, 'log_P_knots') and show_knots:
         
         for i, log_P_knot in enumerate(PT.log_P_knots):
             ax.axhline(10**log_P_knot, c=text_color, lw=1,
@@ -1044,6 +1044,7 @@ def plot_ax_CCF(ax,
     # Store the CCF_SNR and m_ACF_SNR at each RV for later use
     if species_h is not None:
         array = np.array([rv, CCF_SNR, m_ACF_SNR]).T
+        assert prefix is not None, 'No prefix provided'
         np.save(prefix+f'data/CCF_{species_h}.npy', array)
         print(f'- Saved CCF_{species_h}.npy')
 

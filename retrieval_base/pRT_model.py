@@ -319,6 +319,8 @@ class pRT_model:
                 in_res=m_spec_i.resolution, 
                 rebin=False, 
                 )
+            
+            # print(f' get_full_spectrum: {get_full_spectrum}')
             if get_full_spectrum:
                 # Store the spectrum before the rebinning
                 self.wave_pRT_grid.append(m_spec_i.wave)

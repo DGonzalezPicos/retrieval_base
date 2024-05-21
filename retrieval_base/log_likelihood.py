@@ -160,8 +160,8 @@ class LogLikelihood:
                 # Chi-squared for optimal linear scaling and uncertainty scaling
                 chi_squared_ij = 1/s2_ij * chi_squared_ij_scaled
                 
-                if not Cov[i,j].is_matrix:
-                    Cov[i,j].add_data_err_scaling(np.sqrt(s2_ij))
+                # if not Cov[i,j].is_matrix:
+                #     Cov[i,j].add_data_err_scaling(np.sqrt(s2_ij))
                 # Get the log of the determinant (log prevents over/under-flow)
                 Cov[i,j].get_logdet()
                 
@@ -263,3 +263,11 @@ class LogLikelihood:
         # Find uncertainty scaling that maximizes log-likelihood
         s2_ij = np.sqrt(1/N_ij * chi_squared_ij_scaled)
         return s2_ij
+    
+    # create alias for phi=f and beta=s
+    @property
+    def f(self):
+        return self.phi
+    @property
+    def beta(self):
+        return self.s

@@ -14,10 +14,10 @@ def save_equation(equation, filename):
         
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
-targets = dict(J1200='freechem_15', 
-               TWA28='freechem_12', 
-               J0856='freechem_13'
-               )
+targets = dict(J1200='final_full',
+                TWA28='final_full',
+                J0856='final_full',
+                )
 
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/')
 
@@ -36,36 +36,57 @@ free_params = load_file['free_params']
 names_params = list(free_params.keys())
 # add description for each parameter
 
-descriptions = {'log_a': 'GP amplitude',
-                'log_l': 'GP lengthscale',
-                'R_p': 'radius of the planet',
-                'log_g': 'log surface gravity',
-                'epsilon_limb': 'limb darkening coefficient',
-                'vsini': 'projected rotational velocity',
-                'rv': 'radial velocity',
+descriptions = {
+                
+                # 'R_p': 'radius of the planet',
                 'log_12CO': 'log mixing ratio of \\twelveCO',
                 'log_13CO': 'log mixing ratio of \\thirteenCO',
-                'log_H2O': 'log mixing ratio of \\water',
+                'log_H2O': 'log mixing ratio of $\mathrm{H_2^{16}O}$',
+                'log_H2O_181': 'log mixing ratio of \\eighteenOwater',
                 'log_HF': 'log mixing ratio of HF',
                 'log_Na': 'log mixing ratio of Na',
                 'log_Ca': 'log mixing ratio of Ca',
                 'log_Ti': 'log mixing ratio of Ti',
-                'dlnT_dlnP_0': 'temperature gradient at $10^2$ bar',
-                'dlnT_dlnP_1': 'temperature gradient at $10^{1}$ bar',
-                'dlnT_dlnP_2': 'temperature gradient at $10^{0}$ bar',
-                'dlnT_dlnP_3': 'temperature gradient at $10^{-1}$ bar',
-                'dlnT_dlnP_4': 'temperature gradient at $10^{-2}$ bar',
-                'dlnT_dlnP_5': 'temperature gradient at $10^{-3}$ bar',
-                'dlnT_dlnP_6': 'temperature gradient at $10^{-5}$ bar',
+                'log_g': 'log surface gravity',
+                'epsilon_limb': 'limb darkening coefficient',
+                'vsini': 'projected rotational velocity',
+                'rv': 'radial velocity',
+                'dlnT_dlnP_0': 'temperature gradient at $P_0=10^2$ bar',
+                'dlnT_dlnP_1': 'temperature gradient at $P_1+\Delta P$',
+                'dlnT_dlnP_2': 'temperature gradient at $P_2+\Delta P$',
+                'dlnT_dlnP_3': 'temperature gradient at $P_3+\Delta P$',
+                'dlnT_dlnP_4': 'temperature gradient at $P_4+\Delta P$',
+                'dlnT_dlnP_5': 'temperature gradient at $P_5+\Delta P$',
+                'dlnT_dlnP_6': 'temperature gradient at $P_6+\Delta P$',
+                'dlnT_dlnP_7': 'temperature gradient at $P_7=10^{-5}$ bar',
+                'dlog_P': 'log pressure shift of PT knots',
                 'T_0': 'temperature at $10^{2}$ bar',
+                'alpha': 'veiling factor at $\lambda = 1.90\mu$m',
+                'beta': 'veiling power law exponent',
+                'log_a': 'GP amplitude',
+                'log_l': 'GP lengthscale',
                 }
 
 # Convert the parameters to a list for tabulate
 # priors_table = [(label, f"[{low}, {high}]", desc) for label, (low, high), desc in free_params.values()]
+# sort dictionary `free_params` to follow the same key order as in `descriptions`
+free_params = {k: free_params[k] for k in descriptions.keys()}
 
 ignore_params = ['R_p']
-table = [[val[1], descriptions[key], f"[{val[0][0]:.2f}, {val[0][1]:.2f}]"] for (key, val) in free_params.items()
-         if key not in ignore_params]
+zero_decimal_keys = ['T_0']
+one_decimal_keys = ['log_12CO', 'log_13CO', 'log_H2O', 'log_H2O_181', 'log_HF', 'log_Na', 'log_Ca', 'log_Ti', 'vsini']
+table = []
+for (key, val) in free_params.items():
+    if key in ignore_params:
+        continue
+    print(f'key = {key}')
+    if key in zero_decimal_keys:
+        table.append([val[1], descriptions[key], f"[{val[0][0]:.0f}, {val[0][1]:.0f}]"])
+    elif key in one_decimal_keys:
+        table.append([val[1], descriptions[key], f"[{val[0][0]:.1f}, {val[0][1]:.1f}]"])
+    else:
+        table.append([val[1], descriptions[key], f"[{val[0][0]:.2f}, {val[0][1]:.2f}]"])
+    
 # Define the headers
 headers = ["Parameter", "Description", "Prior Range"]
 
@@ -73,6 +94,7 @@ GP_eq_block = {}
 C_O_eq_block = {}
 vsini_eq_block = {}
 C_ratio_eq_block = {}
+O_ratio_eq_block = {}
 for i, (target, retrieval_id) in enumerate(targets.items()):
     data_path = path / f'{target}'
     headers += [target]
@@ -87,6 +109,8 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     assert len(names_params) == posterior.shape[1], 'Number of parameters does not match the number of columns in the posterior.'
     quantiles = np.quantile(posterior, [0.16, 0.5, 0.84], axis=0)
     bestfit_params = dict(zip(names_params, quantiles.T))
+    # sort dictionary `bestfit_params` by key as in `descriptions`
+    bestfit_params = {k: bestfit_params[k] for k in descriptions.keys()}
     
     sample_rate = 7.802e-03 # nm at 2345 nm
     # convert to resolution element in km/s using the spectral resolution 50000
@@ -136,15 +160,31 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     vsini_eq_block[target] += '\\text{{ km s}}^{{-1}}'
     
     # C_ratio 
-    CO_12 = chem.mass_fractions_posterior['CO_high'] / atomic_mass['12CO'] 
-    CO_13 = chem.mass_fractions_posterior['CO_36_high'] / atomic_mass['13CO']
-    C_ratio = CO_12 / CO_13
+    if hasattr(chem, 'VMRs_posterior'):
+        C_ratio = chem.VMRs_posterior['12_13CO']
+    else:
+        CO_12 = chem.mass_fractions_posterior['CO_high'] / atomic_mass['12CO'] 
+        CO_13 = chem.mass_fractions_posterior['CO_36_high'] / atomic_mass['13CO']
+        C_ratio = CO_12 / CO_13
     C_ratio_quantiles = np.quantile(C_ratio, [0.16, 0.5, 0.84])
     C_ratio_low = C_ratio_quantiles[1] - C_ratio_quantiles[0]
     C_ratio_up = C_ratio_quantiles[2] - C_ratio_quantiles[1]
     C_ratio_eq_block[target] = f'\mathrm{{\\textsuperscript{{12}}C/\\textsuperscript{{13}}C}}_\\text{{{target_s}}} & = '
     C_ratio_eq_block[target] += f"{C_ratio_quantiles[1]:.0f}^{{+{C_ratio_up:.0f}}}_{{-{C_ratio_low:.0f}}}"
     C_ratio_eq_block[target] += '\\\\ \n'
+    
+    O_ratio = chem.VMRs_posterior['H2_16_18O']
+    O_ratio_quantiles = np.quantile(O_ratio, [0.16, 0.5, 0.84])
+    O_ratio_low = O_ratio_quantiles[1] - O_ratio_quantiles[0]
+    O_ratio_up = O_ratio_quantiles[2] - O_ratio_quantiles[1]
+    if target == 'J1200':
+        # only lower limit for J1200
+        O_ratio_eq_block[target] = f'\mathrm{{\\textsuperscript{{16}}O/\\textsuperscript{{18}}O}}_\\text{{{target_s}}} & > '
+        O_ratio_eq_block[target] += f"{O_ratio_quantiles[0]:.0f}"
+    else:
+        O_ratio_eq_block[target] = f'\mathrm{{\\textsuperscript{{16}}O/\\textsuperscript{{18}}O}}_\\text{{{target_s}}} & = '
+        O_ratio_eq_block[target] += f"{O_ratio_quantiles[1]:.0f}^{{+{O_ratio_up:.0f}}}_{{-{O_ratio_low:.0f}}}"
+    O_ratio_eq_block[target] += '\\\\ \n'
     
     
     
@@ -177,6 +217,10 @@ replace = {
     '$v\\ \\sin\\ i$':'$v\\ \\sin\\ i$ [km s$^{-1}$]', 
     '$v_\\mathrm{rad}$':'$v_\\mathrm{rad}$ [km s$^{-1}$]',
     '$T_0$' : '$T_0$ [K]',
+    '$\Delta\log\ P$' : '$\log\Delta P$ [bar]',
+    '$\log\ \mathrm{H_2O}$' : '$\log\ \mathrm{H_2^{16}O}$',
+    '$\alpha$' : '$r_0$',
+    '$\beta$' : '$\\alpha$',
               }
 
 for key, val in replace.items():
@@ -233,6 +277,12 @@ for target in targets_id:
 C_ratio_eq += '\end{align*}'
 save_equation(C_ratio_eq, out_path / "equations/C_ratio_eq.tex")
 
+# O ratio
+O_ratio_eq = '\\begin{align*}\n'
+for target in targets_id:
+    O_ratio_eq += O_ratio_eq_block[target]
+O_ratio_eq += '\end{align*}'
+save_equation(O_ratio_eq, out_path / "equations/O_ratio_eq.tex")
 
 # Print or save the LaTeX table
 # print(latex_table)

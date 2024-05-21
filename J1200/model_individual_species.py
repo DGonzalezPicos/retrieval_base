@@ -1,6 +1,7 @@
 from retrieval_base.retrieval import pre_processing, Retrieval
 from retrieval_base.parameters import Parameters
 from retrieval_base.auxiliary_functions import pickle_load
+from retrieval_base.config import Config
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ import corner
 import pandas as pd
 import json
 
-import config_freechem_15 as conf
+# import config_freechem_15 as conf
 
 import os
 # change cwd to the directory of this script
@@ -23,14 +24,18 @@ os.chdir(path)
 
 
 
+
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_15'
+targets = dict(J1200='final_full'
                )
 
 target = 'J1200'
+config_file = 'config_freechem.txt'
+conf = Config(path=path, target=target, run=targets[target])
+conf(config_file)
 retrieval_id = targets[target]
 
 
@@ -44,7 +49,7 @@ assert retrieval_path.exists(), f'Retrieval path {retrieval_path} does not exist
 wave = np.load(f'{conf.prefix}data/d_spec_wave_K2166.npy')
 
 
-generate_m_spec_species = False
+generate_m_spec_species = True
 if generate_m_spec_species:
     ret = Retrieval(
                 conf=conf, 
@@ -79,7 +84,7 @@ fig, ax = plt.subplots(len(my_species), 1, figsize=(16, 6),
                        gridspec_kw=dict(hspace=0.06)
 )
 
-flux_factor = 1e15
+flux_factor = 1.0
 for i, species_i in enumerate(my_species.keys()):
     print(f' Plotting {species_i}')
     xlim = [wave[order,:].min()-0.2, wave[order,:].max()+2.5]

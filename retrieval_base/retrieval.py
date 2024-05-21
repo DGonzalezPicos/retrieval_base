@@ -618,47 +618,21 @@ class Retrieval:
 
         self.CB.return_PT_mf = False
 
-    def get_species_contribution(self):
-
+    def get_species_contribution(self, species='all'):
+        assert hasattr(self, 'pRT_atm_broad'), 'No broad pRT model available'
         #self.m_spec_species, self.pRT_atm_species = {}, {}
 
         self.m_spec_species = dict.fromkeys(self.d_spec.keys(), {})
         self.pRT_atm_species = dict.fromkeys(self.d_spec.keys(), {})
-        '''
-        # Ignore all species
-        for species_j, (line_species_j, _, _) in self.Chem.species_info.items():
-            if line_species_j in self.Chem.line_species:
-                self.Chem.neglect_species[species_j] = True
-        # Create the spectrum and evaluate lnL
-        self.PMN_lnL_func()
-        m_spec_continuum = np.copy(self.m_spec.flux)
-        pRT_atm_continuum = self.pRT_atm_broad.flux_pRT_grid.copy()
-        '''
 
+        species = self.Chem.line_species if species == 'all' else species
         # Assess the species' contribution
         for species_i in self.Chem.species_info.keys():
 
             line_species_i = self.Chem.read_species_info(species_i, 'pRT_name')
-            if line_species_i not in self.Chem.line_species:
+            if line_species_i not in species:
                 continue
-
-            '''
-            # Ignore all other species
-            self.Chem.neglect_species = dict.fromkeys(self.Chem.neglect_species, True)
-            self.Chem.neglect_species[species_i] = False
-            
-            # Create the spectrum and evaluate lnL
-            self.PMN_lnL_func()
-
-            flux_only = np.copy(self.m_spec.flux)
-            self.pRT_atm_broad.flux_pRT_grid_only = [
-                self.pRT_atm_broad.flux_pRT_grid[i].copy() \
-                for i in range(self.d_spec.n_orders)
-                ]
-            
-            for species_j in self.Chem.species_info:
-                self.Chem.neglect_species[species_j] = False
-            '''
+            print(f' Calculating species contribution for {line_species_i}...')
             # Ignore one species at a time
             self.Chem.neglect_species = dict.fromkeys(self.Chem.neglect_species, False)
             self.Chem.neglect_species[species_i] = True
@@ -770,6 +744,23 @@ class Retrieval:
                 )
 
             return flux_envelope
+        
+    def PMN_analyze(self):
+        
+         # Set-up analyzer object
+        analyzer = pymultinest.Analyzer(
+            n_params=self.Param.n_params, 
+            outputfiles_basename=self.conf.prefix
+            )
+        stats = analyzer.get_stats()
+
+        # Load the equally-weighted posterior distribution
+        posterior = analyzer.get_equal_weighted_posterior()
+        posterior = posterior[:,:-1]
+
+        # Read the parameters of the best-fitting model
+        bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+        return bestfit_params, posterior
 
     def PMN_callback_func(self, 
                           n_samples, 
@@ -789,18 +780,19 @@ class Retrieval:
         if self.evaluation:
 
             # Set-up analyzer object
-            analyzer = pymultinest.Analyzer(
-                n_params=self.Param.n_params, 
-                outputfiles_basename=self.conf.prefix
-                )
-            stats = analyzer.get_stats()
+            # analyzer = pymultinest.Analyzer(
+            #     n_params=self.Param.n_params, 
+            #     outputfiles_basename=self.conf.prefix
+            #     )
+            # stats = analyzer.get_stats()
 
-            # Load the equally-weighted posterior distribution
-            posterior = analyzer.get_equal_weighted_posterior()
-            posterior = posterior[:,:-1]
+            # # Load the equally-weighted posterior distribution
+            # posterior = analyzer.get_equal_weighted_posterior()
+            # posterior = posterior[:,:-1]
 
-            # Read the parameters of the best-fitting model
-            bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+            # # Read the parameters of the best-fitting model
+            # bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+            bestfit_params, posterior = self.PMN_analyze()
 
             # Get the PT and mass-fraction envelopes
             self.get_PT_mf_envelopes(posterior)

@@ -63,7 +63,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         # use tick_params to remove upper xticks
         ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True, labeltop=False)
         ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False, labelright=False)
-        ax.set(xlim=(3.3, 5.3), xlabel='Fluorine abundance F/H')
+        ax.set(xlim=(3.3, 5.3), xlabel='Fluorine abundance to hydrogen $A$(F)')
         
     # log_HF = np.log10(chem.mass_fractions_posterior['HF_main_iso'].mean(axis=-1))
     log_HF = np.log10(chem.VMRs_posterior['HF'])

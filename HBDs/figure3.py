@@ -85,12 +85,16 @@ for order in orders:
                 
             # cov[order,det].get_covariance_matrix()
             err = np.nan * np.ones_like(y)
+            err_noscaling = np.nan * np.ones_like(y)
             err[finite] = np.sqrt(np.diag(cov[order,det].get_dense_cov())) * loglike.s[order,det,None] * 1
+            err_noscaling[finite] = np.sqrt(np.diag(cov[order,det].get_dense_cov()))
             snr = np.nanmedian(y[finite]/err[finite])
+            snr_noscaling = np.nanmedian(y[finite]/err_noscaling[finite])
             # snr_dict[target][order,det] = snr
             label = f'{target}' if (order+det) == 0 else None
             if finite.sum() > 200:
                 ax_snr.scatter(np.median(x), snr, color=colors[target], s=50, label=label)
+                ax_snr.scatter(np.median(x), snr_noscaling, color=colors[target], s=50, marker='x')
                 print(f' {target} --> median SNR of detector {det} = {snr:.2f} @ {np.median(x):.2f} nm')
             # scatter median error to show uncertainty
             det_err.append(np.nanmean(err))
@@ -152,8 +156,8 @@ for order in orders:
     plt.close(fig)
     
 # save SNR fig
-ax_snr.set(xlabel='Wavelength [nm]', ylabel='SNR')
-ax_snr.legend(frameon=False, prop={'weight':'bold', 'size': 20})
+ax_snr.set(xlabel='Wavelength / nm', ylabel='SNR')
+ax_snr.legend(frameon=True, prop={'weight':'bold', 'size': 20})
 fig_snr.savefig(out_path / f'fig3_snr.pdf', bbox_inches='tight', dpi=300)
 print('- Saved SNR figure to ', out_path / f'fig3_snr.pdf')
     # save SNR to a file

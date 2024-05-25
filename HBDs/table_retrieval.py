@@ -89,6 +89,7 @@ for (key, val) in free_params.items():
     
 # Define the headers
 headers = ["Parameter", "Description", "Prior Range"]
+comma = ','
 
 GP_eq_block = {}
 C_O_eq_block = {}
@@ -146,7 +147,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     C_O_up = C_O_quantiles[2] - C_O_quantiles[1]
     # add space to target
     target_s =' ' + target
-    C_O_eq_block[target] = f'\mathrm{{C/O}}_\\text{{{target_s}}} & = ' + f"{C_O_quantiles[1]:.2f}^{{+{C_O_up:.2f}}}_{{-{C_O_low:.2f}}}"
+    C_O_eq_block[target] = f'\mathrm{{C/O}}_\\text{{{target_s}}} & = ' + f"{C_O_quantiles[1]:.2f}^{{+{C_O_up:.2f}}}_{{-{C_O_low:.2f}}}"+comma
     C_O_eq_block[target] += '\\\\ \n'
     
     vsini_low = bestfit_params['vsini'][1] - bestfit_params['vsini'][0]
@@ -170,7 +171,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     C_ratio_low = C_ratio_quantiles[1] - C_ratio_quantiles[0]
     C_ratio_up = C_ratio_quantiles[2] - C_ratio_quantiles[1]
     C_ratio_eq_block[target] = f'\mathrm{{\\textsuperscript{{12}}C/\\textsuperscript{{13}}C}}_\\text{{{target_s}}} & = '
-    C_ratio_eq_block[target] += f"{C_ratio_quantiles[1]:.0f}^{{+{C_ratio_up:.0f}}}_{{-{C_ratio_low:.0f}}}"
+    C_ratio_eq_block[target] += f"{C_ratio_quantiles[1]:.0f}^{{+{C_ratio_up:.0f}}}_{{-{C_ratio_low:.0f}}}"+ comma
     C_ratio_eq_block[target] += '\\\\ \n'
     
     O_ratio = chem.VMRs_posterior['H2_16_18O']
@@ -180,10 +181,10 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     if target == 'J1200':
         # only lower limit for J1200
         O_ratio_eq_block[target] = f'\mathrm{{\\textsuperscript{{16}}O/\\textsuperscript{{18}}O}}_\\text{{{target_s}}} & > '
-        O_ratio_eq_block[target] += f"{O_ratio_quantiles[0]:.0f}"
+        O_ratio_eq_block[target] += f"{O_ratio_quantiles[0]:.0f}"+ comma
     else:
         O_ratio_eq_block[target] = f'\mathrm{{\\textsuperscript{{16}}O/\\textsuperscript{{18}}O}}_\\text{{{target_s}}} & = '
-        O_ratio_eq_block[target] += f"{O_ratio_quantiles[1]:.0f}^{{+{O_ratio_up:.0f}}}_{{-{O_ratio_low:.0f}}}"
+        O_ratio_eq_block[target] += f"{O_ratio_quantiles[1]:.0f}^{{+{O_ratio_up:.0f}}}_{{-{O_ratio_low:.0f}}}"+ comma
     O_ratio_eq_block[target] += '\\\\ \n'
     
     
@@ -219,13 +220,12 @@ replace = {
     '$T_0$' : '$T_0$ [K]',
     '$\Delta\log\ P$' : '$\log\Delta P$ [bar]',
     '$\log\ \mathrm{H_2O}$' : '$\log\ \mathrm{H_2^{16}O}$',
-    '$\alpha$' : '$r_0$',
-    '$\beta$' : '$\\alpha$',
+    '$\\alpha$' : '$r_0$',
+    '$\\beta$' : '$\\alpha$',
               }
 
 for key, val in replace.items():
     latex_table = latex_table.replace(key, val)
-    
     
 # make GP_eq
 GP_eq = '\\begin{align*}\n'
@@ -244,9 +244,9 @@ save_equation(GP_eq, out_path / "equations/GP_eq.tex")
 
 # make C_O_eq --> #TODO: check this equation generation works
 C_O_eq = '\\begin{align*}\n'
-targets_id = ['J1200', 'J0856', 'TWA28']
+targets_id = ['J1200', 'TWA28','J0856']
 for target in targets_id:
-    C_O_eq += C_O_eq_block[target]
+    C_O_eq += C_O_eq_block[target] 
 # save 
 C_O_eq += '\end{align*}'
 # save equation
@@ -255,7 +255,7 @@ with open(out_path / "equations/C_O_eq.tex", "w") as f:
     print(f'Equation saved to {out_path / "equations/C_O_eq.tex"}')
     
 # vsini equation, first one block for TWA28, then a block with J1200 and J0856
-vsini_eq_TWA28 = vsini_eq_block['TWA28']
+vsini_eq_TWA28 = vsini_eq_block['TWA28'] + comma
 vsini_eq = '\\begin{align*}\n'
 vsini_eq += vsini_eq_TWA28
 vsini_eq += '\end{align*}'
@@ -264,9 +264,9 @@ save_equation(vsini_eq, out_path / "equations/vsini_eq_TWA28.tex")
 
 # vsini equation for J1200 and J0856
 vsini_eq = '\\begin{align*}\n'
-vsini_eq += vsini_eq_block['J1200']
+vsini_eq += vsini_eq_block['J1200']+comma
 vsini_eq += '\\\\ \n'
-vsini_eq += vsini_eq_block['J0856']
+vsini_eq += vsini_eq_block['J0856']+comma
 vsini_eq += '\end{align*}'
 save_equation(vsini_eq, out_path / "equations/vsini_eq_J1200_J0856.tex")
 

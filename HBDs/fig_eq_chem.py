@@ -30,12 +30,12 @@ path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
-targets = dict(J1200='freechem_15', 
-               TWA28='freechem_12', 
-               J0856='freechem_13'
+targets = dict(J1200='final_full', 
+               TWA28='final_full', 
+               J0856='final_full'
                )
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
-sphinx_models = dict(J1200=(2400.0, 4.0, -0.5, 0.50), 
+sphinx_models = dict(J1200=(2400.0, 4.0, 0.0, 0.50), 
                      TWA28=(2300.0, 4.0, 0.0, 0.50), 
                      J0856=(2200.0, 4.0, 0.0, 0.50)
                      )
@@ -122,7 +122,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # chem.VMRs_envelopes()
     # line_species = ['12CO', 'H2O']
     colors_list = []
-    MMW = chem.mass_fractions_posterior['MMW'][3].mean()
+    MMW = chem.mass_fractions['MMW'].mean()
 
     
     
@@ -145,7 +145,7 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         
         ax_chem.plot(VMR_envelopes[3], PT.pressure, label=ls[0], lw=2.5, ls='-', color=color)
         
-        ax_chem.fill_betweenx(PT.pressure, VMR_envelopes[2], VMR_envelopes[4], alpha=0.2, color=color)
+        ax_chem.fill_betweenx(PT.pressure, VMR_envelopes[2], VMR_envelopes[4], alpha=0.5, color=color, lw=0)
             
         
 
@@ -277,8 +277,8 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     ax_chem_twin.xaxis.tick_bottom()
     ax_chem_twin.xaxis.set_label_position('bottom')
             
-    xlabel = 'Temperature (K)' if (i+1) == len(targets) else ''
-    ylabel = 'Pressure (bar)' if i == 1 else ''
+    xlabel = 'Temperature / K' if (i+1) == len(targets) else ''
+    ylabel = 'Pressure / bar' if i == 1 else ''
     # set xticks labels to
     # xticks = [1000, 2000, 3000, 4000]
     xticks = [2000, 4000]

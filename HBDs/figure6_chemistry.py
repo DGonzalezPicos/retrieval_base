@@ -42,6 +42,7 @@ solar_system = {
         'C/O': (0.59, 0.08), # updated value from Asplund et al. (2021)
         # 'C/O': (0.55, 0.02), # uncertainty propagated from Asplund et al. (2009)
          '12C/13C': (89.3, 0.2), # reference terrestrial value from Meija et al. (2016)
+        # '12C/13C': (93.48, 0.68), # Lyons+2018
          } # Asplund et al. (2009) from Scott et al. (2006) using CO lines
 # propagate uncertainty for C/O where log(C/H) = 8.43 +- 0.05 and log(O/H) = 8.69 +- 0.05
 
@@ -123,10 +124,35 @@ for j, (key, val) in enumerate(solar_system.items()):
         ax[j].axvline(val[0], color='magenta', ls='-', lw=3.5, alpha=0.5, label=labels[0])
         
 
-ISM_C_ratio = (69, 6) # Wilson (1999)
+# ISM_C_ratio = (69, 6) # Wilson (1999)
+ISM_C_ratio = (68, 15) # Milam et al. (2005)
+
+
+kde = False
+
+if kde:
+    # create a gaussian kde to plot the measurent of the ISM C12/C13 ratio, use sns.kdeplot
+    g_samples = np.random.normal(ISM_C_ratio[0], ISM_C_ratio[1], 5000)
+    # use sns.kdeplot to plot the gaussian kde, fill the area under the curve
+    import seaborn as sns
+    # set the alpha of the fill to 0.6, make it smooth
+    kdeplot_args = {'color': 'deepskyblue', 'lw': 2.5, 'ax': ax[1], 'ls': '--',
+                    'bw_adjust': 3.0}
+    sns.kdeplot(g_samples, label=labels[1],alpha=0.8, **kdeplot_args)
+    sns.kdeplot(g_samples, fill=True, alpha=0.2,  **kdeplot_args)
+
+# plot a data point with errorbars on the x-axis
+ax[1].errorbar(ISM_C_ratio[0], 0.014, xerr=ISM_C_ratio[1], color='deepskyblue', 
+                ls='none', 
+                ms=7, marker='s',
+                lw=3.0, alpha=0.9, label=labels[1])
 # ax[1].axvline(68, color='deepskyblue', ls='--', lw=3.5, alpha=0.6, label=labels[1])
-ax[1].axvspan(ISM_C_ratio[0]-ISM_C_ratio[1], ISM_C_ratio[0]+ISM_C_ratio[1], color='deepskyblue', 
-              alpha=0.3, label=labels[1])
+# ax[1].axvspan(ISM_C_ratio[0]-ISM_C_ratio[1], ISM_C_ratio[0]+ISM_C_ratio[1], color='deepskyblue', 
+#               alpha=0.3, label=labels[1])
+    # sns.kdeplot(g_samples, color='deepskyblue', lw=2.5, alpha=0.18, ax=ax[1], ls='--',
+#             fill=True, , bw_adjust=3.0
+# ax[1].hist(g_samples, range=C_ratio_range, bins=n_bins, color='deepskyblue', alpha=0.3, density=True, histtype='stepfilled')
+
 
 # remove y-axis and top x-axis
 xlabels = [r'C/O', r'$^{12}$C/$^{13}$C', 

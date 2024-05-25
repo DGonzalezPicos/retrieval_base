@@ -261,8 +261,8 @@ def fig_bestfit_model(
             xlim = (np.nanmin(d_spec.wave[i,:])-0.5, 
                     np.nanmax(d_spec.wave[i,:])+0.5)
         else:
-            xlim = (d_spec.np.nanmin(wave)-0.5, 
-                    d_spec.np.nanmax(wave)+0.5)
+            xlim = (np.nanmin(d_spec.wave)-0.5, 
+                    np.nanmax(d_spec.wave)+0.5)
 
         ax_spec.set(xlim=xlim, xticks=[], ylim=ylim_spec)
         ax_res.set(xlim=xlim, ylim=ylim_res)

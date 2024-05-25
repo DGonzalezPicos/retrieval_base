@@ -109,7 +109,7 @@ def fig_flux_calib_2MASS(wave,
     else:
         ax[1].axhline(tell_threshold, c='gray', lw=1, ls='--')
     ax[1].plot(wave_2MASS, transm_2MASS, c='r', lw=1, label=r'$T_\mathrm{2MASS}$')
-    ax[1].set(xlim=(wave.min()-20, wave.max()+20), xlabel=r'Wavelength / nm', 
+    ax[1].set(xlim=(np.nanmin(wave)-20, np.nanmax(wave)+20), xlabel=r'Wavelength / nm', 
               ylim=(0,1.1), ylabel=r'Transmissivity'
               )
     ax[1].legend(loc='upper left')
@@ -130,8 +130,8 @@ def fig_flux_calib_2MASS(wave,
 
         for i in range(n_orders):
             # Only plot within a wavelength range
-            wave_min = order_wlen_ranges[i,:].min() - 0.5
-            wave_max = order_wlen_ranges[i,:].max() + 0.5
+            wave_min = np.nanmin(order_wlen_ranges[i,:]) - 0.5
+            wave_max = np.nanmax(order_wlen_ranges[i,:]) + 0.5
 
             mask_wave = np.arange(i*3*2048, (i+1)*3*2048, dtype=int)
 
@@ -197,8 +197,8 @@ def fig_spec_to_fit(d_spec, prefix=None, w_set=''):
         for j in range(d_spec.n_dets):
             ax[i].plot(d_spec.wave[i,j], d_spec.flux[i,j], c='k', lw=0.5)
         
-        ax[i].set(xlim=(d_spec.order_wlen_ranges[i].min()-0.5, 
-                        d_spec.order_wlen_ranges[i].max()+0.5)
+        ax[i].set(xlim=(np.nanmin(d_spec.order_wlen_ranges[i])-0.5, 
+                        np.nanmax(d_spec.order_wlen_ranges[i])+0.5)
                   )
 
     if prefix is not None:
@@ -258,11 +258,11 @@ def fig_bestfit_model(
             ax[i*3+2].remove()
 
             # Use a different xlim for the separate figures
-            xlim = (d_spec.wave[i,:].min()-0.5, 
-                    d_spec.wave[i,:].max()+0.5)
+            xlim = (np.nanmin(d_spec.wave[i,:])-0.5, 
+                    np.nanmax(d_spec.wave[i,:])+0.5)
         else:
-            xlim = (d_spec.wave.min()-0.5, 
-                    d_spec.wave.max()+0.5)
+            xlim = (d_spec.np.nanmin(wave)-0.5, 
+                    d_spec.np.nanmax(wave)+0.5)
 
         ax_spec.set(xlim=xlim, xticks=[], ylim=ylim_spec)
         ax_res.set(xlim=xlim, ylim=ylim_res)
@@ -300,7 +300,7 @@ def fig_bestfit_model(
                 res_ij = d_spec.flux[i,j] - m_flux
                 ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
                 ax_res.plot(
-                    [d_spec.wave[i,j].min(), d_spec.wave[i,j].max()], 
+                    [np.nanmin(d_spec.wave[i,j]), np.nanmax(d_spec.wave[i,j])], 
                     [0,0], c=bestfit_color, lw=1
                 )
 
@@ -313,7 +313,7 @@ def fig_bestfit_model(
                 # Show the mean error
                 mean_err_ij = np.mean(Cov[i,j].err)
                 ax_res.errorbar(
-                    d_spec.wave[i,j].min()-0.2, 0, yerr=1*mean_err_ij, 
+                    np.nanmin(d_spec.wave[i,j])-0.2, 0, yerr=1*mean_err_ij, 
                     fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
                     label=r'$\langle\sigma_{ij}\rangle$'
                     )
@@ -328,7 +328,7 @@ def fig_bestfit_model(
                 mean_scaled_err_ij = np.mean(np.diag(np.sqrt(cov)))
 
                 ax_res.errorbar(
-                    d_spec.wave[i,j].min()-0.4, 0, yerr=1*mean_scaled_err_ij, 
+                    np.nanmin(d_spec.wave[i,j])-0.4, 0, yerr=1*mean_scaled_err_ij, 
                     fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
                     #label=r'$\beta_{ij}\langle\sigma_{ij}\rangle$'
                     label=r'$\beta_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
@@ -402,14 +402,14 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
         for j in range(d_spec.n_dets):
 
             extent = [
-                d_spec.wave[i,j].min(), d_spec.wave[i,j].max(), 
-                d_spec.wave[i,j].max(), d_spec.wave[i,j].min(), 
+                np.nanmin(d_spec.wave[i,j]), np.nanmax(d_spec.wave[i,j]), 
+                np.nanmax(d_spec.wave[i,j]), np.nanmin(d_spec.wave[i,j]), 
                 ]
             ax[i,j].matshow(
                 all_cov[i,j], aspect=1, extent=extent, cmap=cmap, 
                 interpolation='none', vmin=vmin, vmax=vmax
                 )
-            ticks = np.linspace(d_spec.wave[i,j].min()+0.5, d_spec.wave[i,j].max()-0.5, num=4)
+            ticks = np.linspace(np.nanmin(d_spec.wave[i,j])+0.5, np.nanmax(d_spec.wave[i,j])-0.5, num=4)
             ax[i,j].set_xticks(
                 ticks, labels=['{:.0f}'.format(t_i) for t_i in ticks]
                 )

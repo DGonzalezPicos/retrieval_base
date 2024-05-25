@@ -7,12 +7,13 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_M_N5'
+prefix = 'jwst_LM_N5'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
     'G395H_F290LP': {
-        'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
+        # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
+        'w_set': 'G395H_F290LP', 'wave_range': (2800, 5300),
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
@@ -43,12 +44,12 @@ free_params = {
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
-    'log_g': [(2.0,5.0), r'$\log\ g$'], 
+    # 'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
-    'rv': [(-40,40), r'$v_\mathrm{rad}$'], 
+    'rv': [(-20,20), r'$v_\mathrm{rad}$'], 
     
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
@@ -96,7 +97,7 @@ constant_params = {
     'R_p' : 2.8, 
     'parallax': parallax_mas, 
     'epsilon_limb': 0.5, 
-    # 'log_g': 4.0,
+    'log_g': 3.5,
     'vsini':1.,
 
     # PT profile

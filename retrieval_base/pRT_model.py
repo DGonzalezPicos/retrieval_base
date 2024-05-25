@@ -93,12 +93,17 @@ class pRT_model:
         # pRT model is somewhat wider than observed spectrum
         if CB_active:
             self.rv_max = 1000
-        wave_pad = 1.1 * self.rv_max/(nc.c*1e-5) * self.d_wave.max()
+        wave_pad = 1.1 * self.rv_max/(nc.c*1e-5) * np.nanmax(self.d_wave)
 
-        self.wave_range_micron = np.concatenate(
-            (self.d_wave.min(axis=(1,2))[None,:]-wave_pad, 
-             self.d_wave.max(axis=(1,2))[None,:]+wave_pad
-            )).T
+        # self.wave_range_micron = np.concatenate(
+        #     (self.d_wave.min(axis=(1,2))[None,:]-wave_pad, 
+        #      self.d_wave.max(axis=(1,2))[None,:]+wave_pad
+        #     )).T
+        self.wave_range_micron=np.concatenate(
+            (np.nanmin(self.d_wave, axis=(1,2))[None,:]-wave_pad,
+                np.nanmax(self.d_wave, axis=(1,2))[None,:]+wave_pad
+                )).T
+        print(self.wave_range_micron)
         self.wave_range_micron *= 1e-3
 
         self.atm = []

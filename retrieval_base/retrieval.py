@@ -23,6 +23,7 @@ from .callback import CallBack
 
 import retrieval_base.figures as figs
 import retrieval_base.auxiliary_functions as af
+from matplotlib.backends.backend_pdf import PdfPages
 
 def pre_processing(conf, conf_data):
 
@@ -251,10 +252,67 @@ def pre_processing(conf, conf_data):
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
     
+def prior_check(conf, n=3, fig_name=None):
     
-def prior_check(conf, fig_name=None):
     ret = Retrieval(conf=conf, evaluation=False)
-    order, det = 0,0 
+    w_set = 'G395H_F290LP'
+    # first evaluation the model at 'n' different parameter values
+    theta = np.linspace(0, 1, n)
+    m_spec_list = []
+    logL_list = [] 
+    for theta_i in theta:
+        ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
+        sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+        print(sample)
+
+        ln_L = ret.PMN_lnL_func()
+        print(f'ln_L = {ln_L:.4e}\n')
+        
+        # m_spec_list.append(ret.m_spec[w_set])
+        m_spec_list.append(ret.LogLike[w_set].m_flux)
+        logL_list.append(ln_L)
+    
+    # use PDF pages to save multiple plots for each order into one PDF
+    with PdfPages(fig_name) as pdf:
+        for i in range(ret.d_spec[w_set].n_orders):
+            fig, ax = plt.subplots(2,1, figsize=(10,5), sharex=True,
+                                   gridspec_kw={'height_ratios':[3,1]})
+            ax[0].set(ylabel=f'Flux / {ret.d_spec[w_set].flux_unit}')
+            ax[-1].set(xlabel='Wavelength / nm', ylabel='Residuals')
+            for j in range(ret.d_spec[w_set].n_dets):
+
+                # Apply mask to model and data, calculate residuals
+                mask_ij = ret.d_spec[w_set].mask_isfinite[i,j,:]
+
+                # Number of data points
+                N_ij = mask_ij.sum()
+                if N_ij == 0:
+                    print(f'No data points in order {i}, detector {j}')
+                    continue
+
+                wave_ij = ret.d_spec[w_set].wave[i,j,:]
+                flux_ij = ret.d_spec[w_set].flux[i,j,:]
+                ax[0].plot(wave_ij, flux_ij, lw=1, label='data', color='k')
+                ax[-1].axhline(0, color='k', ls='-', alpha=0.9)
+                for k in range(n):
+                    m_flux_ij = m_spec_list[k][i,j,:]
+                    logL = logL_list[k]
+                    ax[0].plot(wave_ij, m_flux_ij, lw=1, ls='--', label=f'logL = {logL:.3e}')
+                    ax[-1].plot(wave_ij, flux_ij - m_flux_ij, lw=1, ls='--', 
+                                color=ax[0].get_lines()[-1].get_color())
+                    
+            ax[0].legend()
+            pdf.savefig(fig)
+            plt.close(fig)
+        print(f'--> Saved {fig_name}')
+        
+        return None
+                       
+    
+
+def old_prior_check(conf, fig_name=None):
+    ret = Retrieval(conf=conf, evaluation=False)
+    # order, det = 0,0 
 
     fig = plt.figure(figsize=(16,8), layout='constrained')
     gs0 = fig.add_gridspec(4,5, hspace=0.00, wspace=0.1)

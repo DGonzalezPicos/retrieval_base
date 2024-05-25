@@ -110,8 +110,53 @@ class SpectrumJWST:
         if keep == 1:
             self.wave, self.flux, self.err = wave1, flux1, err1
             print(f' Keeping second chunk with cenwave {np.median(self.wave):.2f} nm')
-        
+        if keep == 'both':
+            # use padding to keep both chunks into the same array
+            n = max(len(wave0), len(wave1))
+            self.wave, self.flux, self.err = (np.nan * np.ones((2, n)) for _ in range(3))
+            self.wave[0, :len(wave0)] = wave0
+            self.flux[0, :len(wave0)] = flux0
+            self.err[0, :len(wave0)] = err0
+            self.wave[1, :len(wave1)] = wave1
+            self.flux[1, :len(wave1)] = flux1
+            self.err[1, :len(wave1)] = err1
+            print(f' Keeping both chunks with cenwaves {np.median(self.wave[0]):.2f} nm and {np.median(self.wave[1]):.2f} nm')
+            
         return self
+    
+    def pad_arrays(self):
+        
+        # pad the arrays to have the same length
+        n = np.max([len(w) for w in self.wave])
+        for i in range(len(self.wave)):
+            self.wave[i] = np.pad(self.wave[i], (0, n-len(self.wave[i])), mode='constant', constant_values=np.nan)
+            self.flux[i] = np.pad(self.flux[i], (0, n-len(self.flux[i])), mode='constant', constant_values=np.nan)
+            self.err[i] = np.pad(self.err[i], (0, n-len(self.err[i])), mode='constant', constant_values=np.nan)
+        
+        # convert to ndarray
+        self.wave = np.array(self.wave)
+        self.flux = np.array(self.flux)
+        self.err = np.array(self.err)
+        return self
+        
+    def sigma_clip_reshaped(self,
+                            use_flux=True,
+                            sigma=3, 
+                            width=5, 
+                            max_iter=5, 
+                            fun='median',
+                            fig_name=False):
+        
+        array = self.flux if use_flux else self.err
+        
+        for order in range(self.n_orders):
+            for det in range(self.n_dets):
+                clip  = af.sigma_clip(y=array[order,det], sigma=sigma, width=width, 
+                                max_iter=max_iter, fun=fun, replace=False)
+                self.flux[order,det,clip] = np.nan
+                print(f' Clipped {100*np.sum(clip)/np.size(clip):.1f}% points in order {order}, detector {det}')
+        return self
+        
     
     def sigma_clip(self, array=None, sigma=3, width=5, max_iter=5, fun='median', fig_name=False):
         '''Sigma clip the spectrum'''

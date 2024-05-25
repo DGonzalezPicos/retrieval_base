@@ -14,6 +14,12 @@ import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
 
 class CallBack:
+    
+    plot_histograms = False
+    plot_cov_matrix = False
+    plot_residual_ACF = False
+    plot_ccf = False
+    plot_summary = False
 
     def __init__(self, 
                  d_spec, 
@@ -105,7 +111,7 @@ class CallBack:
         chi_squared_tot, n_dof = 0, 0
         for w_set in self.LogLike.keys():
             print(f'\n--- {w_set} -------------------------')
-            print('Reduced chi-squared (w/o uncertainty-model) = {:.2f}\n(chi-squared={:.2f}, n_dof={:.0f})'.format(
+            print('Reduced chi-squared = {:.2f}\n(chi-squared={:.2f}, n_dof={:.0f})'.format(
                 self.LogLike[w_set].chi_squared_red, self.LogLike[w_set].chi_squared, self.LogLike[w_set].n_dof
                 ))
             
@@ -116,7 +122,7 @@ class CallBack:
         n_dof -= self.LogLike[w_set].n_params
 
         print(f'\n--- Total -------------------------')
-        print('Reduced chi-squared (w/o uncertainty-model) = {:.2f}\n(chi-squared={:.2f}, n_dof={:.0f})'.format(
+        print('Reduced chi-squared = {:.2f}\n(chi-squared={:.2f}, n_dof={:.0f})'.format(
             chi_squared_tot/n_dof, chi_squared_tot, n_dof
             ))
 
@@ -147,14 +153,25 @@ class CallBack:
         self.save_bestfit()
             
         # Save a separate figure of the PT profile
+        fig, ax = plt.subplots(1, 2, 
+                                   figsize=(10,6), 
+                                   tight_layout=True,
+                                   sharey=True,)
         figs.fig_PT(
             PT=self.PT, 
-            pRT_atm=self.pRT_atm, 
-            ax_PT=None, 
-            envelope_colors=self.PT_envelope_colors, 
-            posterior_color=self.PT_color, 
-            bestfit_color=self.bestfit_color,
-            prefix=self.prefix
+            ax=ax[0], 
+            ax_grad=ax[1],
+            fig=fig,
+            bestfit_color='brown',
+            envelopes_color='brown',
+            int_contr_em_color='red',
+            text_color='gray',
+            # weigh_alpha=True,
+            show_photosphere=True,
+            show_knots=True,
+            show_text=True,
+            fig_name=self.prefix+f'plots/PT_grad_profile.pdf' if self.evaluation else None,
+            xlim=(1000, 8000), # fix view
         )
 
         # Make a summary figure
@@ -513,65 +530,56 @@ class CallBack:
                 xlabel=['Wavelength (nm)', None][i]
                 )
 
-        ax_VMR = fig.add_axes([0.65,0.43,0.1,0.22])
-        l, b, w, h = ax_VMR.get_position().bounds
-        ax_PT = fig.add_axes([l+w,b,h,h])
-        #ax_contr = ax_PT.twiny()
+        # ax_VMR = fig.add_axes([0.65,0.43,0.1,0.22])
+        # l, b, w, h = ax_VMR.get_position().bounds
+        ax_PT = fig.add_axes([0.66,0.44,0.2,0.22])
+        l, b, w, h = ax_PT.get_position().bounds
+        ax_grad = fig.add_axes([l+w+0.01,b,w*0.52,h])
+        ax_grad.grid()
 
-        # Plot the VMR per species
-        ax_VMR = figs.fig_VMR(
-            ax_VMR=ax_VMR, 
-            Chem=self.Chem, 
-            species_to_plot=self.species_to_plot_VMR, 
-            pressure=self.PT.pressure, 
-            )
-
-        # Plot the best-fitting PT profile
-        x1, x2 = np.min(self.PT.temperature), np.max(self.PT.temperature)
-        x_pad = 0.05*(x2-x1)
-        x1 -= x_pad
-        x2 += x_pad
         
-        ax_PT = figs.fig_PT(
+        figs.fig_PT(
             PT=self.PT, 
-            pRT_atm=self.pRT_atm, 
-            #integrated_contr_em=self.pRT_atm.int_contr_em, 
-            #integrated_contr_em_per_order=self.pRT_atm.int_contr_em_per_order, 
-            #integrated_opa_cloud=self.pRT_atm.int_opa_cloud, 
-            ax_PT=ax_PT, 
-            envelope_colors=self.envelope_colors, 
-            posterior_color=self.posterior_color, 
-            bestfit_color=self.bestfit_color, 
-            ylabel=None, 
-            yticks=[],
-            xlim=(x1,x2), 
-            )
-
-        # Plot the integrated emission contribution function
-        #ax_contr = self.fig_contr_em(ax_contr)
-
-        #plt.show()
+            ax=ax_PT, 
+            ax_grad=ax_grad,
+            fig=fig,
+            bestfit_color='brown',
+            envelopes_color='brown',
+            int_contr_em_color='red',
+            # text_color='gray',
+            # weigh_alpha=True,
+            show_photosphere=True,
+            show_knots=True,
+            show_text=True,
+            xlim=(1000, 7000), # fix view
+            xlim_grad=(-0.02, 0.34),
+            # fig_name=self.prefix+f'plots/PT_grad_profile.pdf',
+        )
+        label = 'final' if self.evaluation else f'live_{self.cb_count}'
         if self.evaluation:
+            if self.plot_histograms:
+                for i in range(ax.shape[0]):
+                    # Plot the histograms separately
+                    figs.fig_hist_posterior(
+                        posterior_i=self.posterior[:,i], 
+                        param_range_i=self.param_range[i], 
+                        param_quantiles_i=self.param_quantiles[i], 
+                        param_key_i=self.Param.param_keys[i], 
+                        posterior_color=self.posterior_color, 
+                        title=self.param_labels[i], 
+                        bins=20, 
+                        prefix=self.prefix
+                        )
+                
+        #     fig.savefig(self.prefix+'plots/final_summary.pdf')
+        #     # fig.savefig(self.prefix+f'plots/final_summary.png', dpi=100)
 
-            for i in range(ax.shape[0]):
-                # Plot the histograms separately
-                figs.fig_hist_posterior(
-                    posterior_i=self.posterior[:,i], 
-                    param_range_i=self.param_range[i], 
-                    param_quantiles_i=self.param_quantiles[i], 
-                    param_key_i=self.Param.param_keys[i], 
-                    posterior_color=self.posterior_color, 
-                    title=self.param_labels[i], 
-                    bins=20, 
-                    prefix=self.prefix
-                    )
+        # else:
+        #     fig.savefig(self.prefix+'plots/live_summary_{self.cb_count}.pdf')
             
-            fig.savefig(self.prefix+'plots/final_summary.pdf')
-            fig.savefig(self.prefix+f'plots/final_summary.png', dpi=100)
-
-        else:
-            fig.savefig(self.prefix+'plots/live_summary.pdf')
-            fig.savefig(self.prefix+f'plots/live_summary_{self.cb_count}.png', dpi=100)
+            # fig.savefig(self.prefix+f'plots/live_summary_{self.cb_count}.png', dpi=100)
+        fig.savefig(self.prefix+f'plots/{label}_summary.pdf')
+        print(f'- Saved {self.prefix}plots/{label}_summary.pdf')
         plt.close(fig)
 
         for w_set in self.d_spec.keys():

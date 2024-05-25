@@ -77,7 +77,7 @@ class SpectrumJWST:
     def mask_isfinite(self):
         return np.isfinite(self.flux)
     
-    def split_grism(self, break_wave, keep=1, grism=None):
+    def split_grism(self, break_wave, keep=1, grism=None, fig_name=None):
         '''Split data of one grisms into chunks'''
         mask = self.wave < break_wave
         
@@ -85,6 +85,23 @@ class SpectrumJWST:
         wave1, flux1, err1 = self.wave[~mask], self.flux[~mask], self.err[~mask]
         print(f'Shape of first chunk: {wave0.shape}')
         print(f'Shape of second chunk: {wave1.shape}')
+        
+        if fig_name is not None:
+            fig, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=False,
+            )
+            ax[0].plot(wave0, flux0, label='First chunk', color='k')
+            ax[1].plot(wave1, flux1, label='Second chunk', color='k')
+            # ax[0].fill_between(wave0, flux0-err0, flux0+err0, alpha=0.3, color='k')
+            # ax[1].fill_between(wave1, flux1-err1, flux1+err1, alpha=0.3, color='k')
+            # plot average uncertainty as an errorbar at the top
+            ax[0].errorbar(wave0.min(), np.nanmedian(flux0), yerr=np.nanmean(err0), fmt='o', color='r', markersize=4)
+            ax[1].errorbar(wave1.min(), np.nanmedian(flux1), yerr=np.nanmean(err1), fmt='o', color='r', markersize=4)
+            ax[0].set(ylabel=f'Flux / {self.flux_unit}')
+            ax[1].set(xlabel=f'Wavelength / {self.wave_unit}', ylabel=f'Flux / {self.flux_unit}')
+            # plt.show()
+            fig.savefig(fig_name)
+            print(f'--> Saved {fig_name}')
+            
         
         if keep == 0:
             self.wave, self.flux, self.err = wave0, flux0, err0

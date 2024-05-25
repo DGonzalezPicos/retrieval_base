@@ -25,11 +25,9 @@ class Covariance:
 
         # Reset the covariance matrix
         self.cov_reset()
-
-        if params[f'beta_{w_set}'][order,det] != 1:
-            self.add_data_err_scaling(
-                params[f'beta_{w_set}'][order,det]
-                )
+        # check there's no zeros in cov
+        assert not np.any(self.cov == 0), f'Covariance matrix has {np.sum(self.cov == 0)} zeros'
+        return self
 
     def cov_reset(self):
 
@@ -38,6 +36,7 @@ class Covariance:
         self.is_matrix = (self.cov.ndim == 2)
 
         self.cov_shape = self.cov.shape
+        return self
 
     def add_data_err_scaling(self, beta):
 
@@ -46,6 +45,8 @@ class Covariance:
             self.cov *= beta**2
         else:
             self.cov[np.diag_indices_from(self.cov)] *= beta**2
+            
+        return self
 
     def add_model_err(self, model_err):
 
@@ -54,11 +55,14 @@ class Covariance:
             self.cov += model_err**2
         else:
             self.cov += np.diag(model_err**2)
+        return self
 
     def get_logdet(self):
 
         # Calculate the log of the determinant
         self.logdet = np.sum(np.log(self.cov))
+        return self
+    
 
     def solve(self, b):
         '''
@@ -79,7 +83,7 @@ class Covariance:
             return np.linalg.solve(self.cov, b)
             
         # Only invert the diagonal
-        return 1/self.cov * b
+        return (1/self.cov) * b
     
     def get_dense_cov(self):
 
@@ -158,10 +162,10 @@ class GaussianProcesses(Covariance):
         # Reset the covariance matrix
         self.cov_reset()
 
-        if params[f'beta_{w_set}'][order,det] != 1:
-            self.add_data_err_scaling(
-                params[f'beta_{w_set}'][order,det]
-                )
+        # if params[f'beta_{w_set}'][order,det] != 1:
+        #     self.add_data_err_scaling(
+        #         params[f'beta_{w_set}'][order,det]
+        #         )
 
         if params[f'a_{w_set}'][order,det] != 0:
             self.add_RBF_kernel(

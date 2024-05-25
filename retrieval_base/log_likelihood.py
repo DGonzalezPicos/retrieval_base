@@ -21,7 +21,7 @@ class LogLikelihood:
         self.scale_flux   = scale_flux
         self.scale_err    = scale_err
         
-        self.scale_flux_all = True
+        self.scale_flux_all = True # WARNING: this overrides the previous setting
         
     def __call__(self, m_spec, Cov, is_first_w_set=False, ln_L_penalty=0, evaluation=False):
         '''
@@ -103,6 +103,7 @@ class LogLikelihood:
 
                         # Scale the model flux to minimize the chi-squared error
                         m_flux_ij_scaled, f_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij[0], Cov[i,j])
+                        # print(f' FLux scaling {f_ij}')
                     else:
                         # No additional flux scaling
                         m_flux_ij_scaled = m_flux_ij[0]
@@ -137,26 +138,6 @@ class LogLikelihood:
             
                 self.beta[i,j] = beta_ij
                 self.m_flux[i,j,mask_ij] = m_flux_ij_scaled
-
-                if evaluation:
-                    # Following Peter McGill's advice
-                    g_k = 1/beta_ij**2 * inv_cov_ij_res_ij
-                    sigma_bar_kk = np.diag(
-                        1/beta_ij**2 * Cov[i,j].solve(np.eye(N_ij))
-                        )
-
-                    # Conditional mean and standard deviation
-                    mu_tilde_k = d_flux_ij - g_k/sigma_bar_kk
-                    sigma_tilde_k = 1/sigma_bar_kk
-
-                    # Scale the ln L penalty by the number of good pixels
-                    self.ln_L_per_pixel[i,j,mask_ij] += -(
-                        1/2*np.log(2*np.pi*sigma_tilde_k) + \
-                        1/2*(d_flux_ij - mu_tilde_k)**2/sigma_tilde_k
-                        )
-
-                    self.chi_squared_per_pixel[i,j,mask_ij] = \
-                        (d_flux_ij - mu_tilde_k)**2/sigma_tilde_k
 
         # Reduced chi-squared
         self.chi_squared_red = self.chi_squared / self.n_dof

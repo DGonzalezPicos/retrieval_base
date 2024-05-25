@@ -19,7 +19,7 @@ mpl.rcParams['xtick.minor.width'] = 1.5
 mpl.rcParams['ytick.minor.width'] = 1.5
 
 
-def fig_order_subplots(n_orders, ylabel, xlabel=r'Wavelength (nm)'):
+def fig_order_subplots(n_orders, ylabel, xlabel=r'Wavelength / nm'):
 
     fig, ax = plt.subplots(
         figsize=(10,2.8*n_orders), nrows=n_orders, 
@@ -109,7 +109,7 @@ def fig_flux_calib_2MASS(wave,
     else:
         ax[1].axhline(tell_threshold, c='gray', lw=1, ls='--')
     ax[1].plot(wave_2MASS, transm_2MASS, c='r', lw=1, label=r'$T_\mathrm{2MASS}$')
-    ax[1].set(xlim=(wave.min()-20, wave.max()+20), xlabel=r'Wavelength (nm)', 
+    ax[1].set(xlim=(wave.min()-20, wave.max()+20), xlabel=r'Wavelength / nm', 
               ylim=(0,1.1), ylabel=r'Transmissivity'
               )
     ax[1].legend(loc='upper left')
@@ -211,7 +211,7 @@ def fig_bestfit_model(
         m_spec, 
         LogLike, 
         Cov, 
-        xlabel='Wavelength (nm)', 
+        xlabel='Wavelength / nm', 
         bestfit_color='C1', 
         ax_spec=None, 
         ax_res=None, 
@@ -278,7 +278,7 @@ def fig_bestfit_model(
                     )
 
             label = 'Best-fit model ' + \
-                    r'$(\chi^2_\mathrm{red}$ (w/o $\sigma$-model)$=' + \
+                    r'$(\chi^2_\mathrm{red}$$=' + \
                     '{:.2f}'.format(LogLike.chi_squared_red) + \
                     r')$'
                     
@@ -422,136 +422,138 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
                 )
             ax[i,j].grid(True, alpha=0.1)
 
-    ax[-1,1].set(xlabel='Wavelength (nm)')
-    ax[d_spec.n_orders//2,0].set(ylabel='Wavelength (nm)')
+    ax[-1,1].set(xlabel='Wavelength / nm')
+    ax[d_spec.n_orders//2,0].set(ylabel='Wavelength / nm')
 
     if prefix is not None:
         plt.savefig(prefix+f'plots/cov_matrices_{w_set}.pdf')
         plt.close(fig)
 
     return all_cov
+def fig_PT(PT,
+            ax=None, 
+            ax_grad=None,
+            fig=None,
+            xlim=None, 
+            xlim_grad=None,
+            bestfit_color='brown',
+            envelopes_color='brown',
+            int_contr_em_color='red',
+            text_color='gray',
+            # weigh_alpha=True,
+            show_photosphere=True,
+            show_knots=True,
+            show_text=True,
+            fig_name=None,
+    ):
 
-def fig_PT(PT, 
-           pRT_atm, 
-           #integrated_contr_em=None, 
-           #integrated_contr_em_per_order=None, 
-           #integrated_opa_cloud=None, 
-           ax_PT=None, 
-           envelope_colors=None, 
-           posterior_color='C0', 
-           bestfit_color='C1', 
-           ylabel=r'$P\ \mathrm{(bar)}$', 
-           yticks=np.logspace(-6, 2, 9), 
-           xlim=(0,None), 
-           show_ln_L_penalty=False, 
-           prefix=None, 
-           contr_em_color={'J1226':'b', 'K2166':'r', 'G395H_F290LP':'g'}, 
-           opa_cloud_color={'J1226':'b', 'K2166':'r', 'G395H_F290LP':'g'}, 
-           ):
-    
-    if ax_PT is None:
-        fig, ax_PT = plt.subplots(
-            figsize=(4.5,4.5), 
-            gridspec_kw={'left':0.16, 'right':0.94, 
-                         'top':0.87, 'bottom':0.15
-                         }
-            )
-
+    is_new_fig = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(7,7))
         is_new_fig = True
-    else:
-        is_new_fig = False
+        
+    assert hasattr(PT, 'temperature_envelopes'), 'No temperature envelopes found'
+    
+    p = PT.pressure
+    if hasattr(PT, 'int_contr_em'):
+        # Plot the integrated contribution emission
+        print(' - Plotting integrated contribution emission')
+        ax_twin = ax.twiny()
+        ax_twin.plot(
+            PT.int_contr_em, p, 
+            c=int_contr_em_color, lw=2, alpha=0.4,
+            )
 
-    if PT.temperature_envelopes is not None:
-        # Plot the PT confidence envelopes
+        
+        # if weigh_alpha:
+        #     af.weigh_alpha(PT.int_contr_em, p, np.linspace(0,10000,p.size), ax, alpha_min=0.5, plot=True)
+        # define photosphere as region where PT.int_contr_em > np.quantile(PT.int_contr_em, 0.9)
+        if show_photosphere:
+            photosphere = PT.int_contr_em > np.quantile(PT.int_contr_em, 0.95)
+            P_phot = np.mean(p[photosphere])
+            T_phot = np.mean(PT.temperature_envelopes[3][photosphere])
+            T_phot_err = np.std(PT.temperature_envelopes[3][photosphere])
+            # print(f' - Photospheric temperature: {T_phot:.1f} +- {T_phot_err:.1f} K')
+            # make empty marker
+            ax.scatter(T_phot, P_phot, c='red',
+                        marker='o', 
+                        s=50, 
+                        alpha=0.5,
+                        zorder=10,
+                        label=f'{T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
+            
+            ax.legend(loc='upper right', fontsize=12)
+
+        # remove xticks
+        ax_twin.set_xticks([])
+        ax_twin.spines['top'].set_visible(False)
+        ax_twin.spines['bottom'].set_visible(False)
+        ax_twin.set(
+            # xlabel='Integrated contribution emission',
+            xlim=(0,np.max(PT.int_contr_em)*1.5),
+            )
+    if hasattr(PT, 'log_P_knots'):
+        
+        for i, log_P_knot in enumerate(PT.log_P_knots):
+            ax.axhline(10**log_P_knot, c=text_color, lw=1,
+                    ls='-' if i==len(PT.log_P_knots)//2 else '--',
+                    alpha=0.8,
+                    zorder=0)
+            
+    
+    if PT.temperature_envelopes is not None:     # Plot the PT confidence envelopes
         for i in range(3):
-            ax_PT.fill_betweenx(
-                y=PT.pressure, x1=PT.temperature_envelopes[i], 
+            ax.fill_betweenx(
+                y=p, x1=PT.temperature_envelopes[i], 
                 x2=PT.temperature_envelopes[-i-1], 
-                color=envelope_colors[i+1], ec='none', 
+                color=envelopes_color, ec='none', 
+                alpha=0.3,
                 )
-
         # Plot the median PT
-        ax_PT.plot(
-            PT.temperature_envelopes[3], PT.pressure, 
-            c=posterior_color, lw=1
-        )
-    
-    # Plot the best-fitting PT profile and median
-    if show_ln_L_penalty:
-        label = r'$\ln\ \mathrm{L\ penalty}=' + \
-                '{:.0f}'.format(np.sign(PT.ln_L_penalty)*10) + '^{' + \
-                '{:.2f}'.format(np.log10(np.abs(PT.ln_L_penalty))) + '}$'
+        ax.plot(PT.temperature_envelopes[3], p, c=bestfit_color, lw=2,)
+        xlim = (0, PT.temperature_envelopes[-1].max()*1.06) if xlim is None else xlim
+        
     else:
-        label = None
-    
-    ax_PT.plot(
-        PT.temperature, PT.pressure, c=bestfit_color, lw=1, label=label
-        )
-    from retrieval_base.PT_profile import PT_profile_free_gradient
-    if hasattr(PT, 'T_knots') and not isinstance(PT, PT_profile_free_gradient):
-        ax_PT.plot(
-            PT.T_knots, PT.P_knots, c=bestfit_color, ls='', marker='o', markersize=3
+        ax.plot(PT.temperature, p, c=bestfit_color, lw=2)
+        xlim = (0, PT.temperature.max()*1.06) if xlim is None else xlim
+
+    # if hasattr(PT, "dlnT_dlnP_envelopes") and ax_grad is not None:
+    if ax_grad is not None:
+        if hasattr(PT, "dlnT_dlnP_envelopes"):
+            for i in range(3):
+                ax_grad.fill_betweenx(
+                    y=p, 
+                    x1=PT.dlnT_dlnP_envelopes[i],
+                    x2=PT.dlnT_dlnP_envelopes[-i-1],
+                    color=envelopes_color, ec='none', 
+                    alpha=0.3,
+                    )
+                
+        else:
+            ax_grad.plot(PT.dlnT_dlnP_array, p, c=bestfit_color, lw=2)
+            
+        ax_grad.set(xlabel=r'$\nabla_T$',
+            ylim=(p.max(), p.min()), yscale='log',
+            # xlim=xlim,
+            yticks=[],
             )
 
-    if show_ln_L_penalty:
-        ax_PT.legend(
-            loc='upper right', handlelength=0.5, 
-            handletextpad=0.5, framealpha=0.7
-            )
-
-    try:
-        SONORA_temperature = np.loadtxt(prefix+'data/SONORA_temperature.dat')
-        SONORA_RCB = np.loadtxt(prefix+'data/SONORA_RCB.dat').flatten()[0]
-        
-        ax_PT.plot(SONORA_temperature, PT.pressure, c='k', lw=1)
-        ax_PT.plot(
-            np.interp(SONORA_RCB, xp=PT.pressure, fp=SONORA_temperature), 
-            SONORA_RCB, 'ko'
-            )
-    except:
-        pass
-        
-    ax_PT.set(
-        xlabel=r'$T\ \mathrm{(K)}$', xlim=xlim, 
-        ylabel=ylabel, yscale='log', yticks=yticks
-        )
-    ax_PT.set_ylim(PT.pressure.min(), PT.pressure.max())
-    ax_PT.invert_yaxis()
-
-    for w_set in pRT_atm.keys():
-        integrated_contr_em = pRT_atm[w_set].int_contr_em
-        integrated_contr_em_per_order = None
-        integrated_opa_cloud = pRT_atm[w_set].int_opa_cloud
-
-        # Add the integrated emission contribution function
-        ax_contr = ax_PT.twiny()
-        fig_contr_em(
-            ax_contr, 
-            integrated_contr_em, 
-            integrated_contr_em_per_order, 
-            PT.pressure, 
-            bestfit_color=contr_em_color[w_set]
-            )
-        
-        if (integrated_opa_cloud == 0).all():
-            continue
-        
-        # Add the integrated cloud opacity
-        ax_opa_cloud = ax_PT.twiny()
-        fig_opa_cloud(
-            ax_opa_cloud, 
-            integrated_opa_cloud, 
-            PT.pressure, 
-            xlim=(1e2, 1e-8), 
-            color=opa_cloud_color[w_set]
+    ax.set(xlabel='Temperature / K', ylabel='Pressure / bar',
+            ylim=(p.max(), p.min()), yscale='log',
+            # xlim=(0, None),
+            xlim=xlim,
             )
     
-    # Save or return the axis
-    if is_new_fig and (prefix is not None):
-        fig.savefig(prefix+'plots/PT_profile.pdf')
-        plt.close(fig)
-    else:
-        return ax_PT
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f' - Saved {fig_name}')
+    plt.close(fig)
+
+    if is_new_fig:
+        return fig, ax
+    if ax_grad is not None:
+        return ax, ax_grad
+    return ax
 
 def fig_contr_em(ax_contr, integrated_contr_em, integrated_contr_em_per_order, pressure, bestfit_color='C1'):
     
@@ -849,7 +851,7 @@ def fig_residual_ACF(d_spec,
 
             if (i == 0) and (j == 1):
                 ax_delta_wave_ij.set(
-                    xlabel=r'$\Delta\lambda\ \mathrm{(nm)}$', 
+                    xlabel=r'$\Delta\lambda\ \mathrm{/ nm}$', 
                     )
 
     ax[n_orders//2,0].set(ylabel='Auto-correlation')

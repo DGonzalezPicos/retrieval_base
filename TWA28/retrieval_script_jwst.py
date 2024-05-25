@@ -36,8 +36,13 @@ args = parser.parse_args()
 if args.pre_processing:
     
     ## Pre-processing data
-    spec = SpectrumJWST(file='jwst/TWA28_g395h-f290lp.fits')
-    spec.split_grism(4155., keep=1)
+    grisms = ['g140h-f100lp', 'g235h-f170lp', 'g395h-f290lp']
+    waves = [1450, 2450, 4155]
+    wave_split ={g:w for g,w in zip(grisms, waves)}
+    g = grisms[-1]
+              
+    spec = SpectrumJWST(file=f'jwst/TWA28_{g}.fits', grism=g)
+    spec.split_grism(wave_split[g], keep=1, fig_name=f'{conf.prefix}plots/split_{g}.pdf')
     # spec.sigma_clip(sigma=3, width=5, max_iter=5, fun='median')
     spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
     spec.reshape(1,1)

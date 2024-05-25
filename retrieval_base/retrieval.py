@@ -325,7 +325,7 @@ class Retrieval:
             free_params=self.conf.free_params, 
             constant_params=self.conf.constant_params, 
             PT_mode=self.conf.PT_mode, 
-            n_T_knots=self.conf.PT_kwargs['n_T_knots'], 
+            n_T_knots=self.conf.PT_kwargs.get('n_T_knots', 6),
             enforce_PT_corr=self.conf.PT_kwargs['enforce_PT_corr'], 
             chem_mode=self.conf.chem_mode, 
             cloud_mode=self.conf.cloud_mode, 

@@ -55,7 +55,7 @@ class Parameters:
 
         # Check the used PT profile
         self.PT_mode = PT_mode
-        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere'])
+        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere', 'RCE'])
 
         self.n_T_knots = n_T_knots
         self.enforce_PT_corr = enforce_PT_corr
@@ -111,35 +111,40 @@ class Parameters:
         # Loop over all parameters
         for i, key_i in enumerate(self.param_keys):
 
-            if key_i.startswith('invgamma_'):
-                # Get the two parameters defining the inverse gamma pdf
-                invgamma_a, invgamma_b = self.param_priors[key_i]
+            # if key_i.startswith('invgamma_'):
+            #     # Get the two parameters defining the inverse gamma pdf
+            #     invgamma_a, invgamma_b = self.param_priors[key_i]
                 
-                # Sample from the inverse gamma prior
-                cube[i] = invgamma.ppf(cube[i], a=invgamma_a, loc=0, scale=invgamma_b)
+            #     # Sample from the inverse gamma prior
+            #     cube[i] = invgamma.ppf(cube[i], a=invgamma_a, loc=0, scale=invgamma_b)
 
-            elif key_i.startswith('gaussian_'):
-                # Get the two parameters defining the Gaussian pdf
-                mu, sigma = self.param_priors[key_i]
+            # elif key_i.startswith('gaussian_'):
+            #     # Get the two parameters defining the Gaussian pdf
+            #     mu, sigma = self.param_priors[key_i]
                 
-                # Sample from the Gaussian prior
-                cube[i] = norm.ppf(cube[i], loc=mu, scale=sigma)
+            #     # Sample from the Gaussian prior
+            #     cube[i] = norm.ppf(cube[i], loc=mu, scale=sigma)
             
-            else:
-                # Sample within the boundaries
-                low, high = self.param_priors[key_i]
-                cube[i] = low + (high-low)*cube[i]
+            # else:
+            # Sample within the boundaries
+            low, high = self.param_priors[key_i]
+            if (self.PT_mode == 'RCE') and (key_i.startswith('dlnT_dlnP_')) and (key_i != 'dlnT_dlnP_RCE'):
+                high = min(self.params['dlnT_dlnP_RCE'], high)
+                low =  min(self.params['dlnT_dlnP_RCE'], low)
+            cube[i] = low + (high-low)*cube[i]
 
             self.params[key_i] = cube[i]
 
             if key_i.startswith('log_'):
                 self.params = self.log_to_linear(self.params, key_i)
 
-            if key_i.startswith('invgamma_'):
-                self.params[key_i.replace('invgamma_', '')] = self.params[key_i]
+            # if key_i.startswith('invgamma_'):
+            #     self.params[key_i.replace('invgamma_', '')] = self.params[key_i]
 
-            if key_i.startswith('gaussian_'):
-                self.params[key_i.replace('gaussian_', '')] = self.params[key_i]
+            # if key_i.startswith('gaussian_'):
+            #     self.params[key_i.replace('gaussian_', '')] = self.params[key_i]
+                
+            
 
         # Read the parameters for the model's segments
         cube = self.read_PT_params(cube)
@@ -241,6 +246,15 @@ class Parameters:
 
             self.params['T_knots'] = np.array(self.params['T_knots'])[::-1]
             self.params['dlnT_dlnP_knots'] = self.params['dlnT_dlnP_knots'][::-1]
+            
+        if (self.PT_mode == 'RCE'):
+            
+            self.PT_adiabatic = self.params.get('PT_adiabatic', True)
+            dlnT_dlnP_keys = [key for key in self.param_keys if key.startswith('dlnT_dlnP_') and key != 'dlnT_dlnP_RCE']
+            # print(f' [Parameters.read_PT_params]: dlnT_dlnP_keys = {dlnT_dlnP_keys}')
+            self.params['dlnT_dlnP_knots'] = np.array([self.params[key] for key in dlnT_dlnP_keys])
+            # pop index containing key 'dlnT_dlnP_RCE' and insert back in the middle
+            self.params['dlnT_dlnP_knots'] = np.insert(self.params['dlnT_dlnP_knots'], len(dlnT_dlnP_keys)//2, self.params['dlnT_dlnP_RCE'])
             
         return cube
 

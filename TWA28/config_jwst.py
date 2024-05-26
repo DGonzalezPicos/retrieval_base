@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N10'
+run = 'jwst_KLM_N10_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -37,7 +37,7 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a': [(-2,0.6), r'$\log\ a$'], 
+    'log_a': [(-2,0.5), r'$\log\ a$'], 
     'log_l': [(-1,0.2), r'$\log\ l$'], 
 
     # General properties
@@ -80,7 +80,9 @@ free_params = {
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    'res': [(1500, 5000), r'$\mathrm{R}$'], # instrumental spectral resolution
+    'res_K': [(1500, 5000), r'$\mathrm{R}_K$'], # instrumental spectral resolution
+    'res_L': [(1500, 5000), r'$\mathrm{R}_L$'], # instrumental spectral resolution
+    'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
 # Constants to use if prior is not given
 # distance in pc to parallax

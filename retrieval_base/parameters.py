@@ -151,6 +151,11 @@ class Parameters:
         self.read_uncertainty_params()
         self.read_chemistry_params()
         self.read_cloud_params()
+        # check for resolution parameters and place them in a list `res`
+        res_keys = [key for key in self.param_keys if key.startswith('res_')]
+        if len(res_keys) > 0:
+            self.params['res'] = [self.params[key] for key in res_keys]
+            # print(f' [Parameters.__call__]: res_keys = {res_keys}')
 
         if (ndim is None) and (nparams is None):
             return cube
@@ -286,46 +291,6 @@ class Parameters:
                         self.params[f'{key_i}_{w_set}'][i,:] = \
                             self.params[f'{key_i}_{w_set}_{i+1}']
 
-        '''
-        for key_i in cov_keys:
-
-            if self.params.get(key_i) is None:
-
-
-        # Reshape to values for each order and detector
-        self.params['a']    = np.ones((self.n_orders, self.n_dets)) * self.params['a']
-        self.params['l']    = np.ones((self.n_orders, self.n_dets)) * self.params['l']
-        self.params['a_f']  = np.ones((self.n_orders, self.n_dets)) * self.params['a_f']
-        self.params['l_f']  = np.ones((self.n_orders, self.n_dets)) * self.params['l_f']
-        self.params['beta'] = np.ones((self.n_orders, self.n_dets)) * self.params['beta']
-
-        # Make a copy of the global values
-        a, l     = np.copy(self.params['a']), np.copy(self.params['l'])
-        a_f, l_f = np.copy(self.params['a_f']), np.copy(self.params['l_f'])
-        beta = np.copy(self.params['beta'])
-        
-        for i in range(self.n_orders):
-            for j in range(self.n_dets):
-
-                # Replace the constants with the free parameters
-                if f'a_{i+1}' in self.param_keys:
-                    a[i,:] = self.params[f'a_{i+1}']
-                    self.params['a'] = a
-                if f'l_{i+1}' in self.param_keys:
-                    l[i,:] = self.params[f'l_{i+1}']
-                    self.params['l'] = l
-
-                if f'a_f_{i+1}' in self.param_keys:
-                    a_f[i,:] = self.params[f'a_f_{i+1}']
-                    self.params['a_f'] = a_f
-                if f'l_f_{i+1}' in self.param_keys:
-                    l_f[i,:] = self.params[f'l_f_{i+1}']
-                    self.params['l_f'] = l_f
-
-                if f'beta_{i+1}' in self.param_keys:
-                    beta[i,:] = self.params[f'beta_{i+1}']
-                    self.params['beta'] = beta
-        '''
 
     def read_chemistry_params(self):
 

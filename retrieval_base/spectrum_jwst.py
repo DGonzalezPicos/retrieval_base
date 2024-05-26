@@ -28,13 +28,15 @@ class SpectrumJWST:
     wave_unit = 'nm'
     flux_unit = 'Jy'
     
-    def __init__(self, wave=None, flux=None, err=None, target=None, grism=None, file=None):
+    def __init__(self, wave=None, flux=None, err=None, target=None, grism=None, file=None,
+                 Nedge=10):
         self.wave = wave
         self.flux = flux
         self.err = err
         self.target = target
         self.grism = grism
         self.file = file
+        self.Nedge = Nedge
         if self.file is not None:
             print(f'Reading {self.file}')
             self.read_data(units='erg/s/cm2/nm')
@@ -81,7 +83,7 @@ class SpectrumJWST:
         # self.grisms = [f.split('_')[1].split('-')[0] for f in files]
         spec_list = []
         for f in files:
-            spec_list.append(SpectrumJWST(file=f))
+            spec_list.append(SpectrumJWST(file=f, Nedge=self.Nedge))
             
         self += spec_list
         print(f'Loaded {len(spec_list)} grisms')
@@ -160,6 +162,8 @@ class SpectrumJWST:
         self.wave[1, :len(wave1)] = wave1
         self.flux[1, :len(wave1)] = flux1
         self.err[1, :len(wave1)] = err1
+        if self.Nedge > 0:
+            self.clip_det_edges(n=self.Nedge)
 
         print(f' Keeping both chunks with cenwaves {np.nanmedian(self.wave[0]):.2f} nm and {np.nanmedian(self.wave[1]):.2f} nm')
 
@@ -316,6 +320,13 @@ class SpectrumJWST:
             plt.show()
         
         return gaps, gap_indices
+    
+    def clip_det_edges(self, n=20):
+        assert len(self.flux.shape) == 2, f'Data must be reshaped to (orders, pixels) instead of {self.flux.shape}'
+        self.flux[..., :n] = np.nan
+        self.flux[...,-n:] = np.nan
+        return self
+        
     
     def plot(self, ax=None, **kwargs):
         

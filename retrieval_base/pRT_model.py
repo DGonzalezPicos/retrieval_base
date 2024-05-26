@@ -158,9 +158,16 @@ class pRT_model:
         self.params = params
 
         if self.params.get('res') is not None:
-            self.d_resolution = self.params['res']
-        if self.params.get(f'res_{self.w_set}') is not None:
-            self.d_resolution = self.params[f'res_{self.w_set}']
+            # self.d_resolution = np.atleast_1d(self.params['res'])
+            res = self.params['res']
+            if isinstance(res, (list, tuple)):
+                # self.d_resolution = res
+                # take list [a,b] and convert it to [a,a, b,b...]
+                self.d_resolution = [r for r in res for _ in range(len(res))] # every JWST order has two filters
+            if isinstance(res, (float, int)):
+                self.d_resolution = [res for _ in range(self.d_wave.shape[0])]
+        # if self.params.get(f'res_{self.w_set}') is not None:
+        #     self.d_resolution = self.params[f'res_{self.w_set}']
 
         # Add clouds if requested
         self.add_clouds()
@@ -317,7 +324,7 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution, 
+                out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
                 in_res=m_spec_i.resolution, 
                 rebin=False, 
                 )
@@ -405,7 +412,7 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution, 
+                out_res=self.d_resolution[i], 
                 in_res=m_spec_i.resolution, 
                 rebin=True, 
                 )
@@ -430,7 +437,7 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution, 
+                out_res=self.d_resolution[i], 
                 in_res=m_spec_i.resolution, 
                 rebin=True, 
                 )

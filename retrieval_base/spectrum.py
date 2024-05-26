@@ -296,6 +296,55 @@ class Spectrum:
                                    mode='nearest'
                                    )
         return flux_LSF
+    @classmethod
+    def instr_broadening_kernels(cls, wave, flux, out_res, in_res=1e6):
+        """
+        Broadens the spectrum by the instrumental resolution that scales linearly with wavelength.
+
+        Parameters:
+        wave : ndarray
+            Wavelength array.
+        flux : ndarray
+            Flux array.
+        out_res : float
+            Minimum output resolution at the start of the wavelength array.
+        in_res : float, optional
+            Input resolution (default is 1e6).
+
+        Returns:
+        flux_LSF : ndarray
+            Flux array after applying instrumental broadening.
+        """
+        # Calculate the resolution array scaling linearly with wavelength
+        out_res_array = out_res * (wave / wave[0])
+
+        # Calculate the sigma for the LSF at each wavelength point
+        sigma_LSF_array = np.sqrt(1/out_res_array**2 - 1/in_res**2) / (2 * np.sqrt(2 * np.log(2)))
+
+        # Calculate the average spacing between wavelength points
+        spacing = np.nanmean(2 * np.diff(wave) / (wave[1:] + wave[:-1]))
+
+        # Convert the sigma_LSF to pixel units
+        sigma_LSF_gauss_filter = sigma_LSF_array / spacing
+
+        # Create a Gaussian kernel for each wavelength point
+        max_sigma = np.nanmax(sigma_LSF_gauss_filter)
+        kernel_half_width = int(3 * max_sigma)
+        x = np.arange(-kernel_half_width, kernel_half_width + 1)
+
+        # Use broadcasting to create a 2D array of Gaussian kernels
+        kernels = np.exp(-0.5 * (x[None, :] / sigma_LSF_gauss_filter[:, None]) ** 2)
+        kernels /= kernels.sum(axis=1)[:, None]
+
+        # Pad the flux array to handle edge effects
+        flux_padded = np.pad(flux, (kernel_half_width, kernel_half_width), mode='reflect')
+
+        # Create a matrix where each row is a shifted version of the flux array
+        flux_matrix = np.array([flux_padded[i:i + len(flux)] for i in range(2 * kernel_half_width + 1)]).T
+
+        # Perform the convolution using matrix multiplication
+        flux_LSF = np.einsum('ij, ij->i', kernels, flux_matrix)
+        return flux_LSF
     
     @classmethod
     def spectrally_weighted_integration(cls, wave, flux, array):
@@ -838,13 +887,17 @@ class ModelSpectrum(Spectrum):
                             in_res=1e6, 
                             d_wave=None, 
                             rebin=True, 
+                            instr_broad_fast=True,
                             ):
 
         # Apply Doppler shift, rotational/instrumental broadening, 
         # and rebin onto a new wavelength grid
         self.rv_shift(rv, replace_wave=True)
         self.rot_broadening(vsini, epsilon_limb, replace_wave_flux=True)
-        self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
+        if instr_broad_fast:
+            self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
+        else: # for NIRSpec
+            self.flux = self.instr_broadening_kernels(self.wave, self.flux, out_res, in_res) # NEW (2024-05-26): use resolution at every wavelength
         if rebin:
             self.rebin(d_wave, replace_wave_flux=True)
             

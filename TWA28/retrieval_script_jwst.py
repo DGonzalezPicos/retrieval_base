@@ -9,7 +9,7 @@ from retrieval_base.parameters import Parameters
 
 import config_jwst as conf
 
-conf_data = conf.config_data['G395H_F290LP']
+conf_data = conf.config_data['NIRSpec']
 # create output directory
 
 for key in ['data', 'plots']:
@@ -36,27 +36,41 @@ args = parser.parse_args()
 if args.pre_processing:
     
     ## Pre-processing data
-    grisms = ['g140h-f100lp', 'g235h-f170lp', 'g395h-f290lp']
-    waves = [1450, 2450, 4155]
-    wave_split ={g:w for g,w in zip(grisms, waves)}
-    g = grisms[-1]
+    grisms = [
+            # 'g140h-f100lp', 
+            'g235h-f170lp', 
+            'g395h-f290lp',
+            ]
+    files = [f'jwst/TWA28_{g}.fits' for g in grisms]
+    # waves = [1450, 2450, 4155]
+    # wave_split ={g:w for g,w in zip(grisms, waves)}
+    # g = grisms[-1]
               
-    spec = SpectrumJWST(file=f'jwst/TWA28_{g}.fits', grism=g)
-    spec.split_grism(wave_split[g], 
-                    #  keep=1, 
-                    keep='both',
-                    fig_name=f'{conf.prefix}plots/split_{g}.pdf')
-    # spec.sigma_clip(sigma=3, width=5, max_iter=5, fun='median')
-    # spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
-    # spec.pad_arrays()
-    print(f' spec.wave.shape = {spec.wave.shape}')
-    spec.reshape(2,1)
-    print(f' spec.wave.shape = {spec.wave.shape}')
+    # spec = SpectrumJWST(file=f'jwst/TWA28_{g}.fits', grism=g)
+    
+    spec = SpectrumJWST().load_grisms(files)
+    spec.reshape(spec.n_orders, 1)
     spec.sigma_clip_reshaped(use_flux=False, 
                              sigma=3, 
                              width=30, 
                              max_iter=5,
                              fun='median')
+    spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf')
+    # spec.split_grism(wave_split[g], 
+    #                 #  keep=1, 
+    #                 keep='both',
+    #                 fig_name=f'{conf.prefix}plots/split_{g}.pdf')
+    # spec.sigma_clip(sigma=3, width=5, max_iter=5, fun='median')
+    # spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
+    # spec.pad_arrays()
+    # print(f' spec.wave.shape = {spec.wave.shape}')
+    # spec.reshape(2,1)
+    # print(f' spec.wave.shape = {spec.wave.shape}')
+    # spec.sigma_clip_reshaped(use_flux=False, 
+    #                          sigma=3, 
+    #                          width=30, 
+    #                          max_iter=5,
+    #                          fun='median')
 
     spec.prepare_for_covariance()
 

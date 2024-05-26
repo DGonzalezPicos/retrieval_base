@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import fits
 import pickle
 import os
@@ -16,13 +17,13 @@ class SpectrumJWST:
     
     # spectral resolution = 2700 for grisms g140h, g235h, g395h
     settings = dict(
-        g140h_f100lp = (0.97, 1.82),
-        g235h_f170lp = (1.66, 3.05),
-        g395h_f290lp = (2.87, 5.28),
+        g140h_f100lp = (0.97, 1.45, 1.82),
+        g235h_f170lp = (1.66, 2.45, 3.05),
+        g395h_f290lp = (2.87, 4.15, 5.28),
     )
     
     resolution = 2700.
-    w_set = 'G395H_F290LP'
+    w_set = 'NIRSpec' # JWST/NIRSpec
     # expected units to work with
     wave_unit = 'nm'
     flux_unit = 'Jy'
@@ -38,6 +39,9 @@ class SpectrumJWST:
             print(f'Reading {self.file}')
             self.read_data(units='erg/s/cm2/nm')
             
+        if self.grism is not None:
+            self.split_grism(keep='both')
+            
             
     def read_data(self, grism=None, units='mJy'):
         with fits.open(self.file) as hdul:
@@ -49,10 +53,10 @@ class SpectrumJWST:
         self.wave_unit = 'nm'
         self.flux_unit = 'Jy'
         
-        if grism is not None:
+        # if grism is not None:
             # file name must be in the format 'TWA28_g235h-f170lp.fits'
-            self.grism = self.file.split('_')[1].split('-')[0]
-        
+        self.grism = str(self.file).split('_')[1].split('.fits')[0].replace('-', '_')
+        print(f'Grism: {self.grism}')
         if units == 'mJy':
             self.flux *= 1e3
             self.err *= 1e3
@@ -73,70 +77,114 @@ class SpectrumJWST:
             self.flux_unit = 'erg/s/cm2/nm'
         return self
     
+    def load_grisms(self, files):
+        # self.grisms = [f.split('_')[1].split('-')[0] for f in files]
+        spec_list = []
+        for f in files:
+            spec_list.append(SpectrumJWST(file=f))
+            
+        self += spec_list
+        print(f'Loaded {len(spec_list)} grisms')
+        print(f' shape of wave: {self.wave.shape}')
+        print(f' shape of flux: {self.flux.shape}')
+        return self
+    
+    def __add__(self, spec_list):
+        """ Add a list of SpectrumJWST objects with proper padding"""
+        attrs = ['wave', 'flux', 'err']
+        # Determine the maximum length of the wave arrays in the input chunks
+        n = max([len(getattr(spec, 'wave')[0]) for spec in spec_list])
+        print(f'Padding arrays to length {n}')
+        
+        for i, spec in enumerate(spec_list):
+            for attr in attrs:
+                if hasattr(spec, attr):
+                    attr_pad = np.nan * np.ones((2, n))
+                    for order in range(2):
+                        attr_pad[order] = np.pad(getattr(spec, attr)[order],
+                                                    (0, n-len(getattr(spec, attr)[order])),
+                                                    mode='constant', constant_values=np.nan)
+                    setattr(spec_list[i], attr, attr_pad)
+                    # print(f' shape of {attr}: {getattr(spec_list[i], attr).shape}')
+        for attr in attrs:
+            if hasattr(self, attr):
+                setattr(self, attr, np.vstack([getattr(spec, attr) for spec in spec_list]))
+        self.n_orders = self.wave.shape[0]
+        assert self.n_orders > 1, 'No data loaded'
+        # Stack the arrays                    
+        return self
+                    
+        
+
+    
     @property
     def mask_isfinite(self):
         return np.isfinite(self.flux)
     
-    def split_grism(self, break_wave, keep=1, grism=None, fig_name=None):
+    def split_grism(self, break_wave=None, keep=1, grism=None, fig_name=None):
         '''Split data of one grisms into chunks'''
-        mask = self.wave < break_wave
+        assert hasattr(self, 'grism'), f' No grism attribute found in the SpectrumJWST object'
+        # mask = self.wave < break_wave
+        mask = self.wave < self.settings[self.grism][1]*1e3
         
         wave0, flux0, err0 = self.wave[mask], self.flux[mask], self.err[mask]
         wave1, flux1, err1 = self.wave[~mask], self.flux[~mask], self.err[~mask]
         print(f'Shape of first chunk: {wave0.shape}')
         print(f'Shape of second chunk: {wave1.shape}')
         
-        if fig_name is not None:
-            fig, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=False,
-            )
-            ax[0].plot(wave0, flux0, label='First chunk', color='k')
-            ax[1].plot(wave1, flux1, label='Second chunk', color='k')
-            # ax[0].fill_between(wave0, flux0-err0, flux0+err0, alpha=0.3, color='k')
-            # ax[1].fill_between(wave1, flux1-err1, flux1+err1, alpha=0.3, color='k')
-            # plot average uncertainty as an errorbar at the top
-            ax[0].errorbar(wave0.min(), np.nanmedian(flux0), yerr=np.nanmean(err0), fmt='o', color='r', markersize=4)
-            ax[1].errorbar(wave1.min(), np.nanmedian(flux1), yerr=np.nanmean(err1), fmt='o', color='r', markersize=4)
-            ax[0].set(ylabel=f'Flux / {self.flux_unit}')
-            ax[1].set(xlabel=f'Wavelength / {self.wave_unit}', ylabel=f'Flux / {self.flux_unit}')
-            # plt.show()
-            fig.savefig(fig_name)
-            print(f'--> Saved {fig_name}')
-            
-        
-        if keep == 0:
-            self.wave, self.flux, self.err = wave0, flux0, err0
-            print(f' Keeping first chunk with cenwave {np.median(self.wave):.2f} nm')
+        if fig_name:
+            self._plot_chunks(wave0, flux0, err0, wave1, flux1, err1, fig_name)
 
-        if keep == 1:
-            self.wave, self.flux, self.err = wave1, flux1, err1
-            print(f' Keeping second chunk with cenwave {np.median(self.wave):.2f} nm')
-        if keep == 'both':
-            # use padding to keep both chunks into the same array
-            n = max(len(wave0), len(wave1))
-            self.wave, self.flux, self.err = (np.nan * np.ones((2, n)) for _ in range(3))
-            self.wave[0, :len(wave0)] = wave0
-            self.flux[0, :len(wave0)] = flux0
-            self.err[0, :len(wave0)] = err0
-            self.wave[1, :len(wave1)] = wave1
-            self.flux[1, :len(wave1)] = flux1
-            self.err[1, :len(wave1)] = err1
-            print(f' Keeping both chunks with cenwaves {np.median(self.wave[0]):.2f} nm and {np.median(self.wave[1]):.2f} nm')
-            
+        if keep == 0:
+            self._update_data(wave0, flux0, err0)
+            print(f' Keeping first chunk with cenwave {np.nanmedian(self.wave):.2f} nm')
+        elif keep == 1:
+            self._update_data(wave1, flux1, err1)
+            print(f' Keeping second chunk with cenwave {np.nanmedian(self.wave):.2f} nm')
+        elif keep == 'both':
+            self._update_data_both(wave0, flux0, err0, wave1, flux1, err1)
+
         return self
-    
-    def pad_arrays(self):
+
+    def _update_data(self, wave, flux, err):
+        self.wave, self.flux, self.err = wave, flux, err
+
+    def _update_data_both(self, wave0, flux0, err0, wave1, flux1, err1):
+        n = max(len(wave0), len(wave1))
+        self.wave, self.flux, self.err = (np.nan * np.ones((2, n)) for _ in range(3))
+
+        self.wave[0, :len(wave0)] = wave0
+        self.flux[0, :len(wave0)] = flux0
+        self.err[0, :len(wave0)] = err0
+
+        self.wave[1, :len(wave1)] = wave1
+        self.flux[1, :len(wave1)] = flux1
+        self.err[1, :len(wave1)] = err1
+
+        print(f' Keeping both chunks with cenwaves {np.nanmedian(self.wave[0]):.2f} nm and {np.nanmedian(self.wave[1]):.2f} nm')
+
+    def _plot_chunks(self, wave0, flux0, err0, wave1, flux1, err1, fig_name):
+        fig, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=False)
+        ax[0].plot(wave0, flux0, label='First chunk', color='k')
+        ax[1].plot(wave1, flux1, label='Second chunk', color='k')
+        ax[0].errorbar(wave0.min(), np.nanmedian(flux0), yerr=np.nanmean(err0), fmt='o', color='r', markersize=4)
+        ax[1].errorbar(wave1.min(), np.nanmedian(flux1), yerr=np.nanmean(err1), fmt='o', color='r', markersize=4)
+        ax[0].set(ylabel=f'Flux / {self.flux_unit}')
+        ax[1].set(xlabel=f'Wavelength / {self.wave_unit}', ylabel=f'Flux / {self.flux_unit}')
+        fig.savefig(fig_name)
+        print(f'--> Saved {fig_name}')
         
-        # pad the arrays to have the same length
-        n = np.max([len(w) for w in self.wave])
-        for i in range(len(self.wave)):
-            self.wave[i] = np.pad(self.wave[i], (0, n-len(self.wave[i])), mode='constant', constant_values=np.nan)
-            self.flux[i] = np.pad(self.flux[i], (0, n-len(self.flux[i])), mode='constant', constant_values=np.nan)
-            self.err[i] = np.pad(self.err[i], (0, n-len(self.err[i])), mode='constant', constant_values=np.nan)
-        
-        # convert to ndarray
-        self.wave = np.array(self.wave)
-        self.flux = np.array(self.flux)
-        self.err = np.array(self.err)
+    def plot_orders(self, fig_name=None):
+        # use PDF pages to save a page for every order
+        with PdfPages(fig_name) as pdf:
+            for i in range(self.n_orders):
+                for j in range(self.n_dets):
+                    fig, ax = plt.subplots(1,1, figsize=(10, 3))
+                    ax.plot(self.wave[i,j], self.flux[i,j], label=f'Order {i}', color='k')
+                    ax.set(xlabel=f'Wavelength / {self.wave_unit}', ylabel=f'Flux / {self.flux_unit}')
+                    pdf.savefig(fig)
+                    plt.close(fig)
+        print(f'--> Saved {fig_name}')
         return self
         
     def sigma_clip_reshaped(self,
@@ -289,12 +337,27 @@ class SpectrumJWST:
 if __name__ == '__main__':
     import pathlib
     path = pathlib.Path('TWA28/jwst/')
+    grisms = [
+                'g140h-f100lp', 
+              'g235h-f170lp', 
+              'g395h-f290lp']
+    files = [path/f'TWA28_{g}.fits' for g in grisms]
+    # waves = [1450, 2450, 4155]
+    
     # spec = SpectrumJWST(file=path/'TWA28_g235h-f170lp.fits')
-    spec = SpectrumJWST(file=path/'TWA28_g395h-f290lp.fits')
-    spec.split_grism(4155., keep=1)
+    # spec = SpectrumJWST(file=path/'TWA28_g395h-f290lp.fits', grism='g395h-f290lp')
+    spec = SpectrumJWST().load_grisms(files)
+    spec.reshape(spec.n_orders, 1)
+    spec.sigma_clip_reshaped(use_flux=False, 
+                             sigma=3, 
+                             width=30, 
+                             max_iter=5,
+                             fun='median')
+    spec.plot_orders(fig_name='test.pdf')
+    # spec.split_grism(4155., keep=1)
     # spec.sigma_clip(sigma=3, width=5, max_iter=5, fun='median')
-    spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
-    spec.plot()
-    plt.show()
+    # spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
+    # spec.plot()
+    # plt.show()
     
     

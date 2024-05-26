@@ -255,12 +255,15 @@ def pre_processing(conf, conf_data):
 def prior_check(conf, n=3, fig_name=None):
     
     ret = Retrieval(conf=conf, evaluation=False)
-    w_set = 'G395H_F290LP'
+    w_set = 'NIRSpec'
     # first evaluation the model at 'n' different parameter values
     theta = np.linspace(0, 1, n)
     m_spec_list = []
     logL_list = [] 
-    for theta_i in theta:
+    # plot PT
+    fig, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
+    
+    for i, theta_i in enumerate(theta):
         ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
         sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
         print(sample)
@@ -268,9 +271,23 @@ def prior_check(conf, n=3, fig_name=None):
         ln_L = ret.PMN_lnL_func()
         print(f'ln_L = {ln_L:.4e}\n')
         
+        if i == 0:
+            print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
+            print(f' shape m_spec.flux = {ret.m_spec[w_set].flux.shape}')
+            print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m_flux.shape}')
+            print(f' shape LogLike.f = {ret.LogLike[w_set].f.shape}')
+            
         # m_spec_list.append(ret.m_spec[w_set])
         m_spec_list.append(ret.LogLike[w_set].m_flux)
         logL_list.append(ln_L)
+        # PT_list.append(ret.PT)
+        figs.fig_PT(ret.PT, ax=ax_PT, ax_grad=ax_grad, 
+                    bestfit_color=f'C{i}', 
+                    show_knots=(i==0), 
+                    fig=fig,
+                    fig_name=str(fig_name).replace('.pdf', '_PT.pdf') if i==(len(theta)-1) else None)
+        
+
     
     # use PDF pages to save multiple plots for each order into one PDF
     with PdfPages(fig_name) as pdf:
@@ -310,55 +327,6 @@ def prior_check(conf, n=3, fig_name=None):
                        
     
 
-def old_prior_check(conf, fig_name=None):
-    ret = Retrieval(conf=conf, evaluation=False)
-    # order, det = 0,0 
-
-    fig = plt.figure(figsize=(16,8), layout='constrained')
-    gs0 = fig.add_gridspec(4,5, hspace=0.00, wspace=0.1)
-
-    ax = fig.add_subplot(gs0[:3,:3])
-    plt.setp(ax.get_xticklabels(), visible=False)
-    ax_res = fig.add_subplot(gs0[3,:3], sharex=ax)
-    ax_PT = fig.add_subplot(gs0[:4,3:])
-
-    for ix, i in enumerate([0.0, 0.5, 1.0]):
-        ret.Param(i * np.ones(len(ret.Param.param_keys)))
-
-            
-        sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
-        print(sample)
-
-        ln_L = ret.PMN_lnL_func()
-        print(f'ln_L = {ln_L:.4e}\n')
-        x = ret.d_spec['G395H_F290LP'].wave[order,det]
-
-        # f = ret.LogLike['G395H_F290LP'].f[:,order,det]
-        if ix == 0:
-            mask = ret.d_spec['G395H_F290LP'].mask_isfinite[order,det]
-            ax.plot(x, ret.d_spec['G395H_F290LP'].flux[order,det], lw=1.5, label='data', color='k')
-            
-        # model = f @ ret.m_spec['G395H_F290LP'].flux[order,det]
-        model = ret.LogLike['G395H_F290LP'].m_flux[order,det]
-        ax.plot(x, model, lw=2.5, label=f'logL = {ln_L:.3e}', ls='--')
-
-        res = ret.d_spec['G395H_F290LP'].flux[order,det] - model
-        res[~mask] = np.nan
-        ax_res.plot(x, res, lw=2.5)
-
-        ax_PT.plot(ret.PT.temperature, ret.PT.pressure, lw=4.5)
-            
-    ax_PT.set(yscale='log', ylim=(ret.PT.pressure.max(), ret.PT.pressure.min()),
-            ylabel='Pressure [bar]', xlabel='Temperature [K]')
-    ax_res.axhline(0, color='k', ls='-', alpha=0.9) 
-    ax.set(ylabel=f"Flux [{ret.d_spec['G395H_F290LP'].flux_unit}]")
-    ax_res.set(xlabel='Wavelength [nm]', ylabel='Residuals')
-    ax.legend()
-    if fig_name:
-        fig.savefig(fig_name)
-        print(f'--> Saved {fig_name}')
-    plt.close(fig)
-    # plt.show()
 
 class Retrieval:
 

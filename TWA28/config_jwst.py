@@ -7,18 +7,19 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_LM_N5'
+prefix = 'jwst_KLM_N10'
 prefix = f'./retrieval_outputs/{prefix}/test_'
 
 config_data = {
-    'G395H_F290LP': {
+    'NIRSpec': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
-        'w_set': 'G395H_F290LP', 'wave_range': (2800, 5300),
+        'w_set': 'NIRSpec',
+        'wave_range': (1450, 5300),
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
         
-        'lbl_opacity_sampling' : 10,
+        'lbl_opacity_sampling' : 20,
         'sigma_clip': 3,
         'sigma_clip_width': 50, 
     
@@ -90,7 +91,7 @@ parallax_mas = parallax * 1000
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 5 # spline knots (continuum fitting)
+N_knots = 10 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties

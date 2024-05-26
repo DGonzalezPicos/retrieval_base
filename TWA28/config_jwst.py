@@ -7,8 +7,8 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-prefix = 'jwst_KLM_N10'
-prefix = f'./retrieval_outputs/{prefix}/test_'
+run = 'jwst_KLM_N10'
+prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
     'NIRSpec': {
@@ -60,7 +60,11 @@ free_params = {
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
-    'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'],
+    # 'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'],
+    'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
+    'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
+    'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'],
 
    'T_0': [(2000,10000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],

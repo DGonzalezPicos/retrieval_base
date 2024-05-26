@@ -216,7 +216,8 @@ def fig_bestfit_model(
         ax_spec=None, 
         ax_res=None, 
         prefix=None, 
-        w_set=''
+        w_set='',
+        sharey=False,
         ):
 
     if (ax_spec is None) and (ax_res is None):
@@ -238,14 +239,17 @@ def fig_bestfit_model(
     ylabel_spec = r'$F_\lambda$'+'\n'+r'$(\mathrm{erg\ s^{-1}\ cm^{-2}\ nm^{-1}})$'
     # if d_spec.high_pass_filtered:
     #     ylabel_spec = r'$F_\lambda$ (high-pass filtered)'
-
-    # Use the same ylim, also for multiple axes
-    ylim_spec = (np.nanmean(d_spec.flux)-3*np.nanstd(d_spec.flux), 
-                 np.nanmean(d_spec.flux)+3*np.nanstd(d_spec.flux)
-                )
-    ylim_res = (1/5*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
-                1/5*(ylim_spec[1]-np.nanmean(d_spec.flux))
-                )
+    if sharey:
+        # Use the same ylim, also for multiple axes
+        ylim_spec = (np.nanmean(d_spec.flux)-3*np.nanstd(d_spec.flux), 
+                    np.nanmean(d_spec.flux)+3*np.nanstd(d_spec.flux)
+                    )
+        ylim_res = (1/5*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
+                    1/5*(ylim_spec[1]-np.nanmean(d_spec.flux))
+                    )
+    else:
+        ylim_spec = None
+        ylim_res = None
 
     for i in range(d_spec.n_orders):
 
@@ -264,8 +268,11 @@ def fig_bestfit_model(
             xlim = (np.nanmin(d_spec.wave)-0.5, 
                     np.nanmax(d_spec.wave)+0.5)
 
-        ax_spec.set(xlim=xlim, xticks=[], ylim=ylim_spec)
-        ax_res.set(xlim=xlim, ylim=ylim_res)
+        ax_spec.set(xlim=xlim, xticks=[])
+        ax_res.set(xlim=xlim)
+        if sharey:
+            ax_spec.set(ylim=ylim_spec)
+            ax_res.set(ylim=ylim_res)
 
         for j in range(d_spec.n_dets):
         

@@ -182,20 +182,21 @@ class CallBack:
             for w_set in self.d_spec.keys():
 
                 # Plot the CCFs + spectra of species' contributions
-                figs.fig_species_contribution(
-                    d_spec=self.d_spec[w_set], 
-                    m_spec=self.m_spec[w_set], 
-                    m_spec_species=self.m_spec_species[w_set], 
-                    pRT_atm=self.pRT_atm[w_set], 
-                    pRT_atm_species=self.pRT_atm_species[w_set], 
-                    Chem=self.Chem, 
-                    LogLike=self.LogLike[w_set], 
-                    Cov=self.Cov[w_set], 
-                    species_to_plot=self.species_to_plot_CCF, 
-                    rv_CCF=np.arange(-1000,1000+1e-6,1.), 
-                    prefix=self.prefix, 
-                    w_set=w_set, 
-                    )
+                if self.plot_ccf:
+                    figs.fig_species_contribution(
+                        d_spec=self.d_spec[w_set], 
+                        m_spec=self.m_spec[w_set], 
+                        m_spec_species=self.m_spec_species[w_set], 
+                        pRT_atm=self.pRT_atm[w_set], 
+                        pRT_atm_species=self.pRT_atm_species[w_set], 
+                        Chem=self.Chem, 
+                        LogLike=self.LogLike[w_set], 
+                        Cov=self.Cov[w_set], 
+                        species_to_plot=self.species_to_plot_CCF, 
+                        rv_CCF=np.arange(-1000,1000+1e-6,1.), 
+                        prefix=self.prefix, 
+                        w_set=w_set, 
+                        )
             
                 # # Plot the auto-correlation of the residuals --> Disable for now...
                 # figs.fig_residual_ACF(
@@ -282,10 +283,10 @@ class CallBack:
                 self.prefix+f'data/bestfit_int_contr_em_per_order_{w_set}.npy', 
                 self.pRT_atm[w_set].int_contr_em_per_order
                 )
-            np.save(
-                self.prefix+f'data/bestfit_int_opa_cloud_{w_set}.npy', 
-                self.pRT_atm[w_set].int_opa_cloud
-                )
+            # np.save(
+            #     self.prefix+f'data/bestfit_int_opa_cloud_{w_set}.npy', 
+            #     self.pRT_atm[w_set].int_opa_cloud
+            #     )
 
     def fig_abundances_corner(self):
 

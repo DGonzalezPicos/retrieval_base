@@ -991,6 +991,44 @@ class Retrieval:
                 )
 
             return flux_envelope
+        
+    def PMN_analyze(self):
+        
+        # Set-up analyzer object
+        analyzer = pymultinest.Analyzer(
+            n_params=self.Param.n_params, 
+            outputfiles_basename=self.conf.prefix
+            )
+        stats = analyzer.get_stats()
+
+        # Load the equally-weighted posterior distribution
+        posterior = analyzer.get_equal_weighted_posterior()
+        posterior = posterior[:,:-1]
+
+        # Read the parameters of the best-fitting model
+        bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+        return bestfit_params, posterior
+    
+    def evaluate_model(self, bestfit_params):
+        # Evaluate the model with best-fitting parameters
+        for i, key_i in enumerate(self.Param.param_keys):
+            # Update the Parameters instance
+            self.Param.params[key_i] = bestfit_params[i]
+            print(f' {key_i}: {bestfit_params[i]}')
+            if key_i.startswith('log_'):
+                self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)
+
+            if key_i.startswith('invgamma_'):
+                self.Param.params[key_i.replace('invgamma_', '')] = self.Param.params[key_i]
+
+        # Update the parameters
+        self.Param.read_PT_params(cube=None)
+        self.Param.read_uncertainty_params()
+        self.Param.read_chemistry_params()
+        self.Param.read_cloud_params()
+        return self
+        
+        
 
     def PMN_callback_func(self, 
                           n_samples, 
@@ -1010,18 +1048,19 @@ class Retrieval:
         if self.evaluation:
 
             # Set-up analyzer object
-            analyzer = pymultinest.Analyzer(
-                n_params=self.Param.n_params, 
-                outputfiles_basename=self.conf.prefix
-                )
-            stats = analyzer.get_stats()
+            # analyzer = pymultinest.Analyzer(
+            #     n_params=self.Param.n_params, 
+            #     outputfiles_basename=self.conf.prefix
+            #     )
+            # stats = analyzer.get_stats()
 
-            # Load the equally-weighted posterior distribution
-            posterior = analyzer.get_equal_weighted_posterior()
-            posterior = posterior[:,:-1]
+            # # Load the equally-weighted posterior distribution
+            # posterior = analyzer.get_equal_weighted_posterior()
+            # posterior = posterior[:,:-1]
 
-            # Read the parameters of the best-fitting model
-            bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+            # # Read the parameters of the best-fitting model
+            # bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+            bestfit_params, posterior = self.PMN_analyze()
 
             # Get the PT and mass-fraction envelopes
             self.get_PT_mf_envelopes(posterior)

@@ -56,22 +56,6 @@ if args.pre_processing:
                              max_iter=5,
                              fun='median')
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf')
-    # spec.split_grism(wave_split[g], 
-    #                 #  keep=1, 
-    #                 keep='both',
-    #                 fig_name=f'{conf.prefix}plots/split_{g}.pdf')
-    # spec.sigma_clip(sigma=3, width=5, max_iter=5, fun='median')
-    # spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
-    # spec.pad_arrays()
-    # print(f' spec.wave.shape = {spec.wave.shape}')
-    # spec.reshape(2,1)
-    # print(f' spec.wave.shape = {spec.wave.shape}')
-    # spec.sigma_clip_reshaped(use_flux=False, 
-    #                          sigma=3, 
-    #                          width=30, 
-    #                          max_iter=5,
-    #                          fun='median')
-
     spec.prepare_for_covariance()
 
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)

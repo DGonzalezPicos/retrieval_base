@@ -147,7 +147,11 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     'H2O_181_HotWat78',
-    'CO2_main_iso',
+    # 'CO2_main_iso',
+    'Na_allard',
+    'Ca',
+    'Ti',
+    'HF_main_iso',
     ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O',

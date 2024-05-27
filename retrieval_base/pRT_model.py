@@ -174,7 +174,8 @@ class pRT_model:
 
         # Generate a model spectrum
         m_spec = self.get_model_spectrum(
-            get_contr=get_contr, get_full_spectrum=get_full_spectrum
+            get_contr=get_contr, 
+            get_full_spectrum=get_full_spectrum
             )
         return m_spec
 

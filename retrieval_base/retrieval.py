@@ -516,7 +516,8 @@ class Retrieval:
                 mass_fractions, 
                 temperature, 
                 self.Param.params, 
-                get_contr=self.CB.active, 
+                # get_contr=self.CB.active, 
+                get_contr=self.evaluation,
                 get_full_spectrum=self.evaluation, 
                 )
             # Spline decomposition

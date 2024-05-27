@@ -392,10 +392,13 @@ class pRT_model:
         new_contr_em_i = []
 
         # Get the cloud opacity
+        cloudy = False
         if self.cloud_mode == 'gray':
             opa_cloud_i = self.gray_cloud_opacity(m_wave_i*1e-3, self.pressure).T
+            cloudy = True
         elif self.cloud_mode == 'MgSiO3':
             opa_cloud_i = atm_i.tau_cloud.T
+            cloudy = True
         else:
             opa_cloud_i = np.zeros_like(contr_em_i)
 
@@ -412,7 +415,7 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution[i], 
+                out_res=self.d_resolution[order], 
                 in_res=m_spec_i.resolution, 
                 rebin=True, 
                 )
@@ -427,24 +430,25 @@ class pRT_model:
             self.int_contr_em[j] += self.int_contr_em_per_order[order,j]
 
             # Similar to the model flux
-            opa_cloud_ij = ModelSpectrum(
-                wave=m_wave_i, flux=opa_cloud_ij, 
-                lbl_opacity_sampling=self.lbl_opacity_sampling
-                )
-            # Shift, broaden, rebin the cloud opacity
-            opa_cloud_ij.shift_broaden_rebin(
-                d_wave=d_wave_i, 
-                rv=self.params['rv'], 
-                vsini=self.params['vsini'], 
-                epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution[i], 
-                in_res=m_spec_i.resolution, 
-                rebin=True, 
-                )
-            # Integrate and weigh the cloud opacity
-            self.int_opa_cloud[j] += \
-                opa_cloud_ij.spectrally_weighted_integration(
-                    wave=d_wave_i[d_mask_i].flatten(), 
-                    flux=m_spec_i.flux[d_mask_i].flatten(), 
-                    array=opa_cloud_ij.flux[d_mask_i].flatten(), 
+            if cloudy:
+                opa_cloud_ij = ModelSpectrum(
+                    wave=m_wave_i, flux=opa_cloud_ij, 
+                    lbl_opacity_sampling=self.lbl_opacity_sampling
                     )
+                # Shift, broaden, rebin the cloud opacity
+                opa_cloud_ij.shift_broaden_rebin(
+                    d_wave=d_wave_i, 
+                    rv=self.params['rv'], 
+                    vsini=self.params['vsini'], 
+                    epsilon_limb=self.params['epsilon_limb'], 
+                    out_res=self.d_resolution[order], 
+                    in_res=m_spec_i.resolution, 
+                    rebin=True, 
+                    )
+                # Integrate and weigh the cloud opacity
+                self.int_opa_cloud[j] += \
+                    opa_cloud_ij.spectrally_weighted_integration(
+                        wave=d_wave_i[d_mask_i].flatten(), 
+                        flux=m_spec_i.flux[d_mask_i].flatten(), 
+                        array=opa_cloud_ij.flux[d_mask_i].flatten(), 
+                        )

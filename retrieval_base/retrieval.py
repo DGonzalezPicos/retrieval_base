@@ -542,49 +542,6 @@ class Retrieval:
                 # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
                 self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
             
-            
-            
-            # apply linear slope --> not implemented...
-            if self.Param.params.get('f_slope') is not None:
-                f_slope = self.Param.params.get('f_slope')
-                # print(f'Applying slope of {f_slope:.2e} to the model spectrum...')
-                # print(f'Shape of the model spectrum: {self.m_spec[w_set].flux.shape}')
-
-                # m_spec_flux_flat = self.m_spec[w_set].flux.flatten()
-                # slope = np.linspace(1-f_slope, 1+f_slope, m_spec_flux_flat.size)
-                # slope = np.linspace(1-f_slope, 1+f_slope, np.prod(self.m_spec[w_set].flux.shape))
-                wave_full = np.linspace(self.d_spec[w_set].wave.min(), 
-                                        self.d_spec[w_set].wave.max(), 
-                                        2 * self.d_spec[w_set].wave.size) 
-                slope_full = np.linspace(1-f_slope, 1+f_slope, wave_full.size)
-                self.slope = np.interp(self.d_spec[w_set].wave, wave_full, slope_full)
-                
-                # # check slope
-                # import matplotlib.pyplot as plt
-                # fig, ax = plt.subplots(1,1, figsize=(8,6))
-                # n_orders, n_dets, _ = self.m_spec[w_set].flux.shape
-                # for order in range(n_orders):
-                #     for det in range(n_dets):
-                #         ax.plot(self.d_spec[w_set].wave[order,det], self.m_spec[w_set].flux[order,det], 
-                #                 color='k', alpha=0.6)
-
-                        
-                        
-                #         ax.plot(self.d_spec[w_set].wave[order,det], 
-                #                 self.m_spec[w_set].flux[order,det] * self.slope[order,det],
-                #                 color='blue')
-                #         ax.plot(self.d_spec[w_set].wave[order,det], 
-                #                 self.slope[order,det] * np.nanmedian(self.m_spec[w_set].flux[order,det]), 
-                #                 color='limegreen')
-                # plt.show()
-                
-                # apply slope
-                self.m_spec[w_set].flux = self.m_spec[w_set].flux * self.slope
-
-            # if (self.m_spec[w_set].flux <= 0).any() or \
-            #     (~np.isfinite(self.m_spec[w_set].flux)).any():
-            #     # Something is wrong in the spectrum
-            #     return -np.inf
 
             for i in range(self.d_spec[w_set].n_orders):
                 for j in range(self.d_spec[w_set].n_dets):
@@ -961,7 +918,7 @@ class Retrieval:
         self.Param.read_chemistry_params()
         self.Param.read_cloud_params()
         
-        self.Param.params.update(self.Param.constant_params)
+        # self.Param.params.update(self.Param.constant_params)
         # check for resolution parameters and place them in a list `res`
         # res_keys = [key for key in list(self.Param.params.keys()) if key.startswith('res_')]
         # if len(res_keys) > 0:

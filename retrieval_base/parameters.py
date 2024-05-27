@@ -114,21 +114,6 @@ class Parameters:
         # Loop over all parameters
         for i, key_i in enumerate(self.param_keys):
 
-            # if key_i.startswith('invgamma_'):
-            #     # Get the two parameters defining the inverse gamma pdf
-            #     invgamma_a, invgamma_b = self.param_priors[key_i]
-                
-            #     # Sample from the inverse gamma prior
-            #     cube[i] = invgamma.ppf(cube[i], a=invgamma_a, loc=0, scale=invgamma_b)
-
-            # elif key_i.startswith('gaussian_'):
-            #     # Get the two parameters defining the Gaussian pdf
-            #     mu, sigma = self.param_priors[key_i]
-                
-            #     # Sample from the Gaussian prior
-            #     cube[i] = norm.ppf(cube[i], loc=mu, scale=sigma)
-            
-            # else:
             # Sample within the boundaries
             low, high = self.param_priors[key_i]
             if (self.PT_mode == 'RCE') and (key_i.startswith('dlnT_dlnP_')) and (key_i != 'dlnT_dlnP_RCE'):
@@ -140,13 +125,6 @@ class Parameters:
 
             if key_i.startswith('log_'):
                 self.params = self.log_to_linear(self.params, key_i)
-
-            # if key_i.startswith('invgamma_'):
-            #     self.params[key_i.replace('invgamma_', '')] = self.params[key_i]
-
-            # if key_i.startswith('gaussian_'):
-            #     self.params[key_i.replace('gaussian_', '')] = self.params[key_i]
-                
             
 
         # Read the parameters for the model's segments
@@ -154,11 +132,8 @@ class Parameters:
         self.read_uncertainty_params()
         self.read_chemistry_params()
         self.read_cloud_params()
-        # check for resolution parameters and place them in a list `res`
-        res_keys = [key for key in self.param_keys if key.startswith('res_')]
-        if len(res_keys) > 0:
-            self.params['res'] = [self.params[key] for key in res_keys]
-            # print(f' [Parameters.__call__]: res_keys = {res_keys}')
+        self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grism
+        
 
         if (ndim is None) and (nparams is None):
             return cube
@@ -289,6 +264,7 @@ class Parameters:
                     self.params[f'a_{w_set}'] = self.params[a_list[0]] * np.ones((n_orders, n_dets))
                 if len(a_list) > 1:
                     self.params[f'a_{w_set}'] = np.array([self.params[k] for k in a_list for _ in range(len(a_list))]).reshape((n_orders, n_dets))
+                # print(f' [Parameters.read_uncertainty_params]: a_{w_set} = {self.params[f"a_{w_set}"]}')
             else:
                 
                 if len(a_list) == 0:
@@ -390,6 +366,13 @@ class Parameters:
             self.params['log_X_cloud_base_MgSiO3'] = np.log10(self.params['X_MgSiO3'] * X_eq_MgSiO3)
             self.params['X_cloud_base_MgSiO3'] = 10**self.params['log_X_cloud_base_MgSiO3']
 
+    def read_resolution_params(self):
+         # check for resolution parameters and place them in a list `res`
+        res_keys = [key for key in self.params.keys() if key.startswith('res_')]
+        if len(res_keys) > 0:
+            self.params['res'] = [self.params[key] for key in res_keys]
+            
+            
     @classmethod
     def log_to_linear(cls, param_dict, key_log, key_lin=None, verbose=False):
 

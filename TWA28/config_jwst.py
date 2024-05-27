@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N10_veiling1'
+run = 'jwst_KLM_N10_veiling2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -38,9 +38,9 @@ free_params = {
 
     # Uncertainty scaling
     # 'log_a': [(-2,0.5), r'$\log\ a$'], 
-    'log_a_G235': [(-2,0.5), r'$\log\ a_{G235}$'],
-    'log_a_G395': [(-2,0.5), r'$\log\ a_{G395}$'],
-    'log_l': [(-1,0.2), r'$\log\ l$'], 
+    'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
+    'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
+    'log_l': [(-1,0.0), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
@@ -51,8 +51,8 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
-    'log_r_0': [(-18, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
-    'alpha': [(-3.0, 3.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
+    'log_r_0': [(-19, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
+    'alpha': [(0.0, 5.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -75,7 +75,7 @@ free_params = {
     'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
 
-   'T_0': [(2000,10000), r'$T_0$'], 
+   'T_0': [(2000,9000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
@@ -89,8 +89,8 @@ free_params = {
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    'res_G235': [(1500, 5000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
-    'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
+    # 'res_G235': [(1500, 5000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
+    # 'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
     # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
 # Constants to use if prior is not given
@@ -120,6 +120,8 @@ constant_params = {
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
     # 'log_P_knots': log_P_knots,
     'N_knots': N_knots, # avoid using spline to fit the continuum
+    'res_G235': 2800, # instrumental spectral resolution
+    'res_G395': 3000, # instrumental spectral resolution
     # 'fit_radius': True,
 }
 

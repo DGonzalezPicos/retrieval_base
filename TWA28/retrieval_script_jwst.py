@@ -95,7 +95,11 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    prior_check(conf=conf, n=5, random=False, fig_name=figs_path / 'prior_predictive_check.pdf')
+    random = True
+    random_label = '_random' if random else ''
+    prior_check(conf=conf, n=5, 
+                random=random, 
+                fig_name=figs_path / f'prior_predictive_check{random_label}.pdf')
 
 if args.retrieval:
     ret = Retrieval(

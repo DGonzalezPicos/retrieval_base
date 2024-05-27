@@ -339,7 +339,6 @@ class Retrieval:
 
         self.conf = conf
         self.evaluation = evaluation
-        self.plot_ccf = plot_ccf
 
         self.d_spec  = {}
         self.pRT_atm = {}
@@ -961,10 +960,14 @@ class Retrieval:
         self.Param.read_uncertainty_params()
         self.Param.read_chemistry_params()
         self.Param.read_cloud_params()
+        
+        self.Param.params.update(self.Param.constant_params)
         # check for resolution parameters and place them in a list `res`
-        res_keys = [key for key in self.Param.param_keys if key.startswith('res_')]
-        if len(res_keys) > 0:
-            self.Param.params['res'] = [self.Param.params[key] for key in res_keys]
+        # res_keys = [key for key in list(self.Param.params.keys()) if key.startswith('res_')]
+        # if len(res_keys) > 0:
+        #     self.Param.params['res'] = [self.Param.params[key] for key in res_keys]
+        #     print(f' res: {self.Param.params["res"]}')
+        self.Param.read_resolution_params()
         return self
         
         

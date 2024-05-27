@@ -105,6 +105,8 @@ if args.evaluation:
         conf=conf, 
         evaluation=args.evaluation
         )
+    ret.plot_ccf = False
+
     ret.PMN_callback_func(
         n_samples=None, 
         n_live=None, 

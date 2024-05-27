@@ -334,6 +334,7 @@ def prior_check(conf, n=3, random=False, fig_name=None):
 
 class Retrieval:
 
+    plot_ccf = False
     def __init__(self, conf, evaluation):
 
         self.conf = conf
@@ -428,7 +429,7 @@ class Retrieval:
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )
 
-        if (rank == 0) and self.evaluation:
+        if (rank == 0) and self.evaluation and self.plot_ccf:
             self.pRT_atm_broad = {}
             for w_set in conf.config_data.keys():
                 
@@ -507,7 +508,7 @@ class Retrieval:
         for h, w_set in enumerate(list(self.conf.config_data.keys())):
             
             pRT_atm_to_use = self.pRT_atm[w_set]
-            if self.evaluation:
+            if self.evaluation and self.plot_ccf:
                 # Retrieve the model spectrum, with the wider pRT model
                 pRT_atm_to_use = self.pRT_atm_broad[w_set]
         
@@ -1021,7 +1022,7 @@ class Retrieval:
         # self.Param.read_cloud_params()
         self.evaluate_model(bestfit_params)
 
-        if self.evaluation:
+        if self.evaluation and self.plot_ccf:
             # Get each species' contribution to the spectrum
             self.get_species_contribution()
 
@@ -1033,7 +1034,7 @@ class Retrieval:
             self.m_spec[w_set].flux_envelope = None
 
         pRT_atm_to_use = self.pRT_atm
-        if self.evaluation:
+        if self.evaluation and self.plot_ccf:
             # Retrieve the model spectrum, with the wider pRT model
             pRT_atm_to_use = self.pRT_atm_broad
             #self.m_spec.flux_envelope = flux_envelope

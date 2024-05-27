@@ -934,7 +934,7 @@ class ModelSpectrum(Spectrum):
         self.veiling_model = self.veiling_power_law(r_0, alpha, wave, wave_min)
         # replace NaNs with zero in the veiling model
         self.veiling_model = np.nan_to_num(self.veiling_model, nan=0.0)
-        print(f' Min {np.nanmin(self.veiling_model)} Max {np.nanmax(self.veiling_model)} Median {np.nanmedian(self.veiling_model)}')
+        # print(f' Min {np.nanmin(self.veiling_model)} Max {np.nanmax(self.veiling_model)} Median {np.nanmedian(self.veiling_model)}')
         # print(f'Veiling model: r_0={r_0}, alpha={alpha}')
         # print(f' shape of veiling model: {self.veiling_model.shape}')
         # assert np.sum(np.isnan(self.veiling_model)) == 0, f'Veiling model contains {np.sum(np.isnan(self.veiling_model))} NaNs'

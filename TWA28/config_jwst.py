@@ -46,13 +46,13 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
     # 'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
-    'log_r_0': [(-16, -13), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
-    'alpha': [(-5.0, 5.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
+    'log_r_0': [(-18, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
+    'alpha': [(-3.0, 3.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 

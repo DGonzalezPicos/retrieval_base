@@ -9,6 +9,10 @@ from retrieval_base.parameters import Parameters
 
 import config_jwst as conf
 
+config_file = 'config_jwst.txt'
+target = 'TWA28'
+run = None
+
 conf_data = conf.config_data['NIRSpec']
 # create output directory
 
@@ -101,10 +105,16 @@ if args.retrieval:
     ret.PMN_run()
 
 if args.evaluation:
+    if run is not None: # override config file
+        conf = Config(path=path, target=target, run=run)
+        conf(config_file)        
+    
     ret = Retrieval(
         conf=conf, 
         evaluation=args.evaluation
         )
+    
+    ret.plot_ccf = False
     ret.PMN_callback_func(
         n_samples=None, 
         n_live=None, 

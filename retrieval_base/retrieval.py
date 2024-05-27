@@ -334,10 +334,11 @@ def prior_check(conf, n=3, random=False, fig_name=None):
 
 class Retrieval:
 
-    def __init__(self, conf, evaluation):
+    def __init__(self, conf, evaluation, plot_ccf=False):
 
         self.conf = conf
         self.evaluation = evaluation
+        self.plot_ccf = plot_ccf
 
         self.d_spec  = {}
         self.pRT_atm = {}
@@ -428,7 +429,7 @@ class Retrieval:
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )
 
-        if (rank == 0) and self.evaluation:
+        if (rank == 0) and self.evaluation and self.plot_ccf:
             self.pRT_atm_broad = {}
             for w_set in conf.config_data.keys():
                 

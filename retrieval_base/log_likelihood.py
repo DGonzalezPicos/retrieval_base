@@ -49,14 +49,6 @@ class LogLikelihood:
         self.beta = np.ones((self.d_spec.n_orders, self.d_spec.n_dets))
         
         self.m_flux = np.nan * np.ones_like(self.d_spec.flux)
-        
-        if evaluation:
-            # Arrays to store log-likelihood and chi-squared per pixel in
-            self.ln_L_per_pixel        = np.nan * np.ones_like(self.d_spec.flux)
-            self.chi_squared_per_pixel = np.nan * np.ones_like(self.d_spec.flux)
-            
-            N_tot = self.d_spec.mask_isfinite.sum()
-            self.ln_L_per_pixel[self.d_spec.mask_isfinite] = ln_L_penalty/N_tot
 
         # Loop over all orders and detectors
         for i in range(self.d_spec.n_orders):

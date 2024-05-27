@@ -260,6 +260,7 @@ class GaussianProcesses(Covariance):
         self.cov_cholesky = cholesky_banded(
             self.cov, lower=True
             )
+        delattr(self, 'cov')
 
     def get_logdet(self):
         '''

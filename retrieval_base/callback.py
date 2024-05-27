@@ -157,6 +157,10 @@ class CallBack:
                                    figsize=(10,6), 
                                    tight_layout=True,
                                    sharey=True,)
+        
+        # copy integrated contribution functions
+        if hasattr(self.m_spec, 'int_contr_em'):
+            self.PT.int_contr_em = np.copy(self.m_spec.int_contr_em)
         figs.fig_PT(
             PT=self.PT, 
             ax=ax[0], 
@@ -164,14 +168,14 @@ class CallBack:
             fig=fig,
             bestfit_color='brown',
             envelopes_color='brown',
-            int_contr_em_color='red',
+            int_contr_em_color='gray',
             text_color='gray',
             # weigh_alpha=True,
             show_photosphere=True,
             show_knots=True,
             show_text=True,
             fig_name=self.prefix+f'plots/PT_grad_profile.pdf' if self.evaluation else None,
-            xlim=(1000, 8000), # fix view
+            xlim=(1000, 7000), # fix view
         )
 
         # Make a summary figure

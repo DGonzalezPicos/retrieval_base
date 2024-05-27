@@ -37,10 +37,10 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    # 'log_a': [(-2,0.5), r'$\log\ a$'], 
-    'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
-    'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-1,0.0), r'$\log\ l$'], 
+    'log_a': [(-2,0.5), r'$\log\ a$'], 
+    # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
+    # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
+    'log_l': [(-2,0.0), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]

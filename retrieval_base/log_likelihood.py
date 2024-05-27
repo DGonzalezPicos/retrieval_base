@@ -85,7 +85,7 @@ class LogLikelihood:
                 f_ij = 1
                 if N_knots > 1:
                     f_ij = self.solve_linear(d_flux_ij, m_flux_ij, Cov[i,j])
-                    if (i+j) == 0 and m_spec.fit_radius:
+                    if ((i+j) == 0 and m_spec.fit_radius) or (not self.scale_flux):
                         # NEW 2024-05-26: recover the absolute scaling by dividing by the central value
                         f_ij_ref = f_ij[len(f_ij)//2]
                         f_ij /= f_ij_ref

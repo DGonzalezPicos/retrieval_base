@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N10_veiling2'
+run = 'jwst_KLM_N10_veiling3'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -37,7 +37,7 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a': [(-2,0.5), r'$\log\ a$'], 
+    'log_a_G': [(-2,0.5), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     'log_l': [(-2,0.0), r'$\log\ l$'], 
@@ -128,7 +128,7 @@ constant_params = {
 ####################################################################################
 #
 ####################################################################################
-scale_flux = True
+scale_flux = False
 scale_err  = True
 apply_high_pass_filter = False
 

@@ -252,12 +252,16 @@ def pre_processing(conf, conf_data):
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
     
-def prior_check(conf, n=3, fig_name=None):
+def prior_check(conf, n=3, random=False, fig_name=None):
     
     ret = Retrieval(conf=conf, evaluation=False)
     w_set = 'NIRSpec'
     # first evaluation the model at 'n' different parameter values
-    theta = np.linspace(0, 1, n)
+    if random:
+        # random values between 0 and 1
+        theta = np.random.rand(n)
+    else:
+        theta = np.linspace(0, 1, n)
     m_spec_list = []
     logL_list = [] 
     # plot PT
@@ -583,6 +587,8 @@ class Retrieval:
                         **self.conf.cov_kwargs, 
                         )
 
+            self.m_spec[w_set].fit_radius = ('R_p' in self.Param.param_keys)
+            # print(f'Fit radius: {self.m_spec[w_set].fit_radius}')
             # Retrieve the log-likelihood
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 

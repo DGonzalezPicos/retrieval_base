@@ -14,7 +14,7 @@ config_data = {
     'NIRSpec': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
-        'wave_range': (1450, 5300),
+        'wave_range': (1650, 5300),
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
@@ -44,7 +44,7 @@ free_params = {
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
+    'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     # 'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
 
@@ -101,7 +101,7 @@ N_knots = 10 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
-    'R_p' : 2.8, 
+    # 'R_p' : 1.0, 
     'parallax': parallax_mas, 
     'epsilon_limb': 0.5, 
     'log_g': 3.5,
@@ -111,6 +111,7 @@ constant_params = {
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
     # 'log_P_knots': log_P_knots,
     'N_knots': N_knots, # avoid using spline to fit the continuum
+    # 'fit_radius': True,
 }
 
 ####################################################################################

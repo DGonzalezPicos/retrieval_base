@@ -21,9 +21,12 @@ class LogLikelihood:
         self.scale_flux   = scale_flux
         self.scale_err    = scale_err
         
-        self.scale_flux_all = True # WARNING: this overrides the previous setting
+        self.scale_flux_all = False # WARNING: this overrides the previous setting
         
-    def __call__(self, m_spec, Cov, is_first_w_set=False, ln_L_penalty=0, evaluation=False):
+    def __call__(self, m_spec, Cov, 
+                 is_first_w_set=False, 
+                 ln_L_penalty=0, 
+                 evaluation=False):
         '''
         Evaluate the total log-likelihood given the model spectrum and parameters.
 
@@ -90,6 +93,11 @@ class LogLikelihood:
                 f_ij = 1
                 if N_knots > 1:
                     f_ij = self.solve_linear(d_flux_ij, m_flux_ij, Cov[i,j])
+                    if (i+j) == 0 and m_spec.fit_radius:
+                        # NEW 2024-05-26: recover the absolute scaling by dividing by the central value
+                        f_ij_ref = f_ij[len(f_ij)//2]
+                        f_ij /= f_ij_ref
+                        
                     m_flux_ij_scaled = f_ij @ m_flux_ij
                     
                 else:
@@ -103,6 +111,11 @@ class LogLikelihood:
 
                         # Scale the model flux to minimize the chi-squared error
                         m_flux_ij_scaled, f_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij[0], Cov[i,j])
+                        if (i+j) == 0 and self.fit_radius:
+                            # NEW 2024-05-26: recover the absolute scaling by dividing by the central value
+                            f_ij_ref = f_ij[len(f_ij)//2]
+                            f_ij /= f_ij_ref
+                            m_flux_ij_scaled /= f_ij_ref
                         # print(f' FLux scaling {f_ij}')
                     else:
                         # No additional flux scaling

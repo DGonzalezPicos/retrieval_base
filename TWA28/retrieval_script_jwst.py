@@ -52,7 +52,7 @@ if args.pre_processing:
     spec.reshape(spec.n_orders, 1)
     spec.sigma_clip_reshaped(use_flux=False, 
                              sigma=3, 
-                             width=35, 
+                             width=50, 
                              max_iter=5,
                              fun='median')
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf')
@@ -90,7 +90,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    prior_check(conf=conf, fig_name=figs_path / 'prior_predictive_check.pdf')
+    prior_check(conf=conf, n=5, random=False, fig_name=figs_path / 'prior_predictive_check.pdf')
 
 if args.retrieval:
     ret = Retrieval(

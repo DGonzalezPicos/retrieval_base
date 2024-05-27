@@ -71,6 +71,9 @@ free_params = {
     'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'],
+    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
 
    'T_0': [(2000,10000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
@@ -86,8 +89,8 @@ free_params = {
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    'res_G235': [(1500, 5000), r'$\mathrm{R}_G235$'], # instrumental spectral resolution
-    'res_G395': [(1500, 5000), r'$\mathrm{R}_G395$'], # instrumental spectral resolution
+    'res_G235': [(1500, 5000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
+    'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
     # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
 # Constants to use if prior is not given
@@ -158,6 +161,9 @@ line_species = [
     'Na_allard',
     'Ca',
     'Ti',
+    'Mg',
+    'Fe',
+    'Al',
     'HF_main_iso',
     ]
 species_to_plot_VMR = [

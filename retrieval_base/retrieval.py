@@ -339,6 +339,7 @@ class Retrieval:
 
         self.conf = conf
         self.evaluation = evaluation
+        self.plot_ccf = plot_ccf
 
         self.d_spec  = {}
         self.pRT_atm = {}

@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N10_2'
+run = 'jwst_KLM_N10_veiling1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -37,7 +37,9 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a': [(-2,0.5), r'$\log\ a$'], 
+    # 'log_a': [(-2,0.5), r'$\log\ a$'], 
+    'log_a_G235': [(-2,0.5), r'$\log\ a_{G235}$'],
+    'log_a_G395': [(-2,0.5), r'$\log\ a_{G395}$'],
     'log_l': [(-1,0.2), r'$\log\ l$'], 
 
     # General properties
@@ -47,6 +49,10 @@ free_params = {
     'R_p': [(1.0, 10.0), r'$R_\mathrm{p}$'], 
     # 'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
+    
+    # veiling parameters
+    'log_r_0': [(-16, -13), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
+    'alpha': [(-5.0, 5.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -80,9 +86,9 @@ free_params = {
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    'res_K': [(1500, 5000), r'$\mathrm{R}_K$'], # instrumental spectral resolution
-    'res_L': [(1500, 5000), r'$\mathrm{R}_L$'], # instrumental spectral resolution
-    'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
+    'res_G235': [(1500, 5000), r'$\mathrm{R}_G235$'], # instrumental spectral resolution
+    'res_G395': [(1500, 5000), r'$\mathrm{R}_G395$'], # instrumental spectral resolution
+    # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
 # Constants to use if prior is not given
 # distance in pc to parallax

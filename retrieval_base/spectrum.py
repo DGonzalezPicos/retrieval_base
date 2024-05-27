@@ -921,6 +921,25 @@ class ModelSpectrum(Spectrum):
             return self.flux   
         
         return self.sflux
+    
+    @staticmethod
+    def veiling_power_law(r_0, alpha, wave, wave_min=None):
+        
+        wave_min = wave_min or np.nanmin(wave)
+        
+        return  (r_0 * (wave/wave_min)**alpha)
+    
+    def add_veiling_power_law(self, r_0, alpha, wave, wave_min=None):
+        # after normalizing the spectrum, add a veiling model
+        self.veiling_model = self.veiling_power_law(r_0, alpha, wave, wave_min)
+        # replace NaNs with zero in the veiling model
+        self.veiling_model = np.nan_to_num(self.veiling_model, nan=0.0)
+        # print(f'Veiling model: r_0={r_0}, alpha={alpha}')
+        # print(f' shape of veiling model: {self.veiling_model.shape}')
+        # assert np.sum(np.isnan(self.veiling_model)) == 0, f'Veiling model contains {np.sum(np.isnan(self.veiling_model))} NaNs'
+        # assert np.sum(np.isnan(self.veiling_model)) == np.sum(np.isnan(self.flux)), f'Veiling model contains {np.sum(np.isnan(self.veiling_model))} NaNs'
+        self.flux += self.veiling_model
+        return self
 
 class Photometry:
 

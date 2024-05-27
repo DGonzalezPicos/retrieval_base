@@ -50,6 +50,7 @@ if args.pre_processing:
     
     spec = SpectrumJWST(Nedge=40).load_grisms(files)
     spec.reshape(spec.n_orders, 1)
+    spec.fix_wave_nans() # experimental...
     spec.sigma_clip_reshaped(use_flux=False, 
                              sigma=3, 
                              width=50, 

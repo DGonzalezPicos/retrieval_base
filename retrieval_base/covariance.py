@@ -175,30 +175,14 @@ class GaussianProcesses(Covariance):
                 **kwargs
                 )
             
-        if params[f'a_f_{w_set}'][order,det] != 0:
-            self.add_RBF_kernel(
-                a=params[f'a_f_{w_set}'][order,det], 
-                l=params[f'l_f_{w_set}'][order,det], 
-                array=self.flux_eff, 
-                **kwargs
-                )
+        # if params[f'a_f_{w_set}'][order,det] != 0:
+        #     self.add_RBF_kernel(
+        #         a=params[f'a_f_{w_set}'][order,det], 
+        #         l=params[f'l_f_{w_set}'][order,det], 
+        #         array=self.flux_eff, 
+        #         **kwargs
+        #         )
 
-        '''
-        RBF_kwargs = ['a', 'l']
-        if all([kwargs.get(key) is not None for key in RBF_kwargs]):
-            # Add a radial-basis function kernel
-            self.add_RBF_kernel(array=self.err_eff, **kwargs)
-
-        RBF_f_kwargs = ['a_f', 'l_f']
-        if all([kwargs.get(key) is not None for key in RBF_f_kwargs]):
-            if kwargs.get('a_f') == 0:
-                return
-            
-            kwargs['a'] = kwargs.get('a_f')
-            kwargs['l'] = kwargs.get('l_f')
-            # Add a radial-basis function kernel
-            self.add_RBF_kernel(array=self.flux_eff, **kwargs)
-        '''
 
     def cov_reset(self):
 

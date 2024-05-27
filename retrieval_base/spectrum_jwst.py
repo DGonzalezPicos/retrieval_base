@@ -115,8 +115,14 @@ class SpectrumJWST:
         assert self.n_orders > 1, 'No data loaded'
         # Stack the arrays                    
         return self
-                    
-        
+    
+    def fix_wave_nans(self):
+        '''Replace NaNs in the wavelength array with linear interpolation'''
+        for i in range(self.n_orders):
+            for j in range(self.n_dets):
+                mask = np.isnan(self.wave[i,j])
+                self.wave[i,j][mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), self.wave[i,j][~mask])
+        return self
 
     
     @property

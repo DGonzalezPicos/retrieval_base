@@ -520,6 +520,16 @@ class Retrieval:
                 get_contr=self.evaluation,
                 get_full_spectrum=self.evaluation, 
                 )
+            
+            # Add veiling to the model spectrum (NEW, 2024-05-27)
+            # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum before adding veiling'
+            if "r_0" in self.Param.params.keys():
+                self.m_spec[w_set].add_veiling_power_law(self.Param.params["r_0"],
+                                                        self.Param.params.get("alpha", 0.0), # 0.0 = constant
+                                                        self.d_spec[w_set].wave,
+                                                        np.nanmin(self.d_spec[w_set].wave))
+            # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum after adding veiling'
+  
             # Spline decomposition
             self.N_knots = self.Param.params.get('N_knots', 1)
             if self.N_knots > 1:
@@ -590,6 +600,8 @@ class Retrieval:
 
             self.m_spec[w_set].fit_radius = ('R_p' in self.Param.param_keys)
             # print(f'Fit radius: {self.m_spec[w_set].fit_radius}')
+            
+            
             # Retrieve the log-likelihood
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 
@@ -748,65 +760,7 @@ class Retrieval:
                 self.Chem.unquenched_mass_fractions_posterior[line_species_i].append(
                     unquenched_mf_i[line_species_i]
                     )
-        
-        '''
-        # Sample envelopes from the posterior
-        for i, params_i in enumerate(posterior):
 
-            for j, key_j in enumerate(self.Param.param_keys):
-                # Update the Parameters instance
-                self.Param.params[key_j] = params_i[j]
-
-                if key_j.startswith('log_'):
-                    self.Param.params = self.Param.log_to_linear(self.Param.params, key_j)
-
-                if key_j.startswith('invgamma_'):
-                    self.Param.params[key_j.replace('invgamma_', '')] = self.Param.params[key_j]
-
-                if key_j.startswith('gaussian_'):
-                    self.Param.params[key_j.replace('gaussian_', '')] = self.Param.params[key_j]
-                    
-            # Update the parameters
-            self.Param.read_PT_params(cube=None)
-            self.Param.read_uncertainty_params()
-            self.Param.read_chemistry_params()
-            self.Param.read_cloud_params()
-
-            # Class instances with best-fitting parameters
-            returned = self.PMN_lnL_func()
-
-            if i == 0:
-                for line_species_i in self.Chem.mass_fractions.keys():
-                    self.Chem.mass_fractions_posterior[line_species_i] = []
-
-                if hasattr(self.Chem, 'unquenched_mass_fractions'):
-                    for line_species_i in self.Chem.unquenched_mass_fractions.keys():
-                        self.Chem.unquenched_mass_fractions_posterior[line_species_i] = []
-
-            if isinstance(returned, float):
-                # PT profile or mass fractions failed
-                continue
-
-            # Store the temperatures and mass fractions
-            temperature_i, mass_fractions_i = returned
-            self.PT.temperature_envelopes.append(temperature_i)
-            # Loop over the line species
-            for line_species_i in self.Chem.mass_fractions.keys():
-                self.Chem.mass_fractions_posterior[line_species_i].append(
-                    mass_fractions_i[line_species_i]
-                    )
-
-            # Store the C/O ratio and Fe/H
-            self.Chem.CO_posterior.append(self.Chem.CO)
-            self.Chem.FeH_posterior.append(self.Chem.FeH)
-
-            if hasattr(self.Chem, 'unquenched_mass_fractions'):
-                # Store the unquenched mass fractions
-                for line_species_i in self.Chem.unquenched_mass_fractions.keys():
-                    self.Chem.unquenched_mass_fractions_posterior[line_species_i].append(
-                        self.Chem.unquenched_mass_fractions[line_species_i]
-                        )
-        '''
 
         # Convert profiles to 1, 2, 3-sigma equivalent and median
         q = [0.5-0.997/2, 0.5-0.95/2, 0.5-0.68/2, 0.5, 
@@ -852,16 +806,6 @@ class Retrieval:
 
         self.m_spec_species = dict.fromkeys(self.d_spec.keys(), {})
         self.pRT_atm_species = dict.fromkeys(self.d_spec.keys(), {})
-        '''
-        # Ignore all species
-        for species_j, (line_species_j, _, _) in self.Chem.species_info.items():
-            if line_species_j in self.Chem.line_species:
-                self.Chem.neglect_species[species_j] = True
-        # Create the spectrum and evaluate lnL
-        self.PMN_lnL_func()
-        m_spec_continuum = np.copy(self.m_spec.flux)
-        pRT_atm_continuum = self.pRT_atm_broad.flux_pRT_grid.copy()
-        '''
 
         # Assess the species' contribution
         for species_i in self.Chem.species_info.keys():
@@ -869,24 +813,6 @@ class Retrieval:
             line_species_i = self.Chem.read_species_info(species_i, 'pRT_name')
             if line_species_i not in self.Chem.line_species:
                 continue
-
-            '''
-            # Ignore all other species
-            self.Chem.neglect_species = dict.fromkeys(self.Chem.neglect_species, True)
-            self.Chem.neglect_species[species_i] = False
-            
-            # Create the spectrum and evaluate lnL
-            self.PMN_lnL_func()
-
-            flux_only = np.copy(self.m_spec.flux)
-            self.pRT_atm_broad.flux_pRT_grid_only = [
-                self.pRT_atm_broad.flux_pRT_grid[i].copy() \
-                for i in range(self.d_spec.n_orders)
-                ]
-            
-            for species_j in self.Chem.species_info:
-                self.Chem.neglect_species[species_j] = False
-            '''
             # Ignore one species at a time
             self.Chem.neglect_species = dict.fromkeys(self.Chem.neglect_species, False)
             self.Chem.neglect_species[species_i] = True
@@ -1033,6 +959,10 @@ class Retrieval:
         self.Param.read_uncertainty_params()
         self.Param.read_chemistry_params()
         self.Param.read_cloud_params()
+        # check for resolution parameters and place them in a list `res`
+        res_keys = [key for key in self.Param.param_keys if key.startswith('res_')]
+        if len(res_keys) > 0:
+            self.Param.params['res'] = [self.Param.params[key] for key in res_keys]
         return self
         
         
@@ -1054,19 +984,6 @@ class Retrieval:
 
         if self.evaluation:
 
-            # Set-up analyzer object
-            # analyzer = pymultinest.Analyzer(
-            #     n_params=self.Param.n_params, 
-            #     outputfiles_basename=self.conf.prefix
-            #     )
-            # stats = analyzer.get_stats()
-
-            # # Load the equally-weighted posterior distribution
-            # posterior = analyzer.get_equal_weighted_posterior()
-            # posterior = posterior[:,:-1]
-
-            # # Read the parameters of the best-fitting model
-            # bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
             bestfit_params, posterior = self.PMN_analyze()
 
             # Get the PT and mass-fraction envelopes
@@ -1087,21 +1004,22 @@ class Retrieval:
             return
 
         # Evaluate the model with best-fitting parameters
-        for i, key_i in enumerate(self.Param.param_keys):
-            # Update the Parameters instance
-            self.Param.params[key_i] = bestfit_params[i]
+        # for i, key_i in enumerate(self.Param.param_keys):
+        #     # Update the Parameters instance
+        #     self.Param.params[key_i] = bestfit_params[i]
         
-            if key_i.startswith('log_'):
-                self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)
+        #     if key_i.startswith('log_'):
+        #         self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)
 
-            if key_i.startswith('invgamma_'):
-                self.Param.params[key_i.replace('invgamma_', '')] = self.Param.params[key_i]
+        #     if key_i.startswith('invgamma_'):
+        #         self.Param.params[key_i.replace('invgamma_', '')] = self.Param.params[key_i]
 
-        # Update the parameters
-        self.Param.read_PT_params(cube=None)
-        self.Param.read_uncertainty_params()
-        self.Param.read_chemistry_params()
-        self.Param.read_cloud_params()
+        # # Update the parameters
+        # self.Param.read_PT_params(cube=None)
+        # self.Param.read_uncertainty_params()
+        # self.Param.read_chemistry_params()
+        # self.Param.read_cloud_params()
+        self.evaluate_model(bestfit_params)
 
         if self.evaluation:
             # Get each species' contribution to the spectrum

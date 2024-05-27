@@ -12,7 +12,7 @@ class Parameters:
 
         # Uncertainty scaling
         'a': 0, 'l': 1, 
-        'a_f': 0, 'l_f': 1, 
+        # 'a_f': 0, 'l_f': 1, 
         'beta': 1,  
 
         # Cloud properties (cloud base from condensation)
@@ -75,6 +75,9 @@ class Parameters:
         assert(self.cov_mode in ['GP', None])
 
         self.wlen_settings = wlen_settings
+        assert isinstance(self.wlen_settings, dict), 'wlen_settings must be a dictionary'
+        # check that the keys are in ['K2166', 'NIRSpec']
+        assert all([key in ['K2166', 'NIRSpec'] for key in self.wlen_settings.keys()]), 'wlen_settings keys must be in [K2166, NIRSpec]'
         
     def __str__(self):
         out = '** Parameters **\n'
@@ -265,31 +268,67 @@ class Parameters:
 
     def read_uncertainty_params(self):
         
-        cov_keys = ['beta', 'a', 'l', 'a_f', 'l_f']
-
+        # cov_keys = ['beta', 'a', 'l', 'a_f', 'l_f']
+        cov_keys = ['a', 'l']
         for w_set, (n_orders, n_dets) in self.wlen_settings.items():
+           
             
-            for key_i in cov_keys:
-
-                # Make specific for each wlen setting
-                if f'{key_i}_{w_set}' not in self.param_keys:
-                    self.params[f'{key_i}_{w_set}'] = self.params[f'{key_i}']
-
-                # Reshape to values for each order and detector
-                self.params[f'{key_i}_{w_set}'] = \
-                    np.ones((n_orders, n_dets)) * self.params[f'{key_i}_{w_set}']
+            assert ('l' in self.params.keys()) or (f'l_{w_set}' in self.params.keys()), ' [Parameters.read_uncertainty_params]: l parameter not found in the parameter keys'
+            # self.params[f'l_{w_set}'] = np.ones((n_orders, n_dets)) * self.params['l']
+            if f'l_{w_set}' in self.params.keys():
+                self.params[f'l_{w_set}'] = self.params[f'l_{w_set}'] * np.ones((n_orders, n_dets))
+            else:
+                self.params[f'l_{w_set}'] = np.ones((n_orders, n_dets)) * self.params['l']
+                                                                                        
+            if w_set == 'NIRSpec':
+                a_list = [k for k in list(self.params.keys()) if k.startswith('a_') and 'NIRSpec' not in k]
+                # print(f' [Parameters.read_uncertainty_params]: a_list = {a_list} for {w_set}')
+                if len(a_list) == 0:
+                    self.params[f'a_{w_set}'] = np.zeros((n_orders, n_dets))
+                if len(a_list) == 1:
+                    self.params[f'a_{w_set}'] = self.params[a_list[0]] * np.ones((n_orders, n_dets))
+                if len(a_list) > 1:
+                    self.params[f'a_{w_set}'] = np.array([self.params[k] for k in a_list for _ in range(len(a_list))]).reshape((n_orders, n_dets))
+            else:
                 
-                # Loop over the orders
-                for i in range(n_orders):
+                if len(a_list) == 0:
+                    self.params[f'a_{w_set}'] = np.zeros((n_orders, n_dets))
+                if len(a_list) == 1:
+                    self.params[f'a_{w_set}'] = self.params[a_list[0]] * np.ones((n_orders, n_dets))
+                if len(a_list) > 1:
+                    # warning, not implemented
+                    self.params[f'a_{w_set}'] = self.params[a_list[0]] * np.ones((n_orders, n_dets))
+                    print(f' [Parameters.read_uncertainty_params]: Warning, several GP amplitudes not implemented for {w_set}')
 
-                    # Replace the constant with a free parameter
-                    if f'{key_i}_{i+1}' in self.param_keys:
-                        self.params[f'{key_i}_{w_set}'][i,:] = \
-                            self.params[f'{key_i}_{i+1}']
+            # print(f' [Parameters.read_uncertainty_params]: a_{w_set} = {self.params[f"a_{w_set}"]}')
+            # print(f' [Parameters.read_uncertainty_params]: l_{w_set} = {self.params[f"l_{w_set}"]}')
+            #         self.params['a'] = self.params[a_list[0]]
+                
+            #     self.params[f'a_{w_set}'] = self.params[f'{key_i}']
+                
+            # for key_i in cov_keys:
+            #     key_i_list = [k for k in self.param_keys if k.startswith(f'{key_i}_')]
+                
+                
+            #     # Make specific for each wlen setting
+            #     if f'{key_i}_{w_set}' not in self.param_keys:
+            #         self.params[f'{key_i}_{w_set}'] = self.params[f'{key_i}']
+
+            #     # Reshape to values for each order and detector
+            #     self.params[f'{key_i}_{w_set}'] = \
+            #         np.ones((n_orders, n_dets)) * self.params[f'{key_i}_{w_set}']
+                
+            #     # Loop over the orders
+            #     for i in range(n_orders):
+
+            #         # Replace the constant with a free parameter
+            #         if f'{key_i}_{i+1}' in self.param_keys:
+            #             self.params[f'{key_i}_{w_set}'][i,:] = \
+            #                 self.params[f'{key_i}_{i+1}']
                         
-                    if f'{key_i}_{w_set}_{i+1}' in self.param_keys:
-                        self.params[f'{key_i}_{w_set}'][i,:] = \
-                            self.params[f'{key_i}_{w_set}_{i+1}']
+            #         if f'{key_i}_{w_set}_{i+1}' in self.param_keys:
+            #             self.params[f'{key_i}_{w_set}'][i,:] = \
+            #                 self.params[f'{key_i}_{w_set}_{i+1}']
 
 
     def read_chemistry_params(self):

@@ -1,5 +1,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+# import pdf pages
+from matplotlib.backends.backend_pdf import PdfPages
 
 import numpy as np
 from scipy.ndimage import generic_filter, gaussian_filter1d
@@ -10,6 +12,7 @@ import copy
 import petitRADTRANS.nat_cst as nc
 
 import retrieval_base.auxiliary_functions as af
+from retrieval_base.sonora_elfowl import SonoraElfOwl
 
 # make borders thicker
 mpl.rcParams['axes.linewidth'] = 1.5
@@ -445,12 +448,13 @@ def fig_PT(PT,
             xlim_grad=None,
             bestfit_color='brown',
             envelopes_color='brown',
-            int_contr_em_color='red',
+            int_contr_em_color='k',
             text_color='gray',
             # weigh_alpha=True,
             show_photosphere=True,
             show_knots=True,
             show_text=True,
+            plot_sonora=False,
             fig_name=None,
     ):
 
@@ -462,34 +466,38 @@ def fig_PT(PT,
     assert hasattr(PT, 'temperature_envelopes'), 'No temperature envelopes found'
     
     p = PT.pressure
-    if hasattr(PT, 'int_contr_em'):
-        # Plot the integrated contribution emission
-        print(' - Plotting integrated contribution emission')
+    # if hasattr(PT, 'int_contr_em'):
+    if len(PT.int_contr_em) > 0:
         ax_twin = ax.twiny()
-        ax_twin.plot(
-            PT.int_contr_em, p, 
-            c=int_contr_em_color, lw=2, alpha=0.4,
-            )
+
+        int_contr_em_color = np.atleast_1d(int_contr_em_color)
+        for i, w_set in enumerate(PT.int_contr_em.keys()):
+            # Plot the integrated contribution emission
+            print(' - Plotting integrated contribution emission')
+            ax_twin.plot(
+                PT.int_contr_em[w_set], p, 
+                c=int_contr_em_color[i], lw=2, alpha=0.4,
+                )
 
         
-        # if weigh_alpha:
-        #     af.weigh_alpha(PT.int_contr_em, p, np.linspace(0,10000,p.size), ax, alpha_min=0.5, plot=True)
-        # define photosphere as region where PT.int_contr_em > np.quantile(PT.int_contr_em, 0.9)
-        if show_photosphere:
-            photosphere = PT.int_contr_em > np.quantile(PT.int_contr_em, 0.95)
-            P_phot = np.mean(p[photosphere])
-            T_phot = np.mean(PT.temperature_envelopes[3][photosphere])
-            T_phot_err = np.std(PT.temperature_envelopes[3][photosphere])
-            # print(f' - Photospheric temperature: {T_phot:.1f} +- {T_phot_err:.1f} K')
-            # make empty marker
-            ax.scatter(T_phot, P_phot, c='red',
-                        marker='o', 
-                        s=50, 
-                        alpha=0.5,
-                        zorder=10,
-                        label=f'{T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
-            
-            ax.legend(loc='upper right', fontsize=12)
+            # if weigh_alpha:
+            #     af.weigh_alpha(PT.int_contr_em, p, np.linspace(0,10000,p.size), ax, alpha_min=0.5, plot=True)
+            # define photosphere as region where PT.int_contr_em > np.quantile(PT.int_contr_em, 0.9)
+            if show_photosphere:
+                photosphere = PT.int_contr_em[w_set] > np.quantile(PT.int_contr_em[w_set], 0.95)
+                P_phot = np.mean(p[photosphere])
+                T_phot = np.mean(PT.temperature_envelopes[3][photosphere])
+                T_phot_err = np.std(PT.temperature_envelopes[3][photosphere])
+                # print(f' - Photospheric temperature: {T_phot:.1f} +- {T_phot_err:.1f} K')
+                # make empty marker
+                ax.scatter(T_phot, P_phot, c='red',
+                            marker='o', 
+                            s=50, 
+                            alpha=0.5,
+                            zorder=10,
+                            label=f'{T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
+                
+                ax.legend(loc='upper right', fontsize=12)
 
         # remove xticks
         ax_twin.set_xticks([])
@@ -497,7 +505,7 @@ def fig_PT(PT,
         ax_twin.spines['bottom'].set_visible(False)
         ax_twin.set(
             # xlabel='Integrated contribution emission',
-            xlim=(0,np.max(PT.int_contr_em)*1.5),
+            xlim=(0,np.max([ice for ice in PT.int_contr_em.values()])*1.5),
             )
     if hasattr(PT, 'log_P_knots'):
         
@@ -523,6 +531,13 @@ def fig_PT(PT,
     else:
         ax.plot(PT.temperature, p, c=bestfit_color, lw=2)
         xlim = (0, PT.temperature.max()*1.06) if xlim is None else xlim
+        
+    if hasattr(PT, 'sonora') and plot_sonora:
+        seo = SonoraElfOwl(teff=PT.sonora.get('teff', 2400), log_g=PT.sonora.get('log_g', 3.5))
+        seo.load_PT().get_dlnT_dlnP()
+        ax_PT = seo.plot_PT(ax=ax, color='magenta', label=f'Sonora\nT={seo.teff}K\nlog g ={seo.log_g:.1f}')
+        if ax_grad is not None:
+            ax_grad.plot(seo.dlnT_dlnP, seo.pressure, color='magenta')
 
     # if hasattr(PT, "dlnT_dlnP_envelopes") and ax_grad is not None:
     if ax_grad is not None:
@@ -562,7 +577,7 @@ def fig_PT(PT,
         return ax, ax_grad
     return ax
 
-def fig_contr_em(ax_contr, integrated_contr_em, integrated_contr_em_per_order, pressure, bestfit_color='C1'):
+def fig_contr_em_old(ax_contr, integrated_contr_em, integrated_contr_em_per_order, pressure, bestfit_color='C1'):
     
     if integrated_contr_em_per_order is not None:
         
@@ -1129,3 +1144,42 @@ def fig_species_contribution(d_spec,
     if prefix is not None:
         fig_CCF.savefig(prefix+f'plots/species/CCF_{w_set}.pdf')
     plt.close(fig_CCF)
+    
+def fig_contr_em(contr_em,
+                 wave,
+                 pressure,
+                 cmap='inferno',
+                 fig_name=None,):
+    
+    
+    assert len(contr_em.shape) == 4, f' shape must be (order, detector, pixel, layer), not {contr_em.shape}'
+    assert 'pdf' in fig_name, 'Must use pdf extension for `fig_name`'
+    # use pdf pages for every order
+    
+    with PdfPages(fig_name) as pdf:
+        for i in range(contr_em.shape[0]):
+            fig, ax = plt.subplots(figsize=(10,5))
+            
+            # flatten detector axis
+
+            wave_i = wave[i].flatten()
+            X, Y = np.meshgrid(wave_i, pressure)
+
+            Z = contr_em[i].reshape(-1, *contr_em[i].shape[2:]).T
+            
+            # show image
+            # extent = [np.nanmin(wave_i), np.nanmax(wave_i), pressure.max(), pressure.min()]
+            # vmin, vmax = np.nanmin(contr_em), np.nanmax(contr_em)
+            # im = ax.imshow(contr_em, aspect='auto', origin='lower', cmap=cmap, extent=extent,
+            #             vmin=vmin, vmax=vmax)
+            ax.contourf(X, Y, Z, 30, cmap=cmap if cmap is not None else plt.cm.bone_r)
+            # add colorbar
+            # cbar = fig.colorbar(im, ax=ax)
+            ax.set(xlabel='Wavelength / nm', ylabel='Pressure / bar', yscale='log')
+            ax.set_xlim(np.nanmin(wave_i), np.nanmax(wave_i))
+            ax.set_ylim(pressure.max(), pressure.min())
+            # ax.set_title(f'Order {i+1}')
+            pdf.savefig(fig)
+            plt.close(fig)
+    print(f' - Saved {fig_name}')
+    

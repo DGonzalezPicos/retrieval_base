@@ -264,10 +264,11 @@ class pRT_model:
         wave = np.ones_like(self.d_wave) * np.nan
         flux = np.ones_like(self.d_wave) * np.nan
         
-        self.int_contr_em  = np.zeros_like(self.pressure)
-        self.int_opa_cloud = np.zeros_like(self.pressure)
-
-        self.int_contr_em_per_order = np.zeros((self.d_wave.shape[0], len(self.pressure)))
+        if get_contr:
+            self.int_contr_em  = np.zeros_like(self.pressure)
+            self.int_opa_cloud = np.zeros_like(self.pressure)
+            self.contr_em = np.zeros((*self.d_wave.shape, len(self.pressure)))
+            self.int_contr_em_per_order = np.zeros((self.d_wave.shape[0], len(self.pressure)))
 
         self.CCF, self.m_ACF = [], []
         self.wave_pRT_grid, self.flux_pRT_grid = [], []
@@ -350,7 +351,7 @@ class pRT_model:
             flux[i,:,:] = m_spec_i.flux
             
             if get_contr:
-
+                # print(f'[pRT_model] Computing emission contribution for order {i}...')
                 # Integrate the emission contribution function and cloud opacity
                 self.get_integrated_contr_em_and_opa_cloud(
                     atm_i, m_wave_i=wave_i, 
@@ -368,6 +369,11 @@ class pRT_model:
             multiple_orders=True, 
             high_pass_filtered=self.apply_high_pass_filter, 
             )
+        # if get_contr: # Store the integrated emission contribution
+        #     m_spec.int_contr_em = np.copy(self.int_contr_em)
+        #     # m_spec.int_contr_em_per_order = np.copy(self.int_contr_em_per_order)
+        #     m_spec.contr_em = np.copy(self.contr_em)
+            # m_spec.int_opa_cloud = self.int_opa_cloud   
 
         # Convert to arrays
         self.CCF, self.m_ACF = np.array(self.CCF), np.array(self.m_ACF)
@@ -421,6 +427,8 @@ class pRT_model:
                 rebin=True, 
                 )
             # Compute the spectrally-weighted emission contribution function
+            # print(f' shape contr_em_ij.flux = {contr_em_ij.flux.shape}')
+            self.contr_em[order,:,:,j] = np.copy(contr_em_ij.flux)
             # Integrate and weigh the emission contribution function
             self.int_contr_em_per_order[order,j] = \
                 contr_em_ij.spectrally_weighted_integration(
@@ -453,3 +461,4 @@ class pRT_model:
                         flux=m_spec_i.flux[d_mask_i].flatten(), 
                         array=opa_cloud_ij.flux[d_mask_i].flatten(), 
                         )
+            return self

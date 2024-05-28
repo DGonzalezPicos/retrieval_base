@@ -6,12 +6,13 @@ from retrieval_base.spectrum_jwst import SpectrumJWST
 from retrieval_base.pRT_model import pRT_model
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.parameters import Parameters
-
+from retrieval_base.config import Config
 import config_jwst as conf
 
 config_file = 'config_jwst.txt'
 target = 'TWA28'
-run = None
+# run = None
+run = 'jwst_KLM_N10_veiling3'
 
 conf_data = conf.config_data['NIRSpec']
 # create output directory
@@ -27,7 +28,10 @@ if 'dgonzalezpi' in cwd:
     import matplotlib
     # disable interactive plotting
     matplotlib.use('Agg')
-    # path = pathlib.Path('/home/dgonzalezpi/retfish/')
+    path = pathlib.Path('/home/dgonzalezpi/retrieval_base/')
+else:
+    path = pathlib.Path('/home/dario/phd/retrieval_base')
+    
 
 # Instantiate the parser
 parser = argparse.ArgumentParser()
@@ -38,7 +42,7 @@ parser.add_argument('--evaluation', '-e', action='store_true', default=False)
 args = parser.parse_args()
 
 if args.pre_processing:
-    
+    # sp.call(['python', f'{path}/{target}/retrieval_outputs/{run}
     ## Pre-processing data
     grisms = [
             # 'g140h-f100lp', 
@@ -89,6 +93,7 @@ if args.pre_processing:
         # check parent directory
         # pRT_file.parent.mkdir(parents=True, exist_ok=True)
         af.pickle_save(pRT_file, pRT_atm)
+        print(f'   --> Saved {pRT_file}')
 
 if args.prior_check:
     print('--> Running prior predictive check..')
@@ -118,7 +123,7 @@ if args.evaluation:
         evaluation=args.evaluation
         )
     ret.plot_ccf = False
-
+    
     ret.PMN_callback_func(
         n_samples=None, 
         n_live=None, 

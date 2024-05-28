@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N10_veiling3'
+run = 'jwst_KLM_N10_veiling4'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -24,7 +24,7 @@ config_data = {
         'sigma_clip_width': 50, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 30, 
+        'n_atm_layers': 50, 
         }, 
     }
 
@@ -74,6 +74,7 @@ free_params = {
     'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
     'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
+    'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
 
    'T_0': [(2000,9000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
@@ -128,7 +129,7 @@ constant_params = {
 ####################################################################################
 #
 ####################################################################################
-scale_flux = False
+scale_flux = True
 scale_err  = True
 apply_high_pass_filter = False
 
@@ -167,6 +168,7 @@ line_species = [
     'Fe',
     'Al',
     'HF_main_iso',
+    'Si',
     ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O',
@@ -212,6 +214,8 @@ PT_kwargs = dict(
 
     enforce_PT_corr = False, 
     # n_T_knots = N_PT_knots,
+    sonora=dict(teff=2400, log_g=3.5),
+    
 )
 
 ####################################################################################

@@ -411,6 +411,9 @@ class Retrieval:
             self.Param.PT_mode, 
             **self.conf.PT_kwargs, 
             )
+        if 'sonora' in self.conf.PT_kwargs.keys():
+            self.PT.sonora = self.conf.PT_kwargs['sonora']
+                
         self.Chem = get_Chemistry_class(
             self.pRT_atm[w_set].line_species, 
             self.pRT_atm[w_set].pressure, 
@@ -989,6 +992,7 @@ class Retrieval:
 
         # Update class instances with best-fitting parameters
         self.PMN_lnL_func()
+
         self.CB.active = False
 
         for w_set in self.conf.config_data.keys():
@@ -999,7 +1003,8 @@ class Retrieval:
             # Retrieve the model spectrum, with the wider pRT model
             pRT_atm_to_use = self.pRT_atm_broad
             #self.m_spec.flux_envelope = flux_envelope
-
+            
+        self.CB.plot_summary = False # WARNING: change back to True after debbuging...
         # Call the CallBack class and make summarizing figures
         self.CB(
             self.Param, self.LogLike, self.Cov, self.PT, self.Chem, 

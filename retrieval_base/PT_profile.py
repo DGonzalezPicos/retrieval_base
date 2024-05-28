@@ -29,6 +29,8 @@ class PT_profile():
         
         self.pressure = pressure
         self.temperature_envelopes = None
+        
+        self.int_contr_em = {} # initialize empty dictionary for integrated emission contributions
 
 class PT_profile_SONORA(PT_profile):
 

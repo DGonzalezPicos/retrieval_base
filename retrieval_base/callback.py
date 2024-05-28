@@ -19,7 +19,7 @@ class CallBack:
     plot_cov_matrix = False
     plot_residual_ACF = False
     plot_ccf = False
-    plot_summary = False
+    plot_summary = True
 
     def __init__(self, 
                  d_spec, 
@@ -145,6 +145,21 @@ class CallBack:
             if self.LogLike[w_set].scale_err:
                 print('\nOptimal uncertainty-scaling parameters:')
                 print(self.LogLike[w_set].beta.round(2))
+                
+            if hasattr(self.m_spec[w_set], 'int_contr_em'):
+                self.PT.int_contr_em[w_set] = np.copy(self.m_spec[w_set].int_contr_em)
+                
+            if hasattr(self.pRT_atm[w_set], 'contr_em'):
+                figs.fig_contr_em(
+                    contr_em=self.pRT_atm[w_set].contr_em,
+                    wave=self.d_spec[w_set].wave,
+                    pressure=self.PT.pressure,
+                    # cmap='inferno',
+                    cmap=None,
+                    fig_name=self.prefix+f'plots/contr_em_{w_set}.pdf',
+                    )
+            if hasattr(self.pRT_atm[w_set], 'int_contr_em'):
+                self.PT.int_contr_em[w_set] = np.copy(self.pRT_atm[w_set].int_contr_em)
         
         self.bestfit_params = np.array(self.bestfit_params)
         
@@ -157,10 +172,7 @@ class CallBack:
                                    figsize=(10,6), 
                                    tight_layout=True,
                                    sharey=True,)
-        
-        # copy integrated contribution functions
-        if hasattr(self.m_spec, 'int_contr_em'):
-            self.PT.int_contr_em = np.copy(self.m_spec.int_contr_em)
+            
         figs.fig_PT(
             PT=self.PT, 
             ax=ax[0], 
@@ -174,12 +186,14 @@ class CallBack:
             show_photosphere=True,
             show_knots=True,
             show_text=True,
+            plot_sonora=self.evaluation,
             fig_name=self.prefix+f'plots/PT_grad_profile.pdf' if self.evaluation else None,
             xlim=(1000, 7000), # fix view
         )
 
         # Make a summary figure
-        self.fig_summary()
+        if self.plot_summary:
+            self.fig_summary()
 
         if self.evaluation:
             
@@ -558,6 +572,7 @@ class CallBack:
             show_text=True,
             xlim=(1000, 7000), # fix view
             xlim_grad=(-0.02, 0.34),
+            plot_sonora=self.evaluation,
             # fig_name=self.prefix+f'plots/PT_grad_profile.pdf',
         )
         label = 'final' if self.evaluation else f'live_{self.cb_count}'

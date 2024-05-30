@@ -14,7 +14,7 @@ class SonoraElfOwl:
     
     # base = pathlib.Path('/home/dario/phd/SonoraElfOwl')
     if 'dgonzalezpi' in cwd:
-        base = pathlib.Path('/home/dgonzalezpi/retrieval_base/sonora_elfowl')
+        base = pathlib.Path('/home/dgonzalezpi/retrieval_base/data/sonora_elfowl')
     if 'dario' in cwd:
         base = pathlib.Path('/home/dario/phd/SonoraElfOwl')
         

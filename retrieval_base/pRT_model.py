@@ -369,8 +369,8 @@ class pRT_model:
             multiple_orders=True, 
             high_pass_filtered=self.apply_high_pass_filter, 
             )
-        # if get_contr: # Store the integrated emission contribution
-        #     m_spec.int_contr_em = np.copy(self.int_contr_em)
+        if get_contr: # Store the integrated emission contribution
+            m_spec.int_contr_em = np.copy(self.int_contr_em)
         #     # m_spec.int_contr_em_per_order = np.copy(self.int_contr_em_per_order)
         #     m_spec.contr_em = np.copy(self.contr_em)
             # m_spec.int_opa_cloud = self.int_opa_cloud   

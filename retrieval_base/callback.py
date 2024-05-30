@@ -293,18 +293,33 @@ class CallBack:
             af.pickle_save(self.prefix+f'data/bestfit_Cov_{w_set}.pkl', self.Cov[w_set])
 
             # Save the contribution functions and cloud opacities
-            np.save(
-                self.prefix+f'data/bestfit_int_contr_em_{w_set}.npy', 
-                self.pRT_atm[w_set].int_contr_em
+            if hasattr(self.pRT_atm[w_set], 'contr_em'):
+                np.save(
+                    self.prefix+f'data/bestfit_contr_em_{w_set}.npy', 
+                    self.pRT_atm[w_set].contr_em
                 )
-            np.save(
-                self.prefix+f'data/bestfit_int_contr_em_per_order_{w_set}.npy', 
-                self.pRT_atm[w_set].int_contr_em_per_order
+            if hasattr(self.pRT_atm[w_set], 'int_contr_em'):
+                np.save(
+                    self.prefix+f'data/bestfit_int_contr_em_{w_set}.npy', 
+                    self.pRT_atm[w_set].int_contr_em
+                )
+            if hasattr(self.pRT_atm[w_set], 'int_contr_em_per_order'):
+                np.save(
+                    self.prefix+f'data/bestfit_int_contr_em_per_order_{w_set}.npy', 
+                    self.pRT_atm[w_set].int_contr_em_per_order
                 )
             # np.save(
-            #     self.prefix+f'data/bestfit_int_opa_cloud_{w_set}.npy', 
-            #     self.pRT_atm[w_set].int_opa_cloud
+            #     self.prefix+f'data/bestfit_int_contr_em_{w_set}.npy', 
+            #     self.pRT_atm[w_set].int_contr_em
             #     )
+            # np.save(
+            #     self.prefix+f'data/bestfit_int_contr_em_per_order_{w_set}.npy', 
+            #     self.pRT_atm[w_set].int_contr_em_per_order
+            #     )
+            # # np.save(
+            # #     self.prefix+f'data/bestfit_int_opa_cloud_{w_set}.npy', 
+            # #     self.pRT_atm[w_set].int_opa_cloud
+            # #     )
 
     def fig_abundances_corner(self):
 

@@ -190,11 +190,15 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     
     
     j = -1
+    two_decimal_keys = ['alpha', 'beta']
     for j_i, (key, val) in enumerate(bestfit_params.items()):
         if key in ignore_params:
             continue
         
         j += 1
+        if key in two_decimal_keys:
+            table[j] += [f"${val[1]:.2f}^{{+{val[2]-val[1]:.2f}}}_{{-{val[1]-val[0]:.2f}}}$"]
+            continue
         if abs(val[2]-val[1]) < 5e-3:
             table[j] += [f"${val[1]:.3f}^{{+{val[2]-val[1]:.3f}}}_{{-{val[1]-val[0]:.3f}}}$"]
         elif abs(val[2]-val[1]) < 5e-2:

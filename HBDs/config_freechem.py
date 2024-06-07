@@ -35,7 +35,7 @@ config_data = {
         'tell_threshold': 0.7, 'sigma_clip_width': 8, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 50, 
+        'n_atm_layers': 100, 
         }, 
     }
 

@@ -83,8 +83,8 @@ lw = 2.5
 
 im = ax0.scatter([], [], c=[], cmap=cmap, vmin=Teff_grid.min(), vmax=Teff_grid.max())
 # make colorbar wider, do not include minor ticks
-cbar = fig.colorbar(im, ax=ax0, label='Effective temperature (K)', pad=0.03, aspect=15)
-cbar.ax.set(ylabel='Effective temperature (K)')
+cbar = fig.colorbar(im, ax=ax0, label='Effective temperature / K', pad=0.03, aspect=15)
+cbar.ax.set(ylabel='Effective temperature / K')
 cbar.ax.tick_params(which='minor', length=0)
 
 for i, Teff in enumerate(Teff_grid):
@@ -117,7 +117,7 @@ fig_PT, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(12, 6),
                                         sharey=True,
                                         gridspec_kw={'wspace': 0.02})
 
-n_samples = int(5e3)
+n_samples = int(10e3)
 for i in range(n_samples):
     ret.Param(np.random.uniform(size=len(ret.Param.param_keys)))
 
@@ -144,7 +144,7 @@ for i in range(n_samples):
 for i in range(N_knots):
     [axi.axhline(10**logP_knots[i], color='k', ls=':', alpha=0.5, zorder=0) for axi in [ax_PT, ax_grad]]
         
-ax_PT.set(xlabel='Temperature (K)', ylabel='Pressure (bar)', yscale='log')
+ax_PT.set(xlabel='Temperature / K', ylabel='Pressure / bar', yscale='log')
 # ax_PT.set_yticks(10**logP_knots)
 # ax_PT.set_yticklabels([f'$10^{{{int(x)}}}$' for x in logP_knots])
 
@@ -188,12 +188,12 @@ if plot_horizontal_lines:
 
 # set yticks to logP_knots
 ax0.set(xlim=(0.0, 6000.), ylim=(1e2, 1e-5),
-          xlabel='Temperature (K)',
+          xlabel='Temperature / K',
         #   ylabel='Pressure (bar)',
           yscale='log')
 ax0.set_xticks(np.arange(0, 6000, 2000))
 
-ax1.set(xlabel=r'$\nabla T$', yscale='log', ylabel='Pressure (bar)')
+ax1.set(xlabel=r'$\nabla T$', yscale='log', ylabel='Pressure / bar')
 ax1.set_xlim(0.0, 0.36)
 # add custom legend with the 1-sigma and 3-sigma envelopes
 from matplotlib.patches import Patch
@@ -201,7 +201,7 @@ from matplotlib.lines import Line2D
 from matplotlib.legend_handler import HandlerTuple
 
 legend_elements = [
-                    Patch(facecolor='blue', edgecolor='k', alpha=0.3, label='Prior'),
+                    Patch(facecolor='blue', edgecolor='k', alpha=0.3, label='Prior\nrange'),
                     # Patch(facecolor='blue', edgecolor='k', alpha=0.2, label='3-$\sigma$ envelope'),
                     #  Patch(facecolor='blue', edgecolor='k', alpha=0.5, label='1-$\sigma$ envelope'),
                     #  Line2D([0], [0], color='k', lw=lw, ls='-', label='log g=4.0'),

@@ -24,6 +24,8 @@ targets = dict(reversed(list(targets.items())))
 
 colors = dict(J1200='royalblue', TWA28='seagreen', J0856='indianred')
 
+normalize_by_solar = True
+
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 
 for i, (target, retrieval_id) in enumerate(targets.items()):
@@ -48,7 +50,10 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         A_F_sun = 4.40 # +- 0.25, Maiorca+2014, 
         A_F_sun_err = 0.25
         nsamples = int(1e5)
-        sun_samples = np.random.normal(loc=A_F_sun, scale=A_F_sun_err, size=nsamples)
+        if normalize_by_solar:
+            sun_samples = np.random.normal(loc=0.0, scale=A_F_sun_err, size=nsamples)
+        else:
+            sun_samples = np.random.normal(loc=A_F_sun, scale=A_F_sun_err, size=nsamples)
         # create KDE of solar F_H with a gaussian kernel
         kde = sns.kdeplot(sun_samples, color='magenta', linewidth=2.0, linestyle='--', label='Solar F/H', ax=ax, zorder=10)
         
@@ -63,7 +68,13 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         # use tick_params to remove upper xticks
         ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True, labeltop=False)
         ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False, labelright=False)
-        ax.set(xlim=(3.3, 5.3), xlabel='Fluorine abundance to hydrogen $A$(F)')
+        
+        xlabel = 'Fluorine abundance to hydrogen $A$(F)' if not normalize_by_solar else 'Fluorine abundance [F/H]'
+        xlim = np.array(([3.3, 5.3]))
+        if normalize_by_solar:
+            # xlim -= A_F_sun
+            xlim = (-1, 1)
+        ax.set(xlim=xlim, xlabel=xlabel)
         
     # log_HF = np.log10(chem.mass_fractions_posterior['HF_main_iso'].mean(axis=-1))
     log_HF = np.log10(chem.VMRs_posterior['HF'])
@@ -71,6 +82,9 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # solar scaled abundance
     H = chem.mass_fractions['H']
     F_H = np.log10(1e12 * chem.VMRs_posterior['HF'] / H.mean())
+    if normalize_by_solar:
+        F_H -= A_F_sun
+        
     F_H_quantiles = np.quantile(F_H, [0.16, 0.5, 0.84])
     print(f'{target}: [F/H] = {F_H_quantiles[1]:.2f} +{F_H_quantiles[2]-F_H_quantiles[1]:.2f} -{F_H_quantiles[1]-F_H_quantiles[0]:.2f}')
 
@@ -127,6 +141,9 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
         # fig.suptitle(f'{target}', fontsize=16)
     
 # plt.show()
-# fig.savefig(out_path / f'{target}_logg_HF.pdf', bbox_inches='tight')    
-fig.savefig(out_path / f'F_H_posterior.pdf', bbox_inches='tight')
+# fig.savefig(out_path / f'{target}_logg_HF.pdf', bbox_inches='tight')
+
+fig_name =  out_path / f'F_H_posterior.pdf' if normalize_by_solar else out_path / f'F_H_posterior_absolute.pdf'
+fig.savefig(fig_name)
+print(f'Saved {fig_name}')
 plt.close(fig)

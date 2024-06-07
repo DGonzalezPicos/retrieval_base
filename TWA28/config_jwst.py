@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N10_veiling4'
+run = 'jwst_KLM_N10_veiling5'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -24,7 +24,7 @@ config_data = {
         'sigma_clip_width': 50, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 50, 
+        'n_atm_layers': 35, 
         }, 
     }
 
@@ -40,19 +40,19 @@ free_params = {
     'log_a_G': [(-2,0.5), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-2,0.0), r'$\log\ l$'], 
+    'log_l': [(-2,-1.0), r'$\log\ l$'], 
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
-    # 'log_g': [(2.0,5.0), r'$\log\ g$'], 
+    'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
     'log_r_0': [(-19, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
-    'alpha': [(0.0, 5.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
+    'alpha': [(0.3, 5.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -114,7 +114,7 @@ constant_params = {
     # 'R_p' : 1.0, 
     'parallax': parallax_mas, 
     'epsilon_limb': 0.5, 
-    'log_g': 3.5,
+    # 'log_g': 3.5,
     'vsini':1.,
 
     # PT profile
@@ -189,7 +189,7 @@ species_to_plot_CCF = [
 cov_mode = 'GP'
 
 cov_kwargs = dict(
-    trunc_dist   = 3, 
+    trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
     max_separation = 20, 
 
@@ -214,7 +214,7 @@ PT_kwargs = dict(
 
     enforce_PT_corr = False, 
     # n_T_knots = N_PT_knots,
-    sonora=dict(teff=2400, log_g=3.5),
+    sonora=dict(teff=2400, log_g=4.0),
     
 )
 

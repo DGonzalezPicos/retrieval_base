@@ -476,14 +476,18 @@ def fig_PT(PT,
             print(' - Plotting integrated contribution emission')
             ax_twin.plot(
                 PT.int_contr_em[w_set], p, 
-                c=int_contr_em_color[i], lw=2, alpha=0.4,
+                # c=int_contr_em_color[i],
+                bestfit_color,
+                lw=2, alpha=0.4,
                 )
+            peaf_icf = np.nanmax(PT.int_contr_em[w_set])
+            print(f' - Peak integrated contribution emission: {peaf_icf:.2f} at {p[np.argmax(PT.int_contr_em[w_set])]:.2e} bar')
 
         
             # if weigh_alpha:
             #     af.weigh_alpha(PT.int_contr_em, p, np.linspace(0,10000,p.size), ax, alpha_min=0.5, plot=True)
             # define photosphere as region where PT.int_contr_em > np.quantile(PT.int_contr_em, 0.9)
-            if show_photosphere:
+            if show_photosphere and getattr(PT, 'temperature_envelopes', None) is not None:
                 photosphere = PT.int_contr_em[w_set] > np.quantile(PT.int_contr_em[w_set], 0.95)
                 P_phot = np.mean(p[photosphere])
                 T_phot = np.mean(PT.temperature_envelopes[3][photosphere])
@@ -507,7 +511,7 @@ def fig_PT(PT,
             # xlabel='Integrated contribution emission',
             xlim=(0,np.max([ice for ice in PT.int_contr_em.values()])*1.5),
             )
-    if hasattr(PT, 'log_P_knots'):
+    if hasattr(PT, 'log_P_knots') and show_knots:
         
         for i, log_P_knot in enumerate(PT.log_P_knots):
             ax.axhline(10**log_P_knot, c=text_color, lw=1,

@@ -252,7 +252,7 @@ def pre_processing(conf, conf_data):
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
     
-def prior_check(conf, n=3, random=False, fig_name=None):
+def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
     
     ret = Retrieval(conf=conf, evaluation=False)
     w_set = 'NIRSpec'
@@ -267,13 +267,20 @@ def prior_check(conf, n=3, random=False, fig_name=None):
     # plot PT
     fig, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
     
+    time_list = []
     for i, theta_i in enumerate(theta):
+        start = time.time()
+
         ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
         sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
         print(sample)
-
+        ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
+        # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
         print(f'ln_L = {ln_L:.4e}\n')
+        end = time.time()
+        print(f'Elapsed time: {end-start:.2f} s')
+        time_list.append(end-start)
         
         if i == 0:
             print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
@@ -284,6 +291,9 @@ def prior_check(conf, n=3, random=False, fig_name=None):
         # m_spec_list.append(ret.m_spec[w_set])
         m_spec_list.append(ret.LogLike[w_set].m_flux)
         logL_list.append(ln_L)
+        
+        if get_contr:
+            ret.copy_integrated_contribution_emission()
         # PT_list.append(ret.PT)
         figs.fig_PT(ret.PT, ax=ax_PT, ax_grad=ax_grad, 
                     bestfit_color=f'C{i}', 
@@ -292,7 +302,7 @@ def prior_check(conf, n=3, random=False, fig_name=None):
                     fig_name=str(fig_name).replace('.pdf', '_PT.pdf') if i==(len(theta)-1) else None)
         
 
-    
+    print(f' --> Time per evaluation: {np.mean(time_list):.2f} +- {np.std(time_list):.2f} s')
     # use PDF pages to save multiple plots for each order into one PDF
     with PdfPages(fig_name) as pdf:
         for i in range(ret.d_spec[w_set].n_orders):
@@ -1004,7 +1014,7 @@ class Retrieval:
             pRT_atm_to_use = self.pRT_atm_broad
             #self.m_spec.flux_envelope = flux_envelope
             
-        self.CB.plot_summary = False # WARNING: change back to True after debbuging...
+        # self.CB.plot_summary = True # WARNING: change back to True after debbuging...
         # Call the CallBack class and make summarizing figures
         self.CB(
             self.Param, self.LogLike, self.Cov, self.PT, self.Chem, 
@@ -1101,3 +1111,15 @@ class Retrieval:
 
         # Save as pickle
         af.pickle_save(self.conf.prefix+'data/d_spec.pkl', self.d_spec)
+        
+    def copy_integrated_contribution_emission(self):
+        for w_set in self.conf.config_data.keys():
+            if hasattr(self.pRT_atm[w_set], 'int_contr_em'):
+                print(f'Copying integrated contribution emission from pRT_atm to PT')
+                self.PT.int_contr_em[w_set] = np.copy(self.pRT_atm[w_set].int_contr_em)
+            if hasattr(self.m_spec[w_set], 'int_contr_em'):
+                print(f'Copying integrated contribution emission from m_spec to PT')
+                self.PT.int_contr_em[w_set] = np.copy(self.m_spec[w_set].int_contr_em)
+            else:
+                print(f'WARNING: No integrated contribution emission found in pRT_atm or m_spec')
+        return self

@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 from petitRADTRANS import Radtrans
 import petitRADTRANS.nat_cst as nc
@@ -282,7 +283,7 @@ class pRT_model:
             # assert np.isnan(self.mass_fractions['MMW']).sum() == 0, 'NaNs in MMW'
             # assert np.isinf(self.mass_fractions['MMW']).sum() == 0, 'Infs in MMW'
             # assert np.isnan(self.params['log_g']).sum() == 0, 'NaNs in log_g'
-            
+            # start_cf = time.time()
             atm_i.calc_flux(
                 self.temperature, 
                 self.mass_fractions, 
@@ -294,6 +295,8 @@ class pRT_model:
                 give_absorption_opacity=self.give_absorption_opacity, 
                 contribution=get_contr, 
                 )
+            # end_cf = time.time()
+            # print(f'Order {i} took {end_cf-start_cf:.3f} s to compute the flux')
             wave_i = nc.c / atm_i.freq
             # flux_i = np.nan_to_num(atm_i.flux, nan=0.0)
             flux_i = np.where(np.isfinite(atm_i.flux), atm_i.flux, 0.0)
@@ -322,6 +325,7 @@ class pRT_model:
                 )
             
             # Apply radial-velocity shift, rotational/instrumental broadening
+            # start_sbr = time.time()
             m_spec_i.shift_broaden_rebin(
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
@@ -329,6 +333,7 @@ class pRT_model:
                 out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
                 in_res=m_spec_i.resolution, 
                 rebin=False, 
+                instr_broad_fast=False,
                 )
             if get_full_spectrum:
                 # Store the spectrum before the rebinning
@@ -337,7 +342,9 @@ class pRT_model:
 
             # Rebin onto the data's wavelength grid
             m_spec_i.rebin(d_wave=self.d_wave[i,:], replace_wave_flux=True)
-
+            # end_sbr = time.time()   
+            # print(f'Order {i} took {end_sbr-start_sbr:.3f} s to shift, broaden and rebin')
+            
             if self.apply_high_pass_filter:
                 # High-pass filter the model spectrum
                 m_spec_i.high_pass_filter(
@@ -357,9 +364,11 @@ class pRT_model:
                     atm_i, m_wave_i=wave_i, 
                     d_wave_i=self.d_wave[i,:], 
                     d_mask_i=self.d_mask_isfinite[i], 
+                    # d_mask_i=np.isfinite(m_spec_i.flux),
                     m_spec_i=m_spec_i, 
                     order=i
                     )
+                # print(f'ICE for order {i} = {self.int_contr_em}')
 
         # Create a new ModelSpectrum instance with all orders
         m_spec = ModelSpectrum(
@@ -396,7 +405,8 @@ class pRT_model:
         
         # Get the emission contribution function
         contr_em_i = atm_i.contr_em
-        new_contr_em_i = []
+        n_layers = len(contr_em_i)
+        # new_contr_em_i = []
 
         # Get the cloud opacity
         cloudy = False
@@ -409,8 +419,9 @@ class pRT_model:
         else:
             opa_cloud_i = np.zeros_like(contr_em_i)
 
-        for j, (contr_em_ij, opa_cloud_ij) in enumerate(zip(contr_em_i, opa_cloud_i)):
-            
+        # for j, (contr_em_ij, opa_cloud_ij) in enumerate(zip(contr_em_i, opa_cloud_i)):
+        for j in range(n_layers):
+            contr_em_ij = contr_em_i[j]
             # Similar to the model flux
             contr_em_ij = ModelSpectrum(
                 wave=m_wave_i, flux=contr_em_ij, 
@@ -425,6 +436,7 @@ class pRT_model:
                 out_res=self.d_resolution[order], 
                 in_res=m_spec_i.resolution, 
                 rebin=True, 
+                instr_broad_fast=True,
                 )
             # Compute the spectrally-weighted emission contribution function
             # print(f' shape contr_em_ij.flux = {contr_em_ij.flux.shape}')
@@ -436,10 +448,12 @@ class pRT_model:
                     flux=m_spec_i.flux[d_mask_i].flatten(), 
                     array=contr_em_ij.flux[d_mask_i].flatten(), 
                     )
+            
             self.int_contr_em[j] += self.int_contr_em_per_order[order,j]
 
             # Similar to the model flux
             if cloudy:
+                opa_cloud_ij = opa_cloud_i[j]
                 opa_cloud_ij = ModelSpectrum(
                     wave=m_wave_i, flux=opa_cloud_ij, 
                     lbl_opacity_sampling=self.lbl_opacity_sampling
@@ -461,4 +475,4 @@ class pRT_model:
                         flux=m_spec_i.flux[d_mask_i].flatten(), 
                         array=opa_cloud_ij.flux[d_mask_i].flatten(), 
                         )
-            return self
+        return self

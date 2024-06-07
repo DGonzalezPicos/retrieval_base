@@ -5,6 +5,7 @@ from scipy.sparse import triu
 
 import pickle
 import os
+import copy
 
 from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
@@ -62,6 +63,20 @@ class Spectrum:
         self.update_isfinite_mask()
 
         self.high_pass_filtered = False
+        
+    def __add__(self, other):
+    
+        # Add two Spectrum instances together
+        assert self.wave.shape == other.wave.shape
+        assert self.flux.shape == other.flux.shape
+        self_copy = self.copy()
+        self_copy.flux += other.flux
+        return self_copy
+    
+    def copy(self):
+            
+        # Return a copy of the Spectrum instance
+        return copy.deepcopy(self)
 
     def update_isfinite_mask(self, array=None):
 
@@ -941,6 +956,52 @@ class ModelSpectrum(Spectrum):
         # assert np.sum(np.isnan(self.veiling_model)) == np.sum(np.isnan(self.flux)), f'Veiling model contains {np.sum(np.isnan(self.veiling_model))} NaNs'
         self.flux += self.veiling_model
         return self
+    
+    def blackbody_disk(self, T, R, d=None, parallax=None):
+        ''' Calculate the emission of a disk from a single blackbody
+        
+        Parameters:
+        T : float
+            Temperature of the disk in [K]
+        R : float
+            Radius of the disk in [R_jup], equivalent to: R^2 = R_out^2 + R_in^2
+        d : float, optional
+            Distance to the system in [pc]
+        parallax : float, optional
+            Parallax of the system in [mas]
+        
+        Returns:
+        F_disk : ndarray
+            Flux of the disk in [erg s^-1 cm^-2 nm^-1]
+        
+        '''
+        assert (d is not None) or (parallax is not None), 'Either distance [pc] or parallax [mas] must be provided'
+        if parallax is not None:
+            d = 1e3/parallax # distance in [pc]
+        # flux of a blackbody disk in units of [erg s^-1 cm^-2 nm^-1]
+        # the 1e-7 factor is to convert from [erg s^-1 cm^-2 cm^-1] to [erg s^-1 cm^-2 nm^-1]
+        # the pi factor is to integrate over the disk
+        return (1e-7 * np.pi * af.blackbody(wave_cm=self.wave*1e-7, T=T) * (R*nc.r_jup_mean)**2 / (d*nc.pc)**2)
+    
+    def add_blackbody_disk(self, T, R, d=None, parallax=None):
+        self.flux += self.blackbody_disk(T, R, d, parallax)
+        return self
+        
+    
+    def scale_flux(self,
+                   R=1.0,  # radius in [R_jup]
+                   d=None, # distance in [pc]
+                   parallax=None, # parallax in [mas]
+                   ):
+        assert (d is not None) or (parallax is not None), 'Either distance or parallax must be provided'
+        if parallax is not None:
+            d = 1e3/parallax # distance in [pc]
+        # Calculate the flux scaling factor
+        scale_factor = (R*nc.r_jup_mean / (d*nc.pc))**2
+        # Scale the flux
+        self.flux *= scale_factor
+        return self
+    
 
 class Photometry:
 

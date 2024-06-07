@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N10_veiling5'
+run = 'jwst_KLM_N5_veiling6'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -37,7 +37,7 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a_G': [(-2,0.5), r'$\log\ a$'], 
+    'log_a_G': [(-2,0.6), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     'log_l': [(-2,-1.0), r'$\log\ l$'], 
@@ -51,8 +51,11 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
-    'log_r_0': [(-19, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
-    'alpha': [(0.3, 5.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
+    'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
+    'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
+    # 'R_d': [(0.0, 2200.0), r'$R_d$'], # disk radius in R_jup
+    # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
+    # 'T_d': [(300, 2000), r'$T_d$'], # disk temperature in K
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -107,7 +110,7 @@ parallax_mas = parallax * 1000
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 10 # spline knots (continuum fitting)
+N_knots = 5 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
@@ -129,7 +132,7 @@ constant_params = {
 ####################################################################################
 #
 ####################################################################################
-scale_flux = True
+scale_flux = False
 scale_err  = True
 apply_high_pass_filter = False
 

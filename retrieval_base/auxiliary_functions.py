@@ -339,7 +339,7 @@ def read_results(prefix, n_params):
     return res
 
 def blackbody(wave_cm, T):
-    '''Calculate Blackbody spectrum in erg/s/cm^2/nm
+    '''Calculate Blackbody spectrum in erg/s/cm^2/cm
     '''
     bb = 2*nc.h*nc.c**2/wave_cm**5 * 1/(np.exp(nc.h*nc.c/(wave_cm*nc.kB*T))-1)
     return bb

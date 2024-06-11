@@ -39,7 +39,8 @@ class Covariance:
         return self
 
     def add_data_err_scaling(self, beta):
-
+        # print(f' self.cov.shape {self.cov.shape}')
+        # print(f' beta.shape {beta.shape}')
         # Scale the uncertainty with a (beta) factor
         if not self.is_matrix:
             self.cov *= beta**2
@@ -191,6 +192,12 @@ class GaussianProcesses(Covariance):
         self.cov[0] = self.err**2
 
         self.is_matrix = True
+        
+    def add_data_err_scaling(self, beta):
+        # Scale the uncertainty with a (beta) factor
+        assert len(self.cov.shape) == 2, f'Covariance matrix is not banded: {self.cov.shape}'
+        self.cov[0] *= beta**2
+        return self
 
     def add_RBF_kernel(self, a, l, array, trunc_dist=5, scale_GP_amp=False, **kwargs):
         '''

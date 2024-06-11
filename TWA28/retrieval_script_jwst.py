@@ -56,14 +56,23 @@ if args.pre_processing:
               
     # spec = SpectrumJWST(file=f'jwst/TWA28_{g}.fits', grism=g)
     
+    # spec = SpectrumJWST(Nedge=40).load_grisms(files)
+    # spec.reshape(spec.n_orders, 1)
+    # # spec.fix_wave_nans() # experimental...
+    # spec.sigma_clip_reshaped(use_flux=False, 
+    #                          sigma=3, 
+    #                          width=50, 
+    #                          max_iter=5,
+    #                          fun='median')
     spec = SpectrumJWST(Nedge=40).load_grisms(files)
     spec.reshape(spec.n_orders, 1)
     # spec.fix_wave_nans() # experimental...
     spec.sigma_clip_reshaped(use_flux=False, 
-                             sigma=3, 
-                             width=50, 
-                             max_iter=5,
-                             fun='median')
+                                sigma=3, 
+                                width=31, 
+                                max_iter=5,
+                                fun='median', 
+                                debug=False)
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf')
     spec.prepare_for_covariance()
 

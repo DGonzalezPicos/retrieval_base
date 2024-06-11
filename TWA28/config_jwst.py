@@ -41,23 +41,23 @@ free_params = {
     'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     'log_l': [(-2,-1.0), r'$\log\ l$'], 
-    'beta' : [(1., 10.), r'$\beta$'],
+    'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(2.2, 3.0), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(2.2, 3.3), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(10.0, 400.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(10.0, 200.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(300, 1500), r'$T_d$'], # disk temperature in K
+    'T_d': [(300, 1000), r'$T_d$'], # disk temperature in K
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -71,13 +71,14 @@ free_params = {
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
-    # 'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'],
+    'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], # (NEW 2024-06-11): try to detect CO2 in KLM bands
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
+    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'], # (NEW 2024-06-11): try to detect K in KLM bands
     'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
     'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'],
-    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    # 'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
     'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
 
@@ -165,12 +166,13 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     'H2O_181_HotWat78',
-    # 'CO2_main_iso',
+    'CO2_main_iso', # (NEW 2024-06-11): try to detect CO2 in KLM bands
     'Na_allard',
+    'K', # (NEW 2024-06-11): try to detect K in KLM bands
     'Ca',
     'Ti',
-    'Mg',
-    'Fe',
+    # 'Mg', # (NEW 2024-06-11): no Mg detected in KLM bands
+    # 'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
     'Al',
     'HF_main_iso',
     'Si',

@@ -259,17 +259,23 @@ class Parameters:
                 a_list = [k for k in list(self.params.keys()) if k.startswith('a_') and 'NIRSpec' not in k]
                 beta_list = [k for k in list(self.params.keys()) if k.startswith('beta_') and 'NIRSpec' not in k]
                 # print(f' [Parameters.read_uncertainty_params]: a_list = {a_list} for {w_set}')
+                # print(f' [Parameters.read_uncertainty_params]: beta_list = {beta_list} for {w_set}')
                 if len(a_list) == 0:
                     self.params[f'a_{w_set}'] = np.zeros((n_orders, n_dets))
-                    self.params[f'beta_{w_set}'] = np.ones((n_orders, n_dets))
                 if len(a_list) == 1:
                     self.params[f'a_{w_set}'] = self.params[a_list[0]] * np.ones((n_orders, n_dets))
-                    self.params[f'beta_{w_set}'] = self.params[beta_list[0]] * np.ones((n_orders, n_dets))
                 if len(a_list) > 1: 
                     # set a different parameter for each grating (both filters of same grating have same a and beta)
                     self.params[f'a_{w_set}'] = np.array([self.params[k] for k in a_list for _ in range(len(a_list))]).reshape((n_orders, n_dets))
-                    self.params[f'beta_{w_set}'] = np.array([self.params[k] for k in beta_list for _ in range(len(beta_list))]).reshape((n_orders, n_dets))
                 # print(f' [Parameters.read_uncertainty_params]: a_{w_set} = {self.params[f"a_{w_set}"]}')
+                
+                if len(beta_list) == 0:
+                    self.params[f'beta_{w_set}'] = np.ones((n_orders, n_dets))
+                if len(beta_list) == 1:
+                    self.params[f'beta_{w_set}'] = self.params[beta_list[0]] * np.ones((n_orders, n_dets))
+                if len(beta_list) > 1:
+                    # set a different parameter for each grating (both filters of same grating have same a and beta)
+                    self.params[f'beta_{w_set}'] = np.array([self.params[k] for k in beta_list for _ in range(len(beta_list))]).reshape((n_orders, n_dets))
             else:
                 
                 if len(a_list) == 0:

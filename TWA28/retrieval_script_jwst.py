@@ -11,8 +11,8 @@ import config_jwst as conf
 
 config_file = 'config_jwst.txt'
 target = 'TWA28'
-# run = None
-run = 'jwst_KLM_N10_veiling3'
+run = None
+# run = 'jwst_KLM_N10_veiling3'
 
 conf_data = conf.config_data['NIRSpec']
 # create output directory

@@ -543,6 +543,12 @@ class Retrieval:
                                                         self.d_spec[w_set].wave,
                                                         np.nanmin(self.d_spec[w_set].wave))
             # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum after adding veiling'
+            # Add blackbody flux from disk with radius R_d and temperature T_d (inner disk)
+            if "R_d" in self.Param.params.keys():
+                self.m_spec[w_set].add_blackbody_disk(R=self.Param.params["R_d"],
+                                                    T=self.Param.params["T_d"],
+                                                    parallax=self.Param.params["parallax"],
+                                                    wave_cm=self.d_spec[w_set].wave*1e-7)
   
             # Spline decomposition
             self.N_knots = self.Param.params.get('N_knots', 1)

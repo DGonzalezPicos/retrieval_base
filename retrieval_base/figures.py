@@ -319,6 +319,13 @@ def fig_bestfit_model(
                         d_spec.wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.f[i,j]*m_spec.flux[i,j], 
                         c='C0', lw=1
                         )
+                    
+                if hasattr(m_spec, 'blackbody_disk_args'):
+                    try:
+                        bb = m_spec.blackbody_disk(**self.blackbody_disk_args, wave_cm=d_spec.wave[i,j]*1e-7)
+                        ax_spec.plot(d_spec.wave[i,j], bb, c='orange', lw=1)
+                    except:
+                        print(' - Could not plot blackbody disk...')
 
                 # Show the mean error
                 mean_err_ij = np.mean(Cov[i,j].err)
@@ -537,11 +544,14 @@ def fig_PT(PT,
         xlim = (0, PT.temperature.max()*1.06) if xlim is None else xlim
         
     if hasattr(PT, 'sonora') and plot_sonora:
-        seo = SonoraElfOwl(teff=PT.sonora.get('teff', 2400), log_g=PT.sonora.get('log_g', 3.5))
-        seo.load_PT().get_dlnT_dlnP()
-        ax_PT = seo.plot_PT(ax=ax, color='magenta', label=f'Sonora\nT={seo.teff}K\nlog g ={seo.log_g:.1f}')
-        if ax_grad is not None:
-            ax_grad.plot(seo.dlnT_dlnP, seo.pressure, color='magenta')
+        try:
+            seo = SonoraElfOwl(teff=PT.sonora.get('teff', 2400), log_g=PT.sonora.get('log_g', 3.5))
+            seo.load_PT().get_dlnT_dlnP()
+            ax_PT = seo.plot_PT(ax=ax, color='magenta', label=f'Sonora\nT={seo.teff}K\nlog g ={seo.log_g:.1f}')
+            if ax_grad is not None:
+                ax_grad.plot(seo.dlnT_dlnP, seo.pressure, color='magenta')
+        except:
+            print(' - Could not plot Sonora PT profile')
 
     # if hasattr(PT, "dlnT_dlnP_envelopes") and ax_grad is not None:
     if ax_grad is not None:

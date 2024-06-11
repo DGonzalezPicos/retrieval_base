@@ -957,18 +957,20 @@ class ModelSpectrum(Spectrum):
         self.flux += self.veiling_model
         return self
     
-    def blackbody_disk(self, T, R, d=None, parallax=None):
+    def blackbody_disk(self, T=None, R=None, d=None, parallax=None, wave_cm=None):
         ''' Calculate the emission of a disk from a single blackbody
         
         Parameters:
         T : float
             Temperature of the disk in [K]
         R : float
-            Radius of the disk in [R_jup], equivalent to: R^2 = R_out^2 + R_in^2
+            Radius of the disk in [R_jup], equivalent to: R^2 = R_out^2 - R_in^2
         d : float, optional
             Distance to the system in [pc]
         parallax : float, optional
             Parallax of the system in [mas]
+        wave_cm : ndarray, optional
+            Wavelength array in [cm]
         
         Returns:
         F_disk : ndarray
@@ -976,15 +978,21 @@ class ModelSpectrum(Spectrum):
         
         '''
         assert (d is not None) or (parallax is not None), 'Either distance [pc] or parallax [mas] must be provided'
+        # store attributes in dictionary disk_blackbody
+        self.blackbody_disk_args = {'T': T, 'R': R, 'd': d, 'parallax': parallax}
         if parallax is not None:
             d = 1e3/parallax # distance in [pc]
+        if wave_cm is None:
+            wave_cm = self.wave * 1e-7 # [nm] -> [cm]
+            
         # flux of a blackbody disk in units of [erg s^-1 cm^-2 nm^-1]
-        # the 1e-7 factor is to convert from [erg s^-1 cm^-2 cm^-1] to [erg s^-1 cm^-2 nm^-1]
-        # the pi factor is to integrate over the disk
-        return (1e-7 * np.pi * af.blackbody(wave_cm=self.wave*1e-7, T=T) * (R*nc.r_jup_mean)**2 / (d*nc.pc)**2)
+        bb = af.blackbody(wave_cm=wave_cm, T=T)
+        # the factor of R^2 is to scale the flux to the disk size
+        bb *= (R*nc.r_jup_mean / (d * nc.pc))**2
+        return bb
     
-    def add_blackbody_disk(self, T, R, d=None, parallax=None):
-        self.flux += self.blackbody_disk(T, R, d, parallax)
+    def add_blackbody_disk(self, T, R, d=None, parallax=None, wave_cm=None):
+        self.flux += self.blackbody_disk(T=T, R=R, d=d, parallax=parallax, wave_cm=wave_cm)
         return self
         
     

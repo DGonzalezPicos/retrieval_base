@@ -7,14 +7,15 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N5_veiling8'
+run = 'jwst_K_N5'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
     'NIRSpec': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
-        'wave_range': (1650, 5300),
+        'wave_range': (1650, 3200), # g235h-f170lp
+        # 'wave_range': (1650, 5300),
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
@@ -37,9 +38,9 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    # 'log_a_G': [(-2,0.6), r'$\log\ a$'], 
-    'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
-    'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
+    'log_a_G': [(-2,0.6), r'$\log\ a$'], 
+    # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
+    # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     'log_l': [(-2,-1.0), r'$\log\ l$'], 
     'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
@@ -71,7 +72,7 @@ free_params = {
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
-    'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], # (NEW 2024-06-11): try to detect CO2 in KLM bands
+    # 'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], # (NEW 2024-06-11): try to detect CO2 in KLM bands
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'], # (NEW 2024-06-11): try to detect K in KLM bands
     'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
@@ -80,7 +81,7 @@ free_params = {
     # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
     # 'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
-    'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
+    # 'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
 
    'T_0': [(2000,9000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
@@ -136,7 +137,7 @@ constant_params = {
 #
 ####################################################################################
 scale_flux = False
-scale_err  = True
+scale_err  = False
 apply_high_pass_filter = False
 
 # cloud_mode = 'gray'
@@ -166,7 +167,7 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     'H2O_181_HotWat78',
-    'CO2_main_iso', # (NEW 2024-06-11): try to detect CO2 in KLM bands
+    # 'CO2_main_iso', # (NEW 2024-06-11): try to detect CO2 in KLM bands
     'Na_allard',
     'K', # (NEW 2024-06-11): try to detect K in KLM bands
     'Ca',
@@ -175,7 +176,7 @@ line_species = [
     # 'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
     'Al',
     'HF_main_iso',
-    'Si',
+    # 'Si',
     ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O',

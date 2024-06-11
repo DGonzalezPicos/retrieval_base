@@ -135,7 +135,8 @@ class LogLikelihood:
                 chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
 
                 # Add chi-squared and optimal uncertainty scaling terms to log-likelihood
-                ln_L_ij += -(N_ij/2*np.log(beta_ij**2) + 1/2*chi_squared_ij)
+                ln_L_ij += -0.5 * N_ij*np.log(beta_ij**2) 
+                ln_L_ij += -0.5 * chi_squared_ij
 
                 # Add to the total log-likelihood and chi-squared
                 self.ln_L += ln_L_ij

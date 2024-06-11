@@ -349,8 +349,10 @@ def blackbody(wave_cm, T):
     bb *= 1e-7
     return bb
 
-def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=True):
-    '''Sigma clipping algorithm.
+def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=False, replace_w_fun=False):
+    '''Sigma clipping algorithm. If replace=True, the function will replace the
+    clipped values with np.nan. If replace=False, the function will return a
+    boolean mask with the same shape as y.
     '''
     
     assert fun in ['median', 'gaussian'], 'fun must be either "median" or "gaussian"'
@@ -373,6 +375,10 @@ def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=True):
         
     if replace:
         y[mask_clip] = np.nan
+        return y
+    if replace_w_fun:
+        # use the values from the function to replace the clipped values
+        y[mask_clip] = mean_y[mask_clip] * sigma / 2
         return y
     
     

@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KLM_N5_veiling7'
+run = 'jwst_KLM_N5_veiling8'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -41,12 +41,14 @@ free_params = {
     'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     'log_l': [(-2,-1.0), r'$\log\ l$'], 
+    'beta' : [(1., 10.), r'$\beta$'],
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], 
+    # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
+     'R_p': [(2.2, 3.0), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     

@@ -184,13 +184,21 @@ class SpectrumJWST:
         fig.savefig(fig_name)
         print(f'--> Saved {fig_name}')
         
-    def plot_orders(self, fig_name=None):
+    def plot_orders(self, fig_name=None, **kwargs):
         # use PDF pages to save a page for every order
+        
+        color = kwargs.pop('color', 'k')
         with PdfPages(fig_name) as pdf:
             for i in range(self.n_orders):
                 for j in range(self.n_dets):
                     fig, ax = plt.subplots(1,1, figsize=(10, 3))
-                    ax.plot(self.wave[i,j], self.flux[i,j], label=f'Order {i}', color='k')
+                    ax.plot(self.wave[i,j], self.flux[i,j], label=f'Order {i}', color=color, alpha=0.9, **kwargs)
+                    if hasattr(self, 'err'):
+                        ax.fill_between(self.wave[i,j], self.flux[i,j]-self.err[i,j], self.flux[i,j]+self.err[i,j], alpha=0.3, color=color)
+                        
+                    # if hasattr(self, 'flux_uncorr'):
+                        # ax.plot(self.wave[i,j], self.flux_uncorr[i,j], label='Uncorrected', color='r', alpha=0.5)
+                        # ax.fill_between(self.wave[i,j], self.flux_uncorr[i,j]-self.err_uncorr[i,j], self.flux_uncorr[i,j]+self.err_uncorr[i,j], alpha=0.3, color='r')
                     ax.set(xlabel=f'Wavelength / {self.wave_unit}', ylabel=f'Flux / {self.flux_unit}')
                     pdf.savefig(fig)
                     plt.close(fig)
@@ -203,16 +211,31 @@ class SpectrumJWST:
                             width=5, 
                             max_iter=5, 
                             fun='median',
-                            fig_name=False):
+                            fig_name=False,
+                            debug=False):
         
         array = self.flux if use_flux else self.err
-        
+        assert use_flux == False, f'Only sigma-clip on errors is implemented'
+        if debug:
+            # keep a copy of the original data
+            self.flux_uncorr = self.flux.copy()
+            self.err_uncorr = self.err.copy()
+            
         for order in range(self.n_orders):
             for det in range(self.n_dets):
-                clip  = af.sigma_clip(y=array[order,det], sigma=sigma, width=width, 
-                                max_iter=max_iter, fun=fun, replace=False)
-                self.flux[order,det,clip] = np.nan
-                print(f' Clipped {100*np.sum(clip)/np.size(clip):.1f}% points in order {order}, detector {det}')
+                nans_in = np.isnan(self.err[order,det])
+                print(f' Average SNR (BEFORE) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}')
+
+                clip  = af.sigma_clip(y=self.err[order,det], sigma=sigma, width=width, 
+                                max_iter=max_iter, fun=fun, replace=False,
+                                replace_w_fun=True)
+                
+                # self.flux[order,det,clip] = np.nan
+                self.err[order,det,] = clip
+                # self.flux[order,det,:] = clip # this is the flux with bad values replaced by the function values
+                # print(f' Clipped {100*np.sum(clip)/np.size(clip):.1f}% points in order {order}, detector {det}')
+                print(f' Clipped {np.sum(np.isnan(self.err)) - np.sum(nans_in)} points in order {order}, detector {det}')
+                print(f' Average SNR (AFTER) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}\n')
         return self
         
     

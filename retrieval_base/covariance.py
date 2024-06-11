@@ -162,10 +162,10 @@ class GaussianProcesses(Covariance):
         # Reset the covariance matrix
         self.cov_reset()
 
-        # if params[f'beta_{w_set}'][order,det] != 1:
-        #     self.add_data_err_scaling(
-        #         params[f'beta_{w_set}'][order,det]
-        #         )
+        if params[f'beta_{w_set}'][order,det] != 1:
+            self.add_data_err_scaling(
+                params[f'beta_{w_set}'][order,det]
+                )
 
         if params[f'a_{w_set}'][order,det] != 0:
             self.add_RBF_kernel(
@@ -261,6 +261,7 @@ class GaussianProcesses(Covariance):
             self.cov, lower=True
             )
         delattr(self, 'cov')
+        return self
 
     def get_logdet(self):
         '''

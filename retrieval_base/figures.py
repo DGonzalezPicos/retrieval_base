@@ -321,16 +321,20 @@ def fig_bestfit_model(
                         )
                     
                 if hasattr(m_spec, 'blackbody_disk_args'):
-                    try:
-                        bb = m_spec.blackbody_disk(**self.blackbody_disk_args, wave_cm=d_spec.wave[i,j]*1e-7)
-                        ax_spec.plot(d_spec.wave[i,j], bb, c='orange', lw=1)
-                    except:
-                        print(' - Could not plot blackbody disk...')
+                    # try:
+                    bb = m_spec.blackbody_disk(**m_spec.blackbody_disk_args, wave_cm=d_spec.wave[i,j]*1e-7)
+                    ax_spec.plot(d_spec.wave[i,j], bb, c='orange', lw=1)
+                        # print error message
+                        
+                    # except:
+                        # print(' - Could not plot blackbody disk...')
+                        # show error message 
+                        
 
                 # Show the mean error
                 mean_err_ij = np.mean(Cov[i,j].err)
                 ax_res.errorbar(
-                    np.nanmin(d_spec.wave[i,j])-0.2, 0, yerr=1*mean_err_ij, 
+                    np.nanmin(d_spec.wave[i,j])+8, 0, yerr=1*mean_err_ij, 
                     fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
                     label=r'$\langle\sigma_{ij}\rangle$'
                     )
@@ -345,7 +349,7 @@ def fig_bestfit_model(
                 mean_scaled_err_ij = np.mean(np.diag(np.sqrt(cov)))
 
                 ax_res.errorbar(
-                    np.nanmin(d_spec.wave[i,j])-0.4, 0, yerr=1*mean_scaled_err_ij, 
+                    np.nanmin(d_spec.wave[i,j])+4, 0, yerr=1*mean_scaled_err_ij, 
                     fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
                     #label=r'$\beta_{ij}\langle\sigma_{ij}\rangle$'
                     label=r'$\beta_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
@@ -363,6 +367,7 @@ def fig_bestfit_model(
 
     if is_new_fig and (prefix is not None):
         plt.savefig(prefix+f'plots/bestfit_spec_{w_set}.pdf')
+        print(f' - Saved {prefix}plots/bestfit_spec_{w_set}.pdf')
         plt.close(fig)
     else:
         return ax_spec, ax_res

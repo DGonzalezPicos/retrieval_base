@@ -9,6 +9,7 @@ rank = comm.Get_rank()
 import numpy as np
 import copy
 
+import matplotlib.pyplot as plt
 import pymultinest
 
 from .spectrum import DataSpectrum, Photometry
@@ -22,12 +23,8 @@ from .callback import CallBack
 
 import retrieval_base.figures as figs
 import retrieval_base.auxiliary_functions as af
+from matplotlib.backends.backend_pdf import PdfPages
 
-if 'dgonzalezpi' in os.getcwd():
-    # print('Running on Snellius.. disabling interactive plotting')
-    import matplotlib
-    # disable interactive plotting
-    matplotlib.use('Agg')
 def pre_processing(conf, conf_data):
 
     # Set up the output directories
@@ -44,40 +41,129 @@ def pre_processing(conf, conf_data):
         ra=conf_data['ra'], 
         dec=conf_data['dec'], 
         mjd=conf_data['mjd'], 
-        pwv=conf_data.get('pwv', 5.0), 
+        pwv=conf_data['pwv'], 
         file_target=conf_data['file_target'], 
         file_wave=conf_data['file_wave'], 
         slit=conf_data['slit'], 
         wave_range=conf_data['wave_range'], 
         w_set=conf_data['w_set'], 
         )
-    d_spec.clip_det_edges()
-
     
-
-   
-        
+    n_edge_pixels = conf_data.get('n_edge_pixels', 30)
+    d_spec.clip_det_edges(n_edge_pixels)
     d_spec.load_molecfit_transm(
-        conf_data['file_molecfit_transm'], 
-        tell_threshold=conf_data['tell_threshold'],
-        T=conf_data['T_std'],
-        )
+            conf_data['file_molecfit_transm'], 
+            tell_threshold=conf_data['tell_threshold'],
+            T=conf_data['T_std'],
+            )
+
     assert hasattr(d_spec, 'throughput'), 'No throughput found in `d_spec`'
     
-    d_spec.telluric_correction(tell_threshold=conf_data.get('tell_threshold', 0.70),
-                            tell_grow=conf_data.get('tell_grow', 0),)
-    if not conf.normalize:
+    
+    
+    if hasattr(conf, 'magnitudes_std'):
+        print(f'Using magnitudes_std: {conf.magnitudes_std}')
+        d_std_spec = DataSpectrum(
+            wave=None, 
+            flux=None, 
+            err=None, 
+            ra=conf_data['ra_std'], 
+            dec=conf_data['dec_std'], 
+            mjd=conf_data['mjd_std'], 
+            pwv=conf_data['pwv'], 
+            file_target=conf_data['file_std'], 
+            file_wave=conf_data['file_std'], 
+            slit=conf_data['slit'], 
+            wave_range=conf_data['wave_range'], 
+            w_set=conf_data['w_set'], 
+            )
+        d_std_spec.clip_det_edges(n_edge_pixels)
+        
+        
+        photom_2MASS = Photometry(magnitudes=conf.magnitudes_std)
+        d_std_spec.load_molecfit_transm(
+            conf_data['file_std_molecfit_transm'],
+            T=conf_data['T_std'],
+            tell_threshold=conf_data['tell_threshold']
+            )
+        d_std_spec.flux_calib_2MASS(
+            photom_2MASS, 
+            conf_data['filter_2MASS'], 
+            tell_threshold=conf_data['tell_threshold'], 
+            prefix=conf.prefix, 
+            molecfit=True,
+            fig_label='std',
+            )
+        calib_factor = d_std_spec.calib_factor
+        if conf_data.get('off_axis_scale'):
+            calib_factor *= conf_data['off_axis_scale']
+        
+        d_spec.flux_uncorr = (d_spec.flux / d_spec.throughput) * calib_factor
+        # Apply flux calibration to data
+        avoid_zeros = d_spec.transm*d_spec.throughput > 0.01
+        d_spec.flux = np.divide(
+            d_spec.flux,
+            d_spec.transm*d_spec.throughput,
+            where=avoid_zeros
+            )
+        d_spec.err = np.divide(
+            d_spec.err,
+            d_spec.transm*d_spec.throughput,
+            where=avoid_zeros
+            )
+        
+        # Replace deep telluric lines with nans
+        d_spec.flux[d_spec.transm < conf_data['tell_threshold']] = np.nan
+        d_spec.update_isfinite_mask(d_spec.flux)
+
+        # Multiply by the calibration factor
+        d_spec.flux *= calib_factor
+        d_spec.err *= calib_factor
+        
+        # check if key "file_off_axis_correction.dat" in config_data
+        if conf_data.get('file_offaxis_correction'):
+            print(f'Applying off-axis correction from {conf_data["file_offaxis_correction"]}')
+            # load off-axis correction
+            wave_offaxis, corr_offaxis = np.loadtxt(conf_data['file_offaxis_correction'], unpack=True)
+            assert np.all(wave_offaxis == d_spec.wave), 'Wave grids do not match'
+            # apply correction
+            d_spec.flux /= corr_offaxis
+            d_spec.err /= corr_offaxis
+        # Off-axis blaze function correction
+        
+        # Plot the flux calibration
+        figs.fig_flux_calib_2MASS(
+            wave=d_spec.wave, 
+            calib_flux=d_spec.flux, 
+            calib_flux_wo_tell_corr=d_spec.flux_uncorr, 
+            #calib_flux_wo_tell_corr=self.flux*calib_factor, 
+            #transm=self.transm/self.throughput, 
+            transm=d_spec.transm, 
+            poly_model=d_spec.throughput, 
+            wave_2MASS=photom_2MASS.transm_curves[conf_data['filter_2MASS']].T[0], 
+            transm_2MASS=photom_2MASS.transm_curves[conf_data['filter_2MASS']].T[1], 
+            tell_threshold=conf_data['tell_threshold'], 
+            order_wlen_ranges=d_spec.order_wlen_ranges, 
+            prefix=conf.prefix, 
+            w_set=d_spec.w_set, 
+            T_star=4200.,
+            T_companion=2600.,
+            )
+        
+        
+    else:
+
         # Instance of the Photometry class for the given magnitudes
         photom_2MASS = Photometry(magnitudes=conf.magnitudes)
+
+
         # Apply flux calibration using the 2MASS broadband magnitude
         d_spec.flux_calib_2MASS(
             photom_2MASS, 
             conf_data['filter_2MASS'], 
-            # tell_threshold=conf_data.get('tell_threshold', 0.70),
-            # tell_grow=conf_data.get('tell_grow', 0),
+            tell_threshold=conf_data['tell_threshold'], 
             prefix=conf.prefix, 
-            file_skycalc_transm=conf_data['file_skycalc_transm'], 
-            molecfit=(conf_data.get('file_molecfit_transm') is not None)
+            molecfit=True,
             )
         del photom_2MASS
     
@@ -99,17 +185,16 @@ def pre_processing(conf, conf_data):
         filter_width=conf_data['sigma_clip_width'], 
         prefix=conf.prefix
         )
+    #d_spec.sigma_clip_poly(sigma=3, prefix=conf.prefix)
 
     # Crop the spectrum
     d_spec.crop_spectrum()
 
     # Remove the ghost signatures
-    # d_spec.mask_ghosts(wave_to_mask=conf_data.get('wave_to_mask'))
+    d_spec.mask_ghosts(wave_to_mask=conf_data.get('wave_to_mask'))
 
     # Re-shape the spectrum to a 3-dimensional array
     d_spec.reshape_orders_dets()
-    d_spec.fill_nans(min_finite_pixels=200)
-    
 
     # Apply barycentric correction
     d_spec.bary_corr()
@@ -122,11 +207,6 @@ def pre_processing(conf, conf_data):
             sigma=300, 
             replace_flux_err=True
             )
-    if conf.normalize:
-        args_norm = dict(fun='median', tell_threshold=0.4)
-        print(f' Normalizing the spectrum using {args_norm["fun"]} method')
-        d_spec.normalize_flux_per_order(**args_norm)
-        d_spec.args_norm = args_norm
 
     # Prepare the wavelength separation and average squared error arrays
     d_spec.prepare_for_covariance(
@@ -165,20 +245,107 @@ def pre_processing(conf, conf_data):
         rayleigh_species=conf.rayleigh_species,
         continuum_opacities=conf.continuum_opacities,
         log_P_range=conf_data.get('log_P_range'), 
-        n_atm_layers=conf_data.get('n_atm_layers', 30), 
+        n_atm_layers=conf_data.get('n_atm_layers'), 
         rv_range=conf.free_params['rv'][0], 
         )
 
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
     
+def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
     
+    ret = Retrieval(conf=conf, evaluation=False)
+    w_set = 'NIRSpec'
+    # first evaluation the model at 'n' different parameter values
+    if random:
+        # random values between 0 and 1
+        theta = np.random.rand(n)
+    else:
+        theta = np.linspace(0, 1, n)
+    m_spec_list = []
+    logL_list = [] 
+    # plot PT
+    fig, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
     
-   
-                
+    time_list = []
+    for i, theta_i in enumerate(theta):
+        start = time.time()
+
+        ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
+        sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+        print(sample)
+        ret.evaluation = get_contr
+        ln_L = ret.PMN_lnL_func()
+        # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
+        print(f'ln_L = {ln_L:.4e}\n')
+        end = time.time()
+        print(f'Elapsed time: {end-start:.2f} s')
+        time_list.append(end-start)
+        
+        if i == 0:
+            print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
+            print(f' shape m_spec.flux = {ret.m_spec[w_set].flux.shape}')
+            print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m_flux.shape}')
+            print(f' shape LogLike.f = {ret.LogLike[w_set].f.shape}')
+            
+        # m_spec_list.append(ret.m_spec[w_set])
+        m_spec_list.append(ret.LogLike[w_set].m_flux)
+        logL_list.append(ln_L)
+        
+        if get_contr:
+            ret.copy_integrated_contribution_emission()
+        # PT_list.append(ret.PT)
+        figs.fig_PT(ret.PT, ax=ax_PT, ax_grad=ax_grad, 
+                    bestfit_color=f'C{i}', 
+                    show_knots=(i==0), 
+                    fig=fig,
+                    fig_name=str(fig_name).replace('.pdf', '_PT.pdf') if i==(len(theta)-1) else None)
+        
+
+    print(f' --> Time per evaluation: {np.mean(time_list):.2f} +- {np.std(time_list):.2f} s')
+    # use PDF pages to save multiple plots for each order into one PDF
+    with PdfPages(fig_name) as pdf:
+        for i in range(ret.d_spec[w_set].n_orders):
+            fig, ax = plt.subplots(2,1, figsize=(10,5), sharex=True,
+                                   gridspec_kw={'height_ratios':[3,1]})
+            ax[0].set(ylabel=f'Flux / {ret.d_spec[w_set].flux_unit}')
+            ax[-1].set(xlabel='Wavelength / nm', ylabel='Residuals')
+            for j in range(ret.d_spec[w_set].n_dets):
+
+                # Apply mask to model and data, calculate residuals
+                mask_ij = ret.d_spec[w_set].mask_isfinite[i,j,:]
+
+                # Number of data points
+                N_ij = mask_ij.sum()
+                if N_ij == 0:
+                    print(f'No data points in order {i}, detector {j}')
+                    continue
+
+                wave_ij = ret.d_spec[w_set].wave[i,j,:]
+                flux_ij = ret.d_spec[w_set].flux[i,j,:]
+                ax[0].plot(wave_ij, flux_ij, lw=1, label='data', color='k')
+                ax[-1].axhline(0, color='k', ls='-', alpha=0.9)
+                for k in range(n):
+                    m_flux_ij = m_spec_list[k][i,j,:]
+                    logL = logL_list[k]
+                    ax[0].plot(wave_ij, m_flux_ij, lw=1, ls='--', label=f'logL = {logL:.3e}')
+                    ax[-1].plot(wave_ij, flux_ij - m_flux_ij, lw=1, ls='--', 
+                                color=ax[0].get_lines()[-1].get_color())
+                    
+            ax[0].legend()
+            pdf.savefig(fig)
+            plt.close(fig)
+        print(f'--> Saved {fig_name}')
+        
+        return None
+                       
+    
+
+
 class Retrieval:
 
-    def __init__(self, conf, evaluation, plot_ccf=False):
+    plot_ccf = False
+    def __init__(self, conf, evaluation):
 
         self.conf = conf
         self.evaluation = evaluation
@@ -199,7 +366,7 @@ class Retrieval:
             free_params=self.conf.free_params, 
             constant_params=self.conf.constant_params, 
             PT_mode=self.conf.PT_mode, 
-            n_T_knots=self.conf.PT_kwargs['n_T_knots'], 
+            n_T_knots=self.conf.PT_kwargs.get('n_T_knots', 6),
             enforce_PT_corr=self.conf.PT_kwargs['enforce_PT_corr'], 
             chem_mode=self.conf.chem_mode, 
             cloud_mode=self.conf.cloud_mode, 
@@ -232,22 +399,21 @@ class Retrieval:
                         self.Param.cov_mode, 
                         separation=self.d_spec[w_set].separation[i,j], 
                         err_eff=self.d_spec[w_set].err_eff[i,j], 
-                        flux_eff=self.d_spec[w_set].flux_eff[i,j], 
+                        # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
                         **self.conf.cov_kwargs
                         )
 
             del self.d_spec[w_set].separation, 
             del self.d_spec[w_set].err_eff, 
-            del self.d_spec[w_set].flux_eff
+            if hasattr(self.d_spec[w_set], 'flux_eff'):
+                del self.d_spec[w_set].flux_eff
             del self.d_spec[w_set].err
 
-            N_spline_knots = self.conf.N_spline_knots if hasattr(self.conf, 'N_spline_knots') else 1
             self.LogLike[w_set] = LogLikelihood(
                 self.d_spec[w_set], 
                 n_params=self.Param.n_params, 
                 scale_flux=self.conf.scale_flux, 
                 scale_err=self.conf.scale_err, 
-                N_spline_knots=N_spline_knots,
                 )
 
         self.PT = get_PT_profile_class(
@@ -255,6 +421,9 @@ class Retrieval:
             self.Param.PT_mode, 
             **self.conf.PT_kwargs, 
             )
+        if 'sonora' in self.conf.PT_kwargs.keys():
+            self.PT.sonora = self.conf.PT_kwargs['sonora']
+                
         self.Chem = get_Chemistry_class(
             self.pRT_atm[w_set].line_species, 
             self.pRT_atm[w_set].pressure, 
@@ -273,9 +442,6 @@ class Retrieval:
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )
 
-        self.plot_ccf = plot_ccf
-        self.CB.plot_ccf = plot_ccf
-        
         if (rank == 0) and self.evaluation and self.plot_ccf:
             self.pRT_atm_broad = {}
             for w_set in conf.config_data.keys():
@@ -302,7 +468,6 @@ class Retrieval:
         self.m_spec_species  = None
         self.pRT_atm_species = None
         self.LogLike_species = None
-        self.N_veiling = getattr(self.conf, 'N_veiling', 0)
 
     def PMN_lnL_func(self, cube=None, ndim=None, nparams=None):
 
@@ -321,7 +486,6 @@ class Retrieval:
             except:
                 # Something went wrong with interpolating
                 temperature = self.PT(self.Param.params)
-                print('Temperature interpolation failed... returning -np.inf')
                 return -np.inf
 
         if (temperature.min() < 150) and (self.Param.chem_mode=='fastchem'):
@@ -330,7 +494,6 @@ class Retrieval:
         
         if temperature.min() < 0:
             # Negative temperatures are rejected
-            print(f' Negative temperatures: {temperature.min()}... returning -np.inf')
             return -np.inf
 
         # Retrieve the ln L penalty (=0 by default)
@@ -347,7 +510,6 @@ class Retrieval:
 
         if not isinstance(mass_fractions, dict):
             # Non-H2 abundances added up to > 1
-            print(f' Non-H2 abundances added up to > 1... returning -np.inf')
             return -np.inf
 
         if self.CB.return_PT_mf:
@@ -368,22 +530,37 @@ class Retrieval:
                 mass_fractions, 
                 temperature, 
                 self.Param.params, 
-                get_contr=self.CB.active, 
+                # get_contr=self.CB.active, 
+                get_contr=self.evaluation,
                 get_full_spectrum=self.evaluation, 
                 )
             
-            # quick plot of spectrum
-            # import matplotlib.pyplot as plt
-            # plt.plot(self.d_spec[w_set].wave[3,1], self.d_spec[w_set].flux[3,1], label='data')
-            # plt.plot(self.d_spec[w_set].wave[3,1], self.m_spec[w_set].flux[3,1], label='model')
-            # plt.legend()
-            # plt.show()
-
-            if (self.m_spec[w_set].flux <= 0).any() or \
-                (~np.isfinite(self.m_spec[w_set].flux)).any():
-                # Something is wrong in the spectrum
-                print(f' Negative/NaN fluxes... returning -np.inf')
-                return -np.inf
+            # Add veiling to the model spectrum (NEW, 2024-05-27)
+            # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum before adding veiling'
+            if "r_0" in self.Param.params.keys():
+                self.m_spec[w_set].add_veiling_power_law(self.Param.params["r_0"],
+                                                        self.Param.params.get("alpha", 0.0), # 0.0 = constant
+                                                        self.d_spec[w_set].wave,
+                                                        np.nanmin(self.d_spec[w_set].wave))
+            # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum after adding veiling'
+            # Add blackbody flux from disk with radius R_d and temperature T_d (inner disk)
+            if "R_d" in self.Param.params.keys():
+                self.m_spec[w_set].add_blackbody_disk(R=self.Param.params["R_d"],
+                                                    T=self.Param.params["T_d"],
+                                                    parallax=self.Param.params["parallax"],
+                                                    wave_cm=self.d_spec[w_set].wave*1e-7)
+  
+            # Spline decomposition
+            self.N_knots = self.Param.params.get('N_knots', 1)
+            if self.N_knots > 1:
+                # print(f'Performing spline decomposition with {self.N_knots} knots...')
+                # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
+                self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
+                # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')
+            else:
+                # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
+                self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
+            
 
             for i in range(self.d_spec[w_set].n_orders):
                 for j in range(self.d_spec[w_set].n_dets):
@@ -397,26 +574,16 @@ class Retrieval:
                         order=i, det=j, 
                         **self.conf.cov_kwargs, 
                         )
-                    
-            if self.d_spec[w_set].normalized:
-                self.m_spec[w_set].normalize_flux_per_order(**self.d_spec[w_set].args_norm)
-                
-            self.m_spec[w_set].N_veiling = self.N_veiling
-            if self.N_veiling > 0:
-                self.m_spec[w_set].add_veiling(self.N_veiling)
-                
-            if "alpha" in self.Param.params.keys():
-                self.m_spec[w_set].add_veiling_power_law(self.Param.params["alpha"],
-                                                        self.Param.params.get("beta", 0.0),
-                                                        self.d_spec[w_set].wave,
-                                                        self.d_spec[w_set].wave.min())
 
+            self.m_spec[w_set].fit_radius = ('R_p' in self.Param.param_keys)
+            # print(f'Fit radius: {self.m_spec[w_set].fit_radius}')
+            
+            
             # Retrieve the log-likelihood
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 
                 self.Cov[w_set], 
-                # is_first_w_set=(h==0), # retrieve radius from first order (old)
-                is_first_w_set=False, # apply flux scaling to all orders (new)
+                is_first_w_set=(h==0), 
                 #ln_L_penalty=ln_L_penalty, 
                 evaluation=self.evaluation, 
                 )
@@ -479,7 +646,6 @@ class Retrieval:
 
     def get_PT_mf_envelopes(self, posterior):
 
-        print(' Computing PT profile and mass fractions envelopes...')
         # Return the PT profile and mass fractions
         self.CB.return_PT_mf = True
 
@@ -511,7 +677,7 @@ class Retrieval:
             self.Param.read_PT_params(cube=None)
             self.Param.read_uncertainty_params()
             self.Param.read_chemistry_params()
-            # self.Param.read_cloud_params()
+            self.Param.read_cloud_params()
 
             # Class instances with best-fitting parameters
             returned = self.PMN_lnL_func()
@@ -526,11 +692,8 @@ class Retrieval:
             if hasattr(self.Chem, 'unquenched_mass_fractions'):
                 unquenched_mass_fractions_i = self.Chem.unquenched_mass_fractions
 
-            dlnT_dlnP_array_i = self.PT.dlnT_dlnP_array if hasattr(self.PT, 'dlnT_dlnP_array') else None
-
             # Return the temperature, mass fractions, unquenched, C/O ratio and Fe/H
-            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, \
-                    self.Chem.CO, self.Chem.FeH, dlnT_dlnP_array_i
+            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, self.Chem.CO, self.Chem.FeH
         
         # Compute the mass fractions posterior in parallel
         returned = self.parallel_for_loop(func, posterior)
@@ -542,8 +705,7 @@ class Retrieval:
         mass_fractions_posterior, \
         unquenched_mass_fractions_posterior, \
         self.Chem.CO_posterior, \
-        self.Chem.FeH_posterior, \
-        self.PT.dlnT_dlnP_posterior \
+        self.Chem.FeH_posterior \
             = returned
         
         self.PT.temperature_posterior = np.array(self.PT.temperature_posterior)
@@ -586,9 +748,6 @@ class Retrieval:
         self.PT.temperature_envelopes = af.quantiles(
             self.PT.temperature_posterior, q=q, axis=0
             )
-        if self.conf.PT_mode in ['RCE', 'free_gradient']:
-                self.PT.dlnT_dlnP_envelopes = af.quantiles(np.array(self.PT.dlnT_dlnP_posterior),
-                                                        q=q, axis=0)
 
         self.Chem.mass_fractions_envelopes = {}
         self.Chem.unquenched_mass_fractions_envelopes = {}
@@ -606,33 +765,31 @@ class Retrieval:
                 continue
 
         # Store the unquenched mass fractions
-        # if hasattr(self.Chem, 'unquenched_mass_fractions'):
+        if hasattr(self.Chem, 'unquenched_mass_fractions'):
 
-        #     for line_species_i in self.Chem.unquenched_mass_fractions.keys():
-        #         self.Chem.unquenched_mass_fractions_posterior[line_species_i] = \
-        #             np.array(self.Chem.unquenched_mass_fractions_posterior[line_species_i])
+            for line_species_i in self.Chem.unquenched_mass_fractions.keys():
+                self.Chem.unquenched_mass_fractions_posterior[line_species_i] = \
+                    np.array(self.Chem.unquenched_mass_fractions_posterior[line_species_i])
 
-        #         self.Chem.unquenched_mass_fractions_envelopes[line_species_i] = af.quantiles(
-        #             self.Chem.unquenched_mass_fractions_posterior[line_species_i], q=q, axis=0
-        #             )
+                self.Chem.unquenched_mass_fractions_envelopes[line_species_i] = af.quantiles(
+                    self.Chem.unquenched_mass_fractions_posterior[line_species_i], q=q, axis=0
+                    )
 
         self.CB.return_PT_mf = False
 
-    def get_species_contribution(self, species='all'):
-        assert hasattr(self, 'pRT_atm_broad'), 'No broad pRT model available'
+    def get_species_contribution(self):
+
         #self.m_spec_species, self.pRT_atm_species = {}, {}
 
         self.m_spec_species = dict.fromkeys(self.d_spec.keys(), {})
         self.pRT_atm_species = dict.fromkeys(self.d_spec.keys(), {})
 
-        species = self.Chem.line_species if species == 'all' else species
         # Assess the species' contribution
         for species_i in self.Chem.species_info.keys():
 
             line_species_i = self.Chem.read_species_info(species_i, 'pRT_name')
-            if line_species_i not in species:
+            if line_species_i not in self.Chem.line_species:
                 continue
-            print(f' Calculating species contribution for {line_species_i}...')
             # Ignore one species at a time
             self.Chem.neglect_species = dict.fromkeys(self.Chem.neglect_species, False)
             self.Chem.neglect_species[species_i] = True
@@ -747,7 +904,7 @@ class Retrieval:
         
     def PMN_analyze(self):
         
-         # Set-up analyzer object
+        # Set-up analyzer object
         analyzer = pymultinest.Analyzer(
             n_params=self.Param.n_params, 
             outputfiles_basename=self.conf.prefix
@@ -761,6 +918,35 @@ class Retrieval:
         # Read the parameters of the best-fitting model
         bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
         return bestfit_params, posterior
+    
+    def evaluate_model(self, bestfit_params):
+        # Evaluate the model with best-fitting parameters
+        for i, key_i in enumerate(self.Param.param_keys):
+            # Update the Parameters instance
+            self.Param.params[key_i] = bestfit_params[i]
+            print(f' {key_i}: {bestfit_params[i]}')
+            if key_i.startswith('log_'):
+                self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)
+
+            if key_i.startswith('invgamma_'):
+                self.Param.params[key_i.replace('invgamma_', '')] = self.Param.params[key_i]
+
+        # Update the parameters
+        self.Param.read_PT_params(cube=None)
+        self.Param.read_uncertainty_params()
+        self.Param.read_chemistry_params()
+        self.Param.read_cloud_params()
+        
+        # self.Param.params.update(self.Param.constant_params)
+        # check for resolution parameters and place them in a list `res`
+        # res_keys = [key for key in list(self.Param.params.keys()) if key.startswith('res_')]
+        # if len(res_keys) > 0:
+        #     self.Param.params['res'] = [self.Param.params[key] for key in res_keys]
+        #     print(f' res: {self.Param.params["res"]}')
+        self.Param.read_resolution_params()
+        return self
+        
+        
 
     def PMN_callback_func(self, 
                           n_samples, 
@@ -779,19 +965,6 @@ class Retrieval:
 
         if self.evaluation:
 
-            # Set-up analyzer object
-            # analyzer = pymultinest.Analyzer(
-            #     n_params=self.Param.n_params, 
-            #     outputfiles_basename=self.conf.prefix
-            #     )
-            # stats = analyzer.get_stats()
-
-            # # Load the equally-weighted posterior distribution
-            # posterior = analyzer.get_equal_weighted_posterior()
-            # posterior = posterior[:,:-1]
-
-            # # Read the parameters of the best-fitting model
-            # bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
             bestfit_params, posterior = self.PMN_analyze()
 
             # Get the PT and mass-fraction envelopes
@@ -812,29 +985,16 @@ class Retrieval:
             return
 
         # Evaluate the model with best-fitting parameters
-        for i, key_i in enumerate(self.Param.param_keys):
-            # Update the Parameters instance
-            self.Param.params[key_i] = bestfit_params[i]
-        
-            if key_i.startswith('log_'):
-                self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)
-
-            if key_i.startswith('invgamma_'):
-                self.Param.params[key_i.replace('invgamma_', '')] = self.Param.params[key_i]
-
-        # Update the parameters
-        self.Param.read_PT_params(cube=None)
-        self.Param.read_uncertainty_params()
-        self.Param.read_chemistry_params()
-        self.Param.read_cloud_params()
+        self.evaluate_model(bestfit_params)
 
         if self.evaluation and self.plot_ccf:
             # Get each species' contribution to the spectrum
             self.get_species_contribution()
 
         # Update class instances with best-fitting parameters
-        self.CB.active = self.evaluation
         self.PMN_lnL_func()
+
+        self.CB.active = False
 
         for w_set in self.conf.config_data.keys():
             self.m_spec[w_set].flux_envelope = None
@@ -844,15 +1004,9 @@ class Retrieval:
             # Retrieve the model spectrum, with the wider pRT model
             pRT_atm_to_use = self.pRT_atm_broad
             #self.m_spec.flux_envelope = flux_envelope
-
-        # pickle save self.m_spec_species
-        af.pickle_save(self.conf.prefix+'data/m_spec_species.pkl', self.m_spec_species)
-        print(f' Saved m_spec_species.pkl to {self.conf.prefix}data/')
+            
+        # self.CB.plot_summary = True # WARNING: change back to True after debbuging...
         # Call the CallBack class and make summarizing figures
-        if self.evaluation:
-            # self.CB.active = True
-            self.copy_integrated_contribution_emission()
-            # assert hasattr(self.PT, 'int_contr_em'), 'No integrated contribution emission found in PT'
         self.CB(
             self.Param, self.LogLike, self.Cov, self.PT, self.Chem, 
             self.m_spec, pRT_atm_to_use, posterior, 
@@ -863,8 +1017,8 @@ class Retrieval:
     def PMN_run(self):
         
         # Pause the process to not overload memory on start-up
-        # time.sleep(1.5*rank*len(self.d_spec))
-        time.sleep(1)
+        # time.sleep(0.1*rank*len(self.d_spec))
+        time.sleep(2)
 
         # Run the MultiNest retrieval
         pymultinest.run(
@@ -881,21 +1035,6 @@ class Retrieval:
             dump_callback=self.PMN_callback_func, 
             n_iter_before_update=self.conf.n_iter_before_update, 
             )
-        
-        
-    def copy_integrated_contribution_emission(self):
-        
-        if hasattr(self.pRT_atm, 'int_contr_em'):
-            print(f'Copying integrated contribution emission from pRT_atm to PT')
-            self.PT.int_contr_em = np.copy(self.pRT_atm.int_contr_em)
-        # if hasattr(self.m_spec, 'int_contr_em'):
-        for w_set in self.d_spec.keys():
-            if hasattr(self.m_spec[w_set], 'int_contr_em'):
-                print(f'Copying integrated contribution emission from m_spec[{w_set}] to PT')
-                self.PT.int_contr_em = np.copy(self.m_spec[w_set].int_contr_em)
-        else:
-            print(f'WARNING: No integrated contribution emission found in pRT_atm or m_spec')
-        return self
 
     def synthetic_spectrum(self):
         
@@ -964,9 +1103,14 @@ class Retrieval:
         # Save as pickle
         af.pickle_save(self.conf.prefix+'data/d_spec.pkl', self.d_spec)
         
-    def prior_check(self):
-        # w_set = 
-        for h, w_set in enumerate(list(self.conf.config_data.keys())):
-
-            figs.fig_prior_check(self, w_set, fig_name=self.conf.prefix+f'plots/prior_check_{w_set}.pdf')
+    def copy_integrated_contribution_emission(self):
+        for w_set in self.conf.config_data.keys():
+            if hasattr(self.pRT_atm[w_set], 'int_contr_em'):
+                print(f'Copying integrated contribution emission from pRT_atm to PT')
+                self.PT.int_contr_em[w_set] = np.copy(self.pRT_atm[w_set].int_contr_em)
+            if hasattr(self.m_spec[w_set], 'int_contr_em'):
+                print(f'Copying integrated contribution emission from m_spec to PT')
+                self.PT.int_contr_em[w_set] = np.copy(self.m_spec[w_set].int_contr_em)
+            else:
+                print(f'WARNING: No integrated contribution emission found in pRT_atm or m_spec')
         return self

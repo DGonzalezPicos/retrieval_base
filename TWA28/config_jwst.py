@@ -41,7 +41,7 @@ free_params = {
     'log_a_G': [(-2,0.8), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-2,0.0), r'$\log\ l$'], 
+    'log_l': [(-2,-0.9), r'$\log\ l$'], 
     # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
@@ -56,9 +56,9 @@ free_params = {
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(10.0, 200.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    # 'R_d': [(10.0, 200.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(300, 1000), r'$T_d$'], # disk temperature in K
+    # 'T_d': [(300, 1000), r'$T_d$'], # disk temperature in K
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 

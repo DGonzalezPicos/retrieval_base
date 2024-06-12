@@ -88,6 +88,10 @@ class LogLikelihood:
                     if ((i+j) == 0 and m_spec.fit_radius) or (not self.scale_flux):
                         # NEW 2024-05-26: recover the absolute scaling by dividing by the central value
                         f_ij_ref = f_ij[len(f_ij)//2]
+                        if f_ij_ref == 0:
+                            self.ln_L = -np.inf
+                            return self.ln_L
+                        
                         f_ij /= f_ij_ref
                         if (i+j) > 0:
                             # allow a 5% maximum deviation from the reference scaling
@@ -120,6 +124,11 @@ class LogLikelihood:
                 
                 # print(f'FLux scaling {f_ij}')
                 res_ij = (d_flux_ij - m_flux_ij_scaled)
+                if np.sum(np.isnan(res_ij)) > 0: 
+                    print(f'NaNs in residuals: {np.sum(np.isnan(res_ij))}')
+                    self.ln_L = -np.inf
+                    return self.ln_L
+                
                 # Chi-squared for the optimal linear scaling
                 inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
                 chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)

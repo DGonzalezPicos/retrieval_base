@@ -38,11 +38,11 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a_G': [(-2,0.6), r'$\log\ a$'], 
+    'log_a_G': [(-2,0.8), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-2,-1.0), r'$\log\ l$'], 
-    'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
+    'log_l': [(-2,0.0), r'$\log\ l$'], 
+    # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
     # R = 0.29 [R_sun]
@@ -137,7 +137,7 @@ constant_params = {
 #
 ####################################################################################
 scale_flux = False
-scale_err  = False
+scale_err  = True
 apply_high_pass_filter = False
 
 # cloud_mode = 'gray'

@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_K_N5'
+run = 'jwst_K_N10'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -38,10 +38,10 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a_G': [(-2,0.8), r'$\log\ a$'], 
+    'log_a_G': [(-2,0.5), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-2,-0.9), r'$\log\ l$'], 
+    'log_l': [(-1.0, 1.0), r'$\log\ l$'], 
     # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
@@ -67,8 +67,8 @@ free_params = {
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
     'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
-    'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
-    'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'],
+    # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
+    # 'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'],
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
@@ -76,12 +76,13 @@ free_params = {
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'], # (NEW 2024-06-11): try to detect K in KLM bands
     'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
-    'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    # 'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'],
     # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
     # 'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
     # 'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
+    'log_FeH': [(-12,-2), r'$\log\ \mathrm{FeH}$'],
 
    'T_0': [(2000,9000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
@@ -114,7 +115,7 @@ parallax_mas = parallax * 1000
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 5 # spline knots (continuum fitting)
+N_knots = 10 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
@@ -162,8 +163,8 @@ continuum_opacities=['H2-H2', 'H2-He', 'H-']
 line_species = [
     'CO_high', 
     'CO_36_high', 
-    'CO_28', 
-    'CO_27', 
+    # 'CO_28', 
+    # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
     'H2O_181_HotWat78',
@@ -171,11 +172,12 @@ line_species = [
     'Na_allard',
     'K', # (NEW 2024-06-11): try to detect K in KLM bands
     'Ca',
-    'Ti',
+    # 'Ti',
     # 'Mg', # (NEW 2024-06-11): no Mg detected in KLM bands
     # 'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
     'Al',
     'HF_main_iso',
+    'FeH_main_iso',
     # 'Si',
     ]
 species_to_plot_VMR = [
@@ -184,10 +186,10 @@ species_to_plot_VMR = [
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O',
-    'CO2',
-    'H2O_181', 
-    'C18O', 
-    'C17O'
+    # 'CO2',
+    # 'H2O_181', 
+    # 'C18O', 
+    # 'C17O'
     ]
 
 ####################################################################################
@@ -197,7 +199,7 @@ species_to_plot_CCF = [
 cov_mode = 'GP'
 
 cov_kwargs = dict(
-    trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
+    trunc_dist   = 1, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
     max_separation = 20, 
 

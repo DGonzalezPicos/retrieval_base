@@ -253,8 +253,10 @@ class GaussianProcesses(Covariance):
         for i in range(max_attempts):
             try:
                 self.cov_cholesky = cholesky_banded(
-                    self.cov, lower=True
+                    self.cov, lower=True, check_finite=False,
                     )
+                # print(f' self.cov_chol.shape {self.cov_cholesky.shape}')
+
                 return self
             except np.linalg.LinAlgError:
                 # Add a small number to the diagonal

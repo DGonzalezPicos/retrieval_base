@@ -9,6 +9,7 @@ class LogLikelihood:
                  n_params, 
                  scale_flux=False, 
                  scale_err=False, 
+                 scale_flux_eps=0.05,
                  ):
 
         # Observed spectrum is constant
@@ -19,6 +20,7 @@ class LogLikelihood:
         self.n_dof = self.d_spec.mask_isfinite.sum() - self.n_params
 
         self.scale_flux   = scale_flux
+        self.scale_flux_eps = scale_flux_eps
         self.scale_err    = scale_err
         
         self.scale_flux_all = False # WARNING: this overrides the previous setting
@@ -89,13 +91,14 @@ class LogLikelihood:
                         # NEW 2024-05-26: recover the absolute scaling by dividing by the central value
                         f_ij_ref = f_ij[len(f_ij)//2]
                         if f_ij_ref == 0:
+                            print(f'Zero scaling factor in order {i}, detector {j}')
                             self.ln_L = -np.inf
                             return self.ln_L
                         
                         f_ij /= f_ij_ref
                         if (i+j) > 0:
                             # allow a 5% maximum deviation from the reference scaling
-                            eps = min(0.05, f_ij_ref-1.0) if f_ij_ref > 1.0 else max(-0.05, f_ij_ref-1.0)
+                            eps = min(self.scale_flux_eps, f_ij_ref-1.0) if f_ij_ref > 1.0 else max(-self.scale_flux_eps, f_ij_ref-1.0)
                             f_ij *= (1.0 + eps)
                         
                     m_flux_ij_scaled = f_ij @ m_flux_ij

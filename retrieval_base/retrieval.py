@@ -345,7 +345,7 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
 class Retrieval:
 
     plot_ccf = False
-    def __init__(self, conf, evaluation):
+    def __init__(self, conf, evaluation, d_spec=None):
 
         self.conf = conf
         self.evaluation = evaluation
@@ -353,13 +353,22 @@ class Retrieval:
         self.d_spec  = {}
         self.pRT_atm = {}
         param_wlen_settings = {}
+        
         for w_set in conf.config_data.keys():
 
             # Load the DataSpectrum and pRT_model classes
             self.d_spec[w_set]  = af.pickle_load(self.conf.prefix+f'data/d_spec_{w_set}.pkl')
             self.pRT_atm[w_set] = af.pickle_load(self.conf.prefix+f'data/pRT_atm_{w_set}.pkl')
-
             param_wlen_settings[w_set] = [self.d_spec[w_set].n_orders, self.d_spec[w_set].n_dets]
+
+                
+        if d_spec is not None:  
+            # Use the provided DataSpectrum class
+            for w_set in d_spec.keys():
+                self.d_spec[w_set] = d_spec[w_set]
+                param_wlen_settings[w_set] = [self.d_spec[w_set].n_orders, self.d_spec[w_set].n_dets]
+
+        # print(f' param_wlen_settings = {param_wlen_settings}')
 
         # Create a Parameters instance
         self.Param = Parameters(
@@ -414,6 +423,7 @@ class Retrieval:
                 n_params=self.Param.n_params, 
                 scale_flux=self.conf.scale_flux, 
                 scale_err=self.conf.scale_err, 
+                scale_flux_eps=getattr(self.conf, 'scale_flux_eps', 0.05),
                 )
 
         self.PT = get_PT_profile_class(
@@ -485,15 +495,18 @@ class Retrieval:
                 temperature = self.PT(self.Param.params)
             except:
                 # Something went wrong with interpolating
-                temperature = self.PT(self.Param.params)
+                # temperature = self.PT(self.Param.params)
+                print('Something went wrong with interpolating the PT profile')
                 return -np.inf
 
-        if (temperature.min() < 150) and (self.Param.chem_mode=='fastchem'):
-            # Temperatures too low for reasonable FastChem convergence
-            return -np.inf
+        # if (temperature.min() < 150) and (self.Param.chem_mode=='fastchem'):
+        #     # Temperatures too low for reasonable FastChem convergence
+        #     return -np.inf
         
         if temperature.min() < 0:
             # Negative temperatures are rejected
+            print(f' ret.PT.temperature = {temperature}')
+            print('Negative temperatures...')
             return -np.inf
 
         # Retrieve the ln L penalty (=0 by default)
@@ -510,6 +523,7 @@ class Retrieval:
 
         if not isinstance(mass_fractions, dict):
             # Non-H2 abundances added up to > 1
+            print('Non-H2 abundances added up to > 1')
             return -np.inf
 
         if self.CB.return_PT_mf:
@@ -553,7 +567,7 @@ class Retrieval:
             # Spline decomposition
             self.N_knots = self.Param.params.get('N_knots', 1)
             if self.N_knots > 1:
-                # print(f'Performing spline decomposition with {self.N_knots} knots...')
+                print(f'Performing spline decomposition with {self.N_knots} knots...')
                 # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
                 self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
                 # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')

@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_K_N10'
+run = 'jwst_K_N1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -25,7 +25,7 @@ config_data = {
         'sigma_clip_width': 50, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 50, 
+        'n_atm_layers': 35, 
         }, 
     }
 
@@ -38,10 +38,10 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a_G': [(-2,0.5), r'$\log\ a$'], 
+    'log_a_G': [(-2,0.6), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-1.0, 0.8), r'$\log\ l$'], 
+    'log_l': [(-2,-0.9), r'$\log\ l$'], 
     # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
@@ -71,7 +71,7 @@ free_params = {
     # 'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'],
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
+    # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
     # 'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], # (NEW 2024-06-11): try to detect CO2 in KLM bands
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'], # (NEW 2024-06-11): try to detect K in KLM bands
@@ -84,7 +84,7 @@ free_params = {
     # 'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
     'log_FeH': [(-12,-2), r'$\log\ \mathrm{FeH}$'],
 
-   'T_0': [(2000,9000), r'$T_0$'], 
+   'T_0': [(2000,8000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
@@ -98,7 +98,7 @@ free_params = {
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    'res_G235': [(1500, 4500), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
+    'res_G235': [(1500, 4000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
     # 'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
     # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
@@ -115,7 +115,7 @@ parallax_mas = parallax * 1000
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 10 # spline knots (continuum fitting)
+N_knots = 1 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
@@ -130,7 +130,7 @@ constant_params = {
     # 'log_P_knots': log_P_knots,
     'N_knots': N_knots, # avoid using spline to fit the continuum
     # 'res_G235': 2800, # instrumental spectral resolution
-    'res_G395': 3000, # instrumental spectral resolution
+    # 'res_G395': 3000, # instrumental spectral resolution
     # 'fit_radius': True,
 }
 
@@ -138,6 +138,7 @@ constant_params = {
 #
 ####################################################################################
 scale_flux = False
+scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
 scale_err  = True
 apply_high_pass_filter = False
 
@@ -167,7 +168,7 @@ line_species = [
     # 'CO_27', 
 
     'H2O_pokazatel_main_iso', 
-    'H2O_181_HotWat78',
+    # 'H2O_181_HotWat78',
     # 'CO2_main_iso', # (NEW 2024-06-11): try to detect CO2 in KLM bands
     'Na_allard',
     'K', # (NEW 2024-06-11): try to detect K in KLM bands
@@ -177,19 +178,14 @@ line_species = [
     # 'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
     'Al',
     'HF_main_iso',
-    'FeH_main_iso',
     # 'Si',
+    'FeH_main_iso',
     ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O',
-    'CO2'
     ]
 species_to_plot_CCF = [
     '12CO', '13CO', 'H2O',
-    # 'CO2',
-    # 'H2O_181', 
-    # 'C18O', 
-    # 'C17O'
     ]
 
 ####################################################################################
@@ -201,7 +197,7 @@ cov_mode = 'GP'
 cov_kwargs = dict(
     trunc_dist   = 0.7, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 12,
+    max_separation = 20, 
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 

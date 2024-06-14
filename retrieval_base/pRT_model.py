@@ -164,7 +164,7 @@ class pRT_model:
             if isinstance(res, (list, tuple)):
                 # self.d_resolution = res
                 # take list [a,b] and convert it to [a,a, b,b...]
-                self.d_resolution = [r for r in res for _ in range(len(res))] # every JWST order has two filters
+                self.d_resolution = [r for r in res for _ in range(2)] # every JWST order has two filters
             if isinstance(res, (float, int)):
                 self.d_resolution = [res for _ in range(self.d_wave.shape[0])]
         # if self.params.get(f'res_{self.w_set}') is not None:

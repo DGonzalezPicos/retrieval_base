@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+import subprocess as sp
 
 from retrieval_base.retrieval import pre_processing, prior_check, Retrieval
 from retrieval_base.spectrum_jwst import SpectrumJWST
@@ -42,7 +43,7 @@ parser.add_argument('--evaluation', '-e', action='store_true', default=False)
 args = parser.parse_args()
 
 if args.pre_processing:
-    # sp.call(['python', f'{path}/{target}/retrieval_outputs/{run}
+    sp.call(['python', f'{path}/{target}/config_jwst.py'])
     ## Pre-processing data
     grisms = [
             # 'g140h-f100lp', 

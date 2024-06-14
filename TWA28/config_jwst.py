@@ -20,12 +20,12 @@ config_data = {
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
         
-        'lbl_opacity_sampling' : 20,
+        'lbl_opacity_sampling' : 10,
         'sigma_clip': 3,
         'sigma_clip_width': 50, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 35, 
+        'n_atm_layers': 50, 
         }, 
     }
 
@@ -41,7 +41,7 @@ free_params = {
     'log_a_G': [(-2,0.5), r'$\log\ a$'], 
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-1.0, 1.0), r'$\log\ l$'], 
+    'log_l': [(-1.0, 0.8), r'$\log\ l$'], 
     # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
@@ -76,9 +76,9 @@ free_params = {
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'], # (NEW 2024-06-11): try to detect K in KLM bands
     'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
-    # 'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
+    'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
     'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'],
-    # 'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
+    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
     # 'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
     # 'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
@@ -172,8 +172,8 @@ line_species = [
     'Na_allard',
     'K', # (NEW 2024-06-11): try to detect K in KLM bands
     'Ca',
-    # 'Ti',
-    # 'Mg', # (NEW 2024-06-11): no Mg detected in KLM bands
+    'Ti',
+    'Mg', # (NEW 2024-06-11): no Mg detected in KLM bands
     # 'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
     'Al',
     'HF_main_iso',
@@ -199,9 +199,9 @@ species_to_plot_CCF = [
 cov_mode = 'GP'
 
 cov_kwargs = dict(
-    trunc_dist   = 1, # set to 3 for accuracy, 2 for speed
+    trunc_dist   = 0.7, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 20, 
+    max_separation = 12,
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 

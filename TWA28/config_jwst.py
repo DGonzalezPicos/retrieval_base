@@ -98,7 +98,7 @@ free_params = {
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    # 'res_G235': [(1500, 5000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
+    'res_G235': [(1500, 4500), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
     # 'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
     # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
@@ -129,7 +129,7 @@ constant_params = {
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
     # 'log_P_knots': log_P_knots,
     'N_knots': N_knots, # avoid using spline to fit the continuum
-    'res_G235': 2800, # instrumental spectral resolution
+    # 'res_G235': 2800, # instrumental spectral resolution
     'res_G395': 3000, # instrumental spectral resolution
     # 'fit_radius': True,
 }

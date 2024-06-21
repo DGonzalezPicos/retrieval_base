@@ -4,6 +4,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from astropy.io import fits
 import pickle
 import os
+import copy
 
 from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
@@ -224,7 +225,7 @@ class SpectrumJWST:
         for order in range(self.n_orders):
             for det in range(self.n_dets):
                 nans_in = np.isnan(self.err[order,det])
-                print(f' Average SNR (BEFORE) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}')
+                # print(f' Average SNR (BEFORE) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}')
 
                 clip  = af.sigma_clip(y=self.err[order,det], sigma=sigma, width=width, 
                                 max_iter=max_iter, fun=fun, replace=False,
@@ -234,8 +235,8 @@ class SpectrumJWST:
                 self.err[order,det,] = clip
                 # self.flux[order,det,:] = clip # this is the flux with bad values replaced by the function values
                 # print(f' Clipped {100*np.sum(clip)/np.size(clip):.1f}% points in order {order}, detector {det}')
-                print(f' Clipped {np.sum(np.isnan(self.err)) - np.sum(nans_in)} points in order {order}, detector {det}')
-                print(f' Average SNR (AFTER) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}\n')
+                # print(f' Clipped {np.sum(np.isnan(self.err)) - np.sum(nans_in)} points in order {order}, detector {det}')
+                # print(f' Average SNR (AFTER) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}\n')
         return self
         
     
@@ -283,9 +284,21 @@ class SpectrumJWST:
         self.n_dets = n_dets
         
         attrs = ['wave', 'flux', 'err']
+        
+        rs = lambda x: x.reshape(n_orders, n_dets, -1) if n_dets > 0 else x.reshape(n_orders, -1)
         for attr in attrs:
             if hasattr(self, attr):
-                setattr(self, attr, getattr(self, attr).reshape(n_orders, n_dets, -1))
+                # setattr(self, attr, getattr(self, attr).reshape(n_orders, n_dets, -1))
+                setattr(self, attr, rs(getattr(self, attr)))
+                
+        return self
+    
+    def squeeze(self):
+        attrs = ['wave', 'flux', 'err']
+        for attr in attrs:
+            if hasattr(self, attr):
+                setattr(self, attr, getattr(self, attr).squeeze())
+        self.n_orders = self.flux.shape[0]
         return self
         
     def prepare_for_covariance(self, prepare_err_eff=True):
@@ -370,6 +383,92 @@ class SpectrumJWST:
         ax.set_xlabel(f'Wavelength [{self.wave_unit}]')
         ax.set_ylabel(f'Flux [{self.flux_unit}]')
         return ax
+    
+    def flatten(self):
+        attrs = ['wave', 'flux', 'err']
+        for attr in attrs:
+            if hasattr(self, attr):
+                setattr(self, attr, getattr(self, attr).flatten())
+                
+        self.n_orders = 1
+        return self
+    
+    def rebin(self, nbin=100):
+        """ Bin spectrum every `nbin` data points by taking the mean of each bin. 
+        Propagate the errors by taking the square root of the sum of the squared errors in each bin.
+        """
+        
+        
+        if len(self.flux.shape) > 1:
+            # print(f' Flattening from {self.flux.shape} to 1D arrays {np.prod(self.flux.shape)}')
+            assert len(self.flux.shape) == 2, f'Flux array must be 2D, not {self.flux.shape}'
+            n_orders = self.flux.shape[0]
+            wave_rb, flux_rb, err_rb = ([] for _ in range(3))
+            for i in range(n_orders):
+                out = af.rebin(self.wave[i], self.flux[i], nbin, 
+                               err=self.err[i] if getattr(self, 'err', None) is not None else None)
+                wave_rb.append(out[0])
+                flux_rb.append(out[1])
+                
+                if len(out) > 2:
+                    err_rb.append(out[2])
+                    
+            # self.wave = np.array(wave_rb)
+            self.wave = af.make_array(wave_rb)
+            self.flux = af.make_array(flux_rb)
+            if len(err_rb) > 0:
+                self.err =  af.make_array(err_rb)
+            
+        else:
+            
+            out = af.rebin(self.wave, self.flux, nbin, err=getattr(self, 'err', None))
+            self.wave, self.flux = out[:2]
+            if len(out) > 2:
+                self.err = out[2]
+        return self
+        
+    
+    def rebin_spectres(self, nbin=100):
+        """ Bin spectrum every `nbin` data points using `spectres` package.
+        take class attributes `wave` and `flux` and rebin them propagating the errors
+        stored as `err` attribute.
+        """
+        from spectres import spectres
+        
+        # Create new bins by averaging every `nbin` points
+        nans = np.isnan(self.flux)
+        wave, flux, err = self.wave[~nans], self.flux[~nans], self.err[~nans]
+
+        size = len(wave)
+        trimmed_size = size - (size % nbin)
+        
+        # Trim the arrays to be a multiple of nbin
+        trimmed_wave = wave[:trimmed_size]
+        trimmed_flux = flux[:trimmed_size]
+        trimmed_err = err[:trimmed_size]
+
+        new_wave = trimmed_wave.reshape(-1, nbin).mean(axis=1)
+        # Use spectres to rebin the spectrum with propagated errors
+        rebinned_flux, rebinned_err = spectres(new_wave, trimmed_wave, trimmed_flux, trimmed_err, fill=None)
+        
+        # Update the class attributes with the rebinned data
+        self.wave = new_wave
+        self.flux = rebinned_flux
+        self.err = rebinned_err
+        return self
+    
+    def copy(self):
+        """ Return a copy of the Spectrum instance. """
+        return copy.deepcopy(self)
+    
+    
+class ModelSpectrum:
+    "1D model spectrum for SED fit"
+    def __init__(self, wave, flux):
+        self.wave = wave
+        self.flux = flux
+        
+    
         
     
     

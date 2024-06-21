@@ -324,8 +324,11 @@ class FreeChemistry(Chemistry):
         self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
         
-        self.mass_fractions['H-'] = 6e-9 # solar
-        self.mass_fractions['e-'] = 1e-10 # solar
+    
+        # self.mass_fractions['H-'] = 6e-9 # solar
+        self.mass_fractions['H-'] = self.VMRs.get('H-', 6e-9)
+        # self.mass_fractions['e-'] = 1e-10# solar
+        self.mass_fractions['e-'] = 1e-10 * (self.mass_fractions['H-'] / 6e-9)
         
     
         # Add to the H-bearing species

@@ -7,15 +7,15 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_K_N1'
+run = 'jwst_KM_N1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
     'NIRSpec': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
-        'wave_range': (1650, 3200), # g235h-f170lp
-        # 'wave_range': (1650, 5300),
+        # 'wave_range': (1650, 3200), # g235h-f170lp
+        'wave_range': (1650, 5300),
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
@@ -38,9 +38,9 @@ config_data = {
 free_params = {
 
     # Uncertainty scaling
-    'log_a_G': [(-2,0.6), r'$\log\ a$'], 
-    # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
-    # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
+    # 'log_a_G': [(-2,0.6), r'$\log\ a$'], 
+    'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
+    'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     'log_l': [(-2,-0.9), r'$\log\ l$'], 
     # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
@@ -49,16 +49,16 @@ free_params = {
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(2.2, 3.3), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(2.2, 3.5), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    # 'R_d': [(10.0, 200.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    # 'T_d': [(300, 1000), r'$T_d$'], # disk temperature in K
+    'T_d': [(300, 1000), r'$T_d$'], # disk temperature in K
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -72,7 +72,7 @@ free_params = {
     
     'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
     # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
-    # 'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], # (NEW 2024-06-11): try to detect CO2 in KLM bands
+    'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], # (NEW 2024-06-11): try to detect CO2 in KLM bands
     'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
     'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'], # (NEW 2024-06-11): try to detect K in KLM bands
     'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
@@ -83,6 +83,7 @@ free_params = {
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
     # 'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
     'log_FeH': [(-12,-2), r'$\log\ \mathrm{FeH}$'],
+    'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
@@ -99,7 +100,7 @@ free_params = {
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
     'res_G235': [(1500, 4000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
-    # 'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
+    'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
     # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
 # Constants to use if prior is not given
@@ -169,7 +170,7 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     # 'H2O_181_HotWat78',
-    # 'CO2_main_iso', # (NEW 2024-06-11): try to detect CO2 in KLM bands
+    'CO2_main_iso', # CO2 at ~ 4.1 um
     'Na_allard',
     'K', # (NEW 2024-06-11): try to detect K in KLM bands
     'Ca',

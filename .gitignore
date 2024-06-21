@@ -37,3 +37,4 @@ data/
 *.pdf
 *.zip
 TWA28/config_jwst_copy.py
+*SED_runs/

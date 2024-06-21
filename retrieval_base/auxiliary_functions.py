@@ -5,7 +5,7 @@ import wget
 
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy.ndimage import gaussian_filter1d, generic_filter, median_filter
+from scipy.ndimage import gaussian_filter1d, generic_filter, median_filter, gaussian_filter
 
 from astropy.io import fits
 
@@ -383,3 +383,59 @@ def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=False, re
     
     
     return mask_clip
+
+def instr_broadening(wave, flux, out_res=1e6, in_res=1e6):
+
+    # Delta lambda of resolution element is FWHM of the LSF's standard deviation
+    sigma_LSF = np.sqrt(1/out_res**2 - 1/in_res**2) / \
+                (2*np.sqrt(2*np.log(2)))
+
+    spacing = np.mean(2*np.diff(wave) / (wave[1:] + wave[:-1]))
+
+    # Calculate the sigma to be used in the gauss filter in pixels
+    sigma_LSF_gauss_filter = sigma_LSF / spacing
+    
+    # Apply gaussian filter to broaden with the spectral resolution
+    flux_LSF = gaussian_filter(flux, sigma=sigma_LSF_gauss_filter, 
+                                mode='nearest'
+                                )
+    return flux_LSF
+
+def rebin(wave, flux, nbin, err=None, debug=False):
+    # Create new bins by averaging every `nbin` points
+    nans = np.isnan(flux) | np.isnan(wave)
+    wave, flux = wave[~nans], flux[~nans]
+    
+    size = len(wave)
+    trimmed_size = size - (size % nbin)
+    if debug:
+        print(f'Original size: {size}, Trimmed size: {trimmed_size}')
+    
+    # Trim the arrays to be a multiple of nbin
+    trimmed_wave = wave[:trimmed_size]
+    trimmed_flux = flux[:trimmed_size]
+    # trimmed_err = err[:trimmed_size]
+    
+    new_wave = trimmed_wave.reshape(-1, nbin).mean(axis=1)
+    new_flux = trimmed_flux.reshape(-1, nbin).mean(axis=1)
+    
+    if err is not None:
+        trimmed_err = err[~nans][:trimmed_size]
+        new_err = np.sqrt(np.sum(trimmed_err.reshape(-1, nbin)**2, axis=1)) / nbin
+        return new_wave, new_flux, new_err
+    
+    return new_wave, new_flux, np.std(trimmed_flux.reshape(-1, nbin), axis=1)
+
+
+def make_array(arrays):
+    # Determine the length of the longest array
+    max_length = max(len(arr) for arr in arrays)
+    
+    # Pad all arrays to the max_length
+    padded_arrays = [np.pad(arr, (0, max_length - len(arr)), 'constant', constant_values=np.nan) for arr in arrays]
+    
+    # Convert to a single numpy array
+    result_array = np.array(padded_arrays)
+    
+    return result_array
+

@@ -48,7 +48,7 @@ if args.pre_processing:
     grisms = [
             # 'g140h-f100lp', 
             'g235h-f170lp', 
-            # 'g395h-f290lp',
+            'g395h-f290lp',
             ]
     files = [f'jwst/TWA28_{g}.fits' for g in grisms]
     # waves = [1450, 2450, 4155]

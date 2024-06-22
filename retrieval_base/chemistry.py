@@ -41,7 +41,8 @@ class Chemistry:
         'NaH':     ('NaH_main_iso',            'H1Na1',    22.989769 + 1.00784,        (0,0,1)), 
 
         'TiO':     ('TiO_48_Exomol_McKemmish', 'O1Ti1',    47.867 + 15.999,            (0,1,0)), 
-        'VO':      ('VO_ExoMol_McKemmish',     'O1V1',     50.9415 + 15.999,           (0,1,0)), 
+        # 'VO':      ('VO_ExoMol_McKemmish',     'O1V1',     50.9415 + 15.999,           (0,1,0)), 
+        'VO':     ('VO_HyVO_main_iso',     'O1V1',     50.9415 + 15.999,           (0,1,0)),
         'AlO':     ('AlO_main_iso',            'Al1O1',    26.981539 + 15.999,         (0,1,0)), 
         'CO2':     ('CO2_main_iso',            'C1O2',     12.011 + 2*15.999,          (1,2,0)),
     

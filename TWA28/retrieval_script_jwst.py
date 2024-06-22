@@ -8,7 +8,7 @@ from retrieval_base.pRT_model import pRT_model
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.parameters import Parameters
 from retrieval_base.config import Config
-import config_jwst as conf
+import config_jwst_J as conf
 
 config_file = 'config_jwst.txt'
 target = 'TWA28'
@@ -45,31 +45,20 @@ args = parser.parse_args()
 if args.pre_processing:
     sp.call(['python', f'{path}/{target}/config_jwst.py'])
     ## Pre-processing data
+    
     grisms = [
-            # 'g140h-f100lp', 
-            'g235h-f170lp', 
-            'g395h-f290lp',
+            'g140h-f100lp', 
+            # 'g235h-f170lp', 
+            # 'g395h-f290lp',
             ]
     files = [f'jwst/TWA28_{g}.fits' for g in grisms]
-    # waves = [1450, 2450, 4155]
-    # wave_split ={g:w for g,w in zip(grisms, waves)}
-    # g = grisms[-1]
-              
-    # spec = SpectrumJWST(file=f'jwst/TWA28_{g}.fits', grism=g)
-    
-    # spec = SpectrumJWST(Nedge=40).load_grisms(files)
-    # spec.reshape(spec.n_orders, 1)
-    # # spec.fix_wave_nans() # experimental...
-    # spec.sigma_clip_reshaped(use_flux=False, 
-    #                          sigma=3, 
-    #                          width=50, 
-    #                          max_iter=5,
-    #                          fun='median')
+
     spec = SpectrumJWST(Nedge=40).load_grisms(files)
     spec.reshape(spec.n_orders, 1)
     # spec.fix_wave_nans() # experimental...
     spec.sigma_clip_reshaped(use_flux=False, 
-                                sigma=3, 
+                                # sigma=3, # KM bands
+                                sigma=1.0, # J band
                                 width=31, 
                                 max_iter=5,
                                 fun='median', 
@@ -110,7 +99,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = False
+    random = True
     random_label = '_random' if random else ''
     prior_check(conf=conf, n=5, 
                 random=random, 

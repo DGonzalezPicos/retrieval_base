@@ -6,6 +6,7 @@ import wget
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter1d, generic_filter, median_filter, gaussian_filter
+from scipy.signal import savgol_filter
 
 from astropy.io import fits
 
@@ -355,34 +356,49 @@ def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=False, re
     boolean mask with the same shape as y.
     '''
     
-    assert fun in ['median', 'gaussian'], 'fun must be either "median" or "gaussian"'
+    assert fun in ['median', 'gaussian', 'savgol'], 'fun must be either "median" or "gaussian"'
     
     mask_clip = np.isnan(y)
+    print(f' Initial number of clipped points: {np.sum(mask_clip)}')
+    clip_0 = 0
     for i in range(max_iter):
-        std_y = np.nanstd(y[~mask_clip])
+        std_y = np.nanstd(np.where(mask_clip, np.nan, y))
         # mean_y = np.nanmean(y[~mask_clip])
         # use median filter 
         
         if fun == 'median':
             mean_y = median_filter(y, width, mode='nearest')
         elif fun == 'gaussian':
-            mean_y = gaussian_filter1d(y, width / 2.355, mode='nearest')        
+            mean_y = gaussian_filter1d(y, width / 2.355, 
+                                       mode='reflect',
+                                       ) 
+        elif fun == 'savgol':
+            mean_y = savgol_filter(y, width, 2, mode='nearest')       
         
         clip = np.abs(y - mean_y) > sigma * std_y
-        if np.nansum(clip) == 0:
-            break
-        mask_clip = np.logical_or(mask_clip, clip)
+        print(f' Iteration {i}: {np.sum(clip)} points clipped')
         
-    if replace:
-        y[mask_clip] = np.nan
-        return y
-    if replace_w_fun:
-        # use the values from the function to replace the clipped values
-        y[mask_clip] = mean_y[mask_clip] * sigma / 2
-        return y
+        mask_clip |= clip
+        
+        if (np.sum(clip) - clip_0) == 0 and i > 0:
+            print(f'--> Converged after {i} iterations')
+            break
+        clip_0 = np.sum(clip)
+
+        
+        if replace:
+            y[mask_clip] = np.nan
+            # return y
+        if replace_w_fun:
+            # use the values from the function to replace the clipped values
+            # y[mask_clip] = mean_y[mask_clip] * sigma / 2
+            # interpolate over nans
+            # print(f' Interpolated number of clipped points: {np.sum(mask_clip)}')
+            y = np.interp(np.arange(len(y)), np.arange(len(y))[~mask_clip], y[~mask_clip])
+    return y
     
     
-    return mask_clip
+    # return mask_clip
 
 def instr_broadening(wave, flux, out_res=1e6, in_res=1e6):
 

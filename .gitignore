@@ -38,3 +38,4 @@ data/
 *.zip
 TWA28/config_jwst_copy.py
 *SED_runs/
+TWA28/jwst/curve_data.csv

@@ -189,6 +189,7 @@ class SpectrumJWST:
         # use PDF pages to save a page for every order
         
         color = kwargs.pop('color', 'k')
+        kwargs['lw'] = kwargs.pop('lw', 0.8)
         with PdfPages(fig_name) as pdf:
             for i in range(self.n_orders):
                 for j in range(self.n_dets):
@@ -221,22 +222,26 @@ class SpectrumJWST:
             # keep a copy of the original data
             self.flux_uncorr = self.flux.copy()
             self.err_uncorr = self.err.copy()
+            fig, ax = plt.subplots(self.n_orders, 1, figsize=(10, 5))
             
         for order in range(self.n_orders):
             for det in range(self.n_dets):
                 nans_in = np.isnan(self.err[order,det])
                 # print(f' Average SNR (BEFORE) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}')
 
-                clip  = af.sigma_clip(y=self.err[order,det], sigma=sigma, width=width, 
+                clip  = af.sigma_clip(y=np.copy(self.err[order,det]), sigma=sigma, width=width, 
                                 max_iter=max_iter, fun=fun, replace=False,
                                 replace_w_fun=True)
                 
                 # self.flux[order,det,clip] = np.nan
-                self.err[order,det,] = clip
                 # self.flux[order,det,:] = clip # this is the flux with bad values replaced by the function values
-                # print(f' Clipped {100*np.sum(clip)/np.size(clip):.1f}% points in order {order}, detector {det}')
-                # print(f' Clipped {np.sum(np.isnan(self.err)) - np.sum(nans_in)} points in order {order}, detector {det}')
-                # print(f' Average SNR (AFTER) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}\n')
+                if debug:
+                    # print(f' Clipped {np.sum(np.isnan(clip)) - np.sum(nans_in)} points in order {order}, detector {det}')
+                    ax[order].plot(self.wave[order,det], self.err[order,det], label='Original', color='k')
+                    ax[order].plot(self.wave[order,det], clip, label='Clipped', color='r')
+                    ax[order].legend()
+                self.err[order,det,] = clip
+
         return self
         
     

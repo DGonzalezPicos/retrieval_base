@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'J_1'
+run = 'J_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -15,12 +15,12 @@ config_data = {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
         # 'wave_range': (1650, 3200), # g235h-f170lp
-        'wave_range': (850, 1950),
+        'wave_range': (880, 1950),
         # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
 
         # 'file_target': './jwst/TWA28_g395h-f290lp.fits', 
         
-        'lbl_opacity_sampling' : 20,
+        'lbl_opacity_sampling' : 30,
         'sigma_clip': 3,
         'sigma_clip_width': 50, 
     
@@ -66,7 +66,7 @@ free_params = {
     
     # Chemistry
     'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
-    # 'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
+    'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
     # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
     # 'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'],
     
@@ -79,11 +79,14 @@ free_params = {
     'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
     # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'],
     'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    # 'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
+    'log_Mn': [(-12,-2), r'$\log\ \mathrm{Mn}$'],
+    'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
     'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
     # 'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
     'log_FeH': [(-12,-2), r'$\log\ \mathrm{FeH}$'],
+    'log_CrH': [(-12,-2), r'$\log\ \mathrm{CrH}$'],
     'log_VO': [(-12,-2), r'$\log\ \mathrm{VO}$'],
+    'log_TiO': [(-12,-2), r'$\log\ \mathrm{TiO}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 
@@ -166,7 +169,7 @@ continuum_opacities=['H2-H2', 'H2-He', 'H-']
 
 line_species = [
     'CO_high', 
-    # 'CO_36_high', 
+    'CO_36_high', 
     # 'CO_28', 
     # 'CO_27', 
 
@@ -178,12 +181,15 @@ line_species = [
     'Ca',
     'Ti',
     'Mg', # (NEW 2024-06-11): no Mg detected in KLM bands
-    # 'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
+    'Mn',
+    'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
     'Al',
     # 'HF_main_iso',
     # 'Si',
     'FeH_main_iso',
+    'CrH_main_iso',
     'VO_HyVO_main_iso',
+    'TiO_48_Exomol_McKemmish',
     ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O',

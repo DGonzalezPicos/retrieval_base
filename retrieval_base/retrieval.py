@@ -345,9 +345,16 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
 class Retrieval:
 
     plot_ccf = False
-    def __init__(self, conf, evaluation, d_spec=None):
+    def __init__(self, conf, evaluation, d_spec=None, tmp_path=None):
 
         self.conf = conf
+        # if MPI active, change self.conf.prefix
+        if rank > 0 and tmp_path is not None:
+            print(f' rank = {rank}')
+            # self.conf.prefix = self.conf.prefix + f'rank{rank}/'
+            # get $TMP_PATH variable
+            self.conf.prefix = f'{tmp_path}retrieval_outputs/{self.conf.run}/test_'
+            
         self.evaluation = evaluation
 
         self.d_spec  = {}

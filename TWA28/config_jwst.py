@@ -20,7 +20,7 @@ config_data = {
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
         
-        'lbl_opacity_sampling' : 10,
+        'lbl_opacity_sampling' : 20,
         'sigma_clip': 3,
         'sigma_clip_width': 50, 
     
@@ -231,10 +231,10 @@ PT_kwargs = dict(
 
 const_efficiency_mode = True
 sampling_efficiency = 0.05
-evidence_tolerance = 0.5
+evidence_tolerance = 1.0
 n_live_points = 100
-# n_iter_before_update = n_live_points * 2
-n_iter_before_update = 1
+n_iter_before_update = n_live_points * 2
+# n_iter_before_update = 1
 # generate a .txt version of this file
 
 if __name__ == '__main__':

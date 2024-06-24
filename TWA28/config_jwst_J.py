@@ -2,13 +2,18 @@ import numpy as np
 import os
 
 file_params = 'config_jwst.py'
+# tmp_path = "/scratch-local/dgonzalezpi"
+tmp_path = None
 
 ####################################################################################
 # Files and physical parameters
 ####################################################################################
 
 run = 'J_3'
-prefix = f'./retrieval_outputs/{run}/test_'
+if tmp_path is not None:
+    prefix = f'./retrieval_outputs/{run}/test_'
+else:
+    prefix = f'{tmp_path}/retrieval_outputs/{run}/test_'
 
 config_data = {
     'NIRSpec': {
@@ -241,13 +246,15 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 100
-# n_iter_before_update = n_live_points * 2
-n_iter_before_update = 1
+n_iter_before_update = n_live_points * 2
+# n_iter_before_update = 1
 # generate a .txt version of this file
 
 if __name__ == '__main__':
     from retrieval_base.config import Config
     import pathlib
-    
-    conf = Config(path=pathlib.Path(__file__).parent.absolute(), target=None, run=run)
+    if tmp_path is None:
+        conf = Config(path=pathlib.Path(__file__).parent.absolute(), target=None, run=run)
+    else:
+        conf = Config(path=tmp_path, target="TWA28", run=run)
     conf.save_json(file_params, globals())

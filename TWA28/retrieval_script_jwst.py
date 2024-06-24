@@ -40,6 +40,7 @@ parser.add_argument('--pre_processing', '-p', action='store_true', default=False
 parser.add_argument('--prior_check', '-c', action='store_true', default=False)
 parser.add_argument('--retrieval', '-r', action='store_true', default=False)
 parser.add_argument('--evaluation', '-e', action='store_true', default=False)
+parser.add_argument('--tmp_path', '-t', type=str, default=None)
 args = parser.parse_args()
 
 if args.pre_processing:
@@ -109,7 +110,8 @@ if args.prior_check:
 if args.retrieval:
     ret = Retrieval(
         conf=conf, 
-        evaluation=args.evaluation
+        evaluation=args.evaluation,
+        tmp_path=args.tmp_path
         )
     ret.PMN_run()
 

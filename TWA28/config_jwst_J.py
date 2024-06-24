@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'J_2'
+run = 'J_3'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -33,7 +33,44 @@ config_data = {
 ####################################################################################
 # Model parameters
 ####################################################################################
+opacity_params = {
+    'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
+    # 'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
+    # 'log_C18O': ([(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
+    # 'log_C17O': ([(-12,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
+    
+    'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O_181': ([(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
+    
+    'log_CO2': ([(-12,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
+    # 'log_CN': ([(-12,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
+    
+    
+    'log_Na': ([(-12,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
+    'log_K': ([(-12,-2), r'$\log\ \mathrm{K}$'], 'K'),
+    'log_Ca': ([(-12,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
+    'log_Ti': ([(-12,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
+    'log_Mg': ([(-12,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
+    'log_Mn': ([(-12,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
+    'log_Fe': ([(-12,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
+    'log_Al': ([(-12,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
+    
+    'log_FeH': ([(-12,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
+    'log_CrH': ([(-12,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
+    'log_TiH': ([(-12,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
+    'log_CaH': ([(-12,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
+    'log_AlH': ([(-12,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
+    'log_MgH': ([(-12,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
+    'log_NaH': ([(-12,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'),
 
+    'log_OH': ([(-12,-2), r'$\log\ \mathrm{OH}$'], 'OH_main_iso'),
+    'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
+    
+    'log_VO': ([(-12,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'),
+    'log_TiO': ([(-12,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    
+}
+print(f' Including {len(opacity_params)} opacity sources...')
 # Define the priors of the parameters
 free_params = {
 
@@ -65,28 +102,6 @@ free_params = {
     'rv': [(-20,20), r'$v_\mathrm{rad}$'], 
     
     # Chemistry
-    'log_12CO': [(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 
-    'log_13CO': [(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 
-    # 'log_C18O': [(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 
-    # 'log_C17O': [(-12,-2), r'$\log\ \mathrm{C^{17}O}$'],
-    
-    'log_H2O': [(-12,-2), r'$\log\ \mathrm{H_2O}$'], 
-    # 'log_H2O_181': [(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'],
-    # 'log_CO2': [(-12,-2), r'$\log\ \mathrm{CO_2}$'], # (NEW 2024-06-11): try to detect CO2 in KLM bands
-    'log_Na': [(-12,-2), r'$\log\ \mathrm{Na}$'],
-    'log_K': [(-12,-2), r'$\log\ \mathrm{K}$'], # (NEW 2024-06-11): try to detect K in KLM bands
-    'log_Ca': [(-12,-2), r'$\log\ \mathrm{Ca}$'],
-    'log_Ti': [(-12,-2), r'$\log\ \mathrm{Ti}$'],
-    # 'log_HF': [(-12,-2), r'$\log\ \mathrm{HF}$'],
-    'log_Mg': [(-12,-2), r'$\log\ \mathrm{Mg}$'],
-    'log_Mn': [(-12,-2), r'$\log\ \mathrm{Mn}$'],
-    'log_Fe': [(-12,-2), r'$\log\ \mathrm{Fe}$'],
-    'log_Al': [(-12,-2), r'$\log\ \mathrm{Al}$'],
-    # 'log_Si': [(-12,-2), r'$\log\ \mathrm{Si}$'],
-    'log_FeH': [(-12,-2), r'$\log\ \mathrm{FeH}$'],
-    'log_CrH': [(-12,-2), r'$\log\ \mathrm{CrH}$'],
-    'log_VO': [(-12,-2), r'$\log\ \mathrm{VO}$'],
-    'log_TiO': [(-12,-2), r'$\log\ \mathrm{TiO}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 
@@ -107,6 +122,9 @@ free_params = {
     # 'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
     # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
 }
+# add the opacity parameters
+free_params.update({k:v[0] for k,v in opacity_params.items()})
+
 # Constants to use if prior is not given
 # distance in pc to parallax
 d_pc = 59.2 # pc
@@ -167,30 +185,8 @@ chem_kwargs = dict()
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
 
-line_species = [
-    'CO_high', 
-    'CO_36_high', 
-    # 'CO_28', 
-    # 'CO_27', 
+line_species =[v[1] for _,v in opacity_params.items()]
 
-    'H2O_pokazatel_main_iso', 
-    # 'H2O_181_HotWat78',
-    # 'CO2_main_iso', # CO2 at ~ 4.1 um
-    'Na_allard',
-    'K', 
-    'Ca',
-    'Ti',
-    'Mg', # (NEW 2024-06-11): no Mg detected in KLM bands
-    'Mn',
-    'Fe', # (NEW 2024-06-11): no Fe detected in KLM bands
-    'Al',
-    # 'HF_main_iso',
-    # 'Si',
-    'FeH_main_iso',
-    'CrH_main_iso',
-    'VO_HyVO_main_iso',
-    'TiO_48_Exomol_McKemmish',
-    ]
 species_to_plot_VMR = [
     '12CO', '13CO', 'H2O',
     ]

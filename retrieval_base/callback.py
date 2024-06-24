@@ -483,8 +483,12 @@ class CallBack:
 
             color=self.posterior_color, 
             linewidths=0.5, 
-            hist_kwargs={'color':self.posterior_color}, 
-
+            # fill with low alpha
+            hist_kwargs={'color':self.posterior_color,
+                            'alpha':0.35,
+                            'fill':True,
+                            'lw':0.5,
+            },
             #levels=(1-np.exp(-0.5),),
             fill_contours=True, 
             plot_datapoints=self.evaluation, 
@@ -507,6 +511,25 @@ class CallBack:
         ax = ax.reshape((int(np.sqrt(len(ax))), 
                          int(np.sqrt(len(ax))))
                         )
+        
+        # rewrite titles to span two rows
+        # collect all titles
+        titles = [axi.title.get_text() for axi in fig.axes]
+        for i, title in enumerate(titles):
+            if len(title) > 30:
+                title_split = title.split('=')
+                titles[i] = title_split[0] + '\n ' + title_split[1]
+            fig.axes[i].title.set_text(titles[i])
+        # hide solid line from top axis of diagonal axes
+        for i in range(ax.shape[0]):
+            ax[i,i].spines['top'].set_visible(False)
+            ax[i,i].spines['right'].set_visible(False)
+            
+        
+        # remove the original titles
+        # if i ==1:
+        # for i, axi in enumerate(fig.axes):
+        #     fig.axes[i].title.set_visible(False)
 
         for i in range(ax.shape[0]):
             # Change linestyle of 16/84th percentile in histograms
@@ -514,12 +537,14 @@ class CallBack:
             ax[i,i].get_lines()[1].set(linewidth=0.5, linestyle=(5,(5,5)))
 
             # Show the best-fitting value in histograms
-            ax[i,i].annotate(
-                r'$'+'{:.2f}'.format(self.bestfit_params[mask_params][i])+'$', 
-                xy=(0.95,0.95), xycoords=ax[i,i].transAxes, 
-                color=self.bestfit_color, rotation=0, ha='right', va='top', 
-                fontsize=ann_fs
-                )
+            annotate_bestfit = False
+            if annotate_bestfit:
+                ax[i,i].annotate(
+                    r'$'+'{:.2f}'.format(self.bestfit_params[mask_params][i])+'$', 
+                    xy=(0.95,0.95), xycoords=ax[i,i].transAxes, 
+                    color=self.bestfit_color, rotation=0, ha='right', va='top', 
+                    fontsize=ann_fs
+                    )
             # Adjust the axis-limits
             for j in range(i):
                 ax[i,j].set(ylim=self.param_range[mask_params][i])

@@ -1,0 +1,617 @@
+# AORKEY   = 18360320          / Observation request ID
+# TGT_NUM  = 01                / Nth target observed in this AOR
+# OBJECT   = '01102098??'      / Object name specified by observer
+# AORLABEL = 'IRSS-G-DMW-YBD-II-0029'
+# PROTITLE = 'Disk structure and planet formation around young low-mass stars and
+# EXPTYPE  = 'sp'
+# OBJTYPE  = 'TargetFixedSingle'
+# DATE_OBS = '2006-07-03 15:07:50.735' / start of first observation (UTCS)
+# SCLK_OBS = 836406888.600     / time of observation start (spacecraft)
+# CAMPAIGN = 'IRSX006800'      / Spitzer campaign ID
+# OBSRVR   = 'Houck, James'
+# PROGID   = 30540
+# TELESCOP = 'Spitzer'
+# AOT_TYPE = 'IrsStare'
+# READMODE = 'RAW'
+# REQTYPE  = 'AOR'
+# 
+#  COMMENT A value of -99.0 means 'unknown'.
+#  COMMENT orders:  1=SL2  2=SL1  3=LL2  4=LL1
+# 
+#  Extraction coordinates - primary (SL if available, otherwise LL)
+# RA       = 165.54084         / (deg J2000)
+# DEC      = -34.50987         / (deg J2000)
+# CRA      = '11h02m09.80s'    / (J2000)
+# CDEC     = '-34d30m35.5s'    / (J2000)
+# EQUINOX  = 2000              / for ICRF celestial coord. system
+# RADESYS  = 'ICRS'            / International Celestial Ref Sys
+# 
+#  Synthetic Photometry
+# IRAC8    = 6.672E-03         / Jy at  8.00 um  ( 6.276 to  9.572 = 99%)
+# IRAC8U   = 2.347E-04         / Uncertainty
+# IRAS12   = 5.945E-03         / Jy at 12.00 um  ( 7.516 to 14.916 = 98%)
+# IRAS12U  = 2.552E-04         / Uncertainty
+# IRS16    = 5.178E-03         / Jy at 16.00 um  (12.959 to 19.235 = 98%)
+# IRS16U   = 3.885E-04         / Uncertainty
+# IRS22    = 3.209E-03         / Jy at 22.00 um  (18.049 to 30.751 = 98%)
+# IRS22U   = 5.258E-04         / Uncertainty
+# MIPS24   = 3.557E-03         / Jy at 24.00 um  (19.912 to 30.751 = 98%)
+# MIPS24U  = 4.634E-04         / Uncertainty
+# IRAS25   = 3.658E-03         / Jy at 25.00 um  (16.017 to 30.412 = 99%)
+# IRAS25U  = 4.949E-04         / Uncertainty
+# 
+#  Wavelength Coverage, Counts, Uncertainties
+# WAVE_MIN =  5.21725          / um  (min wavelength in data)
+# WAVE_MAX = 37.86356          / um  (max wavelength in data)
+# N_IN     = 8                 / number of bksub spectra merged
+# OFLAG    = 15                / orders,sum of: ord1=1 ord2=2 ord3=4 ord4=8
+# N_ORDERS = 4                 / how many orders covered (of the 4)
+# SNR_SL2  =  26.55022         / SL2 mean flux/mean unc
+# SNR_SL1  =  24.72658         / SL1 mean flux/mean unc
+# SNR_LL2  =  10.73356         / LL2 mean flux/mean unc
+# SNR_LL1  =   4.96612         / LL1 mean flux/mean unc
+# 
+#  Order Overlap Area Flux Ratios
+# RATIO_SL2_SL1 = 1.008        / Order edge ratio EDG_SL2_HI / EDG_SL1_LO
+# RATIO_SL1_LL2 = 0.888        / Order edge ratio EDG_SL1_HI / EDG_LL2_LO
+# RATIO_LL2_LL1 = 1.053        / Order edge ratio EDG_LL2_HI / EDG_LL1_LO
+# EDG_SL2_HI =    0.00668      / Jy (SL2 median flux hi edge:  7.25 to  7.56 um)
+# EDG_SL1_LO =    0.00662      / Jy (SL1 median flux lo edge:  7.56 to  8.15 um)
+# EDG_SL1_HI =    0.00551      / Jy (SL1 median flux hi edge: 13.60 to 14.28 um)
+# EDG_LL2_LO =    0.00620      / Jy (LL2 median flux lo edge: 14.28 to 15.05 um)
+# EDG_LL2_HI =    0.00448      / Jy (LL2 median flux hi edge: 19.80 to 20.66 um)
+# EDG_LL1_LO =    0.00425      / Jy (LL1 median flux lo edge: 20.68 to 22.30 um)
+# 
+#  Extraction profile mean FWHM (per order)
+# WIDTH_SL2 =  2.34            / (arcsec) for SL2 (order 1)
+# WIDTH_SL1 =  2.65            / (arcsec) for SL1 (order 2)
+# WIDTH_LL2 =  6.38            / (arcsec) for LL2 (order 3)
+# WIDTH_LL1 = -99.00           / (arcsec) for LL1 (order 4)
+# 
+#  Extraction coordinates for SL2,SL1 (orders 1&2)
+# RA_SL    = 165.54084         / (deg J2000)
+# DEC_SL   = -34.50987         / (deg J2000)
+# PA_SL    =  18.96854         / (deg J2000)
+# 
+#  Extraction coordinates for LL2,LL1 (orders 3&4)
+# RA_LL    = 165.54093         / (deg J2000)
+# DEC_LL   = -34.50971         / (deg J2000)
+# PA_LL    = -64.77152         / (deg J2000)
+# 
+#  Requested coordinates of observation (by observer)
+# RA_RQST  = 165.54096         / (deg J2000)
+# DEC_RQST = -34.50986         / (deg J2000)
+# RA_DEL   =  -0.00010         / (deg) delta RA (RA - RQST_RA) *cos(DEC)
+# DEC_DEL  =  -0.00001         / (deg) delta DEC (DEC - RQST_DEC)
+# 
+#  Info from bksub.tbl files (per input file)
+#  -----     ORDER   EXP    FOV
+# IN_ID1   = ' 1    0000   32 SL2.1'
+# IN_ID2   = ' 1    0001   33 SL2.2'
+# IN_ID3   = ' 2    0002   26 SL1.1'
+# IN_ID4   = ' 2    0003   27 SL1.2'
+# IN_ID5   = ' 3    0004   44 LL2.1'
+# IN_ID6   = ' 3    0005   45 LL2.2'
+# IN_ID7   = ' 4    0006   38 LL1.1'
+# IN_ID8   = ' 4    0007   39 LL1.2'
+# 
+#  Extraction Info (per input file)
+#  -------  max_flux_at  extraction_at  delta_nominal nominal  flag   peak(dn)
+# IN_XTR1  = ' 35.5         35.5            1.6         33.9    ok    17.03'
+# IN_XTR2  = ' 63.9         63.9           -3.4         67.3    ok    17.13'
+# IN_XTR3  = ' 35.0         35.0            1.1         33.9    ok    23.25'
+# IN_XTR4  = ' 64.0         64.0           -3.3         67.3    ok    23.39'
+# IN_XTR5  = ' 66.5         66.5           -0.2         66.7    ok    15.21'
+# IN_XTR6  = ' 34.1         34.1            0.9         33.3    ok    16.45'
+# IN_XTR7  = ' 65.5         65.5           -1.2         66.7    ok    12.67'
+# IN_XTR8  = ' 34.1         34.1            0.9         33.3    ok    14.26'
+# 
+#  Profile width information (per input file)
+#  ------      WIDTH  FLUX_MAX FLUX_MAX_UNC
+# PROFILE1 = '  2.34      17.0      2.5'
+# PROFILE2 = '  2.34      17.1      2.5'
+# PROFILE3 = '  2.62      23.2      4.5'
+# PROFILE4 = '  2.68      23.4      4.3'
+# PROFILE5 = '  6.55      15.2      3.3'
+# PROFILE6 = '  6.22      16.4      3.0'
+# PROFILE7 = '  9.12      12.7      4.6'
+# PROFILE8 = '  7.22      14.3      2.3'
+# 
+#  Coordinates per input file
+#  ------       RA_XTR     DEC_XTR   RA_FOV     DEC_FOV   RA_SLT     DEC_SLT
+# COORD1   = '165.54103  -34.50948  165.54094 -34.50972 165.54195 -34.50729'
+# COORD2   = '165.54075  -34.51023  165.54095 -34.50974 165.53994 -34.51216'
+# COORD3   = '165.54092  -34.50954  165.54085 -34.50971 165.54192 -34.50715'
+# COORD4   = '165.54066  -34.51022  165.54087 -34.50971 165.53981 -34.51227'
+# COORD5   = '165.54106  -34.50976  165.54098 -34.50973 165.54934 -34.51298'
+# COORD6   = '165.54055  -34.50956  165.54098 -34.50973 165.53262 -34.50648'
+# COORD7   = '165.54156  -34.50995  165.54098 -34.50973 165.54942 -34.51301'
+# COORD8   = '165.54055  -34.50957  165.54098 -34.50973 165.53254 -34.50646'
+# 
+#  Extraction 4 corners - Primary (SL, or LL if no SL)
+# RA1      = 165.54049         / deg
+# DEC1     = -34.51229         / deg
+# RA2      = 165.53931         / deg
+# DEC2     = -34.51195         / deg
+# RA3      = 165.54119         / deg
+# DEC3     = -34.50745         / deg
+# RA4      = 165.54237         / deg
+# DEC4     = -34.50779         / deg
+# 
+#  Extraction 4 corners for SL (Short Low, orders 1 & 2)
+# RA1_SL   = 165.54049         / deg
+# DEC1_SL  = -34.51229         / deg
+# RA2_SL   = 165.53931         / deg
+# DEC2_SL  = -34.51195         / deg
+# RA3_SL   = 165.54119         / deg
+# DEC3_SL  = -34.50745         / deg
+# RA4_SL   = 165.54237         / deg
+# DEC4_SL  = -34.50779         / deg
+# 
+#  Extraction 4 corners for LL (Long Low, orders 3 & 4)
+# RA1_LL   = 165.54955         / deg
+# DEC1_LL  = -34.51141         / deg
+# RA2_LL   = 165.54801         / deg
+# DEC2_LL  = -34.51410         / deg
+# RA3_LL   = 165.53231         / deg
+# DEC3_LL  = -34.50801         / deg
+# RA4_LL   = 165.53385         / deg
+# DEC4_LL  = -34.50532         / deg
+# 
+#  Heleocentric Info
+# SPTZR_X  = '-16822522.3846'  / [km] Heliocentric x position
+# SPTZR_Y  = '-137910980.208'  / [km] Heliocentric y position
+# SPTZR_Z  = '-62407845.7526'  / [km] Heliocentric z position
+# SPTZR_VX = '29.239417'       / [km/sec] Heliocentric x velocity
+# SPTZR_VY = '-3.414094'       / [km/sec] Heliocentric y velocity
+# SPTZR_VZ = '-1.099718'       / [km/sec] Heliocentric z velocity
+# VHELCORR = '-23.4'           / [km/sec] Correction to heliocentric velocity
+# VLSRCORR = '-32.8'           / [km/sec] Correction to local standard of rest
+# ET_OBS   = '205211335.919'   / [sec] DCE start time (TDB seconds past J2000)
+# HMJD_OBS = '53919.6312361'   / Corresponding Heliocen. Mod. Julian Date
+# 
+#  Processing Constants
+#  PARAM DATA_CLIP_1_MAX = 7.56 (order 1 (SL2) clipped above this)
+#  PARAM DATA_CLIP_1_MIN = 5.21 (order 1 (SL2) clipped below this)
+#  PARAM DATA_CLIP_2_MAX = 14.28 (order 2 (SL1) clipped above this)
+#  PARAM DATA_CLIP_2_MIN = 7.56 (order 2 (SL1) clipped below this)
+#  PARAM DATA_CLIP_3_MAX = 20.66 (order 3 (LL2) clipped above this)
+#  PARAM DATA_CLIP_3_MIN = 14.28 (order 3 (LL2) clipped below this)
+#  PARAM DATA_CLIP_4_MAX = 38 (order 4 (LL1) clipped above this)
+#  PARAM DATA_CLIP_4_MIN = 20.68 (order 4 (LL1) clipped below this)
+#  PARAM DATA_ERROR_MIN = 0.0001 (pedestal for "error" in input data)
+#  PARAM OVR_12_1_MAX = 7.56 (max wave in 1,2 overlap for order 1)
+#  PARAM OVR_12_1_MIN = 7.25 (min wave in 1,2 overlap for order 1)
+#  PARAM OVR_12_2_MAX = 8.15 (max wave in 1,2 overlap for order 2)
+#  PARAM OVR_12_2_MIN = 7.56 (min wave in 1,2 overlap for order 2)
+#  PARAM OVR_23_2_MAX = 14.28 (max wave in 2,3 overlap for order 2)
+#  PARAM OVR_23_2_MIN = 13.6 (min wave in 2,3 overlap for order 2)
+#  PARAM OVR_23_3_MAX = 15.05 (max wave in 2,3 overlap for order 3)
+#  PARAM OVR_23_3_MIN = 14.28 (min wave in 2,3 overlap for order 3)
+#  PARAM OVR_34_3_MAX = 20.66 (max wave in 2,3 overlap for order 3)
+#  PARAM OVR_34_3_MIN = 19.8 (min wave in 2,3 overlap for order 3)
+#  PARAM OVR_34_4_MAX = 22.3 (max wave in 3,4 overlap for order 4)
+#  PARAM OVR_34_4_MIN = 20.68 (min wave in 3,4 overlap for order 4)
+#  PARAM PHOT_COVERAGE_MIN = 0.95 (min coverage to compute photometry)
+#  PARAM PHOT_IRAC8_CONSTANT = 1.00 (correction constant)
+#  PARAM PHOT_IRAC8_DIVBYNU = 1 (response values:  1=divide by nu)
+#  PARAM PHOT_IRAC8_MAX = 9.584890 (Filter clip (highest wavelength to use))
+#  PARAM PHOT_IRAC8_MIN = 6.262590 (Filter clip (lowest wavelength to use))
+#  PARAM PHOT_IRAC8_REFWAV = 8.00 (reference wavelength)
+#  PARAM PHOT_IRAC8_UNC_BOOST = 0.011 (Boost filter unc by this frac of flux)
+#  PARAM PHOT_IRAS12_CONSTANT = 1.00 (correction constant)
+#  PARAM PHOT_IRAS12_DIVBYNU = 1 (response values:  1=divide by nu)
+#  PARAM PHOT_IRAS12_MAX = 15.0 (Filter clip (highest wavelength to use))
+#  PARAM PHOT_IRAS12_MIN = 7.5 (Filter clip (lowest wavelength to use))
+#  PARAM PHOT_IRAS12_REFWAV = 12.00 (reference wavelength)
+#  PARAM PHOT_IRAS12_UNC_BOOST = 0.017 (Boost filter unc by this frac of flux)
+#  PARAM PHOT_IRAS25_CONSTANT = 1.00 (correction constant)
+#  PARAM PHOT_IRAS25_DIVBYNU = 1 (response values:  1=divide by nu)
+#  PARAM PHOT_IRAS25_MAX = 30.5 (Filter clip (highest wavelength to use))
+#  PARAM PHOT_IRAS25_MIN = 16.0 (Filter clip (lowest wavelength to use))
+#  PARAM PHOT_IRAS25_REFWAV = 25.00 (reference wavelength)
+#  PARAM PHOT_IRAS25_UNC_BOOST = 0.017 (Boost filter unc by this frac of flux)
+#  PARAM PHOT_IRS16_CONSTANT = 1.00 (correction constant)
+#  PARAM PHOT_IRS16_DIVBYNU = 1 (response values:  1=divide by nu)
+#  PARAM PHOT_IRS16_MAX = 19.2765 (Filter clip (highest wavelength to use))
+#  PARAM PHOT_IRS16_MIN = 12.932 (Filter clip (lowest wavelength to use))
+#  PARAM PHOT_IRS16_REFWAV = 16.00 (reference wavelength)
+#  PARAM PHOT_IRS16_UNC_BOOST = 0.016 (Boost filter unc by this frac of flux)
+#  PARAM PHOT_IRS22_CONSTANT = 1.00 (correction constant)
+#  PARAM PHOT_IRS22_DIVBYNU = 1 (response values:  1=divide by nu)
+#  PARAM PHOT_IRS22_MAX = 30.8653 (Filter clip (highest wavelength to use))
+#  PARAM PHOT_IRS22_MIN = 18.0048 (Filter clip (lowest wavelength to use))
+#  PARAM PHOT_IRS22_REFWAV = 22.00 (reference wavelength)
+#  PARAM PHOT_IRS22_UNC_BOOST = 0.016 (Boost filter unc by this frac of flux)
+#  PARAM PHOT_MIPS24_CONSTANT = 0.96791614 (correction constant)
+#  PARAM PHOT_MIPS24_DIVBYNU = 0 (response values:  1=divide by nu)
+#  PARAM PHOT_MIPS24_MAX = 30.865 (Filter clip (highest wavelength to use))
+#  PARAM PHOT_MIPS24_MIN = 19.867 (Filter clip (lowest wavelength to use))
+#  PARAM PHOT_MIPS24_REFWAV = 24.00 (reference wavelength)
+#  PARAM PHOT_MIPS24_UNC_BOOST = 0.018 (Boost filter unc by this frac of flux)
+#  PARAM SNR1_BOOST_O1 = 0.011 (boost for SNR1 of order 1)
+#  PARAM SNR1_BOOST_O2 = 0.011 (boost for SNR1 of order 2)
+#  PARAM SNR1_BOOST_O3 = 0.016 (boost for SNR1 of order 3)
+#  PARAM SNR1_BOOST_O4 = 0.018 (boost for SNR1 of order 4)
+#  PARAM SNR_FLUX_CUTOFF = 0.0001 (lowest flux_density used in SNR)
+#  PARAM SNR_UNC_CUTOFF = 0.0001 (lowest "error" (or "stdev") used in SNR)
+#  PARAM XTR_SUSPECT = 10 (tolerance for delta extraction SUSPECT)
+# 
+#  Processing Info
+# SOFTWARE = 'irs_merge v2.1'  / program that created this file
+# ORIGIN   = 'SSC - Spitzer Science Center' / this file created by
+# CREATOR  = 'S18.18.0'        / pipeline version of 1st merged file
+# DATE     = '2011-12-08 18:54:12' / when this file created (Pacific)
+# ENHID    = 9325              / Spitzer database Enhanced Product ID
+# CAMPID   = 840               / Spitzer database Campaign ID
+# FILENAME = 'SPITZER_S5_18360320_01_merge.tbl'
+
+# |wavelength|flux_density |error      |bit-flag|
+# |real      |real         |real       |int     |
+# |microns   |Jy           |Jy         |        |
+    5.21725      0.007787    0.000230        0
+    5.24749      0.007529    0.000216        0
+    5.27773      0.007946    0.000221        0
+    5.30797      0.008026    0.000240        0
+    5.33821      0.008230    0.000223        0
+    5.36846      0.008259    0.000220        0
+    5.39870      0.007963    0.000408        0
+    5.42894      0.008068    0.000230        0
+    5.45918      0.008354    0.000199        0
+    5.48942      0.008506    0.000213        0
+    5.51967      0.007792    0.000173        0
+    5.54991      0.007641    0.000178        0
+    5.58015      0.007389    0.000218        0
+    5.61039      0.007543    0.000265        0
+    5.64063      0.007904    0.000191        0
+    5.67088      0.007931    0.000210        0
+    5.70112      0.007635    0.000218        0
+    5.73136      0.007324    0.000191        0
+    5.76160      0.007432    0.000189        0
+    5.79184      0.007576    0.000185        0
+    5.82209      0.007525    0.000181        0
+    5.85233      0.007343    0.000198        0
+    5.88257      0.007425    0.000194        0
+    5.91281      0.006990    0.000182        0
+    5.94305      0.007301    0.000178        0
+    5.97330      0.007513    0.000232        0
+    6.00354      0.007435    0.000183        0
+    6.03378      0.007405    0.000187        0
+    6.06402      0.007334    0.000188        0
+    6.09426      0.007291    0.000177        0
+    6.12451      0.007471    0.000188        0
+    6.15475      0.007383    0.000210        0
+    6.18499      0.007554    0.000192        0
+    6.21523      0.007536    0.000200        0
+    6.24547      0.007324    0.000263        0
+    6.27572      0.007621    0.000195        0
+    6.30596      0.007799    0.000245        0
+    6.33620      0.007587    0.000311        0
+    6.36644      0.007234    0.000234        0
+    6.39668      0.007481    0.000235        0
+    6.42693      0.007647    0.000215        0
+    6.45717      0.007952    0.000229        0
+    6.48741      0.008067    0.000234        0
+    6.51765      0.007320    0.000233        0
+    6.54789      0.006886    0.000234        0
+    6.57814      0.007225    0.000260        0
+    6.60838      0.006778    0.000244        0
+    6.63862      0.006961    0.000244        0
+    6.66886      0.006914    0.000231        0
+    6.69910      0.006847    0.000235        0
+    6.72935      0.007222    0.000291        0
+    6.75959      0.007243    0.000250        0
+    6.78983      0.007215    0.000259        0
+    6.82007      0.006859    0.000266        0
+    6.85031      0.006851    0.000271        0
+    6.88056      0.006927    0.000278        0
+    6.91080      0.007150    0.000295        0
+    6.94104      0.007433    0.000325        0
+    6.97128      0.006814    0.000317        0
+    7.00152      0.006965    0.000334        0
+    7.03177      0.006459    0.000418        0
+    7.06201      0.006722    0.000347        0
+    7.09225      0.006927    0.000331        0
+    7.12249      0.006468    0.000304        0
+    7.15273      0.006809    0.000315        0
+    7.18298      0.006686    0.000311        0
+    7.21322      0.006790    0.000312        0
+    7.24346      0.006660    0.000316        0
+    7.27370      0.006988    0.000449        0
+    7.30394      0.006396    0.000348        0
+    7.33419      0.006467    0.000336        0
+    7.36443      0.006981    0.000344        0
+    7.39467      0.006060    0.000371        0
+    7.42491      0.006553    0.000381        0
+    7.45515      0.006709    0.000407        0
+    7.48540      0.006797    0.000419        0
+    7.51564      0.006586    0.000460        0
+    7.54588      0.006517    0.000463        0
+    7.57612      0.006599    0.000232        0
+    7.63660      0.006809    0.000198        0
+    7.69709      0.006823    0.000175        0
+    7.75757      0.006686    0.000159        0
+    7.81805      0.006596    0.000153        0
+    7.87854      0.006554    0.000160        0
+    7.93902      0.006440    0.000153        0
+    7.99951      0.006753    0.000164        0
+    8.05999      0.006731    0.000149        0
+    8.12047      0.006563    0.000136        0
+    8.18096      0.006517    0.000136        0
+    8.24144      0.006547    0.000139        0
+    8.30192      0.006470    0.000141        0
+    8.36241      0.006245    0.000140        0
+    8.42289      0.006188    0.000158        0
+    8.48337      0.006435    0.000138        0
+    8.54386      0.006457    0.000137        0
+    8.60434      0.006653    0.000157        0
+    8.66483      0.006294    0.000156        0
+    8.72531      0.006408    0.000164        0
+    8.78579      0.006605    0.000155        0
+    8.84628      0.006304    0.000147        0
+    8.90676      0.006580    0.000168        0
+    8.96724      0.006372    0.000289        0
+    9.02773      0.006450    0.000171        0
+    9.08821      0.006259    0.000158        0
+    9.14869      0.006631    0.000161        0
+    9.20918      0.006321    0.000231        0
+    9.26966      0.006761    0.000168        0
+    9.33015      0.006381    0.000204        0
+    9.39063      0.006384    0.000211        0
+    9.45111      0.006422    0.000178        0
+    9.51160      0.006337    0.000161        0
+    9.57208      0.006423    0.000182        0
+    9.63256      0.006485    0.000164        0
+    9.69305      0.006110    0.000162        0
+    9.75353      0.006099    0.000119    12288
+    9.81401      0.006187    0.000111    12288
+    9.87450      0.006233    0.000154        0
+    9.93498      0.006181    0.000154        0
+    9.99547      0.006400    0.000163        0
+   10.05595      0.006332    0.000153        0
+   10.11643      0.006077    0.000164        0
+   10.17692      0.005932    0.000167        0
+   10.23740      0.006071    0.000151        0
+   10.29788      0.006103    0.000143        0
+   10.35837      0.006006    0.000155        0
+   10.41885      0.006128    0.000169        0
+   10.47933      0.006448    0.000173        0
+   10.53982      0.006448    0.000194        0
+   10.60030      0.005975    0.000181        0
+   10.66079      0.005888    0.000177        0
+   10.72127      0.005692    0.000168        0
+   10.78175      0.005847    0.000188        0
+   10.84224      0.005869    0.000216        0
+   10.90272      0.005321    0.000204        0
+   10.96320      0.005954    0.000202        0
+   11.02369      0.005734    0.000281        0
+   11.08417      0.005730    0.000287        0
+   11.14465      0.005602    0.000205        0
+   11.20514      0.005758    0.000230        0
+   11.26562      0.005577    0.000269        0
+   11.32611      0.005915    0.000214        0
+   11.38659      0.005817    0.000206        0
+   11.44707      0.005498    0.000234        0
+   11.50756      0.005952    0.000280        0
+   11.56804      0.005867    0.000255        0
+   11.62852      0.005501    0.000234        0
+   11.68901      0.005614    0.000235        0
+   11.74949      0.005515    0.000225        0
+   11.80997      0.005398    0.000221        0
+   11.87046      0.005538    0.000225        0
+   11.93094      0.005601    0.000223        0
+   11.99143      0.005504    0.000254        0
+   12.05191      0.005505    0.000227        0
+   12.11239      0.005265    0.000272        0
+   12.17288      0.005489    0.000233        0
+   12.23336      0.005356    0.000300        0
+   12.29384      0.005116    0.000248        0
+   12.35433      0.005296    0.000218        0
+   12.41481      0.006047    0.000258        0
+   12.47529      0.005677    0.000208        0
+   12.53578      0.005477    0.000212        0
+   12.59626      0.005170    0.000203        0
+   12.65675      0.005577    0.000213        0
+   12.71723      0.006014    0.000224        0
+   12.77771      0.005703    0.000234        0
+   12.83820      0.005626    0.000231        0
+   12.89868      0.005795    0.000245        0
+   12.95916      0.005190    0.000259        0
+   13.01965      0.005117    0.000297        0
+   13.08013      0.005284    0.000349        0
+   13.14061      0.005241    0.000305        0
+   13.20110      0.005232    0.000417        0
+   13.26158      0.005220    0.000398        0
+   13.32206      0.005340    0.000426        0
+   13.38255      0.005571    0.000303        0
+   13.44303      0.005507    0.000351        0
+   13.50352      0.005465    0.000577        0
+   13.56400      0.005227    0.000522        0
+   13.62448      0.005842    0.000348        0
+   13.68497      0.006740    0.000598        0
+   13.74545      0.004397    0.000415        0
+   13.80593      0.005532    0.000347        0
+   13.86642      0.005249    0.000348        0
+   13.92690      0.005617    0.000350        0
+   13.98738      0.005826    0.000362        0
+   14.04787      0.005934    0.000360        0
+   14.10835      0.005329    0.000364        0
+   14.16884      0.004762    0.000373        0
+   14.22932      0.004987    0.000398      128
+   14.32338      0.006327    0.000282        0
+   14.40806      0.006370    0.000277        0
+   14.49274      0.006396    0.000291        0
+   14.57741      0.006775    0.000343        0
+   14.66209      0.006077    0.000315        0
+   14.74677      0.004624    0.000347        0
+   14.83145      0.005838    0.000365        0
+   14.91612      0.005876    0.000374        0
+   15.00080      0.006141    0.000325        0
+   15.08548      0.005748    0.000329        0
+   15.17015      0.006008    0.000318        0
+   15.25483      0.005840    0.000342        0
+   15.33951      0.005868    0.000318        0
+   15.42418      0.005968    0.000287        0
+   15.50886      0.005989    0.000278        0
+   15.59354      0.005673    0.000257        0
+   15.67821      0.005180    0.000256        0
+   15.76289      0.005722    0.000282        0
+   15.84757      0.006295    0.000323        0
+   15.93224      0.005626    0.000353        0
+   16.01692      0.004823    0.000410        0
+   16.10160      0.005206    0.000381        0
+   16.18628      0.004847    0.000407        0
+   16.27095      0.005275    0.000460        0
+   16.35563      0.004895    0.000418        0
+   16.44031      0.005205    0.000374        0
+   16.52498      0.005165    0.000360        0
+   16.60966      0.005072    0.000357        0
+   16.69434      0.004034    0.000329        0
+   16.77901      0.003828    0.000344        0
+   16.86369      0.004660    0.000366        0
+   16.94837      0.005006    0.000381        0
+   17.03304      0.004465    0.000386        0
+   17.11772      0.004246    0.000410        0
+   17.20240      0.004330    0.000432        0
+   17.28707      0.004243    0.000425        0
+   17.37175      0.004518    0.000431        0
+   17.45643      0.004789    0.000471        0
+   17.54111      0.004899    0.000373        0
+   17.62578      0.004298    0.000349        0
+   17.71046      0.000839    0.000372        0
+   17.79514      0.002165    0.000380        0
+   17.87981      0.004152    0.000403        0
+   17.96449      0.004429    0.000434        0
+   18.04917      0.005222    0.000442        0
+   18.13384      0.003998    0.000470        0
+   18.21852      0.004792    0.000523        0
+   18.30320      0.005148    0.000500        0
+   18.38787      0.002589    0.000537        0
+   18.47255      0.004956    0.000526        0
+   18.55723      0.004025    0.000597        0
+   18.64190      0.004414    0.000499        0
+   18.72658      0.004927    0.000488        0
+   18.81126      0.005838    0.000493        0
+   18.89594      0.005834    0.000535        0
+   18.98061      0.004281    0.000553        0
+   19.06529      0.005690    0.000531        0
+   19.14997      0.006713    0.000560        0
+   19.23464      0.005647    0.000634        0
+   19.31932      0.003827    0.000710        0
+   19.40400     -0.026328    0.000756        0
+   19.48867     -0.002405    0.000744        0
+   19.57335      0.005803    0.000706        0
+   19.65803      0.005495    0.000675        0
+   19.74270      0.004533    0.000657        0
+   19.82738      0.003424    0.000679        0
+   19.91206      0.005285    0.000619        0
+   19.99673     -0.005487    0.000627        0
+   20.08141     -0.012949    0.000701        0
+   20.16609      0.004615    0.000622        0
+   20.25077      0.004681    0.000681        0
+   20.33544      0.005026    0.000768        0
+   20.42012      0.004340    0.000993        0
+   20.50480      0.003472    0.000805        0
+   20.58947      0.004348    0.000849        0
+   20.75883      0.004006    0.000659        0
+   20.92818      0.005637    0.000540        0
+   21.09753      0.005293    0.000466        0
+   21.26689      0.004398    0.000544        0
+   21.43624      0.004308    0.000503        0
+   21.60560      0.003870    0.000438        0
+   21.77495      0.003450    0.000496        0
+   21.94430      0.004209    0.000599        0
+   22.11366      0.003878    0.000448        0
+   22.28301      0.004396    0.000430        0
+   22.45236      0.004754    0.000448        0
+   22.62172      0.004960    0.000518        0
+   22.79107      0.003339    0.000450        0
+   22.96043      0.003826    0.000389        0
+   23.12978      0.004528    0.000391        0
+   23.29913     -0.016233    0.000492        0
+   23.46849     -0.000155    0.000436        0
+   23.63784      0.004803    0.000372        0
+   23.80719      0.005359    0.000357        0
+   23.97655      0.004830    0.000360        0
+   24.14590      0.003581    0.000399        0
+   24.31526      0.004294    0.000415        0
+   24.48461      0.000009    0.000394        0
+   24.65396      0.003727    0.000382        0
+   24.82332      0.003831    0.000400        0
+   24.99267      0.006405    0.000442        0
+   25.16202      0.004942    0.000442        0
+   25.33138      0.005069    0.000433        0
+   25.50073      0.004676    0.000457        0
+   25.67009      0.004233    0.000505        0
+   25.83944      0.004566    0.000501        0
+   26.00879      0.004546    0.000467        0
+   26.17815      0.006734    0.000451        0
+   26.34750      0.005899    0.000407        0
+   26.51685      0.003766    0.000383        0
+   26.68621      0.004080    0.000392        0
+   26.85556      0.004361    0.000409        0
+   27.02492      0.004152    0.000422        0
+   27.19427      0.003862    0.000424        0
+   27.36362      0.004606    0.000395        0
+   27.53298      0.004608    0.000384        0
+   27.70233      0.003851    0.000409        0
+   27.87168      0.003601    0.000455        0
+   28.04104      0.004802    0.000537        0
+   28.21039      0.004450    0.000576        0
+   28.37975      0.004377    0.000548        0
+   28.54910      0.005531    0.000505        0
+   28.71845      0.005444    0.000488        0
+   28.88781      0.004952    0.000504        0
+   29.05716      0.003825    0.000536        0
+   29.22651      0.003609    0.000575        0
+   29.39587      0.004544    0.000536        0
+   29.56522      0.006976    0.000559        0
+   29.73458      0.006127    0.000520        0
+   29.90393      0.004425    0.000450        0
+   30.07328      0.004880    0.000441        0
+   30.24264      0.006435    0.000485        0
+   30.41199      0.006036    0.000566        0
+   30.58134      0.005211    0.000638        0
+   30.75070      0.005726    0.000642        0
+   30.92005      0.004726    0.000692        0
+   31.08941      0.006484    0.000749        0
+   31.25876      0.005468    0.000774        0
+   31.42811      0.005548    0.000777        0
+   31.59747      0.004487    0.000858        0
+   31.76682      0.004196    0.000759        0
+   31.93617      0.003647    0.000811        0
+   32.10553      0.003766    0.000809        0
+   32.27488      0.004151    0.000792        0
+   32.44424      0.004466    0.000842        0
+   32.61359      0.005016    0.000830        0
+   32.78294      0.004606    0.000768        0
+   32.95230      0.004089    0.000854        0
+   33.12165      0.005236    0.000969        0
+   33.29100      0.003499    0.001206        0
+   33.46036     -0.004561    0.001281        0
+   33.62971      0.008400    0.001626        0
+   33.79907      0.006196    0.001521        0
+   33.96842      0.005647    0.001753        0
+   34.13777      0.000139    0.001495        0
+   34.30713      0.004009    0.001370        0
+   34.47648      0.009324    0.001560        0
+   34.64583      0.007293    0.001342        0
+   34.81519      0.002289    0.001259        0
+   34.98454      0.002764    0.001442        0
+   35.15390      0.007524    0.001735        0
+   35.32325      0.008669    0.001682        0
+   35.49260      0.007415    0.002232        0
+   35.66196      0.008635    0.002620        0
+   35.83131      0.008706    0.003432        0
+   36.00066      0.012213    0.003249        0
+   36.17002     -0.000710    0.002849        0
+   36.33937      0.000665    0.003242        0
+   36.50873      0.017762    0.002780        0
+   36.67808      0.018361    0.002694        0
+   36.84743      0.001689    0.002835        0
+   37.01679     -0.003180    0.003257        0
+   37.18614      0.010410    0.003891        0
+   37.35549      0.022231    0.004833        0
+   37.52485      0.003763    0.004338        0
+   37.69420      0.010748    0.005358        0
+   37.86356      0.023576    0.011517        0

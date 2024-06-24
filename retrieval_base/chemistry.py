@@ -329,6 +329,9 @@ class FreeChemistry(Chemistry):
 
         # Add the H2 and He abundances
         self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He
+        # if 'H2' in self.VMRs.keys():
+        #     self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * 
+            
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
         
     

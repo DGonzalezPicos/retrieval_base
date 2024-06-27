@@ -96,10 +96,17 @@ if args.prior_check:
                     xscale='log',
                     yscale='log',
                     )
+    
+    sed.set_PMN_hyperparameters(
+        n_live_points=100,
+        evidence_tolerance=0.5,
+        n_iter_before_update=300,
+        sampling_efficiency=0.05,
+        )
     sed.save(sed_file)
     
 if args.retrieval:
-    
+    sed = pickle_load(sed_file)
     sed.PMN_run()
 if args.evaluation:
     sed = pickle_load(sed_file)

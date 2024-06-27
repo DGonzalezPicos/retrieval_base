@@ -29,7 +29,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_11'
+run = 'with_spitzer_12'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -44,7 +44,7 @@ if args.prior_check:
     sed = SED(grisms, run=run).load_spec(Nedge=Nedge)
     
     # wmin = 0.95 * np.nanmin(sed.spec.wave) # [nm]
-    wmin = 2200.0 # [nm]
+    wmin = 2600.0 # [nm]
     wmax = 12.0 * 1e3 # [um] -> [nm]
     
     bt_model_file = sed.run_path / f'BTSETTL_{wmin:.0f}_{wmax:.0f}.nc'
@@ -76,7 +76,7 @@ if args.prior_check:
     # d_pc = 59.17 
 
     free_params = {
-                    'teff': (2200, 2700),
+                    'teff': (2200, 2800),
                    'logg': (3.0, 4.5), 
                    'R_p': (2.2, 3.5), 
                     'T_d': (100, 900),
@@ -98,7 +98,7 @@ if args.prior_check:
                     )
     
     sed.set_PMN_hyperparameters(
-        n_live_points=100,
+        n_live_points=200,
         evidence_tolerance=0.5,
         n_iter_before_update=300,
         sampling_efficiency=0.05,

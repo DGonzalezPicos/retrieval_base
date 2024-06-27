@@ -19,18 +19,28 @@ flux_medfilt = medfilt(flux, kernel_size=5)
 mask_clip = np.abs(flux - flux_medfilt) > 3*err
 flux[mask_clip] = np.nan
 
+wave_cm = wave * 1e-4  # [microns] -> [cm]
+# convert Jy to [erg cm^{-2} s^{-1} Hz^{-1}]
+flux *= 1e-23
+# convert [erg cm^{-2} s^{-1} Hz^{-1}] -> [erg cm^{-2} s^{-1} cm^{-1}]
+flux *= 2.998e10 / wave_cm**2 # wave in cm
+# Convert [erg cm^{-2} s^{-1} cm^{-1}] -> [erg cm^{-2} s^{-1} nm^{-1}]
+flux *= 1e-7
+
+err = err * (1e-23 * 1e-3) * (2.998e10 / wave_cm**2) * 1e-7
 
 # flux[mask] = np.nan
 
 fig, ax = plt.subplots(1,1, figsize=(8,6))
 ax.errorbar(wave, flux, yerr=err, fmt='o', color='black')
 # medfilt
-ax.plot(wave, flux_medfilt, color='blue')
+# ax.plot(wave, flux_medfilt, color='blue')
 
 ax.errorbar(wave[mask_clip], flux[mask_clip], yerr=err[mask_clip], fmt='o', color='red')
 
 
-
+xlim = (np.nanmin(wave), np.nanmax(wave))
+ax.set_xlim(xlim)
 ax.set_xlabel('Wavelength (microns)')
 ax.set_ylabel('Flux (mJy)')
 plt.show()

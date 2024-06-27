@@ -9,7 +9,8 @@ tmp_path = None
 # Files and physical parameters
 ####################################################################################
 
-run = 'J_3'
+run = 'J_4'
+# TODO: implement temporary directory
 if tmp_path is not None:
     prefix = f'./retrieval_outputs/{run}/test_'
 else:

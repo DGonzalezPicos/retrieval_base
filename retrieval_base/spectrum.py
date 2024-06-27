@@ -368,8 +368,7 @@ class Spectrum:
         integral1 = np.trapz(wave*flux*array, wave)
         integral2 = np.trapz(wave*flux, wave)
 
-        return integral1/integral2
-    
+        return integral1/integral2    
 
 
 class DataSpectrum(Spectrum):
@@ -896,6 +895,8 @@ class ModelSpectrum(Spectrum):
         
         return flux_rebinned
     
+   
+            
 
         
     def shift_broaden_rebin(self, 

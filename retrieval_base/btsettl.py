@@ -6,15 +6,17 @@ import os
 import xarray as xr
 import copy
 from scipy.interpolate import RegularGridInterpolator
-
+from spectres import spectres
 from petitRADTRANS import nat_cst as nc
 
 from retrieval_base.spectrum_jwst import SpectrumJWST
 import retrieval_base.auxiliary_functions as af
+from retrieval_base.resample import Resample
 
 class BTSettl:
     
-    base_path = pathlib.Path('/home/dario/phd')
+    path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
+    base_path = pathlib.Path(f'/home/{path_suffix}')
     path = base_path / 'BT-Settl'
     file = path / 'BTSETTL.nc'
     
@@ -54,7 +56,8 @@ class BTSettl:
 
     
         
-    def prepare_grid(self, teff_range=[], logg_range=[], wave=None, out_res=3000):
+    def prepare_grid(self, teff_range=[], logg_range=[], wave=None, out_res=3000,
+                     file_out=None):
         
         # select a range of teff and logg
         if len(teff_range) == 0:
@@ -72,7 +75,7 @@ class BTSettl:
             # file_NIRSpec = self.path / 'wave_NIRSPec.npy'
             # wave = np.load(file_NIRSpec)
             # print(f' cenwave NIRSpec: {np.nanmedian(wave)}')
-            wave = np.arange(900, 5300, 0.05) # [nm], NIRSPec pixel spacing ~ 0.5 nm, so 10x oversampling
+            wave = np.arange(900, 35000, 0.05) # [nm], NIRSPec pixel spacing ~ 0.5 nm, so 10x oversampling
             
         pad = 0.05
         mask_wave = np.logical_and(self.wave >= np.nanmin(wave)*(1-pad), self.wave <= np.nanmax(wave)*(1+pad))
@@ -101,8 +104,9 @@ class BTSettl:
                                     dims=['wave', 'teff', 'logg'], name='flux', attrs={'units': 'erg s^-1 cm^-2 nm^-1'},
                                     )
         # save as .nc file
-        dataset.to_netcdf(self.path / 'BTSETTL_NIRSPec.nc', mode='w')
-        print(f' BTSETTL_NIRSPec.nc saved')
+        file_out = self.path / 'BTSETTL_NIRSPec.nc' if file_out is None else file_out
+        dataset.to_netcdf(file_out, mode='w')
+        print(f' Saved {file_out}')
         # close file
         dataset.close()
         return self
@@ -168,14 +172,70 @@ class BTSettl:
         self.flux *= (R_cm / d_cm)**2
         return self
     
-    def rebin(self, Nbin=None):
+    def rebin(self, Nbin=None, Nbin_spitzer=None):
         self.Nbin = Nbin
-        spec = SpectrumJWST(wave=self.wave, flux=self.flux).rebin(Nbin)
-        self.wave = spec.wave
-        self.flux = spec.flux
+        self.Nbin_spitzer = Nbin_spitzer
+        
+        if self.Nbin_spitzer is not None:
+            spec_jwst = SpectrumJWST(wave=self.wave[:-1], flux=self.flux[:-1]).rebin(self.Nbin)
+            spec_spitzer = SpectrumJWST(wave=self.wave[-1], flux=self.flux[-1]).rebin(self.Nbin_spitzer)
+            
+            # self.wave = np.vstack((spec_jwst.wave, spec_spitzer.wave))
+            # self.flux = np.vstack((spec_jwst.flux, spec_spitzer.flux))
+            # print(f' spec_jwst.wave.shape: {spec_jwst.wave.shape}')
+            # print(f' spec_spitzer.wave.shape: {spec_spitzer.wave.shape}')
+            self.wave = af.make_array([*spec_jwst.wave, spec_spitzer.wave])
+            self.flux = af.make_array([*spec_jwst.flux, spec_spitzer.flux])
+        else:
+            spec = SpectrumJWST(wave=self.wave, flux=self.flux).rebin(self.Nbin)
+            self.wave = spec.wave
+            self.flux = spec.flux
+            
         return self
     
-    def blackbody_disk(self, T=None, R=None, d=None, parallax=None, wave_cm=None, add_flux=False):
+    # def resample(self, wave_step=None, new_wave=None):
+    #     if new_wave is None:
+    #         assert wave_step is not None, 'Either wave_step or new_wave must be provided'
+    #         new_wave = np.arange(np.nanmin(self.wave), np.nanmax(self.wave), wave_step)
+        
+    #     if isinstance(new_wave, list):
+    #         new_flux = []
+    #         for i in range(len(new_wave)):
+    #             # print( f' Resampling {i+1}/{len(new_wave)}')
+    #             # print(self.wave)
+    #             # print(self.flux)
+    #             # print(new_wave[i])
+    #             new_flux.append(spectres(new_wave[i], self.wave, self.flux))
+    #         self.wave = new_wave
+    #         self.flux = new_flux
+    #         return self
+    #     else:
+    #         self.flux = spectres(new_wave, self.wave, self.flux)
+    #         assert np.isnan(self.flux).sum() < np.size(self.flux), 'ALL NaNs in resampled flux'
+    #         self.wave = new_wave
+    #         return self
+    def resample(self, wave_step=None, new_wave=None):
+        if new_wave is None:
+            assert wave_step is not None, 'Either wave_step or new_wave must be provided'
+            new_wave = np.arange(np.nanmin(self.wave), np.nanmax(self.wave), wave_step)
+        
+        if isinstance(new_wave, list):
+            new_flux = []
+            for i in range(len(new_wave)):
+                re = Resample(wave=self.wave, flux=self.flux)(new_wave[i])
+                new_flux.append(re[0])
+                
+            self.wave = new_wave
+            self.flux = new_flux
+            return self
+        else:
+            self.flux = Resample(wave=self.wave, flux=self.flux)(new_wave)[0]
+            assert np.isnan(self.flux).sum() < np.size(self.flux), 'ALL NaNs in resampled flux'
+            self.wave = new_wave
+            return self
+    
+    
+    def blackbody_disk(self, T=None, R=None, d=None, parallax=None, wave_cm=None, add_flux=True):
         ''' Calculate the emission of a disk from a single blackbody
         
         Parameters:
@@ -196,33 +256,54 @@ class BTSettl:
         
         '''
         assert (d is not None) or (parallax is not None), 'Either distance [pc] or parallax [mas] must be provided'
+        assert add_flux, 'add_flux must be True'
         # store attributes in dictionary disk_blackbody
         self.blackbody_disk_args = {'T': T, 'R': R, 'd': d, 'parallax': parallax}
         if parallax is not None:
             d = 1e3/parallax # distance in [pc]
         if wave_cm is None:
             assert self.wave_unit == 'nm', 'Invalid wave unit, must be [nm]'
-            wave_cm = self.wave * 1e-7 # [nm] -> [cm]
+            if isinstance(self.wave, list):
+                wave_cm = [wave * 1e-7 for wave in self.wave]
+            else:
+                wave_cm = self.wave * 1e-7 # [nm] -> [cm]
+                
+        if isinstance(wave_cm, list):
+            flux_disk, new_flux = [], []
+            for i in range(len(wave_cm)):
+                bb = af.blackbody(wave_cm=wave_cm[i], T=T)
+                bb *= (R*nc.r_jup_mean / (d * nc.pc))**2
+                flux_disk.append(bb)
+                new_flux.append(self.flux[i] + bb)
+            self.flux_disk = flux_disk
+            self.flux = new_flux
+            self.wave = [wave_cm[i] * 1e7 for i in range(len(wave_cm))]
+            return self
+        else:
+            # flux of a blackbody disk in units of [erg s^-1 cm^-2 nm^-1]
+            bb = af.blackbody(wave_cm=wave_cm, T=T)
+            # the factor of R^2 is to scale the flux to the disk size
+            bb *= (R*nc.r_jup_mean / (d * nc.pc))**2
             
-        # flux of a blackbody disk in units of [erg s^-1 cm^-2 nm^-1]
-        bb = af.blackbody(wave_cm=wave_cm, T=T)
-        # the factor of R^2 is to scale the flux to the disk size
-        bb *= (R*nc.r_jup_mean / (d * nc.pc))**2
-        
-        self.flux_disk = bb
-        if add_flux:
+            self.flux_disk = bb
+        # if add_flux:
             self.flux += bb
             return self
-        return bb
+        # return bb
     
     def plot(self, ax=None, **kwargs):
         
         ax = ax or plt.gca()
         
+        if isinstance(self.wave, list):
+            for i in range(len(self.wave)):
+                ax.plot(self.wave[i], self.flux[i], **kwargs)
+            return ax
+        
         if getattr(self, 'Nbin', None) is not None:
             ax.scatter(self.wave, self.flux, **kwargs)
         else:
-            ax.plot(self.wave, self.flux, **kwargs)
+            ax.plot(self.wave, self.flux)
         return ax
     
     def copy(self):
@@ -234,22 +315,28 @@ if __name__ == '__main__':
     
     bt = BTSettl()
     
-    create_grid = True
+    create_grid = False
     if create_grid:
         bt.load_full_dataset()
         fg = bt.prepare_grid(teff_range=[2000,2900], logg_range=[2.5, 5.0], out_res=3000)
     else:
         bt.load_dataset(bt.path / 'BTSETTL_NIRSPec.nc')
         bt.set_interpolator()
-        bt.get_spec(teff=2320, logg=4.0)
+        # bt.get_spec(teff=2320, logg=4.0)
         
         fig, ax = plt.subplots(1, 1, figsize=(14, 4))
         
         # for teff in range(2300, 2500, 25):
-        for logg in np.arange(3.0, 4.4, 0.2):
+        for logg in np.arange(3.6, 3.7, 0.2):
             bt.get_spec(teff=2400, logg=logg)
-            
             ax.plot(bt.wave, bt.flux, label=f'logg={logg}', alpha=0.3)
+            bt.resample(wave_step=20.)
+            ax.scatter(bt.wave, bt.flux, label=f'logg={logg}', 
+                       alpha=0.9, 
+                       s=5.,
+                       color=ax.lines[-1].get_color())
+
+            
         ax.legend()
         plt.show()
         

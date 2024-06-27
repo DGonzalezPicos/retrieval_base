@@ -5,6 +5,7 @@ from astropy.io import fits
 import pickle
 import os
 import copy
+from spectres import spectres 
 
 from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
@@ -12,6 +13,7 @@ import petitRADTRANS.nat_cst as nc
 
 import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
+from retrieval_base.resample import Resample
 
 
 class SpectrumJWST:
@@ -112,7 +114,7 @@ class SpectrumJWST:
         for attr in attrs:
             if hasattr(self, attr):
                 setattr(self, attr, np.vstack([getattr(spec, attr) for spec in spec_list]))
-        self.n_orders = self.wave.shape[0]
+        # self.set_n_orders()
         assert self.n_orders > 1, 'No data loaded'
         # Stack the arrays                    
         return self
@@ -129,6 +131,12 @@ class SpectrumJWST:
     @property
     def mask_isfinite(self):
         return np.isfinite(self.flux)
+    @property
+    def n_orders(self):
+        if isinstance(self.wave, (list, np.ndarray)):
+            return len(self.wave)
+        return 1
+            
     
     def split_grism(self, break_wave=None, keep=1, grism=None, fig_name=None):
         '''Split data of one grisms into chunks'''
@@ -185,7 +193,7 @@ class SpectrumJWST:
         fig.savefig(fig_name)
         print(f'--> Saved {fig_name}')
         
-    def plot_orders(self, fig_name=None, **kwargs):
+    def plot_orders(self, fig_name=None, **kwargs): # DEPRECATED
         # use PDF pages to save a page for every order
         
         color = kwargs.pop('color', 'k')
@@ -243,49 +251,50 @@ class SpectrumJWST:
                 self.err[order,det,] = clip
 
         return self
+
         
     
-    def sigma_clip(self, array=None, sigma=3, width=5, max_iter=5, fun='median', fig_name=False):
-        '''Sigma clip the spectrum'''
-        array = self.flux if array is None else array
-        clip = af.sigma_clip(array, sigma=sigma, width=width, 
-                              max_iter=max_iter, fun=fun, replace=False)
+    # def sigma_clip(self, array=None, sigma=3, width=5, max_iter=5, fun='median', fig_name=False):
+    #     '''Sigma clip the spectrum'''
+    #     array = self.flux if array is None else array
+    #     clip = af.sigma_clip(array, sigma=sigma, width=width, 
+    #                           max_iter=max_iter, fun=fun, replace=False)
         
-        if fig_name:
-            fig, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=True,
-                                   gridspec_kw={'top': 0.95, 'bottom': 0.1,
-                                                'hspace':0.1,
-                                                'left': 0.08, 'right': 0.98})
-            # ax.plot(self.wave, self.flux, label='Original', color='k')
-            ax[0].plot(self.wave, np.where(~clip, np.nan, self.flux), 
-                    label=f'Clipped sigma={sigma:.1f}', color='r')
-            ax[0].fill_between(self.wave, np.where(~clip, np.nan, self.flux-self.err),
-                            np.where(~clip, np.nan, self.flux+self.err), alpha=0.15, color='r', lw=0)
+    #     if fig_name:
+    #         fig, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=True,
+    #                                gridspec_kw={'top': 0.95, 'bottom': 0.1,
+    #                                             'hspace':0.1,
+    #                                             'left': 0.08, 'right': 0.98})
+    #         # ax.plot(self.wave, self.flux, label='Original', color='k')
+    #         ax[0].plot(self.wave, np.where(~clip, np.nan, self.flux), 
+    #                 label=f'Clipped sigma={sigma:.1f}', color='r')
+    #         ax[0].fill_between(self.wave, np.where(~clip, np.nan, self.flux-self.err),
+    #                         np.where(~clip, np.nan, self.flux+self.err), alpha=0.15, color='r', lw=0)
             
-            f = np.where(clip, np.nan, self.flux)
-            for axi in ax:
-                axi.plot(self.wave, f, label='Data', color='k')
-                axi.fill_between(self.wave, f-self.err, f+self.err, alpha=0.15, color='k', lw=0)
-                axi.plot(self.wave, np.where(~clip, np.nan, self.flux), color='r')
-                axi.legend()
-            ax[0].set(ylabel=f'Flux [{self.flux_unit}]')
+    #         f = np.where(clip, np.nan, self.flux)
+    #         for axi in ax:
+    #             axi.plot(self.wave, f, label='Data', color='k')
+    #             axi.fill_between(self.wave, f-self.err, f+self.err, alpha=0.15, color='k', lw=0)
+    #             axi.plot(self.wave, np.where(~clip, np.nan, self.flux), color='r')
+    #             axi.legend()
+    #         ax[0].set(ylabel=f'Flux [{self.flux_unit}]')
             
-            wave_range = (np.min(self.wave), np.max(self.wave))
-            xpad = 0.002 * (wave_range[1] - wave_range[0])
-            xlim = (wave_range[0]-xpad, wave_range[1]+xpad)
+    #         wave_range = (np.min(self.wave), np.max(self.wave))
+    #         xpad = 0.002 * (wave_range[1] - wave_range[0])
+    #         xlim = (wave_range[0]-xpad, wave_range[1]+xpad)
             
-            ax[1].set(xlabel=f'Wavelength [{self.wave_unit}]', 
-                      ylabel=f'Flux [{self.flux_unit}]', xlim=xlim)
-            fig.savefig(fig_name)
-            print(f'--> Saved {fig_name}')
-            plt.close(fig)
+    #         ax[1].set(xlabel=f'Wavelength [{self.wave_unit}]', 
+    #                   ylabel=f'Flux [{self.flux_unit}]', xlim=xlim)
+    #         fig.savefig(fig_name)
+    #         print(f'--> Saved {fig_name}')
+    #         plt.close(fig)
         
-        print(f'Clipped {np.sum(clip)} points')
-        self.flux[clip] = np.nan
-        return self
+    #     print(f'Clipped {np.sum(clip)} points')
+    #     self.flux[clip] = np.nan
+    #     return self
     
     def reshape(self, n_orders=1, n_dets=1):
-        self.n_orders = n_orders
+        # self.n_orders = n_orders
         self.n_dets = n_dets
         
         attrs = ['wave', 'flux', 'err']
@@ -303,7 +312,7 @@ class SpectrumJWST:
         for attr in attrs:
             if hasattr(self, attr):
                 setattr(self, attr, getattr(self, attr).squeeze())
-        self.n_orders = self.flux.shape[0]
+        # self.n_orders = self.flux.shape[0]
         return self
         
     def prepare_for_covariance(self, prepare_err_eff=True):
@@ -375,19 +384,41 @@ class SpectrumJWST:
         return self
         
     
-    def plot(self, ax=None, **kwargs):
+    # def plot(self, ax=None, **kwargs):
+        
+    #     assert hasattr(self, 'wave') and hasattr(self, 'flux'), 'No data to plot'
+    #     if ax is None:
+    #         fig, ax = plt.subplots()
+    #     color = kwargs.pop('color', 'k')
+    #     lw = kwargs.pop('lw', 1)
+    #     ax.plot(self.wave, self.flux, color=color, lw=lw, **kwargs)
+    #     if hasattr(self, 'err'):
+    #         ax.fill_between(self.wave, self.flux-self.err, self.flux+self.err, alpha=0.3, color=color)
+    #     ax.set_xlabel(f'Wavelength [{self.wave_unit}]')
+    #     ax.set_ylabel(f'Flux [{self.flux_unit}]')
+    #     return ax
+    
+    def plot(self, ax=None, style='plot', **kwargs):
         
         assert hasattr(self, 'wave') and hasattr(self, 'flux'), 'No data to plot'
         if ax is None:
             fig, ax = plt.subplots()
         color = kwargs.pop('color', 'k')
         lw = kwargs.pop('lw', 1)
-        ax.plot(self.wave, self.flux, color=color, lw=lw, **kwargs)
-        if hasattr(self, 'err'):
-            ax.fill_between(self.wave, self.flux-self.err, self.flux+self.err, alpha=0.3, color=color)
-        ax.set_xlabel(f'Wavelength [{self.wave_unit}]')
-        ax.set_ylabel(f'Flux [{self.flux_unit}]')
+        
+        for i in range(self.n_orders):
+            
+            if style in ['plot', 'scatter']:
+                getattr(ax, style)(self.wave[i], self.flux[i], color=color, lw=lw, **kwargs)
+                if hasattr(self, 'err'):
+                    ax.fill_between(self.wave[i], self.flux[i]-self.err[i], self.flux[i]+self.err[i], alpha=0.3, color=color)
+                    
+            if style=='errorbar':
+                ax.errorbar(self.wave[i], self.flux[i], yerr=self.err[i], color=color, lw=lw, fmt='o', **kwargs)
+        ax.set_xlabel(f'Wavelength / {self.wave_unit}')
+        ax.set_ylabel(f'Flux / {self.flux_unit}')
         return ax
+        
     
     def flatten(self):
         attrs = ['wave', 'flux', 'err']
@@ -431,77 +462,194 @@ class SpectrumJWST:
             if len(out) > 2:
                 self.err = out[2]
         return self
-        
     
-    def rebin_spectres(self, nbin=100):
-        """ Bin spectrum every `nbin` data points using `spectres` package.
-        take class attributes `wave` and `flux` and rebin them propagating the errors
-        stored as `err` attribute.
-        """
-        from spectres import spectres
-        
-        # Create new bins by averaging every `nbin` points
-        nans = np.isnan(self.flux)
-        wave, flux, err = self.wave[~nans], self.flux[~nans], self.err[~nans]
-
-        size = len(wave)
-        trimmed_size = size - (size % nbin)
-        
-        # Trim the arrays to be a multiple of nbin
-        trimmed_wave = wave[:trimmed_size]
-        trimmed_flux = flux[:trimmed_size]
-        trimmed_err = err[:trimmed_size]
-
-        new_wave = trimmed_wave.reshape(-1, nbin).mean(axis=1)
-        # Use spectres to rebin the spectrum with propagated errors
-        rebinned_flux, rebinned_err = spectres(new_wave, trimmed_wave, trimmed_flux, trimmed_err, fill=None)
-        
-        # Update the class attributes with the rebinned data
-        self.wave = new_wave
-        self.flux = rebinned_flux
-        self.err = rebinned_err
-        return self
     
     def copy(self):
         """ Return a copy of the Spectrum instance. """
         return copy.deepcopy(self)
     
     
-class ModelSpectrum:
-    "1D model spectrum for SED fit"
-    def __init__(self, wave, flux):
-        self.wave = wave
-        self.flux = flux
+    
+    def resample_old(self, wave_step, replace_wave_flux=True, use_mean_err=True):
+            
+        # Resample the model spectrum onto a new wavelength grid using spectres
+        self.wave_step = wave_step
         
-    
+        if len(self.flux.shape) > 1:
+            new_wave, new_flux, new_err = ([] for _ in range(3))
+            for i in range(self.n_orders):
+                assert wave_step < (np.nanmax(self.wave[i]) - np.nanmin(self.wave[i])), 'Wave step too large'
+
+                new_wave.append(np.arange(np.nanmin(self.wave[i]), np.nanmax(self.wave[i]), wave_step))
+                nans_i = np.isnan(self.flux[i]) | np.isnan(self.wave[i])
+                # assert np.sum(nans_i) == 0, 'NaNs in flux'
+                if all(nans_i):
+                    print(f'All NaNs in order {i}')
+                    continue
+                # print(new_wave[-1])
+                # print(self.wave[i][~nans_i])
+                # print(self.flux[i][~nans_i])
+                # print(self.err[i][~nans_i])
+                re = spectres(new_wave[-1], self.wave[i][~nans_i], self.flux[i][~nans_i], 
+                              spec_errs=self.err[i][~nans_i], 
+                              fill=np.nan, 
+                              verbose=False)
+                assert np.sum(np.isnan(re[0])) < np.size(re[0]), 'All NaNs in rebinned flux'
+                new_flux.append(re[0])
+                if use_mean_err:
+                    new_err.append(np.mean(self.err[i][~nans_i]) * np.ones_like(re[1]))
+                else:
+                    new_err.append(re[1])
+            
+            if replace_wave_flux:
+                self.flux = new_flux
+                self.err = new_err
+                self.wave = new_wave
+                
+                return self
         
+            return new_wave, new_flux, new_err
+        
+        else:
+            assert wave_step < np.nanmax(self.wave) - np.nanmin(self.wave), 'Wave step too large'
+            new_wave = np.arange(np.nanmin(self.wave), np.nanmax(self.wave), wave_step)
+            re = spectres(new_wave, self.wave, self.flux, spec_errs=self.err, fill=np.nan)
+            self.wave, self.flux, self.err = new_wave, re[0], re[1]
+            return self
+        
+    def resample(self, wave_step):
+        
+        
+        assert self.n_orders > 1, 'Works with multiple orders only, at least [1, n_pixels]'
+        
+        new_wave, new_flux, new_err = ([] for _ in range(3))
+        for i in range(self.n_orders):
+            
+            # print(new_wave)
+            nans_i = np.isnan(self.flux[i]) | np.isnan(self.wave[i])
+            # ignore nans
+            if all(nans_i):
+                print(f'All NaNs in order {i}')
+                continue
+            if len(self.wave[i][~nans_i]) < 2:
+                print(f'Not enough data points in order {i}')
+                continue
+            new_wave_i = np.arange(np.nanmin(self.wave[i][~nans_i]), np.nanmax(self.wave[i][~nans_i]), wave_step)
+            if len(new_wave_i) < 4:
+                print(f'Not enough data points in order {i} after resampling')
+                continue
+            new_flux_i, new_cov_i = Resample(wave=self.wave[i][~nans_i], flux=self.flux[i][~nans_i], 
+                                         flux_err=self.err[i][~nans_i])(new_wave_i)
+            new_wave.append(new_wave_i)
+            new_flux.append(new_flux_i)
+            new_err.append(np.sqrt(np.diag(new_cov_i)))
+        
+        self.wave = new_wave
+        self.flux = new_flux
+        self.err = new_err
+        return self
     
     
+    def scatter_overlapping_points(self, plot=False):
+        
+        
+        self.err_s = np.ones(self.n_orders)
+        for i in range(1,self.n_orders):
+            wave_0 = self.wave[i-1]
+            wave_1 = self.wave[i]
+            
+            mask_0 = (wave_0 > np.nanmin(wave_1)) & (wave_0 < np.nanmax(wave_1))
+            if np.sum(mask_0) > 0:
+                print(f'Order {i-1} has {np.sum(mask_0)} overlapping points with order {i}')
+                flux_0 = self.flux[i-1]
+                flux_1 = self.flux[i]
+                
+                mask_1 = (wave_1 > np.nanmin(wave_0)) & (wave_1 < np.nanmax(wave_0))
+
+                # interpolate 0 on 1 and calculate the difference
+                flux_0_interp = np.interp(wave_1[mask_1], wave_0, flux_0)
+                diff = flux_0_interp - flux_1[mask_1]
+                # use scatter as new uncertainty for the overlapping points
+                scatter = np.nanstd(diff)
+                print(f' Scatter in overlapping points: {scatter:.2e}')
+                snr_overlap = np.nanmean(flux_0_interp) / scatter
+                print(f' SNR in overlapping points: {snr_overlap:.2f}')
+    
+                
+                # input SNR
+                snr = np.nanmean(flux_0_interp) / np.nanmean(self.err[i-1])
+                print(f' SNR in order {i-1}: {snr:.2f}')
+                
+                # scaling factor
+                self.err_s[i] = snr / snr_overlap if self.err_s[i]==1.0 else np.mean([self.err_s[i], snr / snr_overlap])
+                print(f' Scaling uncertainty by {self.err_s[i]:.2f}')
+    
+                if plot:
+                    fig, ax = plt.subplots(2,1, figsize=(10,5), gridspec_kw={'height_ratios': [2,1]},sharex=True)
+                    ax[0].plot(wave_0, flux_0, label='Order 0', color='k', alpha=0.4)
+                    ax[0].plot(wave_1, flux_1, label='Order 1', color='r', alpha=0.4)
+                    ax[0].scatter(wave_1[mask_1], flux_0_interp, color='r', s=3)
+                    ax[0].scatter(wave_1[mask_1], flux_1[mask_1], color='k', s=3)
+                    ax[0].legend()
+                    ax[1].scatter(wave_1[mask_1], diff, color='k', s=3)
+                    plt.show()
+                    
+        return self
+            
+    def apply_error_scaling(self, mode='same'):
+        
+        assert hasattr(self, 'err_s'), 'No error scaling factors found'
+        assert mode == 'same', 'Only same scaling is implemented' # TODO: enable different scalings for the orders
+        # find the err_s that is greater than 1
+        if np.any([s > 1 for s in self.err_s]):
+            print(f'Applying error scaling factor (max): {np.max(self.err_s)}')
+        
+            self.err = [self.err[i] * np.max(self.err_s) for i in range(self.n_orders)]
+            
+        return self              
+           
+        
+            
+            
+        
+        
+        
+        
+
     
 if __name__ == '__main__':
     import pathlib
     path = pathlib.Path('TWA28/jwst/')
     grisms = [
-                'g140h-f100lp', 
+            # 'g140h-f100lp', 
               'g235h-f170lp', 
               'g395h-f290lp']
     files = [path/f'TWA28_{g}.fits' for g in grisms]
-    # waves = [1450, 2450, 4155]
-    
-    # spec = SpectrumJWST(file=path/'TWA28_g235h-f170lp.fits')
-    # spec = SpectrumJWST(file=path/'TWA28_g395h-f290lp.fits', grism='g395h-f290lp')
-    spec = SpectrumJWST().load_grisms(files)
+
+    spec = SpectrumJWST(Nedge=40).load_grisms(files)
     spec.reshape(spec.n_orders, 1)
     spec.sigma_clip_reshaped(use_flux=False, 
-                             sigma=3, 
-                             width=30, 
-                             max_iter=5,
-                             fun='median')
-    spec.plot_orders(fig_name='test.pdf')
-    # spec.split_grism(4155., keep=1)
-    # spec.sigma_clip(sigma=3, width=5, max_iter=5, fun='median')
-    # spec.sigma_clip(spec.err, sigma=3, width=50, max_iter=5, fun='median')
-    # spec.plot()
-    # plt.show()
+                                    sigma=3, 
+                                    width=31, 
+                                    max_iter=5,
+                                    fun='median', 
+                                    debug=False)
+    spec.squeeze()
+    
+    spec.scatter_overlapping_points(plot=True)
+    spec.apply_error_scaling()
+    plot = False
+    if plot:
+        fig, ax = plt.subplots(1,1, figsize=(10,5))
+        
+        
+        spec.plot(ax, style='plot', color='k', alpha=0.8)
+        spec.resample(wave_step=50.)
+        spec.plot(ax, style='errorbar', color='r', alpha=0.8, ms=4.)
+        spec.plot(ax, style='plot', color='r', alpha=0.8)
+        plt.show()
+    
+    
+    
     
     

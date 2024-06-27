@@ -17,6 +17,14 @@ parser.add_argument('--evaluation', '-e', action='store_true', default=False)
 parser.add_argument('--tmp_path', '-t', type=str, default=None)
 args = parser.parse_args()
 
+cwd = str(pathlib.Path(__file__).parent.absolute())
+if 'dgonzalezpi' in cwd:
+    print('Running on Snellius.. disabling interactive plotting')
+    import matplotlib
+    # disable interactive plotting
+    matplotlib.use('Agg')
+    # path = pathlib.Path('/home/dgonzalezpi/retrieval_base/')
+
 path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'

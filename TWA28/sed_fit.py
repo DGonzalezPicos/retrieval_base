@@ -366,16 +366,7 @@ class SED:
         self.bt_copy.apply_flux_factor(self.flux_factor)
 
         assert np.sum(np.isnan(self.bt_copy.flux)) == 0, 'NaNs in BTSettl flux'
-        # self.s2_nirspec = 10**self.params.get('log_s2_nirspec', 3)
-        # new_bt_flux = np.nan * np.ones_like(self.wave_full)
-        # for i in range(self.spec.n_orders):
-        #     nans_i = np.isnan(self.wave_full[i,])
-        #     # print(f' nans_i = {nans_i.sum()}')
-        #     new_bt_flux[i,~nans_i] = np.interp(self.wave_full[i,~nans_i], self.bt_copy.wave, self.bt_copy.flux)
-
-        # self.bt_copy.flux = new_bt_flux
-        # self.bt_copy.wave = self.wave_full
-        # self.bt_copy.rebin(self.params['Nbin'], self.params.get('Nbin_spitzer', None))
+       
         self.bt_copy.resample(new_wave=self.spec.wave)
         
         if self.add_disk:
@@ -389,9 +380,7 @@ class SED:
         s2, self.m = ([] for i in range(2))
         chi2 = 0.
         lnL = 0.
-        
-        # s2 = [10**self.params.get('log_s2_nirspec', 0) for i in range(n_chunks-1)]
-        # s2.append(10**self.params.get('log_s2_spitzer', 0))
+    
         for i in range(n_chunks):
             
             w = self.spec.wave[i]
@@ -400,20 +389,12 @@ class SED:
             # forward model
             m_i = self.bt_copy.flux[i]
             self.m.append(m_i)
-            # print shapes
-            # print(f' w.shape = {w.shape}')
-            # print(f' f.shape = {f.shape}')
-            # print(f' e.shape = {e.shape}')
-            # print(f' m_i.shape = {m_i.shape}')
-
             nans = np.isnan(w) | np.isnan(f) | np.isnan(e) | np.isnan(m_i)
             n = np.sum(~nans)
             if n == 0:
                 print(f' No valid points in chunk {i}')
                 continue
-            # w[nans] = np.nan
-            # f[nans] = np.nan
-            # e[nans] = np.nan
+            
             w = w[~nans]
             f = f[~nans]
             e = e[~nans]
@@ -426,16 +407,6 @@ class SED:
             chi2_i_0 = np.sum((f - m_i)**2 / e2)
             s2_i = min(20**2, chi2_i_0 / n) # TODO: test this clipping
             
-            # s2_i = chi2_0_i / n
-            # if i < (n_chunks-1):
-            #     # only for nirspec
-            #     s2_i = min(self.s2_nirspec, s2_i)
-            
-            # s2.append(s2_i)
-
-            # chi2.append(chi2_0_i / n) # reduced chi2
-            # chi2_i = chi2_0_i / s2_i
-            # chi2 += (chi2_0_i / n)
             chi2 += chi2_i_0
             chi2_i = chi2_i_0 / s2_i
             

@@ -52,6 +52,8 @@ class BTSettl:
         assert hasattr(self, 'logg_grid'), 'Load grid first'
         
         self.interpolator = RegularGridInterpolator((self.wave, self.teff_grid, self.logg_grid), self.flux_grid, method='linear')
+        # remove attributes to save memory
+        del self.flux_grid
         return self
 
     

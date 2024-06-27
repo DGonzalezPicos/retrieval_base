@@ -29,7 +29,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_10'
+run = 'with_spitzer_11'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -64,7 +64,7 @@ if args.prior_check:
     wave = np.squeeze(sed.spec.wave)
     nans = np.isnan(wave) | np.isnan(sed.spec.flux)
     wave[nans] = np.nan
-    sed.resample(wave_step=100)
+    sed.resample(wave_step=50)
     # print(stop)
     sed.spec.scatter_overlapping_points(plot=False)
     sed.spec.apply_error_scaling()

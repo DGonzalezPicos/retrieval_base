@@ -285,7 +285,7 @@ class SED:
         self.plot(ax=ax[0], color='k', alpha=0.2)
         ax[0].set_xscale(xscale)
         ax[0].set_yscale(yscale)
-        ax[1].set_yscale(yscale)
+        # ax[1].set_yscale(yscale)
         
         # color palette from seaborn
         colors = sns.color_palette('deep')
@@ -339,9 +339,9 @@ class SED:
         ax[1].axhline(0, color='k', ls='-', lw=0.4)
 
         # make ylims of ax[1] symmetric
-        if yscale == 'linear':
-            ylim = np.nanmax(np.abs(ax[1].get_ylim()))
-            ax[1].set_ylim(-ylim, ylim)
+        # if yscale == 'linear':
+        ylim = np.nanmax(np.abs(ax[1].get_ylim()))
+        ax[1].set_ylim(-ylim, ylim)
         xlim = (np.nanmin(self.spec.wave[0])*0.95, 1.01*np.nanmax(self.spec.wave[-1]))
         ax[0].set_xlim(xlim)
         flux_factor_label = r' $\times 10^{-15}$' if self.flux_factor == 1e15 else ''
@@ -424,7 +424,7 @@ class SED:
             logdet_cov = np.sum(np.log(e2))
 
             chi2_i_0 = np.sum((f - m_i)**2 / e2)
-            s2_i = min(100.0, chi2_i_0 / n) # TODO: test this clipping
+            s2_i = min(20**2, chi2_i_0 / n) # TODO: test this clipping
             
             # s2_i = chi2_0_i / n
             # if i < (n_chunks-1):
@@ -581,7 +581,6 @@ class SED:
             ax_spec.plot(self.spec.wave[i], self.bt_copy.flux_disk[i], color='darkorange', alpha=0.8, ls=':',
                          label='Disk' if i==0 else None)
             ax_res.scatter(self.spec.wave[i], self.spec.flux[i] - self.m[i], color='k', s=10)
-        ax_res.axhline(0, color='k', ls='-', lw=0.4)
        
         xlim = (0.98*np.nanmin(self.spec.wave[0]), 1.01*np.nanmax(self.spec.wave[-1]))
         if xlim[1] > 10e3:
@@ -593,6 +592,8 @@ class SED:
         else:
             ylim = np.nanmax(np.abs(ax_res.get_ylim()))
             ax_res.set_ylim(-ylim, ylim)
+            ax_res.axhline(0, color='k', ls='-', lw=0.4)
+
             
         ax_res.set_xlabel(r'Wavelength / nm')
         ax_res.set_ylabel(r'Residuals')

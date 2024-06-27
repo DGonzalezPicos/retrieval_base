@@ -126,6 +126,20 @@ class SpectrumJWST:
                 mask = np.isnan(self.wave[i,j])
                 self.wave[i,j][mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), self.wave[i,j][~mask])
         return self
+    
+    def flux_scaling(self, factor):
+        
+        self.flux_factor = factor
+        if isinstance(self.flux, list):
+            self.flux = [f_i * factor for f_i in self.flux]
+            if hasattr(self, 'err'):
+                self.err = [e_i * factor for e_i in self.err]
+                
+        else:
+            self.flux *= factor
+            if hasattr(self, 'err'):
+                self.err *= factor
+        return self
 
     
     @property

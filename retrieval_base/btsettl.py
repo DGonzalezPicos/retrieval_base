@@ -172,6 +172,15 @@ class BTSettl:
         self.flux *= (R_cm / d_cm)**2
         return self
     
+    def apply_flux_factor(self, factor):
+        
+        self.flux_factor = factor
+        if isinstance(self.flux, list):
+            self.flux = [f * factor for f in self.flux]
+        else:
+            self.flux *= factor
+        return self
+    
     def rebin(self, Nbin=None, Nbin_spitzer=None):
         self.Nbin = Nbin
         self.Nbin_spitzer = Nbin_spitzer
@@ -235,7 +244,8 @@ class BTSettl:
             return self
     
     
-    def blackbody_disk(self, T=None, R=None, d=None, parallax=None, wave_cm=None, add_flux=True):
+    def blackbody_disk(self, T=None, R=None, d=None, parallax=None, wave_cm=None, add_flux=True,
+                       flux_factor=1.0):
         ''' Calculate the emission of a disk from a single blackbody
         
         Parameters:
@@ -273,6 +283,7 @@ class BTSettl:
             for i in range(len(wave_cm)):
                 bb = af.blackbody(wave_cm=wave_cm[i], T=T)
                 bb *= (R*nc.r_jup_mean / (d * nc.pc))**2
+                bb *= flux_factor
                 flux_disk.append(bb)
                 new_flux.append(self.flux[i] + bb)
             self.flux_disk = flux_disk
@@ -285,9 +296,9 @@ class BTSettl:
             # the factor of R^2 is to scale the flux to the disk size
             bb *= (R*nc.r_jup_mean / (d * nc.pc))**2
             
-            self.flux_disk = bb
+            self.flux_disk = bb 
         # if add_flux:
-            self.flux += bb
+            self.flux += self.flux_disk
             return self
         # return bb
     
@@ -320,7 +331,7 @@ if __name__ == '__main__':
         bt.load_full_dataset()
         fg = bt.prepare_grid(teff_range=[2000,2900], logg_range=[2.5, 5.0], out_res=3000)
     else:
-        bt.load_dataset(bt.path / 'BTSETTL_NIRSPec.nc')
+        bt.load_dataset(bt.path / 'BTSETTL.nc')
         bt.set_interpolator()
         # bt.get_spec(teff=2320, logg=4.0)
         

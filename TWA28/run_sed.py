@@ -21,7 +21,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_9'
+run = 'with_spitzer_10'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -37,7 +37,7 @@ if args.prior_check:
     
     # wmin = 0.95 * np.nanmin(sed.spec.wave) # [nm]
     wmin = 2200.0 # [nm]
-    wmax = 32.0 * 1e3 # [um] -> [nm]
+    wmax = 12.0 * 1e3 # [um] -> [nm]
     
     bt_model_file = sed.run_path / f'BTSETTL_{wmin:.0f}_{wmax:.0f}.nc'
     sed.init_BTSettl(wmin=wmin,
@@ -92,6 +92,8 @@ if args.prior_check:
     
 if args.retrieval:
     
-    sed = pickle_load(sed_file)
     sed.PMN_run()
+if args.evaluation:
+    sed = pickle_load(sed_file)
+    sed.update_path(path=base_path)
     sed.PMN_eval()

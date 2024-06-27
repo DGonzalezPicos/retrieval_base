@@ -33,6 +33,8 @@ class SED:
     
     bestfit_color = 'brown'
     
+    flux_factor = 1e15 # multiply by constant to avoid numerical issues
+    
     def __init__(self, grisms=[], run='test_1', evaluation=False):
         
         self.grisms = grisms
@@ -41,10 +43,7 @@ class SED:
         self.files = [f'jwst/{self.target}_{g}.fits' for g in grisms]
         
         self.run = run
-        self.run_path = self.path / self.target / 'SED_runs' / self.run
-        self.run_path.mkdir(parents=True, exist_ok=True)
-        self.figs_path = self.run_path / 'figs'
-        self.figs_path.mkdir(parents=True, exist_ok=True)
+        self.update_path(self.path)
         self.evaluation = evaluation
         self.prefix = str(self.run_path  / 'pmn_')
         self.cb_count = -1
@@ -62,6 +61,7 @@ class SED:
                                     fun='median', 
                                     debug=False)
         self.spec.squeeze()
+        self.spec.flux_scaling(self.flux_factor)
         self.wave_full = self.spec.wave.copy()
 
         nans = np.isnan(self.wave_full) | np.isnan(self.spec.flux)
@@ -99,8 +99,10 @@ class SED:
         flux *= 2.998e10 / wave_cm**2 # wave in cm
         # Convert [erg cm^{-2} s^{-1} cm^{-1}] -> [erg cm^{-2} s^{-1} nm^{-1}]
         flux *= 1e-7
-
         err = err * (1e-23) * (2.998e10 / wave_cm**2) * 1e-7
+        
+        flux *= self.flux_factor # NEW (to avoid numerical issues)
+        err *= self.flux_factor # NEW (to avoid numerical issues)
 
 
         # clip 3 sigma outliers
@@ -140,6 +142,19 @@ class SED:
         self.spec.err.append(err)
         
         # self.spec.n_orders += 1
+        return self
+    
+    def update_path(self, path):
+        
+        self.path = pathlib.Path(path)
+        if 'retrieval_base' not in self.path.parts:
+            self.path = self.path / 'retrieval_base'
+            
+        self.run_path = self.path / self.target / 'SED_runs' / self.run
+        self.run_path.mkdir(parents=True, exist_ok=True)
+        self.figs_path = self.run_path / 'figs'
+        self.figs_path.mkdir(parents=True, exist_ok=True)
+        self.prefix = str(self.run_path  / 'pmn_')
         return self
         
     
@@ -329,8 +344,9 @@ class SED:
             ax[1].set_ylim(-ylim, ylim)
         xlim = (np.nanmin(self.spec.wave[0])*0.95, 1.01*np.nanmax(self.spec.wave[-1]))
         ax[0].set_xlim(xlim)
-        ax[0].set(ylabel='Flux / erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$',
-                  title='Prior check')
+        flux_factor_label = r' $\times 10^{-15}$' if self.flux_factor == 1e15 else ''
+        ax[0].set_ylabel('Flux' + flux_factor_label+ r' / erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$')
+        ax[0].set(title='Prior check')
         ax[-1].set(xlabel='Wavelength / nm', ylabel='Residuals')
         # plt.show()
         fig.savefig(self.figs_path / 'prior_check.pdf')
@@ -347,6 +363,7 @@ class SED:
         self.bt_copy = self.bt.copy()
         self.bt_copy.get_spec(teff=self.params['teff'], logg=self.params['logg'])
         self.bt_copy.scale_flux(R_jup=self.params['R_p'], d_pc=self.params['d_pc'])
+        self.bt_copy.apply_flux_factor(self.flux_factor)
 
         assert np.sum(np.isnan(self.bt_copy.flux)) == 0, 'NaNs in BTSettl flux'
         # self.s2_nirspec = 10**self.params.get('log_s2_nirspec', 3)
@@ -362,7 +379,9 @@ class SED:
         self.bt_copy.resample(new_wave=self.spec.wave)
         
         if self.add_disk:
-            self.bt_copy.blackbody_disk(T=self.params['T_d'], R=self.params['R_d'], d=self.params['d_pc'], add_flux=True)
+            self.bt_copy.blackbody_disk(T=self.params['T_d'], R=self.params['R_d'], d=self.params['d_pc'], 
+                                        add_flux=True,
+                                        flux_factor=self.flux_factor)
             
         n_chunks = len(self.spec.wave)
         # print(f' n_chunks = {n_chunks}')
@@ -563,34 +582,25 @@ class SED:
                          label='Disk' if i==0 else None)
             ax_res.scatter(self.spec.wave[i], self.spec.flux[i] - self.m[i], color='k', s=10)
         ax_res.axhline(0, color='k', ls='-', lw=0.4)
-        # chi2 = np.nansum((self.spec.flux - self.bt_copy.flux)**2 / (self.spec.err)**2)
-        # chi2 = self.chi2
-        # if hasattr(self.spec, 'err'):
-        #     ax_spec.errorbar(self.spec.wave.flatten(), self.spec.flux.flatten(), 
-        #                      yerr=(np.sqrt(self.s2)[:,None] * self.spec.err).flatten(),
-        #                      fmt='o', color='k', alpha=0.2, zorder=0) 
+       
+        xlim = (0.98*np.nanmin(self.spec.wave[0]), 1.01*np.nanmax(self.spec.wave[-1]))
+        if xlim[1] > 10e3:
+            # log-log plot
+            ax_spec.set_xscale('log')
+            ax_spec.set_yscale('log')
+            ax_res.set_xscale('log')
+            # ax_res.set_yscale('log')
+        else:
+            ylim = np.nanmax(np.abs(ax_res.get_ylim()))
+            ax_res.set_ylim(-ylim, ylim)
             
-        # self.bt_copy.plot(ax=ax_spec, color='brown', alpha=0.8, lw=1., s=10, label='BT-Settl + Disk' + f' ($\chi^2$={chi2:.2f})')
-
-        # if hasattr(self.bt_copy, 'flux_disk'):
-        #     # self.bt_copy.plot(ax=ax_spec, color='darkorange', alpha=0.8, lw=1., s=10)
-        #     ax_spec.plot(self.bt_copy.wave.flatten(), self.bt_copy.flux_disk.flatten(), color='darkorange', alpha=0.8, lw=1., label='Disk')
-        #     ax_spec.plot(self.bt_copy.wave.flatten(), (self.bt_copy.flux - self.bt_copy.flux_disk).flatten(), color='b', alpha=0.5, lw=1., ls='--',
-        #                  label='BT-Settl')
-        
-        # res = self.spec.flux - self.bt_copy.flux
-        # ax_res.scatter(self.spec.wave, res, color='k', s=10)
-        # ax_res.axhline(0, color='k', ls='-', lw=0.4)
-        ax_res.set_xlabel(r'Wavelength [nm]')
+        ax_res.set_xlabel(r'Wavelength / nm')
         ax_res.set_ylabel(r'Residuals')
-        ylim = np.nanmax(np.abs(ax_res.get_ylim()))
-        ax_res.set_ylim(-ylim, ylim)
+        
         ax_spec.legend()
-        ax_spec.set_ylabel(r'Flux [erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$]')
-        
-
-        
-        
+        flux_factor_label = r' $\times 10^{-15}$' if self.flux_factor == 1e15 else ''
+        ax_spec.set_ylabel('Flux' + flux_factor_label+ r'/ erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$')
+    
         # corner.overplot_lines(fig, bestfit_params, color=self.bestfit_color, lw=0.5)
         fig_label = 'final' if self.evaluation else f'{self.cb_count}'
         outfig = self.figs_path / f'summary_{fig_label}.pdf'

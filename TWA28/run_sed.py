@@ -61,7 +61,7 @@ if args.prior_check:
     sed.spec.scatter_overlapping_points(plot=False)
     sed.spec.apply_error_scaling()
     
-    sed.load_spitzer(wmax=wmax*1e-3, sigma_clip=5.0, sigma_width=5)
+    sed.load_spitzer(wmax=wmax*1e-3, sigma_clip=3.0, sigma_width=5)
 
     parallax_mas = 16.88 # Gaia DR3
     d_pc = 1e3 / parallax_mas # ~ 59.17 pc

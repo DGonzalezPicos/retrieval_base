@@ -25,6 +25,7 @@ class BTSettl:
         pass
     
     def load_full_dataset(self):
+        # self.file = self.path / file or self.file
         self.model = xr.open_dataset(self.file)
         self.wave = self.model.grid.wavelength.data * 1e3 # [um] -> [nm]
         self.teff_grid = self.model.par1.data
@@ -86,16 +87,18 @@ class BTSettl:
             # file_NIRSpec = self.path / 'wave_NIRSPec.npy'
             # wave = np.load(file_NIRSpec)
             # print(f' cenwave NIRSpec: {np.nanmedian(wave)}')
-            wave = np.arange(900, 35000, 0.05) # [nm], NIRSPec pixel spacing ~ 0.5 nm, so 10x oversampling
-            
-        pad = 0.05
+            # wave = np.arange(900, 35000, 0.05) # [nm], NIRSPec pixel spacing ~ 0.5 nm, so 10x oversampling
+            wave = np.arange(2500, 16000, 0.10) # IMPORTANT: this sets the wavelength grid for the models
+        pad = 0.01
         mask_wave = np.logical_and(self.wave >= np.nanmin(wave)*(1-pad), self.wave <= np.nanmax(wave)*(1+pad))
         
         # print shapes of grid and masks
         print(f'flux_grid shape: {flux_grid.shape}')
         print(f'mask_wave shape: {mask_wave.shape}')
         print(f'mask_teff shape: {mask_teff.shape}')
+        print(f' Temperature range: {self.teff_grid[mask_teff].min()} - {self.teff_grid[mask_teff].max()}')
         print(f'mask_logg shape: {mask_logg.shape}')
+        print(f' Logg range: {self.logg_grid[mask_logg].min()} - {self.logg_grid[mask_logg].max()}')
         
             
         flux_grid = flux_grid[mask_wave,][:, mask_teff, :][:, :, mask_logg]
@@ -115,7 +118,7 @@ class BTSettl:
                                     dims=['wave', 'teff', 'logg'], name='flux', attrs={'units': 'erg s^-1 cm^-2 nm^-1'},
                                     )
         # save as .nc file
-        file_out = self.path / 'BTSETTL_NIRSPec.nc' if file_out is None else file_out
+        file_out = self.path / f'BTSETTL_NIRSPEC_{wave.max()//1e3:.0f}um.nc' if file_out is None else file_out
         dataset.to_netcdf(file_out, mode='w')
         print(f' Saved {file_out}')
         # close file
@@ -337,10 +340,10 @@ if __name__ == '__main__':
     
     bt = BTSettl()
     
-    create_grid = False
+    create_grid = True
     if create_grid:
         bt.load_full_dataset()
-        fg = bt.prepare_grid(teff_range=[2000,2900], logg_range=[2.5, 5.0], out_res=3000)
+        fg = bt.prepare_grid(teff_range=[2100,2900], logg_range=[2.5, 4.5], out_res=3000)
     else:
         bt.load_dataset(bt.path / 'BTSETTL.nc')
         bt.set_interpolator()

@@ -193,8 +193,8 @@ class SED:
             self.bt.load_full_dataset()
             
             wave = np.arange(wmin, wmax, 0.5)
-            self.bt.prepare_grid(teff_range=[2100,2700], 
-                                    logg_range=[3.0, 5.0], 
+            self.bt.prepare_grid(teff_range=[2100,2900], 
+                                    logg_range=[3.0, 4.5], 
                                     out_res=3000,
                                     wave=wave,
                                     file_out=file,

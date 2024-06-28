@@ -31,7 +31,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_13'
+run = 'with_spitzer_14'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -83,7 +83,7 @@ if args.prior_check:
             # d_pc = 59.17 
 
             free_params = {
-                            'teff': (2200, 2700), #FIXME: BTSettl computed grid goes up to 2700 K
+                            'teff': (2100, 2900), #FIXME: BTSettl computed grid goes up to 2700 K
                         'logg': (3.0, 4.5), 
                         'R_p': (2.2, 3.5), 
                             'T_d': (100, 900),

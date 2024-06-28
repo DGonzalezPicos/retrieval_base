@@ -195,6 +195,25 @@ class BTSettl:
             self.flux *= factor
         return self
     
+    def apply_flux_scaling(self, a_j=1.0, a_h=1.0):
+        """Apply additional scaling to correct missing opacity sources in J, H band"""
+        
+        wave_j = (800,1450)
+        wave_h = (1450, 1800)
+        bands = dict(J=(a_j, wave_j), H=(a_h, wave_h))
+        for band, (a, wave) in bands.items():
+            if a != 1.0:
+                mask = [np.logical_and(self.wave[i] >= wave[0], self.wave[i] <= wave[1]) for i in range(len(self.wave))]
+                # check if any item is > 0
+                idx = [i for i in range(len(mask)) if mask[i].sum() > 0]
+                if len(idx) > 0:
+                    for i in idx:
+                        self.flux[i][mask[i]] *= a
+                
+            
+        return self
+        
+    
     def rebin(self, Nbin=None, Nbin_spitzer=None):
         self.Nbin = Nbin
         self.Nbin_spitzer = Nbin_spitzer

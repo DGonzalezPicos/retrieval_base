@@ -31,7 +31,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_15'
+run = 'with_spitzer_16'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -90,6 +90,9 @@ if args.prior_check:
                             'R_d': (1, 100),
                             # 'T_d':(100,105),
                             # 'R_d':(0.01, 0.02),
+                            'a_j': (0.80, 1.20),
+                            # 'a_j':(0.1,0.2),
+                            'a_h': (0.80, 1.20),
                             }
             
             constant_params = {

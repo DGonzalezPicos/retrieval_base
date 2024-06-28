@@ -31,7 +31,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_16'
+run = 'with_spitzer_17'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -51,7 +51,7 @@ if args.prior_check:
             sed = SED(grisms, run=run).load_spec(Nedge=Nedge)
             
             # wmin = 0.95 * np.nanmin(sed.spec.wave) # [nm]
-            wmin = 1000.0 # [nm]
+            wmin = 1490.0 # [nm]
             wmax = 12.0 * 1e3 # [um] -> [nm]
             
             bt_model_file = sed.run_path / f'BTSETTL_{wmin:.0f}_{wmax:.0f}.nc'
@@ -71,7 +71,7 @@ if args.prior_check:
             wave = np.squeeze(sed.spec.wave)
             nans = np.isnan(wave) | np.isnan(sed.spec.flux)
             wave[nans] = np.nan
-            sed.resample(wave_step=100)
+            sed.resample(wave_step=50)
             # print(stop)
             sed.spec.scatter_overlapping_points(plot=False)
             sed.spec.apply_error_scaling()
@@ -90,9 +90,10 @@ if args.prior_check:
                             'R_d': (1, 100),
                             # 'T_d':(100,105),
                             # 'R_d':(0.01, 0.02),
-                            'a_j': (0.60, 1.20),
+                            # 'a_j': (0.60, 1.20),
                             # 'a_j':(0.1,0.2),
-                            'a_h': (0.60, 1.20),
+                            # 'a_h': (0.60, 1.20),
+                            'a_hk': (0.60, 1.20),
                             }
             
             constant_params = {

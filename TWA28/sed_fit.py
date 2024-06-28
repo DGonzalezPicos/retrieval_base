@@ -541,44 +541,53 @@ class SED:
                             )
         
         # add bestfit spectrum to figure
-        l, b, w, h = [0.49,3.4,0.50,0.20]
+        l, b, w, h = [0.49,3.2,0.50,0.20]
 
         ax_res_dim  = [l, b*(h+0.03), w, 0.97*h/5]
-        ax_spec_dim = [l, ax_res_dim[1]+ax_res_dim[3], w, 4*0.97*h/5]
+        ax_spec_dim = [l, ax_res_dim[1]+ax_res_dim[3], w, 2*h/4]
+        ax_spec_log_dim = [l, ax_spec_dim[1]+ax_spec_dim[3]+0.015, w, 2*h/4]
+        
         ax_spec = fig.add_axes(ax_spec_dim)
+        ax_spec_log = fig.add_axes(ax_spec_log_dim)
         ax_res = fig.add_axes(ax_res_dim)
         # self.plot(ax=ax_spec, color='k', alpha=0.2)
+        ax_spec_list = [ax_spec, ax_spec_log]
         for i in range(self.spec.n_orders):
-            ax_spec.plot(self.spec.wave[i], self.spec.flux[i], color='k', alpha=0.2)
-            ax_spec.plot(self.spec.wave[i], self.m[i], color='brown', alpha=0.8, 
-                         label=f'BT-Settl + Disk ($\chi^2$={self.chi2:.2f})' if i==0 else None)
             
-            ax_spec.plot(self.spec.wave[i], self.m[i] - self.bt.flux_disk[i], 
-                         color='dodgerblue', label='BT' if i==0 else None,
-                         alpha=0.8, ls='--')
-            ax_spec.plot(self.spec.wave[i], self.bt.flux_disk[i], color='darkorange', alpha=0.8, ls=':',
-                         label='Disk' if i==0 else None)
+            for j, ax_spec_j in enumerate(ax_spec_list):
+                ax_spec_j.plot(self.spec.wave[i], self.spec.flux[i], color='k', alpha=0.2)
+                ax_spec_j.plot(self.spec.wave[i], self.m[i], color='brown', alpha=0.8, 
+                            label=f'BT-Settl + Disk ($\chi^2$={self.chi2:.2f})' if i==0 else None)
+                
+                ax_spec_j.plot(self.spec.wave[i], self.m[i] - self.bt.flux_disk[i], 
+                            color='dodgerblue', label='BT' if i==0 else None,
+                            alpha=0.8, ls='--')
+                ax_spec_j.plot(self.spec.wave[i], self.bt.flux_disk[i], color='darkorange', alpha=0.8, ls=':',
+                            label='Disk' if i==0 else None)
             ax_res.scatter(self.spec.wave[i], self.spec.flux[i] - self.m[i], color='k', s=10)
        
         xlim = (0.98*np.nanmin(self.spec.wave[0]), 1.01*np.nanmax(self.spec.wave[-1]))
-        if xlim[1] > 10e3:
+        # if xlim[1] > 10e3:
             # log-log plot
-            ax_spec.set_xscale('log')
-            ax_spec.set_yscale('log')
-            ax_res.set_xscale('log')
+        ax_spec_log.set_xscale('log')
+        ax_spec_log.set_yscale('log')
+            # ax_res.set_xscale('log')
             # ax_res.set_yscale('log')
-        else:
-            ylim = np.nanmax(np.abs(ax_res.get_ylim()))
-            ax_res.set_ylim(-ylim, ylim)
-            ax_res.axhline(0, color='k', ls='-', lw=0.4)
+        # else:
+        ylim = np.nanmax(np.abs(ax_res.get_ylim()))
+        ax_res.set_ylim(-ylim, ylim)
+        ax_res.axhline(0, color='k', ls='-', lw=0.4)
 
             
         ax_res.set_xlabel(r'Wavelength / nm')
         ax_res.set_ylabel(r'Residuals')
         
-        ax_spec.legend()
+        ax_spec.legend(frameon=False)
         flux_factor_label = r' $\times 10^{-15}$' if self.flux_factor == 1e15 else ''
-        ax_spec.set_ylabel('Flux' + flux_factor_label+ r'/ erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$')
+        # ax_spec.set_ylabel('Flux' + flux_factor_label+ r'/ erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$')
+        # common ylabel for top two axes
+        fig.text(ax_spec_dim[0]-0.05, ax_spec_dim[1]+0.11, 'Flux' + flux_factor_label+ r'/ erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$',
+                va='center', rotation='vertical')
     
         # corner.overplot_lines(fig, bestfit_params, color=self.bestfit_color, lw=0.5)
         fig_label = 'final' if self.evaluation else f'{self.cb_count}'

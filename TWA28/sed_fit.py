@@ -376,9 +376,11 @@ class SED:
         self.bt.resample(new_wave=self.spec.wave)
         
         if self.add_disk:
-            self.bt.blackbody_disk(T=self.params['T_d'], R=self.params['R_d'], d=self.params['d_pc'], 
-                                        add_flux=True,
-                                        flux_factor=self.flux_factor)
+            self.bt.blackbody_disk(T=self.params['T_d'], 
+                                   R=self.params.get('R_d', 10**self.params['log_R_d']),
+                                   d=self.params['d_pc'], 
+                                    add_flux=True,
+                                    flux_factor=self.flux_factor)
             
         self.bt.apply_flux_scaling(a_j=self.params.get('a_j', 1.0),
                                    a_h=self.params.get('a_h', 1.0),

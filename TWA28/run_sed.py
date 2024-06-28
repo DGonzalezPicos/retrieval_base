@@ -31,7 +31,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_19'
+run = 'with_spitzer_20'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -51,7 +51,7 @@ if args.prior_check:
             sed = SED(grisms, run=run).load_spec(Nedge=Nedge)
             
             # wmin = 0.95 * np.nanmin(sed.spec.wave) # [nm]
-            wmin = 1900.0 # [nm]
+            wmin = 2200.0 # [nm]
             wmax = 12.0 * 1e3 # [um] -> [nm]
             
             bt_model_file = sed.run_path / f'BTSETTL_{wmin:.0f}_{wmax:.0f}.nc'

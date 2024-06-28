@@ -199,7 +199,7 @@ class BTSettl:
         """Apply additional scaling to correct missing opacity sources in J, H band"""
         
         wave_j = (800,1450)
-        wave_h = (1450, 1800)
+        wave_h = (1450, 1900)
         bands = dict(J=(a_j, wave_j), H=(a_h, wave_h))
         for band, (a, wave) in bands.items():
             if a != 1.0:

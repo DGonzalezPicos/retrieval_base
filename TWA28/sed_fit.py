@@ -9,6 +9,9 @@ import time
 import seaborn as sns
 import corner
 import json
+from memory_profiler import profile
+from pympler import asizeof
+
 from scipy.signal import medfilt
 # from spectres import spectres
 
@@ -48,7 +51,6 @@ class SED:
         self.prefix = str(self.run_path  / 'pmn_')
         self.cb_count = -1
         
-                
     def load_spec(self, Nedge=50, Nbin=None):
         
         self.spec = SpectrumJWST(Nedge=Nedge).load_grisms(self.files)
@@ -176,6 +178,7 @@ class SED:
             print(f' total nans wave = {np.isnan(self.spec.wave).sum() / self.spec.wave.size:.2f}')
         return self
     
+    # @profile
     def init_BTSettl(self,
                      create_grid=False,
                      wmin=800, 
@@ -276,7 +279,7 @@ class SED:
             
         
         return cube
-    
+
     def prior_check(self, n=4, random=False, inset_xlim=None, xscale='linear', yscale='linear'):
         """Check prior function"""
         
@@ -299,9 +302,9 @@ class SED:
             print(f' lnL = {lnL:.2e} (t={end-start:.2f} s)')
             print(f' Uncertainty scaling sqrt(s2) = {np.sqrt(self.s2)}')
             
-            # self.bt_copy.plot(ax=ax[0], color=colors[i], alpha=0.8, lw=1., s=10)
+            # self.bt.plot(ax=ax[0], color=colors[i], alpha=0.8, lw=1., s=10)
 
-            res = [f - m for f, m in zip(self.spec.flux, self.bt_copy.flux)]
+            res = [f - m for f, m in zip(self.spec.flux, self.bt.flux)]
             
             chi2_v = self.chi2 / self.n_dof
             ax_spec = [ax[0]]
@@ -328,7 +331,7 @@ class SED:
                 for axi in ax_spec:
                     axi.plot(self.spec.wave[j], self.spec.flux[j], color=colors[i], alpha=0.2)
                     axi.plot(self.spec.wave[j], self.m[j], color=colors[i], alpha=0.8)
-                    axi.plot(self.spec.wave[j], self.m[j] - self.bt_copy.flux_disk[j], color=colors[i],ls='--', alpha=0.3)
+                    axi.plot(self.spec.wave[j], self.m[j] - self.bt.flux_disk[j], color=colors[i],ls='--', alpha=0.3)
                 
                 ax[1].scatter(self.spec.wave[j], res[j], color=colors[i], s=10)
                 # add text top right corner with same color showing chi2_nu
@@ -360,17 +363,17 @@ class SED:
     def loglike(self, cube=None, ndim=None, nparams=None):
         """log likelihood function for pymultinest"""
 
-        self.bt_copy = self.bt.copy()
-        self.bt_copy.get_spec(teff=self.params['teff'], logg=self.params['logg'])
-        self.bt_copy.scale_flux(R_jup=self.params['R_p'], d_pc=self.params['d_pc'])
-        self.bt_copy.apply_flux_factor(self.flux_factor)
+        # self.bt = self.bt.copy()
+        self.bt.get_spec(teff=self.params['teff'], logg=self.params['logg'])
+        self.bt.scale_flux(R_jup=self.params['R_p'], d_pc=self.params['d_pc'])
+        self.bt.apply_flux_factor(self.flux_factor)
 
-        assert np.sum(np.isnan(self.bt_copy.flux)) == 0, 'NaNs in BTSettl flux'
+        assert np.sum(np.isnan(self.bt.flux)) == 0, 'NaNs in BTSettl flux'
        
-        self.bt_copy.resample(new_wave=self.spec.wave)
+        self.bt.resample(new_wave=self.spec.wave)
         
         if self.add_disk:
-            self.bt_copy.blackbody_disk(T=self.params['T_d'], R=self.params['R_d'], d=self.params['d_pc'], 
+            self.bt.blackbody_disk(T=self.params['T_d'], R=self.params['R_d'], d=self.params['d_pc'], 
                                         add_flux=True,
                                         flux_factor=self.flux_factor)
             
@@ -387,7 +390,7 @@ class SED:
             f = self.spec.flux[i]
             e = self.spec.err[i]
             # forward model
-            m_i = self.bt_copy.flux[i]
+            m_i = self.bt.flux[i]
             self.m.append(m_i)
             nans = np.isnan(w) | np.isnan(f) | np.isnan(e) | np.isnan(m_i)
             n = np.sum(~nans)
@@ -546,10 +549,10 @@ class SED:
             ax_spec.plot(self.spec.wave[i], self.m[i], color='brown', alpha=0.8, 
                          label=f'BT-Settl + Disk ($\chi^2$={self.chi2:.2f})' if i==0 else None)
             
-            ax_spec.plot(self.spec.wave[i], self.m[i] - self.bt_copy.flux_disk[i], 
+            ax_spec.plot(self.spec.wave[i], self.m[i] - self.bt.flux_disk[i], 
                          color='dodgerblue', label='BT' if i==0 else None,
                          alpha=0.8, ls='--')
-            ax_spec.plot(self.spec.wave[i], self.bt_copy.flux_disk[i], color='darkorange', alpha=0.8, ls=':',
+            ax_spec.plot(self.spec.wave[i], self.bt.flux_disk[i], color='darkorange', alpha=0.8, ls=':',
                          label='Disk' if i==0 else None)
             ax_res.scatter(self.spec.wave[i], self.spec.flux[i] - self.m[i], color='k', s=10)
        
@@ -636,6 +639,30 @@ class SED:
         # pickle save
         af.pickle_save(file, self)
         return self
+    
+    def list_memory_allocation(self):
+        print(f"Memory usage of object {self}: {asizeof.asizeof(self) / (1024**2):.2f} MB")
+        memory_dict = {k:asizeof.asizeof(v) for k,v in self.__dict__.items() if not k.startswith('__')}
+        # sort by memory usage
+        memory_dict = dict(sorted(memory_dict.items(), key=lambda item: item[1], reverse=True))
+        for k, v in memory_dict.items():
+            v_MB = v / (1024 ** 2)
+            if v_MB < 0.01:
+                continue
+            print(f'{k}: {v_MB:.2f} MB')
+            try:
+                memory_dict_attr = {key:asizeof.asizeof(val) for key,val in getattr(self, k).__dict__.items() if not key.startswith('__')}
+                memory_dict_attr = dict(sorted(memory_dict_attr.items(), key=lambda item: item[1], reverse=True))
+                for key, val in memory_dict_attr.items():
+                    val_MB = val / (1024 ** 2)
+                    if val_MB < 0.01:
+                        continue
+                    print(f'  {key}: {val_MB:.2f} MB')
+            except:
+                continue
+            
+        return self
+
       
     
 if __name__ == '__main__':

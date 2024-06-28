@@ -6,7 +6,7 @@ import os
 import xarray as xr
 import copy
 from scipy.interpolate import RegularGridInterpolator
-from spectres import spectres
+# from spectres import spectres
 from petitRADTRANS import nat_cst as nc
 
 from retrieval_base.spectrum_jwst import SpectrumJWST
@@ -29,6 +29,7 @@ class BTSettl:
         self.wave = self.model.grid.wavelength.data * 1e3 # [um] -> [nm]
         self.teff_grid = self.model.par1.data
         self.logg_grid = self.model.par2.data
+        # del self.model
         return self
     
     def load_dataset(self, file):
@@ -39,6 +40,8 @@ class BTSettl:
         print(f' BTSETTL grid shape: {self.flux_grid.shape}')
         self.flux_units = dataset.flux.attrs['units']
         self.wave = dataset.wave.data # units should be in [nm]
+        self.wave_input = np.copy(self.wave)
+
         self.wave_unit = 'nm'
         self.teff_grid = dataset.teff.data
         self.logg_grid = dataset.logg.data
@@ -50,10 +53,16 @@ class BTSettl:
         assert hasattr(self, 'flux_grid'), 'Load grid first'
         assert hasattr(self, 'teff_grid'), 'Load grid first'
         assert hasattr(self, 'logg_grid'), 'Load grid first'
-        
-        self.interpolator = RegularGridInterpolator((self.wave, self.teff_grid, self.logg_grid), self.flux_grid, method='linear')
+        print(f' Setting interpolator')
+        print(f'self.wave.shape {self.wave.shape}')
+        self.interpolator = RegularGridInterpolator((self.wave, self.teff_grid, self.logg_grid), 
+                                                    self.flux_grid, 
+                                                    method='linear')
         # remove attributes to save memory
         del self.flux_grid
+        if hasattr(self, 'model'):
+            del self.model
+        # del self.wave
         return self
 
     
@@ -130,9 +139,9 @@ class BTSettl:
         # logg_range = np.arange(2.5, 5.5+0.5, 0.5)
         
         # self.flux = self.model.grid.data[self.mask, teff_index, logg_index]
-        self.flux = self.interpolator((self.wave, self.teff, self.logg))
+        self.flux = self.interpolator((self.wave_input, self.teff, self.logg))
         if wave is not None:
-            self.flux = np.interp(wave, self.wave, self.flux)
+            self.flux = np.interp(wave, self.wave_input, self.flux)
             # del self.wave
         return self
     
@@ -188,8 +197,8 @@ class BTSettl:
         self.Nbin_spitzer = Nbin_spitzer
         
         if self.Nbin_spitzer is not None:
-            spec_jwst = SpectrumJWST(wave=self.wave[:-1], flux=self.flux[:-1]).rebin(self.Nbin)
-            spec_spitzer = SpectrumJWST(wave=self.wave[-1], flux=self.flux[-1]).rebin(self.Nbin_spitzer)
+            spec_jwst = SpectrumJWST(wave=self.wave_input[:-1], flux=self.flux[:-1]).rebin(self.Nbin)
+            spec_spitzer = SpectrumJWST(wave=self.wave_input[-1], flux=self.flux[-1]).rebin(self.Nbin_spitzer)
             
             # self.wave = np.vstack((spec_jwst.wave, spec_spitzer.wave))
             # self.flux = np.vstack((spec_jwst.flux, spec_spitzer.flux))
@@ -228,19 +237,19 @@ class BTSettl:
     def resample(self, wave_step=None, new_wave=None):
         if new_wave is None:
             assert wave_step is not None, 'Either wave_step or new_wave must be provided'
-            new_wave = np.arange(np.nanmin(self.wave), np.nanmax(self.wave), wave_step)
+            new_wave = np.arange(np.nanmin(self.wave_input), np.nanmax(self.wave_input), wave_step)
         
         if isinstance(new_wave, list):
             new_flux = []
             for i in range(len(new_wave)):
-                re = Resample(wave=self.wave, flux=self.flux)(new_wave[i])
+                re = Resample(wave=self.wave_input, flux=self.flux)(new_wave[i])
                 new_flux.append(re[0])
                 
             self.wave = new_wave
             self.flux = new_flux
             return self
         else:
-            self.flux = Resample(wave=self.wave, flux=self.flux)(new_wave)[0]
+            self.flux = Resample(wave=self.wave_input, flux=self.flux)(new_wave)[0]
             assert np.isnan(self.flux).sum() < np.size(self.flux), 'ALL NaNs in resampled flux'
             self.wave = new_wave
             return self
@@ -290,7 +299,7 @@ class BTSettl:
                 new_flux.append(self.flux[i] + bb)
             self.flux_disk = flux_disk
             self.flux = new_flux
-            self.wave = [wave_cm[i] * 1e7 for i in range(len(wave_cm))]
+            # self.wave = [wave_cm[i] * 1e7 for i in range(len(wave_cm))]
             return self
         else:
             # flux of a blackbody disk in units of [erg s^-1 cm^-2 nm^-1]

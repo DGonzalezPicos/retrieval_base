@@ -379,6 +379,7 @@ class SED:
             
         self.bt.apply_flux_scaling(a_j=self.params.get('a_j', 1.0),
                                    a_h=self.params.get('a_h', 1.0),
+                                   a_hk=self.params.get('a_hk', 1.0),
         )
             
         n_chunks = len(self.spec.wave)

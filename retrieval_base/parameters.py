@@ -48,6 +48,7 @@ class Parameters:
         # Create dictionary with constant parameter-values
         self.params = self.all_params.copy()
         self.params.update(constant_params)
+        
 
         for key_i in list(self.params.keys()):
             if key_i.startswith('log_'):
@@ -132,7 +133,7 @@ class Parameters:
         self.read_uncertainty_params()
         self.read_chemistry_params()
         self.read_cloud_params()
-        self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grism
+        self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grating
         
 
         if (ndim is None) and (nparams is None):
@@ -382,6 +383,8 @@ class Parameters:
         res_keys = [key for key in self.params.keys() if key.startswith('res_')]
         if len(res_keys) > 0:
             self.params['res'] = [self.params[key] for key in res_keys]
+            
+        self.params['gratings'] = self.params.get('gratings', ['g235h', 'g235h', 'g395h', 'g395h'])
             
             
     @classmethod

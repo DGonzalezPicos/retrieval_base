@@ -349,10 +349,11 @@ class Retrieval:
 
         self.conf = conf
         # if MPI active, change self.conf.prefix
-        if rank > 0 and tmp_path is not None:
-            print(f' rank = {rank}')
+        if tmp_path is not None:
+            # print(f' rank = {rank}')
             # self.conf.prefix = self.conf.prefix + f'rank{rank}/'
             # get $TMP_PATH variable
+            print(f' Updating conf.prefix to {tmp_path}retrieval_outputs/{self.conf.run}/test_')
             self.conf.prefix = f'{tmp_path}retrieval_outputs/{self.conf.run}/test_'
             
         self.evaluation = evaluation
@@ -1054,7 +1055,7 @@ class Retrieval:
         
         # Pause the process to not overload memory on start-up
         # time.sleep(0.1*rank*len(self.d_spec))
-        time.sleep(2)
+        time.sleep(1)
 
         # Run the MultiNest retrieval
         pymultinest.run(

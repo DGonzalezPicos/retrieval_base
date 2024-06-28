@@ -36,7 +36,7 @@ def read_data(file, units='mJy'):
 
 targets = ['TWA27A', 'TWA27B', 'TWA28']
 colors = ['navy', 'brown', 'darkgreen']
-grisms = ['f100lp', 'f170lp', 'f290lp']
+gratings = ['f100lp', 'f170lp', 'f290lp']
 lw = 0.9
 
 fig, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=True,

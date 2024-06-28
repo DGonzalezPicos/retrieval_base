@@ -23,7 +23,7 @@ if target not in cwd:
 run = 'jwst_K_N5'
 
 
-grisms = [
+gratings = [
             # 'g140h-f100lp', 
             'g235h-f170lp', 
             'g395h-f290lp',
@@ -35,8 +35,8 @@ colors= [
 ]
 
 plot = True
-files = [f'jwst/TWA28_{g}.fits' for g in grisms]
-spec = SpectrumJWST(Nedge=40).load_grisms(files)
+files = [f'jwst/TWA28_{g}.fits' for g in gratings]
+spec = SpectrumJWST(Nedge=40).load_gratings(files)
 spec.reshape(spec.n_orders, 1)
 # spec.fix_wave_nans() # experimental...
 spec.sigma_clip_reshaped(use_flux=False, 
@@ -60,7 +60,7 @@ conf.scale_flux = False
 conf.N_knots = 1
 conf.scale_flux_eps = 0.0
 
-## Create pRT_atm object covering both grisms
+## Create pRT_atm object covering both gratings
 pRT_file =pathlib.Path(f'{conf.prefix}data/pRT_atm_{spec.w_set}_G2G3.pkl')
 if not pRT_file.exists():
     print(f'--> Creating {pRT_file}')

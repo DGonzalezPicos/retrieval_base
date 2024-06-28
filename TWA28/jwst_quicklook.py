@@ -10,7 +10,7 @@ from astropy.io import fits
 
 path = pathlib.Path('TWA28/jwst')
 files = list(path.glob('*.fits'))
-grisms = ['f100lp', 'f170lp', 'f290lp']
+gratings = ['f100lp', 'f170lp', 'f290lp']
 
 def sigma_clip(array, sigma=3, max_iter=5, return_mask=False):
     """Sigma clip an array by setting to NaN values that are more than sigma"""

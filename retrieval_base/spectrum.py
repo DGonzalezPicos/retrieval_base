@@ -14,6 +14,7 @@ from petitRADTRANS.retrieval import rebin_give_width as rgw
 import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
 from retrieval_base.spline_model import SplineModel
+from nirspersion import NIRSpec
 
 class Spectrum:
 
@@ -360,6 +361,25 @@ class Spectrum:
         # Perform the convolution using matrix multiplication
         flux_LSF = np.einsum('ij, ij->i', kernels, flux_matrix)
         return flux_LSF
+    
+    @classmethod
+    def instr_broadening_nirspec(cls, wave, flux, grating='g235h'):
+        """
+        Broadens the spectrum by the instrumental resolution of NIRSpec.
+
+        Parameters:
+        wave : ndarray
+            Wavelength array.
+        flux : ndarray
+            Flux array.
+        grating : str, optional
+            NIRSpec grating (default is 'g235h').
+
+        Returns:
+        flux_LSF : ndarray
+            Flux array after applying instrumental broadening.
+        """
+        return NIRSpec()(wave, flux, grating=grating)
     
     @classmethod
     def spectrally_weighted_integration(cls, wave, flux, array):
@@ -895,9 +915,6 @@ class ModelSpectrum(Spectrum):
         
         return flux_rebinned
     
-   
-            
-
         
     def shift_broaden_rebin(self, 
                             rv, 
@@ -908,16 +925,24 @@ class ModelSpectrum(Spectrum):
                             d_wave=None, 
                             rebin=True, 
                             instr_broad_fast=True,
+                            grating=None,
                             ):
 
         # Apply Doppler shift, rotational/instrumental broadening, 
         # and rebin onto a new wavelength grid
         self.rv_shift(rv, replace_wave=True)
         self.rot_broadening(vsini, epsilon_limb, replace_wave_flux=True)
-        if instr_broad_fast:
+        # if instr_broad_fast:
+        #     self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
+        # else: # for NIRSpec
+        #     self.flux = self.instr_broadening_kernels(self.wave, self.flux, out_res, in_res) # NEW (2024-05-26): use resolution at every wavelength
+        # if rebin:
+        #     self.rebin(d_wave, replace_wave_flux=True)
+        if grating is not None:
+            self.flux = self.instr_broadening_nirspec(self.wave, self.flux, grating=grating)
+        else:
+            assert out_res is not None, 'Instrumental resolution must be provided as `out_res`'
             self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
-        else: # for NIRSpec
-            self.flux = self.instr_broadening_kernels(self.wave, self.flux, out_res, in_res) # NEW (2024-05-26): use resolution at every wavelength
         if rebin:
             self.rebin(d_wave, replace_wave_flux=True)
             

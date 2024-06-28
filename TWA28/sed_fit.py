@@ -38,12 +38,12 @@ class SED:
     
     flux_factor = 1e15 # multiply by constant to avoid numerical issues
     
-    def __init__(self, grisms=[], run='test_1', evaluation=False):
+    def __init__(self, gratings=[], run='test_1', evaluation=False):
         
-        self.grisms = grisms
-        assert all([g in ['g140h-f100lp', 'g235h-f170lp', 'g395h-f290lp'] for g in grisms]), 'Invalid grism'
+        self.gratings = gratings
+        assert all([g in ['g140h-f100lp', 'g235h-f170lp', 'g395h-f290lp'] for g in gratings]), 'Invalid grating'
         
-        self.files = [f'jwst/{self.target}_{g}.fits' for g in grisms]
+        self.files = [f'jwst/{self.target}_{g}.fits' for g in gratings]
         
         self.run = run
         self.update_path(self.path)
@@ -53,7 +53,7 @@ class SED:
         
     def load_spec(self, Nedge=50, Nbin=None):
         
-        self.spec = SpectrumJWST(Nedge=Nedge).load_grisms(self.files)
+        self.spec = SpectrumJWST(Nedge=Nedge).load_gratings(self.files)
         self.spec.reshape(self.spec.n_orders, 1)
         # spec.fix_wave_nans() # experimental...
         self.spec.sigma_clip_reshaped(use_flux=False, 
@@ -697,7 +697,7 @@ if __name__ == '__main__':
     run = 'with_spitzer_8'
 
 
-    grisms = [
+    gratings = [
                 # 'g140h-f100lp', 
                 'g235h-f170lp', 
                 'g395h-f290lp',
@@ -705,7 +705,7 @@ if __name__ == '__main__':
 
     Nedge = 40
     start = time.time()
-    sed = SED(grisms, run=run).load_spec(Nedge=Nedge)
+    sed = SED(gratings, run=run).load_spec(Nedge=Nedge)
     
     # wmin = 0.95 * np.nanmin(sed.spec.wave) # [nm]
     wmin = 1980.0 # [nm]

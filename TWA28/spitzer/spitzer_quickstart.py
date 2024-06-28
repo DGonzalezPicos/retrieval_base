@@ -41,13 +41,20 @@ ax = ax_spec[:3]
 ax_res = ax_spec[-1]
 
 # plot two blackbodies with temperatures T1 and T2
-T1 = 2450.
-T2 = 510.
-T = [2480, 520, 80]
+
+T = [2480, # Photosphere
+     520,  # Inner disk (hot gas)
+    #  250,  # Mid plane warm gas??
+     80,   # Outer disk (cold dust)
+     ]
 bb_list = []
 
 # rjup to cm
-R_jup = np.array([2.84, 18., 400])
+R_jup = np.array([2.80, 
+                  18.,
+                #   20.,
+                  400,
+                  ])
 R_cm =  R_jup * 7.1492e9 # [R_jup] -> [cm]
 # pc to cm
 d_cm = 59.17 * 3.086e18 # [pc] -> [cm]
@@ -63,10 +70,10 @@ ax_res.plot(wave, res, color='black')
 ax_res.axhline(0, color='magenta', ls='-', lw=0.5)
 ax_res.set(xscale='log', yscale='linear', ylabel='Residuals')
 
-ax[0].errorbar(wave, flux_Jy, yerr=err_Jy, fmt='o', color='black', ms=1)
+ax[0].errorbar(wave, flux_Jy, yerr=err_Jy, fmt='o', color='black', ms=1, alpha=0.8)
 ax[0].set_ylabel('Flux density / Jy')
 for i, axi in enumerate(ax[1:]):
-    axi.errorbar(wave, flux, yerr=err, fmt='o', color='black', ms=1)
+    axi.errorbar(wave, flux, yerr=err, fmt='o', color='black', ms=1, alpha=0.8)
     axi.errorbar(wave[mask_clip], flux[mask_clip], yerr=err[mask_clip], fmt='o', color='red', ms=1)
 
     

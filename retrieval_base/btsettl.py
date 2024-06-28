@@ -154,9 +154,9 @@ class BTSettl:
         
         if wave is None:
             file_NIRSpec = self.path / 'wave_NIRSPec.npy'
-            wave_NIRSpec = np.load(file_NIRSpec) # shape (2*n_grisms, n_wave)
+            wave_NIRSpec = np.load(file_NIRSpec) # shape (2*n_gratings, n_wave)
         else:
-            assert len(wave.shape) == 2, f'Invalid wave shape {wave.shape}, must be (2*n_grisms, n_wave)'
+            assert len(wave.shape) == 2, f'Invalid wave shape {wave.shape}, must be (2*n_gratings, n_wave)'
             wave_NIRSpec = wave
             
         if out_res is not None:

@@ -18,7 +18,7 @@ from retrieval_base.resample import Resample
 
 class SpectrumJWST:
     
-    # spectral resolution = 2700 for grisms g140h, g235h, g395h
+    # spectral resolution = 2700 for gratings g140h, g235h, g395h
     settings = dict(
         g140h_f100lp = (0.97, 1.45, 1.82),
         g235h_f170lp = (1.66, 2.45, 3.05),
@@ -31,24 +31,24 @@ class SpectrumJWST:
     wave_unit = 'nm'
     flux_unit = 'Jy'
     
-    def __init__(self, wave=None, flux=None, err=None, target=None, grism=None, file=None,
+    def __init__(self, wave=None, flux=None, err=None, target=None, grating=None, file=None,
                  Nedge=10):
         self.wave = wave
         self.flux = flux
         self.err = err
         self.target = target
-        self.grism = grism
+        self.grating = grating
         self.file = file
         self.Nedge = Nedge
         if self.file is not None:
             print(f'Reading {self.file}')
             self.read_data(units='erg/s/cm2/nm')
             
-        if self.grism is not None:
-            self.split_grism(keep='both')
+        if self.grating is not None:
+            self.split_grating(keep='both')
             
             
-    def read_data(self, grism=None, units='mJy'):
+    def read_data(self, grating=None, units='mJy'):
         with fits.open(self.file) as hdul:
             data = hdul[1].data
             self.wave, self.flux, self.err = data['WAVELENGTH'], data['FLUX'], data['ERR'] # units [um, Jy, Jy]
@@ -58,10 +58,10 @@ class SpectrumJWST:
         self.wave_unit = 'nm'
         self.flux_unit = 'Jy'
         
-        # if grism is not None:
+        # if grating is not None:
             # file name must be in the format 'TWA28_g235h-f170lp.fits'
-        self.grism = str(self.file).split('_')[1].split('.fits')[0].replace('-', '_')
-        print(f'Grism: {self.grism}')
+        self.grating = str(self.file).split('_')[1].split('.fits')[0].replace('-', '_')
+        print(f'grating: {self.grating}')
         if units == 'mJy':
             self.flux *= 1e3
             self.err *= 1e3
@@ -82,14 +82,14 @@ class SpectrumJWST:
             self.flux_unit = 'erg/s/cm2/nm'
         return self
     
-    def load_grisms(self, files):
-        # self.grisms = [f.split('_')[1].split('-')[0] for f in files]
+    def load_gratings(self, files):
+        # self.gratings = [f.split('_')[1].split('-')[0] for f in files]
         spec_list = []
         for f in files:
             spec_list.append(SpectrumJWST(file=f, Nedge=self.Nedge))
             
         self += spec_list
-        print(f'Loaded {len(spec_list)} grisms')
+        print(f'Loaded {len(spec_list)} gratings')
         print(f' shape of wave: {self.wave.shape}')
         print(f' shape of flux: {self.flux.shape}')
         return self
@@ -152,11 +152,11 @@ class SpectrumJWST:
         return 1
             
     
-    def split_grism(self, break_wave=None, keep=1, grism=None, fig_name=None):
-        '''Split data of one grisms into chunks'''
-        assert hasattr(self, 'grism'), f' No grism attribute found in the SpectrumJWST object'
+    def split_grating(self, break_wave=None, keep=1, grating=None, fig_name=None):
+        '''Split data of one gratings into chunks'''
+        assert hasattr(self, 'grating'), f' No grating attribute found in the SpectrumJWST object'
         # mask = self.wave < break_wave
-        mask = self.wave < self.settings[self.grism][1]*1e3
+        mask = self.wave < self.settings[self.grating][1]*1e3
         
         wave0, flux0, err0 = self.wave[mask], self.flux[mask], self.err[mask]
         wave1, flux1, err1 = self.wave[~mask], self.flux[~mask], self.err[~mask]
@@ -635,13 +635,13 @@ class SpectrumJWST:
 if __name__ == '__main__':
     import pathlib
     path = pathlib.Path('TWA28/jwst/')
-    grisms = [
+    gratings = [
             # 'g140h-f100lp', 
               'g235h-f170lp', 
               'g395h-f290lp']
-    files = [path/f'TWA28_{g}.fits' for g in grisms]
+    files = [path/f'TWA28_{g}.fits' for g in gratings]
 
-    spec = SpectrumJWST(Nedge=40).load_grisms(files)
+    spec = SpectrumJWST(Nedge=40).load_gratings(files)
     spec.reshape(spec.n_orders, 1)
     spec.sigma_clip_reshaped(use_flux=False, 
                                     sigma=3, 

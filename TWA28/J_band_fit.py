@@ -25,13 +25,13 @@ if target not in cwd:
 conf_data = conf.config_data['NIRSpec']
 for key in ['data', 'plots']:
     pathlib.Path(f'{conf.prefix}{key}/').mkdir(parents=True, exist_ok=True)
-grisms = [
+gratings = [
             'g140h-f100lp', 
             # 'g235h-f170lp', 
             # 'g395h-f290lp',
             ]
-files = [f'jwst/TWA28_{g}.fits' for g in grisms]
-spec = SpectrumJWST(Nedge=40).load_grisms(files)
+files = [f'jwst/TWA28_{g}.fits' for g in gratings]
+spec = SpectrumJWST(Nedge=40).load_gratings(files)
 spec.reshape(spec.n_orders, 1)
 # spec.fix_wave_nans() # experimental...
 spec.sigma_clip_reshaped(use_flux=False, 

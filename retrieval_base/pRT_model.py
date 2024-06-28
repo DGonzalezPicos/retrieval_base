@@ -330,7 +330,8 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
+                # out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
+                grating=self.params['gratings'][i], # NEW 2024-05-26: grating per order
                 in_res=m_spec_i.resolution, 
                 rebin=False, 
                 instr_broad_fast=False,
@@ -433,10 +434,11 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution[order], 
+                # out_res=self.d_resolution[order], 
+                grating=self.params['gratings'][order],
                 in_res=m_spec_i.resolution, 
                 rebin=True, 
-                instr_broad_fast=True,
+                # instr_broad_fast=True,
                 )
             # Compute the spectrally-weighted emission contribution function
             # print(f' shape contr_em_ij.flux = {contr_em_ij.flux.shape}')

@@ -35,7 +35,7 @@ run = 'with_spitzer_22'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
-    grisms = [
+    gratings = [
                 # 'g140h-f100lp', 
                 'g235h-f170lp', 
                 'g395h-f290lp',
@@ -48,7 +48,7 @@ if args.prior_check:
         else:
             Nedge = 40
             start = time.time()
-            sed = SED(grisms, run=run).load_spec(Nedge=Nedge)
+            sed = SED(gratings, run=run).load_spec(Nedge=Nedge)
             
             # wmin = 0.95 * np.nanmin(sed.spec.wave) # [nm]
             wmin = 2600.0 # [nm]

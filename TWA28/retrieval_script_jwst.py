@@ -8,7 +8,7 @@ from retrieval_base.pRT_model import pRT_model
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.parameters import Parameters
 from retrieval_base.config import Config
-import config_jwst_J as conf
+import config_jwst as conf
 
 config_file = 'config_jwst.txt'
 target = 'TWA28'
@@ -40,27 +40,27 @@ parser.add_argument('--pre_processing', '-p', action='store_true', default=False
 parser.add_argument('--prior_check', '-c', action='store_true', default=False)
 parser.add_argument('--retrieval', '-r', action='store_true', default=False)
 parser.add_argument('--evaluation', '-e', action='store_true', default=False)
-parser.add_argument('--tmp_path', '-t', type=str, default=None)
+parser.add_argument('--tmp_path', '-t', action='store', default=None)
 args = parser.parse_args()
 
 if args.pre_processing:
     sp.call(['python', f'{path}/{target}/config_jwst.py'])
     ## Pre-processing data
     
-    grisms = [
-            'g140h-f100lp', 
-            # 'g235h-f170lp', 
-            # 'g395h-f290lp',
+    gratings = [
+            # 'g140h-f100lp', 
+            'g235h-f170lp', 
+            'g395h-f290lp',
             ]
-    files = [f'jwst/TWA28_{g}.fits' for g in grisms]
+    files = [f'jwst/TWA28_{g}.fits' for g in gratings]
 
-    spec = SpectrumJWST(Nedge=40).load_grisms(files)
+    spec = SpectrumJWST(Nedge=40).load_gratings(files)
     spec.reshape(spec.n_orders, 1)
     # spec.fix_wave_nans() # experimental...
     spec.sigma_clip_reshaped(use_flux=False, 
                                 # sigma=3, # KM bands
-                                sigma=1.0, # J band
-                                width=31, 
+                                sigma=3.0, # J band
+                                width=11, 
                                 max_iter=5,
                                 fun='median', 
                                 debug=False)

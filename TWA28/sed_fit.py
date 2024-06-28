@@ -263,7 +263,7 @@ class SED:
         # essential_keys = ['teff', 'logg', 'R_p', 'd_pc']
         # assert all([key in self.params.keys() for key in essential_keys]), f'Missing essential keys {essential_keys}'
         
-        self.add_disk = ('T_d' in self.params.keys()) and ('R_d' in self.params.keys())
+        self.add_disk = ('T_d' in self.params.keys()) or ('R_d' in self.params.keys())
         
         self.n_dof = sum([np.sum(~np.isnan(f)) for f in self.spec.flux]) - self.ndim
         print(f' Number of degrees of freedom = {self.n_dof}')
@@ -276,6 +276,9 @@ class SED:
             a, b = self.free_params[key]
             cube[i] = a + (b - a) * cube[i]
             self.params[key] = cube[i]
+            # log to linear for keys that star with 'log_'
+            if key.startswith('log_'):
+                self.params[key[4:]] = 10**cube[i]
             
         
         return cube

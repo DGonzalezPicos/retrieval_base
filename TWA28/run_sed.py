@@ -31,12 +31,12 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_18'
+run = 'with_spitzer_19'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
     grisms = [
-                'g140h-f100lp', 
+                # 'g140h-f100lp', 
                 'g235h-f170lp', 
                 'g395h-f290lp',
                 ]
@@ -86,8 +86,9 @@ if args.prior_check:
                             'teff': (2100, 2900), #FIXME: BTSettl computed grid goes up to 2700 K
                         'logg': (3.0, 4.5), 
                         'R_p': (2.2, 3.5), 
-                            'T_d': (100, 900),
-                            'R_d': (1, 100),
+                            'T_d': (50, 900),
+                            # 'R_d': (1, 1000),
+                            'log_R_d':(0, 4),
                             # 'T_d':(100,105),
                             # 'R_d':(0.01, 0.02),
                             # 'a_j': (0.60, 1.20),

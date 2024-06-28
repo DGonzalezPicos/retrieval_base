@@ -71,10 +71,10 @@ if args.prior_check:
             wave = np.squeeze(sed.spec.wave)
             nans = np.isnan(wave) | np.isnan(sed.spec.flux)
             wave[nans] = np.nan
-            sed.resample(wave_step=200)
+            sed.resample(wave_step=100)
             # print(stop)
             sed.spec.scatter_overlapping_points(plot=False)
-            sed.spec.apply_error_scaling()
+            sed.spec.apply_error_scaling(default=100.0)
             
             sed.load_spitzer(wmax=wmax*1e-3, sigma_clip=3.0, sigma_width=5)
 

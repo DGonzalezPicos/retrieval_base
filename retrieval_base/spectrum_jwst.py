@@ -610,7 +610,7 @@ class SpectrumJWST:
                     
         return self
             
-    def apply_error_scaling(self, mode='same'):
+    def apply_error_scaling(self, mode='same', default=100.):
         
         assert hasattr(self, 'err_s'), 'No error scaling factors found'
         assert mode == 'same', 'Only same scaling is implemented' # TODO: enable different scalings for the orders
@@ -619,7 +619,8 @@ class SpectrumJWST:
             print(f'Applying error scaling factor (max): {np.max(self.err_s)}')
         
             self.err = [self.err[i] * np.max(self.err_s) for i in range(self.n_orders)]
-            
+        else:
+            self.err = [self.err[i] * default for i in range(self.n_orders)]
         return self              
            
         

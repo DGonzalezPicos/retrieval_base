@@ -31,7 +31,7 @@ path_suffix = 'dario/phd' if 'dario' in os.environ['HOME'] else 'dgonzalezpi'
 base_path = pathlib.Path(f'/home/{path_suffix}')    
 target = 'TWA28'
 
-run = 'with_spitzer_20'
+run = 'with_spitzer_22'
 sed_file = base_path / f'retrieval_base/{target}/SED_runs/{run}/sed.pkl'
 
 if args.prior_check:
@@ -51,7 +51,7 @@ if args.prior_check:
             sed = SED(grisms, run=run).load_spec(Nedge=Nedge)
             
             # wmin = 0.95 * np.nanmin(sed.spec.wave) # [nm]
-            wmin = 2200.0 # [nm]
+            wmin = 2600.0 # [nm]
             wmax = 12.0 * 1e3 # [um] -> [nm]
             
             bt_model_file = sed.run_path / f'BTSETTL_{wmin:.0f}_{wmax:.0f}.nc'
@@ -71,7 +71,7 @@ if args.prior_check:
             wave = np.squeeze(sed.spec.wave)
             nans = np.isnan(wave) | np.isnan(sed.spec.flux)
             wave[nans] = np.nan
-            sed.resample(wave_step=50)
+            sed.resample(wave_step=200)
             # print(stop)
             sed.spec.scatter_overlapping_points(plot=False)
             sed.spec.apply_error_scaling()
@@ -83,7 +83,7 @@ if args.prior_check:
             # d_pc = 59.17 
 
             free_params = {
-                            'teff': (2100, 2900), #FIXME: BTSettl computed grid goes up to 2700 K
+                            'teff': (2100, 2900),
                         'logg': (3.0, 4.5), 
                         'R_p': (2.2, 3.5), 
                             'T_d': (50, 900),

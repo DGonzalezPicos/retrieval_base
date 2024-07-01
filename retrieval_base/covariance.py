@@ -267,7 +267,9 @@ class GaussianProcesses(Covariance):
                 epsilon *= 10
                 
         self.cov_cholesky = cholesky_banded(
-            self.cov, lower=True
+            self.cov, lower=True, 
+            overwrite_ab=False,
+            check_finite=False,
             )
         delattr(self, 'cov')
         return self
@@ -296,7 +298,7 @@ class GaussianProcesses(Covariance):
 
         '''
 
-        return cho_solve_banded((self.cov_cholesky, True), b)
+        return cho_solve_banded((self.cov_cholesky, True), b, check_finite=False, overwrite_b=False)
     
     def get_dense_cov(self):
         

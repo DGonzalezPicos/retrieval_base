@@ -59,11 +59,13 @@ if args.pre_processing:
     # spec.fix_wave_nans() # experimental...
     spec.sigma_clip_reshaped(use_flux=False, 
                                 # sigma=3, # KM bands
-                                sigma=3.0, # J band
-                                width=11, 
+                                sigma=conf_data.get('sigma', 3),
+                                width=conf_data.get('sigma_clip_width', 50),
                                 max_iter=5,
                                 fun='median', 
                                 debug=False)
+    spec.scatter_overlapping_points()
+    spec.apply_error_scaling()
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf')
     spec.prepare_for_covariance()
 
@@ -100,9 +102,9 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     random_label = '_random' if random else ''
-    prior_check(conf=conf, n=5, 
+    prior_check(conf=conf, n=3, 
                 random=random, 
                 get_contr=True,
                 fig_name=figs_path / f'prior_predictive_check{random_label}.pdf')

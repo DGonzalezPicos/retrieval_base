@@ -264,6 +264,10 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
         theta = np.linspace(0, 1, n)
     m_spec_list = []
     logL_list = [] 
+    beta_list = []
+    
+    print(f' --> Evaluating the model at {n} different parameter values')
+    print(f' ret.Cov[w_set][0,0].cov.shape = {ret.Cov[w_set][0,0].cov.shape}')
     # plot PT
     fig, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
     
@@ -287,10 +291,12 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
             print(f' shape m_spec.flux = {ret.m_spec[w_set].flux.shape}')
             print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m_flux.shape}')
             print(f' shape LogLike.f = {ret.LogLike[w_set].f.shape}')
+            # print(f' shape.ret.Cov.cov_cholesky = {ret.Cov[w_set].cov_cholesky.shape}')
             
         # m_spec_list.append(ret.m_spec[w_set])
         m_spec_list.append(ret.LogLike[w_set].m_flux)
         logL_list.append(ln_L)
+        beta_list.append(ret.LogLike[w_set].beta)
         
         if get_contr:
             ret.copy_integrated_contribution_emission()
@@ -320,6 +326,8 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
                 if N_ij == 0:
                     print(f'No data points in order {i}, detector {j}')
                     continue
+                print(f' order {i}, detector {j}: N = {N_ij}')
+
 
                 wave_ij = ret.d_spec[w_set].wave[i,j,:]
                 flux_ij = ret.d_spec[w_set].flux[i,j,:]
@@ -331,6 +339,7 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
                     ax[0].plot(wave_ij, m_flux_ij, lw=1, ls='--', label=f'logL = {logL:.3e}')
                     ax[-1].plot(wave_ij, flux_ij - m_flux_ij, lw=1, ls='--', 
                                 color=ax[0].get_lines()[-1].get_color())
+                    print(f' error scaling factor = {beta_list[k][i,j]:.1f}')
                     
             ax[0].legend()
             pdf.savefig(fig)

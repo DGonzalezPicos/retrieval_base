@@ -939,7 +939,8 @@ class ModelSpectrum(Spectrum):
         # if rebin:
         #     self.rebin(d_wave, replace_wave_flux=True)
         if grating is not None:
-            self.flux = self.instr_broadening_nirspec(self.wave, self.flux, grating=grating)
+            # WARNING: convert wave from [nm] -> [um]
+            self.flux = self.instr_broadening_nirspec(self.wave * 1e-3, self.flux, grating=grating)
         else:
             assert out_res is not None, 'Instrumental resolution must be provided as `out_res`'
             self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)

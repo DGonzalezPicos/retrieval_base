@@ -74,6 +74,7 @@ class LogLikelihood:
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky()
+                    # print(f' Cholesky shape {Cov[i,j].cov_cholesky.shape}')
 
                 # Get the log of the determinant (log prevents over/under-flow)
                 Cov[i,j].get_logdet()

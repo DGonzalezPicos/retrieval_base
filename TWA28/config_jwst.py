@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KM_N1'
+run = 'jwst_KM_N2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -20,9 +20,9 @@ config_data = {
 
         'file_target': './jwst/TWA28_g395h-f290lp.fits', 
         
-        'lbl_opacity_sampling' : 35,
+        'lbl_opacity_sampling' : 40,
         'sigma_clip': 3,
-        'sigma_clip_width': 50, 
+        'sigma_clip_width': 21, 
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, 
@@ -34,39 +34,43 @@ config_data = {
 # Model parameters
 ####################################################################################
 opacity_params = {
-    'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
-    'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
-    'log_C18O': ([(-12,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
-    'log_C17O': ([(-12,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
+    'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
+    'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
+    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
+    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
     
-    'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
-    # 'log_H2O_181': ([(-12,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
+    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
+    'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     
-    'log_CO2': ([(-12,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
-    'log_CN': ([(-12,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
+    'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
+    'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
-    'log_Na': ([(-12,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
-    'log_K': ([(-12,-2), r'$\log\ \mathrm{K}$'], 'K'),
-    'log_Ca': ([(-12,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
-    'log_Ti': ([(-12,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
-    # 'log_Mg': ([(-12,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
-    # 'log_Mn': ([(-12,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
-    'log_Fe': ([(-12,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
-    'log_Al': ([(-12,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
+    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
+    'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
+    'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
+    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
+    # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
+    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
+    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
+    'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
-    'log_FeH': ([(-12,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
-    # 'log_CrH': ([(-12,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
-    # 'log_TiH': ([(-12,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
-    'log_CaH': ([(-12,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
-    # 'log_AlH': ([(-12,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
-    # 'log_MgH': ([(-12,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
-    'log_NaH': ([(-12,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'),
+    'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
+    # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
+    # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
+    # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
+    # 'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
+    # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
+    # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'),
 
-    'log_OH': ([(-12,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
+    'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
     # 'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
-    'log_VO': ([(-12,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'),
-    'log_TiO': ([(-12,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'),
+    'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
+    'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
+    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 # Define the priors of the parameters
 free_params = {
@@ -75,7 +79,7 @@ free_params = {
     # 'log_a_G': [(-2,0.6), r'$\log\ a$'], 
     'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-2,-0.9), r'$\log\ l$'], 
+    'log_l': [(-2,0.3), r'$\log\ l$'], 
     # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
@@ -90,14 +94,14 @@ free_params = {
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(1.0, 50.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(100, 1000), r'$T_d$'], # disk temperature in K
+    'T_d': [(100, 700), r'$T_d$'], # disk temperature in K
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
     'rv': [(-20,20), r'$v_\mathrm{rad}$'],
-    'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
+    # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
@@ -195,7 +199,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 cov_mode = 'GP'
 
 cov_kwargs = dict(
-    trunc_dist   = 0.7, # set to 3 for accuracy, 2 for speed
+    trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
     max_separation = 20, 
 

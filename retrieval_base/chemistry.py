@@ -27,7 +27,7 @@ class Chemistry:
   
         'H2O':     ('H2O_pokazatel_main_iso',  'H2O1',     2*1.00784 + 15.999,         (0,1,2)), 
        'H2O_181': ('H2O_181_HotWat78',          None,       2*1.00784 + 17.9991610,     (0,1,2)), 
-       #'HDO':     ('HDO_voronin',             None,       1.00784 + 2.014 + 15.999,   (0,1,2)), 
+       'HDO':     ('HDO_voronin',             None,       1.00784 + 2.014 + 15.999,   (0,1,2)), 
   
         'CH4':     ('CH4_hargreaves_main_iso', 'C1H4',     12.011 + 4*1.00784,         (1,0,4)), 
        '13CH4':   ('CH4_31111_hargreaves',    None,       13.003355 + 4*1.00784,      (1,0,4)), 
@@ -35,7 +35,8 @@ class Chemistry:
         'NH3':     ('NH3_coles_main_iso',      'H3N1',     14.0067 + 3*1.00784,        (0,0,3)), 
         'HCN':     ('HCN_main_iso',            'C1H1N1_1', 1.00784 + 12.011 + 14.0067, (1,0,1)), 
         'CN' :     ('CN_high',             'C1N1',     12.011 + 14.0067,           (1,0,0)),
-        'H2S':     ('H2S_ExoMol_main_iso',     'H2S1',     2*1.00784 + 32.065,         (0,0,2)), 
+        # 'H2S':     ('H2S_ExoMol_main_iso',     'H2S1',     2*1.00784 + 32.065,         (0,0,2)), 
+        'H2S':    ('H2S_Sid_main_iso',        'H2S1',     2*1.00784 + 32.065,         (0,0,2)),
         'FeH':     ('FeH_main_iso',            'Fe1H1',    55.845 + 1.00784,           (0,0,1)), 
         'CrH':     ('CrH_main_iso',            'Cr1H1',    51.9961 + 1.00784,          (0,0,1)), 
         'NaH':     ('NaH_main_iso',            'H1Na1',    22.989769 + 1.00784,        (0,0,1)), 
@@ -47,8 +48,9 @@ class Chemistry:
         'TiO':     ('TiO_48_Exomol_McKemmish', 'O1Ti1',    47.867 + 15.999,            (0,1,0)), 
         # 'VO':      ('VO_ExoMol_McKemmish',     'O1V1',     50.9415 + 15.999,           (0,1,0)), 
         'VO':     ('VO_HyVO_main_iso',     'O1V1',     50.9415 + 15.999,           (0,1,0)),
-        # 'MgO':   #FIXME
+        'MgO':    ('MgO_Sid_main_iso',        'Mg1O1',    24.305 + 15.999,            (0,1,0)),
         'AlO':     ('AlO_main_iso',            'Al1O1',    26.981539 + 15.999,         (0,1,0)), 
+        'SiO':    ('SiO_SiOUVenIR_main_iso',  'O1Si1',    28.085 + 15.999,            (0,1,0)),
         'CO2':     ('CO2_main_iso',            'C1O2',     12.011 + 2*15.999,          (1,2,0)),
     
         'HF':      ('HF_main_iso',             'F1H1',     1.00784 + 18.998403,        (0,0,1)), 

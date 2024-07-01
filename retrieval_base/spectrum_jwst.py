@@ -569,14 +569,14 @@ class SpectrumJWST:
         
         self.err_s = np.ones(self.n_orders)
         for i in range(1,self.n_orders):
-            wave_0 = self.wave[i-1]
-            wave_1 = self.wave[i]
+            wave_0 = np.squeeze(self.wave[i-1])
+            wave_1 = np.squeeze(self.wave[i])
             
             mask_0 = (wave_0 > np.nanmin(wave_1)) & (wave_0 < np.nanmax(wave_1))
             if np.sum(mask_0) > 0:
                 print(f'Order {i-1} has {np.sum(mask_0)} overlapping points with order {i}')
-                flux_0 = self.flux[i-1]
-                flux_1 = self.flux[i]
+                flux_0 = np.squeeze(self.flux[i-1])
+                flux_1 = np.squeeze(self.flux[i])
                 
                 mask_1 = (wave_1 > np.nanmin(wave_0)) & (wave_1 < np.nanmax(wave_0))
 
@@ -615,12 +615,15 @@ class SpectrumJWST:
         assert hasattr(self, 'err_s'), 'No error scaling factors found'
         assert mode == 'same', 'Only same scaling is implemented' # TODO: enable different scalings for the orders
         # find the err_s that is greater than 1
+        shape_in = self.err.shape
         if np.any([s > 1 for s in self.err_s]):
             print(f'Applying error scaling factor (max): {np.max(self.err_s)}')
         
             self.err = [self.err[i] * np.max(self.err_s) for i in range(self.n_orders)]
         else:
             self.err = [self.err[i] * default for i in range(self.n_orders)]
+            
+        self.err = np.array(self.err).reshape(shape_in)
         return self              
            
         

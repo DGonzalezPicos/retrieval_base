@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KM_N2'
+run = 'jwst_KM_N3'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -15,17 +15,14 @@ config_data = {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
         # 'wave_range': (1650, 3200), # g235h-f170lp
-        'wave_range': (1650, 5300),
-        # 'w_set': 'K2166', 'wave_range': (1900, 2500), 
-
-        'file_target': './jwst/TWA28_g395h-f290lp.fits', 
+        'wave_range': (1650, 5300), 
         
-        'lbl_opacity_sampling' : 40,
+        'lbl_opacity_sampling' : 10,
         'sigma_clip': 3,
         'sigma_clip_width': 21, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 35, 
+        'n_atm_layers': 40, 
         }, 
     }
 
@@ -41,7 +38,7 @@ opacity_params = {
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
-    'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
+    # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     
     'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
@@ -77,10 +74,10 @@ free_params = {
 
     # Uncertainty scaling
     # 'log_a_G': [(-2,0.6), r'$\log\ a$'], 
-    'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
-    'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    'log_l': [(-2,0.3), r'$\log\ l$'], 
-    # 'beta_G' : [(1., 10.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
+    # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
+    # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
+    # 'log_l': [(-2,0.3), r'$\log\ l$'], 
+    'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
     # R = 0.29 [R_sun]
@@ -196,7 +193,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 
-cov_mode = 'GP'
+cov_mode = 'None'
 
 cov_kwargs = dict(
     trunc_dist   = 1, # set to 3 for accuracy, 2 for speed

@@ -27,6 +27,12 @@ class Covariance:
         self.cov_reset()
         # check there's no zeros in cov
         assert not np.any(self.cov == 0), f'Covariance matrix has {np.sum(self.cov == 0)} zeros'
+        
+        if params[f'beta_{w_set}'][order,det] != 1:
+            print(f' beta_{w_set} ', params[f'beta_{w_set}'][order,det])
+            self.add_data_err_scaling(
+                params[f'beta_{w_set}'][order,det]
+                )
         return self
 
     def cov_reset(self):

@@ -16,6 +16,7 @@ def pickle_save(file, object_to_pickle):
 
     with open(file, 'wb') as f:
         pickle.dump(object_to_pickle, f)
+    print(f'--> Saved {file}')
         
 def pickle_load(file):
     

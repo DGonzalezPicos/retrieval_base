@@ -64,8 +64,8 @@ if args.pre_processing:
                                 max_iter=5,
                                 fun='median', 
                                 debug=False)
-    spec.scatter_overlapping_points()
-    spec.apply_error_scaling()
+    # spec.scatter_overlapping_points()
+    # spec.apply_error_scaling()
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf')
     spec.prepare_for_covariance()
 

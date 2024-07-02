@@ -323,6 +323,8 @@ class pRT_model:
                 wave=wave_i, flux=flux_i, 
                 lbl_opacity_sampling=self.lbl_opacity_sampling
                 )
+            # remove attributes from atm_i: flux (keep freq)
+            del atm_i.flux
             
             # Apply radial-velocity shift, rotational/instrumental broadening
             # start_sbr = time.time()

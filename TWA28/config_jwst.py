@@ -94,9 +94,9 @@ free_params = {
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(1.0, 50.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(100, 700), r'$T_d$'], # disk temperature in K
+    'T_d': [(100, 1000), r'$T_d$'], # disk temperature in K
 
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -199,9 +199,9 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 cov_mode = 'GP'
 
 cov_kwargs = dict(
-    trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
+    trunc_dist   = 1, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 20, 
+    # max_separation = 20, 
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
@@ -211,6 +211,7 @@ cov_kwargs = dict(
 if free_params.get('log_l') is not None:
     cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']
     cov_kwargs['max_separation'] *= 10**free_params['log_l'][0][1]
+    
 ####################################################################################
 # PT parameters
 ####################################################################################
@@ -233,8 +234,8 @@ PT_kwargs = dict(
 ####################################################################################
 
 const_efficiency_mode = True
-sampling_efficiency = 0.05
-evidence_tolerance = 1.0
+sampling_efficiency = 0.10
+evidence_tolerance = 5.0
 n_live_points = 100
 n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1

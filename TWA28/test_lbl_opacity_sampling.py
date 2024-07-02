@@ -23,8 +23,8 @@ if target not in cwd:
 
 gratings = [
         # 'g140h-f100lp', 
-        # 'g235h-f170lp', 
-        'g395h-f290lp',
+        'g235h-f170lp', 
+        # 'g395h-f290lp',
         ]
 assert len(gratings) == 1, f'Only single-grating implemented, got {len(gratings)}'
 

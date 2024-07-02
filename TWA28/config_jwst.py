@@ -17,12 +17,12 @@ config_data = {
         # 'wave_range': (1650, 3200), # g235h-f170lp
         'wave_range': (1650, 5300), 
         
-        'lbl_opacity_sampling' : 10,
+        'lbl_opacity_sampling' : 35,
         'sigma_clip': 3,
         'sigma_clip_width': 21, 
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, 
+        'n_atm_layers': 35, 
         }, 
     }
 
@@ -193,7 +193,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 
-cov_mode = 'None'
+cov_mode = None
 
 cov_kwargs = dict(
     trunc_dist   = 1, # set to 3 for accuracy, 2 for speed

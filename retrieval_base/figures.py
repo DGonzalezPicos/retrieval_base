@@ -199,6 +199,16 @@ def fig_spec_to_fit(d_spec, prefix=None, w_set=''):
     for i in range(d_spec.n_orders):
         for j in range(d_spec.n_dets):
             ax[i].plot(d_spec.wave[i,j], d_spec.flux[i,j], c='k', lw=0.5)
+            ax[i].fill_between(
+                d_spec.wave[i,j], y1=d_spec.err[i,j], y2=-d_spec.err[i,j], 
+                color='k', alpha=0.2, lw=0,
+            )
+            # plot nans
+            # ax[i].plot(d_spec.wave[i,j][~d_spec.nans[i,j]], 
+            #            d_spec.flux[i,j][~d_spec.nans[i,j]], 
+            #            c='r', lw=0.5)
+            # nans_i = np.sum(d_spec.nans[i,j])
+            # print(f' - Order {i+1}, detector {j+1}: {nans_i}/{d_spec.nans[i,j].size} NaNs')
         
         ax[i].set(xlim=(np.nanmin(d_spec.order_wlen_ranges[i])-0.5, 
                         np.nanmax(d_spec.order_wlen_ranges[i])+0.5)

@@ -165,7 +165,8 @@ class CallBack:
         
         # Save the bestfit parameters in a .json file
         # and the ModelSpectrum instance as .pkl
-        self.save_bestfit()
+        if self.evaluation:
+            self.save_bestfit()
             
         # Save a separate figure of the PT profile
         fig, ax = plt.subplots(1, 2, 

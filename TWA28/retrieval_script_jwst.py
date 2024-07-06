@@ -1,6 +1,7 @@
 import argparse
 import pathlib
 import subprocess as sp
+import numpy as np
 
 from retrieval_base.retrieval import pre_processing, prior_check, Retrieval
 from retrieval_base.spectrum_jwst import SpectrumJWST
@@ -47,14 +48,25 @@ if args.pre_processing:
     sp.call(['python', f'{path}/{target}/config_jwst.py'])
     ## Pre-processing data
     
-    gratings = [
-            # 'g140h-f100lp', 
-            'g235h-f170lp', 
-            'g395h-f290lp',
-            ]
+    # gratings = [
+    #         # 'g140h-f100lp', 
+    #         'g235h-f170lp', 
+    #         'g395h-f290lp',
+    #         ]
+    gratings_dict = {'g140h': 'g140h-f100lp',
+                     'g235h': 'g235h-f170lp', 
+                     'g395h': 'g395h-f290lp'}
+    
+    gratings_list = list(set(conf.constant_params['gratings']))
+    gratings = [gratings_dict[g] for g in gratings_list]
+    
+    # each grating has two filters, make list [a,b] to [a,a,b,b]
+    # gratings_list = [g.split('-')[0] for g in gratings for _ in range(2)]
+    # print(f'--> Loading data for {gratings_list}')
+    
     files = [f'jwst/TWA28_{g}.fits' for g in gratings]
-
-    spec = SpectrumJWST(Nedge=40).load_gratings(files)
+    Nedge = conf_data.get('Nedge', 40)
+    spec = SpectrumJWST(Nedge=Nedge).load_gratings(files)
     spec.reshape(spec.n_orders, 1)
     # spec.fix_wave_nans() # experimental...
     spec.sigma_clip_reshaped(use_flux=False, 
@@ -66,8 +78,9 @@ if args.pre_processing:
                                 debug=False)
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
-    spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf')
+    spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     spec.prepare_for_covariance()
+    spec.gratings_list = conf.constant_params['gratings']
 
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)
     print(f'--> Saved {f"{conf.prefix}data/d_spec_{spec.w_set}.pkl"}')
@@ -77,12 +90,12 @@ if args.pre_processing:
     pRT_file =pathlib.Path(f'{conf.prefix}data/pRT_atm_{spec.w_set}.pkl')
     if not pRT_file.exists():
         print(f'--> Creating {pRT_file}')
-
+        lbl = conf_data['lbl_opacity_sampling']
         pRT_atm = pRT_model(
             line_species=conf.line_species, 
             d_spec=spec, 
-            mode='lbl', 
-            lbl_opacity_sampling=conf_data['lbl_opacity_sampling'], 
+            mode='lbl' if (lbl is not None) else 'c-k',
+            lbl_opacity_sampling=lbl,
             cloud_species=conf.cloud_species, 
             # rayleigh_species=['H2', 'He'], 
             # continuum_opacities=['H2-H2', 'H2-He'], 
@@ -106,7 +119,7 @@ if args.prior_check:
     random_label = '_random' if random else ''
     prior_check(conf=conf, n=3, 
                 random=random, 
-                get_contr=True,
+                get_contr=False,
                 fig_name=figs_path / f'prior_predictive_check{random_label}.pdf')
 
 if args.retrieval:

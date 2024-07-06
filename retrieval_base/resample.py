@@ -122,7 +122,8 @@ class Resample:
         return new_flux, new_fluxcov
     
 if __name__ == '__main__':
-    
+    from spectres import spectres, spectres_numba # comparison with spectres
+    import time
     # create a random spectrum
     wave = np.linspace(3000, 10000, 1000)
     flux = np.sin(wave / 5000 * np.pi) + np.cos(wave / 3000 * np.pi)
@@ -155,17 +156,42 @@ if __name__ == '__main__':
     
     snr = np.abs(np.mean(flux) / np.mean(flux_err))
     ax.errorbar(wave, flux, yerr=flux_err, label=f'OG (SNR={snr:.2f})', fmt='o', color='k', alpha=0.6)
-    for i in range(7):
+    # for i in range(7):
+    for i in range(5,7):
+        
+        start = time.time()
         resample = Resample(wave=wave, flux=flux, flux_err=flux_err)
         new_wave = np.linspace(3500, 9000, wave.size//(i+2))
         new_flux, new_fluxcov = resample(new_wave)
+        print(f' Resample: {(time.time() - start)*1e3:.2f} ms')
+        
+        
         snr = np.abs(np.mean(new_flux) / np.mean(np.sqrt(np.diag(new_fluxcov))))
         ax.errorbar(new_wave, new_flux, yerr=np.sqrt(np.diag(new_fluxcov)), label=f'New (SNR={snr:.2f})',
                     fmt='o', alpha=0.9)
         
+        # spectres
+        start = time.time()
+        new_flux_s, new_err = spectres(new_wave, wave, flux, spec_errs=flux_err)
+        print(f' Spectres: {(time.time() - start)*1e3:.2f} ms')
+        snr_s = np.abs(np.mean(new_flux_s) / np.mean(new_err))
+        ax.errorbar(new_wave, new_flux_s, yerr=new_err, label=f'Spectres (SNR={snr_s:.2f})',
+                    fmt='x', alpha=0.9)
+        
+        # spectres numba
+        start = time.time()
+        new_flux_s, new_err = spectres_numba(new_wave, wave, flux, spec_errs=flux_err)
+        print(f' Spectres numba: {(time.time() - start)*1e3:.2f} ms')
+        snr_s = np.abs(np.mean(new_flux_s) / np.mean(new_err))
+        ax.errorbar(new_wave, new_flux_s, yerr=new_err, label=f'Spectres numba (SNR={snr_s:.2f})',
+                    fmt='x', alpha=0.9)
+        
+        
     ax.legend()
     plt.show()
     
+    print(f' Better to use `spectres` then...')
+    print(f' `spectres_numba` is the fastest')
     
     
     

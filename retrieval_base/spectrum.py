@@ -11,6 +11,9 @@ from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
 from petitRADTRANS.retrieval import rebin_give_width as rgw
 
+# from spectres import spectres, spectres_numba
+import spectres
+
 import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
 from retrieval_base.spline_model import SplineModel
@@ -899,12 +902,13 @@ class ModelSpectrum(Spectrum):
             self.order_wlen_ranges = self.order_wlen_ranges[mask_order_wlen_ranges,:,:]
 
         # Model resolution depends on the opacity sampling
-        self.resolution = int(1e6/lbl_opacity_sampling)
+        self.resolution = int(1e6/lbl_opacity_sampling) if lbl_opacity_sampling!=None else None
 
     def rebin(self, d_wave, replace_wave_flux=False):
 
         # Interpolate onto the observed spectrum's wavelength grid
         flux_rebinned = np.interp(d_wave, xp=self.wave, fp=self.flux)
+        # flux_rebinned[np.isnan(d_wave)] = np.nan
 
         if replace_wave_flux:
             self.flux = flux_rebinned
@@ -914,6 +918,29 @@ class ModelSpectrum(Spectrum):
             self.update_isfinite_mask()
         
         return flux_rebinned
+    
+    def rebin_spectres(self, d_wave, replace_wave_flux=False, numba=False):
+            
+        # TODO: check this function, compare to `rebin` and fix NaNs...
+        # Interpolate onto the observed spectrum's wavelength grid
+        attr = 'spectres'
+        if numba:
+            attr += '_numba'
+            
+        print(f'd_wave.shape = {d_wave.shape}')
+        flux_rebinned = np.nan * np.ones(d_wave.shape[-1])
+        nans = np.isnan(d_wave[0,])
+        flux_rebinned[~nans] = getattr(spectres, attr)(d_wave[0,~nans], self.wave, self.flux)
+
+        if replace_wave_flux:
+            self.flux = flux_rebinned.reshape(d_wave.shape)
+            self.wave = d_wave
+
+            # Update the isfinite mask
+            self.update_isfinite_mask()
+        
+        return flux_rebinned
+    
     
         
     def shift_broaden_rebin(self, 

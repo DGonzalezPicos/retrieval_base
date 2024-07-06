@@ -87,8 +87,11 @@ class pRT_model:
         self.pressure = np.logspace(log_P_range[0], log_P_range[1], n_atm_layers)
 
         # Make the pRT.Radtrans objects
-        self.get_atmospheres(CB_active=False)
-
+        if mode == 'lbl':
+            self.get_atmospheres(CB_active=False)
+        elif mode == 'c-k':
+            self.get_atmospheres_gratings(d_spec.gratings_list, CB_active=False)
+            self.gratings = set(d_spec.gratings_list) # unique gratings
     def get_atmospheres(self, CB_active=False):
 
         # pRT model is somewhat wider than observed spectrum
@@ -107,7 +110,7 @@ class pRT_model:
         print(self.wave_range_micron)
         self.wave_range_micron *= 1e-3
 
-        self.atm = []
+        self.atm = []            
         for wave_range_i in self.wave_range_micron:
             
             # Make a pRT.Radtrans object
@@ -125,6 +128,39 @@ class pRT_model:
             # Set up the atmospheric layers
             atm_i.setup_opa_structure(self.pressure)
             self.atm.append(atm_i)
+            
+    def get_atmospheres_gratings(self, gratings, CB_active=False):
+        
+        assert len(gratings) > 0, 'Must be list of at least one grating'
+        wave_pad = 2.0 * self.rv_max/(nc.c*1e-5) * np.nanmax(self.d_wave)
+        self.wave_range_micron=np.concatenate(
+                    (np.nanmin(self.d_wave, axis=(1,2))[None,:]-wave_pad,
+                        np.nanmax(self.d_wave, axis=(1,2))[None,:]+wave_pad
+                        )).T
+        # print(self.wave_range_micron)
+        self.wave_range_micron *= 1e-3
+
+        self.atm = []   
+        for g_i, wave_range_i in zip(gratings, self.wave_range_micron):
+            line_species_g = [f'{ls}_{g_i}' for ls in self.line_species]
+            print(f' Grating {g_i} -> wave range = {wave_range_i}')
+            # Make a pRT.Radtrans object
+            atm_i = Radtrans(
+                line_species=line_species_g, 
+                rayleigh_species=self.rayleigh_species, 
+                continuum_opacities=self.continuum_species, 
+                cloud_species=self.cloud_species, 
+                wlen_bords_micron=wave_range_i, 
+                # mode=self.mode, 
+                mode='c-k', # NEW 2024-07-06: use c-k mode for grating
+                lbl_opacity_sampling=None, 
+                do_scat_emis=self.do_scat_emis
+                )
+
+            # Set up the atmospheric layers
+            atm_i.setup_opa_structure(self.pressure)
+            self.atm.append(atm_i)
+         
 
     def __call__(self, 
                  mass_fractions, 
@@ -154,7 +190,14 @@ class pRT_model:
         '''
 
         # Update certain attributes
-        self.mass_fractions = mass_fractions
+        self.mass_fractions = mass_fractions.copy()
+        if hasattr(self, 'gratings'):
+            for k,v in mass_fractions.items():
+                if k.split('-')[0] in self.line_species:
+                    for g in self.gratings:
+                        # print(f'{k}_{g}')
+                        self.mass_fractions[f'{k}_{g}'] = v
+            
         self.temperature    = temperature
         self.params = params
 
@@ -284,6 +327,7 @@ class pRT_model:
             # assert np.isinf(self.mass_fractions['MMW']).sum() == 0, 'Infs in MMW'
             # assert np.isnan(self.params['log_g']).sum() == 0, 'NaNs in log_g'
             # start_cf = time.time()
+            
             atm_i.calc_flux(
                 self.temperature, 
                 self.mass_fractions, 
@@ -299,9 +343,12 @@ class pRT_model:
             # print(f'Order {i} took {end_cf-start_cf:.3f} s to compute the flux')
             wave_i = nc.c / atm_i.freq
             # flux_i = np.nan_to_num(atm_i.flux, nan=0.0)
+            finite = np.isfinite(atm_i.flux)
+            assert np.sum(finite) == len(finite), f'NaNs in flux ({np.sum(~finite)} non-finite values)'
             flux_i = np.where(np.isfinite(atm_i.flux), atm_i.flux, 0.0)
-            overflow = np.log(atm_i.flux) > 20
-            atm_i.flux[overflow] = 0.0
+            # overflow = np.log(atm_i.flux) > 20
+            # print(f'Overflow in order {i} = {overflow.sum()}')
+            # atm_i.flux[overflow] = 0.0
             # [erg cm^{-2} s^{-1} Hz^{-1}] -> [erg cm^{-2} s^{-1} cm^{-1}]
             flux_i = atm_i.flux *  nc.c / (wave_i**2)
 
@@ -328,16 +375,20 @@ class pRT_model:
             
             # Apply radial-velocity shift, rotational/instrumental broadening
             # start_sbr = time.time()
-            m_spec_i.shift_broaden_rebin(
-                rv=self.params['rv'], 
-                vsini=self.params['vsini'], 
-                epsilon_limb=self.params['epsilon_limb'], 
-                # out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
-                grating=self.params['gratings'][i], # NEW 2024-05-26: grating per order
-                in_res=m_spec_i.resolution, 
-                rebin=False, 
-                instr_broad_fast=False,
-                )
+            if self.mode =='lbl':
+                m_spec_i.shift_broaden_rebin(
+                    rv=self.params['rv'], 
+                    vsini=self.params['vsini'], 
+                    epsilon_limb=self.params['epsilon_limb'], 
+                    # out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
+                    grating=self.params['gratings'][i], # NEW 2024-05-26: grating per order
+                    in_res=m_spec_i.resolution, 
+                    rebin=False, 
+                    instr_broad_fast=False,
+                    )
+            else:
+                m_spec_i.rv_shift(rv=self.params['rv'], replace_wave=True)
+                
             if get_full_spectrum:
                 # Store the spectrum before the rebinning
                 self.wave_pRT_grid.append(m_spec_i.wave)
@@ -345,6 +396,7 @@ class pRT_model:
 
             # Rebin onto the data's wavelength grid
             m_spec_i.rebin(d_wave=self.d_wave[i,:], replace_wave_flux=True)
+            # m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True)
             # end_sbr = time.time()   
             # print(f'Order {i} took {end_sbr-start_sbr:.3f} s to shift, broaden and rebin')
             

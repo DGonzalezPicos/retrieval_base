@@ -43,7 +43,7 @@ class Chemistry:
         'CaH':     ('CaH_XAB_main_iso',        'Ca1H1',    40.078 + 1.00784,            (0,0,1)),
         'TiH':     ('TiH_main_iso',            'Ti1H1',    47.867 + 1.00784,           (0,0,1)),
         'AlH':     ('AlH_main_iso',            'Al1H1',    26.981539 + 1.00784,        (0,0,1)),
-        'Mg_H':    ('MgH_main_iso',            'Mg1H1',    24.305 + 1.00784,           (0,0,1)),
+        'MgH':    ('MgH_main_iso',            'Mg1H1',    24.305 + 1.00784,           (0,0,1)),
 
         'TiO':     ('TiO_48_Exomol_McKemmish', 'O1Ti1',    47.867 + 15.999,            (0,1,0)), 
         # 'VO':      ('VO_ExoMol_McKemmish',     'O1V1',     50.9415 + 15.999,           (0,1,0)), 
@@ -567,3 +567,18 @@ class EqChemistry(Chemistry):
         self.remove_species()
 
         return self.mass_fractions
+    
+    
+if __name__ == '__main__':
+    
+    # chem = Chemistry()
+    
+    # amu = {k:np.round(v[-2],3) for k,v in Chemistry.species_info.items()}
+    amu = {v[0]:np.round(v[-2],3) for k,v in Chemistry.species_info.items()}
+    # save as .txt file with two columns
+    with open('data/lbl_masses.txt', 'w') as f:
+        for key in amu.keys():
+            f.write(f"{key:28} {amu[key]:6.3f}")
+            if key != list(amu.keys())[-1]:
+                f.write('\n')
+    print(f' data/lbl_masses.txt saved!')

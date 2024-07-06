@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'jwst_KM_N3'
+run = 'ck_K_1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -15,11 +15,14 @@ config_data = {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
         # 'wave_range': (1650, 3200), # g235h-f170lp
-        'wave_range': (1650, 5300), 
+        # 'wave_range': (1650, 5300), 
+        'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 35,
+        # 'lbl_opacity_sampling' : 35,
+        'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 21, 
+        'Nedge': 40,
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, 
@@ -33,14 +36,14 @@ config_data = {
 opacity_params = {
     'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
     'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
-    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
-    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
+    # 'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
+    # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     
-    'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
+    # 'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
@@ -84,20 +87,22 @@ free_params = {
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(2.2, 3.5), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(2.2, 3.4), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+    # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(1.0, 60.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
     'T_d': [(100, 1000), r'$T_d$'], # disk temperature in K
-
+    # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
-    'rv': [(-20,20), r'$v_\mathrm{rad}$'],
+    'rv': [(-20.,20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 
@@ -150,8 +155,9 @@ constant_params = {
     # 'res_G395': 3000, # instrumental spectral resolution
     # 'fit_radius': True,
     'gratings':[
-                'g235h', 'g235h',
-                'g395h', 'g395h'
+                'g235h', 
+                # 'g235h',
+                # 'g395h', 'g395h'
                 ], 
 }
 
@@ -181,7 +187,6 @@ chem_kwargs = dict()
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
-
 line_species =[v[1] for _,v in opacity_params.items()]
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
@@ -232,7 +237,7 @@ PT_kwargs = dict(
 
 const_efficiency_mode = True
 sampling_efficiency = 0.10
-evidence_tolerance = 5.0
+evidence_tolerance = 1.0
 n_live_points = 100
 n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1

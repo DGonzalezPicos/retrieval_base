@@ -346,7 +346,7 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
             plt.close(fig)
         print(f'--> Saved {fig_name}')
         
-        return None
+        return ret
                        
     
 
@@ -419,21 +419,25 @@ class Retrieval:
 
                     if not mask_ij.any():
                         continue
+                    
+                    separation_ij, err_eff_ij = None, None
+                    if hasattr(self.d_spec[w_set], 'flux_eff'):
+                        separation_ij = self.d_spec[w_set].separation[i,j]
+                        err_eff_ij = self.d_spec[w_set].err_eff[i,j]
+                        
 
                     self.Cov[w_set][i,j] = get_Covariance_class(
                         self.d_spec[w_set].err[i,j,mask_ij], 
                         self.Param.cov_mode, 
-                        separation=self.d_spec[w_set].separation[i,j], 
-                        err_eff=self.d_spec[w_set].err_eff[i,j], 
+                        separation=separation_ij,
+                        err_eff=err_eff_ij,
                         # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
                         **self.conf.cov_kwargs
                         )
-
-            del self.d_spec[w_set].separation, 
-            del self.d_spec[w_set].err_eff, 
-            if hasattr(self.d_spec[w_set], 'flux_eff'):
-                del self.d_spec[w_set].flux_eff
-            del self.d_spec[w_set].err
+            del_attrs = ['err', 'separation', 'err_eff', 'flux_eff']
+            for attr in del_attrs:
+                if hasattr(self.d_spec[w_set], attr):
+                    delattr(self.d_spec[w_set], attr)
 
             self.LogLike[w_set] = LogLikelihood(
                 self.d_spec[w_set], 
@@ -1159,4 +1163,54 @@ class Retrieval:
                 self.PT.int_contr_em[w_set] = np.copy(self.m_spec[w_set].int_contr_em)
             else:
                 print(f'WARNING: No integrated contribution emission found in pRT_atm or m_spec')
+        return self
+    
+    def list_memory_allocation(self, obj=None, min_size_mb=0.1):
+        from pympler import asizeof
+        
+        if obj is None:
+            obj = self
+        print(f"Memory usage of object {obj}: {asizeof.asizeof(obj) / (1024**2):.2f} MB")
+        memory_dict = {k:asizeof.asizeof(v) for k,v in obj.__dict__.items() if not k.startswith('__')}
+        # sort by memory usage
+        memory_dict = dict(sorted(memory_dict.items(), key=lambda item: item[1], reverse=True))
+        for k, v in memory_dict.items():
+            v_MB = v / (1024 ** 2)
+            if v_MB < min_size_mb:
+                continue
+            print(f'{k}: {v_MB:.2f} MB')
+            try:
+                memory_dict_attr = {key:asizeof.asizeof(val) for key,val in getattr(obj, k).__dict__.items() if not key.startswith('__')}
+                memory_dict_attr = dict(sorted(memory_dict_attr.items(), key=lambda item: item[1], reverse=True))
+                for key, val in memory_dict_attr.items():
+                    val_MB = val / (1024 ** 2)
+                    if val_MB < min_size_mb:
+                        continue
+                    print(f'  {key}: {val_MB:.2f} MB')
+            except:
+                continue
+            
+        # highest allocation
+        max_key = max(memory_dict, key=memory_dict.get)
+        print(f'Highest allocation: {max_key} ({memory_dict[max_key] / (1024 ** 2):.2f} MB)')
+        
+        # break down usage of the highest allocation into sub-attributes
+        print(f'Breakdown of {max_key}:')
+    
+        if hasattr(getattr(obj, max_key), '__dict__'):
+            memory_dict = {k:asizeof.asizeof(v) for k,v in getattr(obj, max_key).__dict__.items() if not k.startswith('__')}
+            memory_dict = dict(sorted(memory_dict.items(), key=lambda item: item[1], reverse=True))
+            for k, v in memory_dict.items():
+                v_MB = v / (1024 ** 2)
+                if v_MB < min_size_mb:
+                    continue
+                print(f'  {k}: {v_MB:.2f} MB')
+        
+        cpu_GB = memory_dict[max_key] / (1024 ** 3)
+        genoa_use = 192*cpu_GB
+        print(f'Highest allocation: {max_key} * 192 ({genoa_use:.1f}) GB')
+        if genoa_use > 336.0:
+            print(f' WARNING: Genoa memory usage exceeds 336 GB')
+            print(f' --> Maximum number of CPUs: {int(336.0/cpu_GB)}')
+            
         return self

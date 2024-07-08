@@ -456,3 +456,26 @@ def make_array(arrays):
     
     return result_array
 
+def profile_attributes(obj, max_depth=3, depth=0, min_size_mb=0.1):
+    from pympler import asizeof
+    indent = " " * (depth * 4)
+    if depth > max_depth:
+        return
+    for attr_name in dir(obj):
+        print(f"{indent}{attr_name}")
+        try:
+            if attr_name.startswith('__') and attr_name.endswith('__'):
+                continue
+            attr_value = getattr(obj, attr_name)
+            if callable(attr_value):
+                continue
+            size_bytes = asizeof.asizeof(attr_value)
+            size_mb = size_bytes / (1024 ** 2)  # Convert bytes to megabytes
+            if size_mb < min_size_mb:
+                continue
+            print(f"{indent}{attr_name}: {size_mb:.1f} MB")
+            if hasattr(attr_value, '__dict__'):
+                profile_attributes(attr_value, max_depth, depth + 1)
+        except Exception as e:
+            print(f"{indent}{attr_name}: {e}")
+            pass

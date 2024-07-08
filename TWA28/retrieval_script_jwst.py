@@ -41,7 +41,8 @@ parser.add_argument('--pre_processing', '-p', action='store_true', default=False
 parser.add_argument('--prior_check', '-c', action='store_true', default=False)
 parser.add_argument('--retrieval', '-r', action='store_true', default=False)
 parser.add_argument('--evaluation', '-e', action='store_true', default=False)
-parser.add_argument('--tmp_path', '-t', action='store', default=None)
+# parser.add_argument('--time_profiler', '-t', action='store_true', default=False)
+parser.add_argument('--memory_profiler', '-m', action='store_true', default=False)
 args = parser.parse_args()
 
 if args.pre_processing:
@@ -79,7 +80,10 @@ if args.pre_processing:
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
-    spec.prepare_for_covariance()
+    
+    if conf.cov_mode == 'GP':
+        spec.prepare_for_covariance()
+        
     spec.gratings_list = conf.constant_params['gratings']
 
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)
@@ -117,16 +121,23 @@ if args.prior_check:
     
     random = False
     random_label = '_random' if random else ''
-    prior_check(conf=conf, n=3, 
+    ret = prior_check(conf=conf, n=3, 
                 random=random, 
                 get_contr=False,
                 fig_name=figs_path / f'prior_predictive_check{random_label}.pdf')
-
+    
+    if args.memory_profiler:
+        print('--> Running memory profiler..')
+        ret.list_memory_allocation(min_size_mb=0.1)
+        # print(ret.w_set)
+        for w_set in ret.d_spec.keys():
+            ret.list_memory_allocation(obj=ret.pRT_atm[w_set], min_size_mb=0.1)
+        
 if args.retrieval:
     ret = Retrieval(
         conf=conf, 
         evaluation=args.evaluation,
-        tmp_path=args.tmp_path
+        # tmp_path=args.tmp_path
         )
     ret.PMN_run()
 

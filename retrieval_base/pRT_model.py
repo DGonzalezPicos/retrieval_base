@@ -1,5 +1,8 @@
 import numpy as np
 import time
+# LINE PROFILER
+import line_profiler
+import memory_profiler
 
 from petitRADTRANS import Radtrans
 import petitRADTRANS.nat_cst as nc
@@ -161,7 +164,6 @@ class pRT_model:
             atm_i.setup_opa_structure(self.pressure)
             self.atm.append(atm_i)
          
-
     def __call__(self, 
                  mass_fractions, 
                  temperature, 
@@ -287,6 +289,8 @@ class pRT_model:
 
         return opa_gray_cloud
 
+    # @line_profiler.profile
+    # @memory_profiler.profile
     def get_model_spectrum(self, get_contr=False, get_full_spectrum=False):
         '''
         Generate a model spectrum with the given parameters.

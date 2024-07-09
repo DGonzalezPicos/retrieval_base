@@ -1,8 +1,11 @@
 import numpy as np
 import time
-# LINE PROFILER
-import line_profiler
-import memory_profiler
+
+try:
+    import line_profiler
+    import memory_profiler
+except:
+    pass
 
 from petitRADTRANS import Radtrans
 import petitRADTRANS.nat_cst as nc
@@ -399,8 +402,8 @@ class pRT_model:
                 self.flux_pRT_grid.append(m_spec_i.flux)
 
             # Rebin onto the data's wavelength grid
-            m_spec_i.rebin(d_wave=self.d_wave[i,:], replace_wave_flux=True)
-            # m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True)
+            # m_spec_i.rebin(d_wave=self.d_wave[i,:], replace_wave_flux=True)
+            m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True)
             # end_sbr = time.time()   
             # print(f'Order {i} took {end_sbr-start_sbr:.3f} s to shift, broaden and rebin')
             

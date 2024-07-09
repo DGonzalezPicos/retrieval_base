@@ -7,7 +7,8 @@ file_params = 'config_jwst.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'ck_K_2'
+# run = 'ck_K_2'
+run = 'lbl15_K_1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -18,11 +19,11 @@ config_data = {
         # 'wave_range': (1650, 5300), 
         'wave_range': (1630, 3250), 
         
-        # 'lbl_opacity_sampling' : 35,
-        'lbl_opacity_sampling' : None,
+        'lbl_opacity_sampling' : 15,
+        # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 21, 
-        'Nedge': 40,
+        'Nedge': 50,
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, 
@@ -36,8 +37,8 @@ config_data = {
 opacity_params = {
     'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
     'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
-    # 'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
-    # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
+    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
+    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
@@ -52,13 +53,13 @@ opacity_params = {
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
     # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
-    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
+    # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
     'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
-    # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
+    'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
     # 'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
     # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
     # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'),
@@ -72,6 +73,7 @@ opacity_params = {
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
+print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
 free_params = {
 

@@ -927,11 +927,12 @@ class ModelSpectrum(Spectrum):
         if numba:
             attr += '_numba'
             
-        print(f'd_wave.shape = {d_wave.shape}')
-        flux_rebinned = np.nan * np.ones(d_wave.shape[-1])
-        nans = np.isnan(d_wave[0,])
-        flux_rebinned[~nans] = getattr(spectres, attr)(d_wave[0,~nans], self.wave, self.flux)
+        # print(f'd_wave.shape = {d_wave.shape}')
+        # flux_rebinned = np.nan * np.ones(d_wave.shape[-1])
+        # nans = np.isnan(d_wave[0,])
+        # flux_rebinned[~nans] = getattr(spectres, attr)(d_wave[0,~nans], self.wave, self.flux)
 
+        flux_rebinned = getattr(spectres, attr)(d_wave[0,:], self.wave, self.flux, verbose=False)
         if replace_wave_flux:
             self.flux = flux_rebinned.reshape(d_wave.shape)
             self.wave = d_wave
@@ -951,6 +952,7 @@ class ModelSpectrum(Spectrum):
                             in_res=1e6, 
                             d_wave=None, 
                             rebin=True, 
+                            rebin_spectres=False,
                             instr_broad_fast=True,
                             grating=None,
                             ):
@@ -973,6 +975,9 @@ class ModelSpectrum(Spectrum):
             self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
         if rebin:
             self.rebin(d_wave, replace_wave_flux=True)
+        if rebin_spectres:
+            assert rebin==False, 'Cannot rebin twice'
+            self.rebin_spectres(d_wave, replace_wave_flux=True, numba=True)
             
     def spline_decomposition(self, N=9, replace_flux=False):
                 

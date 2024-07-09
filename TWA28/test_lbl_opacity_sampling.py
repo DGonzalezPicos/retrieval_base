@@ -53,6 +53,7 @@ rv_range = (-10,10.)
 generate = False
 lbl_range = [5,
             10, 
+            15,
              20, 
             #  100,
              ]
@@ -110,9 +111,10 @@ else: # evaluation
                         params=bestfit['params'],
                         )
         # print(m_spec.flux.shape)
-        flux_list.append(np.squeeze(m_spec.flux))
+        flux_list.append(np.atleast_2d(np.squeeze(m_spec.flux)))
             
     lw = 1.0
+    wave = np.atleast_2d(wave)
     with PdfPages(pdf_name) as pdf:
         
         for i in range(len(wave)):
@@ -125,7 +127,8 @@ else: # evaluation
                 if j > 0:
                     res = flux_list[j][i,] - flux_list[0][i,]
                     # make relative residuals
-                    res /= flux_list[0][i,]
+                    # res /= flux_list[0][i,]
+                    res = np.divide(res, flux_list[0][i,], out=np.zeros_like(res), where=flux_list[0][i,]!=0)
                     res *= 100
                     ax[1].plot(wave[i], res, color=ax[0].get_lines()[-1].get_color(),
                                alpha=1.0-0.1*j, lw=lw)

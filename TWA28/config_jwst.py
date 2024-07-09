@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl15_K_1'
+run = 'lbl15_KM_1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -16,14 +16,14 @@ config_data = {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
         # 'wave_range': (1650, 3200), # g235h-f170lp
-        # 'wave_range': (1650, 5300), 
-        'wave_range': (1630, 3250), 
+        'wave_range': (1650, 5300), 
+        # 'wave_range': (1630, 3250), 
         
         'lbl_opacity_sampling' : 15,
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 21, 
-        'Nedge': 50,
+        'Nedge': 60,
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, 
@@ -44,7 +44,7 @@ opacity_params = {
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     
-    # 'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
+    'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
@@ -59,7 +59,7 @@ opacity_params = {
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
-    'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
+    # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
     # 'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
     # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
     # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'),
@@ -71,7 +71,7 @@ opacity_params = {
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
     # 'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
@@ -159,7 +159,8 @@ constant_params = {
     'gratings':[
                 'g235h', 
                 # 'g235h',
-                # 'g395h', 'g395h'
+                'g395h',
+                # 'g395h'
                 ], 
 }
 

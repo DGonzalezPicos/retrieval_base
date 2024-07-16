@@ -44,6 +44,7 @@ class Chemistry:
         'TiH':     ('TiH_main_iso',            'Ti1H1',    47.867 + 1.00784,           (0,0,1)),
         'AlH':     ('AlH_main_iso',            'Al1H1',    26.981539 + 1.00784,        (0,0,1)),
         'MgH':    ('MgH_main_iso',            'Mg1H1',    24.305 + 1.00784,           (0,0,1)),
+        'ScH':    ('ScH_main_iso',            'Sc1H1',    44.955908 + 1.00784,        (0,0,1)),
 
         'TiO':     ('TiO_48_Exomol_McKemmish', 'O1Ti1',    47.867 + 15.999,            (0,1,0)), 
         # 'VO':      ('VO_ExoMol_McKemmish',     'O1V1',     50.9415 + 15.999,           (0,1,0)), 

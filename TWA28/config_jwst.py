@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl10_KM_2'
+run = 'lbl12_KM_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {

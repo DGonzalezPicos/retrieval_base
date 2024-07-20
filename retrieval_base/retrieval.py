@@ -1039,7 +1039,7 @@ class Retrieval:
         # if len(res_keys) > 0:
         #     self.Param.params['res'] = [self.Param.params[key] for key in res_keys]
         #     print(f' res: {self.Param.params["res"]}')
-        self.Param.read_resolution_params()
+        # self.Param.read_resolution_params()
         return self
         
         

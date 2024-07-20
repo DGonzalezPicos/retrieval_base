@@ -55,7 +55,7 @@ class Parameters:
 
         # Check the used PT profile
         self.PT_mode = PT_mode
-        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere'])
+        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere', 'RCE'])
 
         self.n_T_knots = n_T_knots
         self.enforce_PT_corr = enforce_PT_corr
@@ -111,14 +111,14 @@ class Parameters:
         # Loop over all parameters
         for i, key_i in enumerate(self.param_keys):
 
-            if key_i.startswith('invgamma_'):
-                # Get the two parameters defining the inverse gamma pdf
-                invgamma_a, invgamma_b = self.param_priors[key_i]
+            # if key_i.startswith('invgamma_'):
+            #     # Get the two parameters defining the inverse gamma pdf
+            #     invgamma_a, invgamma_b = self.param_priors[key_i]
                 
-                # Sample from the inverse gamma prior
-                cube[i] = invgamma.ppf(cube[i], a=invgamma_a, loc=0, scale=invgamma_b)
+            #     # Sample from the inverse gamma prior
+            #     cube[i] = invgamma.ppf(cube[i], a=invgamma_a, loc=0, scale=invgamma_b)
 
-            elif key_i.startswith('gaussian_'):
+            if key_i.startswith('gaussian_'):
                 # Get the two parameters defining the Gaussian pdf
                 mu, sigma = self.param_priors[key_i]
                 
@@ -160,29 +160,6 @@ class Parameters:
         if self.PT_mode == 'grid':
             return cube
 
-        if (self.PT_mode == 'Molliere') and (cube is not None):
-
-            # Update the parameters in the MultiNest cube 
-            # for the Molliere et al. (2020) PT parameterization
-
-            # T_0 is connection temperature at P=0.1 bar
-            T_0 = (3/4 * self.params['T_int']**4 * (0.1 + 2/3))**(1/4)
-
-            # Define the prior based on the other knots
-            low, high = self.param_priors['T_1']
-            idx = np.argwhere(self.param_keys=='T_1').flatten()[0]
-            self.params['T_1'] = T_0 * (high - (high-low)*self.cube_copy[idx])
-            cube[idx] = self.params['T_1']
-
-            low, high = self.param_priors['T_2']
-            idx = np.argwhere(self.param_keys=='T_2').flatten()[0]
-            self.params['T_2'] = self.params['T_1'] * (high - (high-low)*self.cube_copy[idx])
-            cube[idx] = self.params['T_2']
-
-            low, high = self.param_priors['T_3']
-            idx = np.argwhere(self.param_keys=='T_3').flatten()[0]
-            self.params['T_3'] = self.params['T_2'] * (high - (high-low)*self.cube[idx])
-            cube[idx] = self.params['T_3']
 
         if self.PT_mode in ['free', 'free_gradient', 'Molliere']:
 
@@ -241,6 +218,15 @@ class Parameters:
 
             self.params['T_knots'] = np.array(self.params['T_knots'])[::-1]
             self.params['dlnT_dlnP_knots'] = self.params['dlnT_dlnP_knots'][::-1]
+            
+        if (self.PT_mode == 'RCE'):
+            
+            self.PT_adiabatic = self.params.get('PT_adiabatic', True)
+            dlnT_dlnP_keys = [key for key in self.param_keys if key.startswith('dlnT_dlnP_') and key != 'dlnT_dlnP_RCE']
+            # print(f' [Parameters.read_PT_params]: dlnT_dlnP_keys = {dlnT_dlnP_keys}')
+            self.params['dlnT_dlnP_knots'] = np.array([self.params[key] for key in dlnT_dlnP_keys])
+            # pop index containing key 'dlnT_dlnP_RCE' and insert back in the middle
+            self.params['dlnT_dlnP_knots'] = np.insert(self.params['dlnT_dlnP_knots'], len(dlnT_dlnP_keys)//2, self.params['dlnT_dlnP_RCE'])
             
         return cube
 

@@ -9,6 +9,7 @@ import os
 from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
 from petitRADTRANS.retrieval import rebin_give_width as rgw
+from spectres import spectres, spectres_numba
 
 import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
@@ -49,6 +50,7 @@ class Spectrum:
     n_pixels = 2048
     reshaped = False
     normalized = False
+    flux_unit = ''
 
     def __init__(self, wave, flux, err=None, w_set='K2166'):
 
@@ -57,8 +59,18 @@ class Spectrum:
         self.err  = err
 
         self.w_set = w_set
-        self.order_wlen_ranges = self.settings[self.w_set]
-        self.n_orders, self.n_dets, _ = self.order_wlen_ranges.shape
+        
+        if w_set in self.settings.keys():
+            self.order_wlen_ranges = self.settings[w_set]
+        else:
+            self.order_wlen_ranges = None
+            
+        if w_set in ['K2166']:
+            self.n_orders, self.n_dets, _ = self.order_wlen_ranges.shape
+        else:
+            self.n_orders, _ = self.flux.shape
+            self.n_dets = 1
+        # self.n_orders,
 
         # Make the isfinite mask
         self.update_isfinite_mask()
@@ -308,7 +320,7 @@ class Spectrum:
     
     def normalize_flux_per_order(self, fun='median', tell_threshold=0.30):
         
-        deep_lines = self.transm < tell_threshold if hasattr(self, 'transm') else np.zeros_like(self.flux, dtype=bool)
+        deep_lines = self.transm < tell_threshold if (getattr(self, 'transm',None) is not None) else np.zeros_like(self.flux, dtype=bool)
         f = np.where(deep_lines, np.nan, self.flux)
         self.norm = getattr(np, f'nan{fun}')(f, axis=-1)
         value = self.norm[...,None] # median flux per order
@@ -334,6 +346,45 @@ class Spectrum:
         self.update_isfinite_mask()
         return self
     
+    def sigma_clip(self, sigma=3, filter_width=11, 
+                   replace_flux=True,
+                   fig_name=None,
+                   debug=True,
+                    ):
+        '''Sigma clip flux values of reshaped DataSpectrum instance'''
+        assert self.reshaped, 'DataSpectrum instance not reshaped, use reshape_orders_dets()'
+        # np.seterr(invalid='ignore')
+
+        flux_copy = self.flux.copy()
+        clip_mask = np.zeros_like(flux_copy, dtype=bool)
+        for order in range(self.n_orders):
+            for det in range(self.n_dets):
+                flux = self.flux[order,det]
+                mask = np.isfinite(flux)
+                if mask.any():
+                    # with np.errstate(invalid='ignore'):
+                    with warnings.catch_warnings():
+                        # ignore numpy RuntimeWarning: Mean of empty slice
+                        warnings.filterwarnings("ignore", category=RuntimeWarning)
+                        filtered_flux_i = generic_filter(flux, np.nanmedian, size=filter_width)
+                    residuals = flux - filtered_flux_i
+                    nans = np.isnan(residuals)
+                    mask_clipped = nans | (np.abs(residuals) > sigma*np.nanstd(residuals))
+                    flux_copy[order,det,mask_clipped] = np.nan
+                    clip_mask[order,det] = mask_clipped
+                    if debug:
+                        print(f' [sigma_clip] Order {order}, Detector {det}: {mask_clipped.sum()-nans.sum()} pixels clipped')
+                        
+        if fig_name is not None:
+            figs.fig_sigma_clip(self, clip_mask, fig_name=fig_name)
+            
+        if replace_flux:
+            self.flux = flux_copy
+            self.update_isfinite_mask()
+            return self
+            
+        return flux_copy
+    
 
 class DataSpectrum(Spectrum):
 
@@ -352,8 +403,11 @@ class DataSpectrum(Spectrum):
                  w_set='K2166', 
                  ):
 
-        if file_target is not None:
+        if file_target is not None and w_set == 'K2166':
             wave, flux, err = self.load_spectrum_excalibuhr(file_target, file_wave)
+            
+        elif w_set == 'spirou':
+            wave, flux, err = self.load_spectrum_spirou(file_target)
         
         super().__init__(wave, flux, err, w_set)
 
@@ -371,6 +425,8 @@ class DataSpectrum(Spectrum):
             self.resolution = 1e5
         elif self.slit == 'w_0.4':
             self.resolution = 5e4
+        elif self.slit == 'spirou':
+            self.resolution = 7e4
 
         self.wave_range = wave_range
 
@@ -417,6 +473,13 @@ class DataSpectrum(Spectrum):
         #err /= wave
 
         return wave, flux, err
+    
+    def load_spectrum_spirou(self, file_target):
+        wave, flux, err = np.load(file_target).T
+        print(f' shape wave: {wave.shape}, flux: {flux.shape}, err: {err.shape}')
+        print(f' Wavelength (min, mean, max): {wave.min()}, {wave.mean()}, {wave.max()}')
+        print(f' Number of orders: {flux.shape[0]}')
+        return wave, flux, err # TODO: check this
 
     def crop_spectrum(self):
 
@@ -425,6 +488,24 @@ class DataSpectrum(Spectrum):
                     (self.wave <= self.wave_range[1])
 
         self.flux[~mask_wave] = np.nan
+        
+    def select_orders(self, orders=[0,1,2]):
+        
+        assert len(orders) < self.n_orders, 'All orders are selected!'
+        assert isinstance(orders, (list, np.ndarray)), 'Orders must be a list or array!'
+        assert len(self.flux.shape) > 1, 'The spectrum has not been reshaped yet!'
+        shape_in = tuple(self.flux.shape)
+        attrs = ['wave', 'flux', 'err', 'transm', 'flux_uncorr']
+        
+        for attr in attrs:
+            if getattr(self, attr, None) is not None:
+                setattr(self, attr, getattr(self, attr)[orders])
+        
+        shape_out = tuple(self.flux.shape)
+        print(f' [select_orders]: selected orders {orders}, reshaped from {shape_in} to {shape_out}')
+        self.n_orders = len(self.flux)
+        self.reshaped = True
+        return self
 
     def mask_ghosts(self, wave_to_mask=None):
         
@@ -448,6 +529,9 @@ class DataSpectrum(Spectrum):
 
     def bary_corr(self, replace_wave=True, return_v_bary=False):
 
+        if (self.ra is None) or (self.dec is None) or (self.mjd is None):
+            print('WARNING: RA, DEC, and MJD must be provided!')
+            return self.wave
         # Barycentric velocity (using Paranal coordinates)
         self.v_bary, _ = pyasl.helcorr(obs_long=-70.40, obs_lat=-24.62, obs_alt=2635, 
                                        ra2000=self.ra, dec2000=self.dec, 
@@ -460,6 +544,29 @@ class DataSpectrum(Spectrum):
         # Apply barycentric correction
         wave_shifted = self.rv_shift(self.v_bary, replace_wave=replace_wave)
         return wave_shifted
+    
+    
+    def reshape_spirou(self, n_pixels=4088):
+        
+        attrs = ['wave', 'flux', 'err', 'transm', 'flux_uncorr']
+        shape_in = tuple(self.flux.shape)
+        if len(self.flux.shape) == 2:
+            print(f'[reshape]: add detector dimension to flux, err and wave')
+            for attr in attrs:
+                if getattr(self, attr, None) is not None:
+                    setattr(self, attr, getattr(self, attr)[:,np.newaxis,:]) # (3, 4088) -> (3, 1, 4088)
+            
+        elif len(self.flux.shape) == 1:
+            for attr in attrs:
+                if getattr(self, attr, None) is not None:
+                    setattr(self, attr, np.reshape(getattr(self, attr), (-1, n_pixels)))
+
+        shape_out = tuple(self.flux.shape)
+        print(f'[reshape]: reshaped from {shape_in} to {shape_out}')
+        self.n_pixels = n_pixels
+        self.reshaped = True
+        return self
+            
 
     def reshape_orders_dets(self):
 
@@ -505,6 +612,23 @@ class DataSpectrum(Spectrum):
         self.update_isfinite_mask()
         self.reshaped = True
         return self
+    
+    def clear_empty_orders(self, n_pix_min=100):
+        
+        # mask_empty = (~np.isfinite(self.flux)).all(axis=(1,2))
+        # check if order has less than n_pix_min
+        mask_empty = np.sum(np.isfinite(self.flux), axis=(1,2)) < n_pix_min
+        
+        shape_in = tuple(self.flux.shape)
+        attrs = ['wave ', 'flux', 'err', 'transm', 'flux_uncorr']
+        for attr in attrs:
+            if getattr(self, attr, None) is not None:
+                setattr(self, attr, getattr(self, attr)[~mask_empty])
+                
+        shape_out = tuple(self.flux.shape)
+        self.n_orders = self.flux.shape[0]
+        print(f'[clear_empty_orders]: removed {shape_in[0]-shape_out[0]} empty orders, reshaped from {shape_in} to {shape_out}')
+        
 
     def clear_empty_orders_dets(self):
 
@@ -849,6 +973,8 @@ class DataSpectrum(Spectrum):
 
 class ModelSpectrum(Spectrum):
 
+    N_veiling = 0
+    
     def __init__(self, 
                  wave, 
                  flux, 
@@ -893,6 +1019,32 @@ class ModelSpectrum(Spectrum):
             self.update_isfinite_mask()
         
         return flux_rebinned
+    def rebin(self, d_wave, kind='spectres', replace_wave_flux=True):
+        '''Linear Interpolation to observed wavelength grid'''
+        
+        d_wave = np.atleast_2d(d_wave)
+        if kind == 'spectres':
+            res = []
+            for i, wave_i in enumerate(d_wave):
+                res.append(spectres_numba(wave_i, 
+                                          self.wave, self.flux,
+                                        #   spec_errs=self.err, 
+                                          fill=np.nan))
+                
+            # res = np.array(res)
+            # print(f' res.shape = {res.shape}')
+            # self.flux = res[:,0,:]
+            self.flux = np.array(res)
+            # if self.err is not None:
+            #     self.err = res[:,1,:]
+                
+        elif kind == 'linear':
+            self.flux = np.interp(d_wave, self.wave, self.flux)
+        elif kind == 'cubic':
+            self.flux = CubicSpline(self.wave, self.flux)(d_wave)
+            
+        self.wave = d_wave
+        return self
 
     def shift_broaden_rebin(self, 
                             rv, 

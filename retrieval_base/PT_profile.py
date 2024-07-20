@@ -19,6 +19,9 @@ def get_PT_profile_class(pressure, mode, **kwargs):
     
     if mode == 'grid':
         return PT_profile_SONORA(pressure, **kwargs)
+    
+    if mode == 'RCE':
+        return PT_profile_RCE(pressure, **kwargs)
 
 class PT_profile():
 
@@ -26,6 +29,8 @@ class PT_profile():
         
         self.pressure = pressure
         self.temperature_envelopes = None
+        
+        self.int_contr_em = {} # initialize empty dictionary for integrated emission contributions
 
 class PT_profile_SONORA(PT_profile):
 
@@ -490,3 +495,133 @@ class PT_profile_Molliere(PT_profile):
         self.high_altitudes()
 
         return self.temperature
+    
+class PT_profile_RCE(PT_profile):
+    
+    '''Temperature profile for a radiative-convective equilibrium atmosphere with 
+    **one** convective region'''
+
+    def __init__(self, pressure, PT_interp_mode='quadratic', **kwargs):
+
+        # Give arguments to the parent class
+        super().__init__(pressure)
+        self.flipped_ln_pressure = np.log(self.pressure)[::-1]
+        self.PT_interp_mode = PT_interp_mode
+        self.log10_pressure = np.log10(self.pressure)
+        
+        self.fix_bounds = True # default
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+        self.PT_adiabatic = True # default for RCE
+
+
+    def __call__(self, params):
+
+
+        assert 'log_P_RCE' in params.keys(), 'RCE profile requires log_P_RCE parameter'
+        # assert 'dlog_P' in params.keys(), 'RCE profile requires dlog_P parameter'
+        assert 'dlnT_dlnP_knots' in params.keys(), 'RCE profile requires dlnT_dlnP_knots parameter'
+        # assert len(params['dlnT_dlnP_knots']) == 5, 'RCE profile requires 4 dlnT/dlnP knots'
+        assert 'T_0' in params.keys(), 'RCE profile requires T_0 parameter'
+        # Define pressure knots from *top* to *bottom* (low to high)
+        # self.log_P_knots = [params['log_P_knots'][-1]]
+        
+        if 'dlog_P_1' in params.keys(): # asymmetric dlog_P
+            dlog_P = [params['dlog_P_1'], params['dlog_P_3']]
+        else: # symmetric dlog_P
+            dlog_P = [params['dlog_P'], params['dlog_P']]
+        
+        # new definitions 
+        self.log_P_knots     = np.ones(len(params['dlnT_dlnP_knots']))
+        self.log_P_knots[0]  = self.log10_pressure.max()
+        self.log_P_knots[-1] = self.log10_pressure.min()
+        
+        # additional points with 7 knots option
+        x = 1.0
+        if len(params['dlnT_dlnP_knots']) == 7:
+            # print(f' Using 7 knots for RCE profile')
+            self.log_P_knots[2] = min(params['log_P_RCE'] + dlog_P[0], self.log_P_knots[0]*0.8)
+            self.log_P_knots[4] = max(params['log_P_RCE'] - dlog_P[1], self.log_P_knots[-1]*0.8)
+            x = 2.0
+        # intermediate points
+        self.log_P_knots[1] = min(params['log_P_RCE'] + x*dlog_P[0], self.log10_pressure.max()*0.9)
+        self.log_P_knots[-2] = max(params['log_P_RCE'] - x*dlog_P[1], self.log10_pressure.min()*0.9)
+            
+        
+            
+        # the RCE point
+        self.log_P_knots[len(params['dlnT_dlnP_knots'])//2] = params['log_P_RCE']
+        # print(f' log_P_knots = {self.log_P_knots}')
+        # print(f' log_P_knots = {self.log_P_knots}')
+        if self.PT_interp_mode == 'akima':
+            # assert strict monotonicity
+            assert np.diff(self.log_P_knots[::-1]).min() > 0, f'log_P_knots should be strictly increasing {self.log_P_knots[::-1]}'
+            interp_func = Akima1DInterpolator(
+                self.log_P_knots[::-1], params['dlnT_dlnP_knots'][::-1],
+                method='makima',
+                )
+            
+        else:
+            # bottom to top
+            interp_func = interp1d(
+                self.log_P_knots[::-1], 
+                params['dlnT_dlnP_knots'][::-1], 
+                kind=self.PT_interp_mode,
+                # fill_value='nearest',
+                # bounds_error=False
+                )
+        dlnT_dlnP_array = interp_func(self.log10_pressure)[::-1]
+        # set negative values to 0.0
+        dlnT_dlnP_array[dlnT_dlnP_array < 0.0] = 0.0 # NEW (2024-04-19) don't allow inversions (even with quadratic interpolation)
+
+        # Compute the temperatures based on the gradient
+        self.temperature = [params['T_0'], ]
+        # self.flip
+        for i in range(len(self.pressure)-1):
+            T_i1 = self.temperature[-1] 
+            T_i1 *= np.exp((self.flipped_ln_pressure[i+1] - self.flipped_ln_pressure[i]) * dlnT_dlnP_array[i])
+            self.temperature.append(T_i1)
+        self.temperature = np.array(self.temperature)[::-1]
+        self.dlnT_dlnP_array = dlnT_dlnP_array[::-1]
+        
+        return self.temperature
+    
+    def plot(self, ax=None, **kwargs):
+        
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+        
+        kwargs['lw'] = kwargs.get('lw', 2)
+        kwargs['color'] = kwargs.get('color', 'brown')
+        ax.plot(self.temperature, self.pressure, **kwargs)
+        ax.set_ylim(self.pressure.max(), self.pressure.min())
+        ax.set(yscale='log', xlabel='Temperature [K]', ylabel='Pressure [bar]')
+        
+        return ax
+    
+    def plot_grad(self, ax=None, **kwargs):
+        
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+        
+        kwargs['lw'] = kwargs.get('lw', 2)
+        kwargs['color'] = kwargs.get('color', 'darkgreen')
+        
+        if hasattr(self, 'dlnT_dlnP_envelopes'):
+            ax.fill_betweenx(self.pressure, 
+                             self.dlnT_dlnP_envelopes[0], 
+                             self.dlnT_dlnP_envelopes[-1], 
+                             alpha=0.1)
+            
+        else:
+            ax.plot(self.dlnT_dlnP_array, self.pressure, **kwargs)
+            
+        # plot pressure levels from log_P_knots
+        for log_P_i in self.log_P_knots:
+            ax.axhline(10**log_P_i, color='k', linestyle='--', linewidth=0.5)
+        ax.set_ylim(self.pressure.max(), self.pressure.min())
+        ax.set(yscale='log', xlabel='dlnT/dlnP', ylabel='Pressure [bar]')
+
+        return ax

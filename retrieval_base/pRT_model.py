@@ -102,7 +102,7 @@ class pRT_model:
 
         self.atm = []
         for wave_range_i in self.wave_range_micron:
-            
+            print(f' Loading opacities for wavelength range {wave_range_i[0]:.2f}-{wave_range_i[1]:.2f} micron')
             # Make a pRT.Radtrans object
             atm_i = Radtrans(
                 line_species=self.line_species, 

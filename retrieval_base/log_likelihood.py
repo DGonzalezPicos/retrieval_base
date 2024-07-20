@@ -70,6 +70,8 @@ class LogLikelihood:
             for j in range(self.d_spec.n_dets):
 
                 # Apply mask to model and data, calculate residuals
+                print(f' shape mask_isfinite {self.d_spec.mask_isfinite.shape}')
+                print(f' shape flux {self.d_spec.flux.shape}')
                 mask_ij = self.d_spec.mask_isfinite[i,j,:]
                 # print(f' order {i}, detector {j} --> {mask_ij.sum()} finite pixels')
                 # Number of data points
@@ -77,8 +79,8 @@ class LogLikelihood:
                 # if N_ij == 0:
                 if N_ij < 200:
                     continue
-
-                m_flux_ij = m_spec.flux[i,j,mask_ij]
+                print(f' m_spec.flux.shape {m_spec.flux.shape}')
+                # m_flux_ij = m_spec.flux[i,j,mask_ij]
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err
 
@@ -117,7 +119,7 @@ class LogLikelihood:
                 #     phi_ij = 1
                     
                 # model matrix, at least shape (1, N_ij)
-                M_ij = SplineModel(N_knots=self.N_knots, spline_degree=3)(m_flux_ij) if self.N_knots > 1 else m_flux_ij[np.newaxis,:]
+                M_ij = SplineModel(N_knots=self.N_knots, spline_degree=3)(m_flux_ij) if self.N_knots > 1 else m_spec.flux[:,i,j,mask_ij]
                 if m_spec.N_veiling > 0:
                     # add veiling model matrix along axis 0
                     # print(f' Adding veiling model matrix to M_ij')

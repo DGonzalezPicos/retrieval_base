@@ -252,10 +252,105 @@ def pre_processing(conf, conf_data):
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
     
-def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
+    
+def pre_processing_spirou(conf, conf_data):
+    
+     # Set up the output directories
+    af.create_output_dir(conf.prefix, conf.file_params)
+
+    # --- Pre-process data ----------------------------------------------
+
+    # Get instances of the DataSpectrum class 
+    # for the target and telluric standard
+    d_spec = DataSpectrum(
+        wave=None, 
+        flux=None, 
+        err=None, 
+        ra=conf_data.get('ra', None),
+        dec=conf_data.get('dec', None),
+        mjd=conf_data.get('mjd', None),
+        pwv=None, 
+        file_target=conf_data['file_target'], 
+        file_wave=None, 
+        slit=conf_data.get('slit', 'spirou'),
+        wave_range=conf_data['wave_range'], 
+        w_set=conf_data['w_set'], 
+        )
+    
+    n_edge_pixels = conf_data.get('n_edge_pixels', 30)
+    d_spec.clip_det_edges(n_edge_pixels)
+    
+    # Crop the spectrum
+    # d_spec.crop_spectrum()
+
+    # Re-shape the spectrum to a 3-dimensional array
+    # d_spec.reshape_orders_dets()
+    d_spec.select_orders(orders=[46,47]) # 48 reddest order
+    d_spec.normalize_flux_per_order()
+    d_spec.sigma_clip(sigma=conf_data.get('sigma_clip', 3),
+                      filter_width=conf_data.get('sigma_clip_width', 21),
+                      fig_name=conf.prefix + 'plots/sigma_clip.pdf')
+    d_spec.reshape_spirou()
+
+    
+    
+    # d_spec.clear_empty_orders()
+
+    # Apply barycentric correction
+    # d_spec.bary_corr()
+
+    if conf.apply_high_pass_filter:
+        # Apply high-pass filter
+        d_spec.high_pass_filter(
+            removal_mode='divide', 
+            filter_mode='gaussian', 
+            sigma=300, 
+            replace_flux_err=True
+            )
+
+    # Prepare the wavelength separation and average squared error arrays
+    d_spec.prepare_for_covariance(
+        prepare_err_eff=conf.cov_kwargs['prepare_for_covariance']
+        )
+
+    d_spec.update_isfinite_mask()
+    # Plot the pre-processed spectrum
+    figs.fig_spec_to_fit(
+        d_spec, prefix=conf.prefix, w_set=d_spec.w_set
+        )
+
+    # Save as pickle
+    af.pickle_save(conf.prefix+f'data/d_spec_{d_spec.w_set}.pkl', d_spec)
+
+    # --- Set up a pRT model --------------------------------------------
+
+    # Create the Radtrans objects
+    pRT_atm = pRT_model(
+        line_species=conf.line_species, 
+        d_spec=d_spec, 
+        mode='lbl', 
+        lbl_opacity_sampling=conf_data['lbl_opacity_sampling'], 
+        cloud_species=None, 
+        # rayleigh_species=['H2', 'He'], 
+        # continuum_opacities=['H2-H2', 'H2-He'], 
+        rayleigh_species=conf.rayleigh_species,
+        continuum_opacities=conf.continuum_opacities,
+        log_P_range=conf_data.get('log_P_range'), 
+        n_atm_layers=conf_data.get('n_atm_layers'), 
+        rv_range=conf.free_params['rv'][0], 
+        )
+
+    # Save as pickle
+    af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
+    
+def prior_check(conf, n=3, 
+                random=False, 
+                get_contr=False, 
+                w_set='NIRSpec', 
+                fig_name=None):
     
     ret = Retrieval(conf=conf, evaluation=False)
-    w_set = 'NIRSpec'
+    # w_set = 'NIRSpec'
     # first evaluation the model at 'n' different parameter values
     if random:
         # random values between 0 and 1
@@ -285,11 +380,12 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
         if i == 0:
             print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
             print(f' shape m_spec.flux = {ret.m_spec[w_set].flux.shape}')
-            print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m_flux.shape}')
+            # print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m.shape}')
+            
             print(f' shape LogLike.f = {ret.LogLike[w_set].f.shape}')
             
         # m_spec_list.append(ret.m_spec[w_set])
-        m_spec_list.append(ret.LogLike[w_set].m_flux)
+        m_spec_list.append(ret.LogLike[w_set].m)
         logL_list.append(ln_L)
         
         if get_contr:
@@ -421,8 +517,8 @@ class Retrieval:
             self.Param.PT_mode, 
             **self.conf.PT_kwargs, 
             )
-        if 'sonora' in self.conf.PT_kwargs.keys():
-            self.PT.sonora = self.conf.PT_kwargs['sonora']
+        # if 'sonora' in self.conf.PT_kwargs.keys():
+        #     self.PT.sonora = self.conf.PT_kwargs['sonora']
                 
         self.Chem = get_Chemistry_class(
             self.pRT_atm[w_set].line_species, 
@@ -1035,6 +1131,8 @@ class Retrieval:
             dump_callback=self.PMN_callback_func, 
             n_iter_before_update=self.conf.n_iter_before_update, 
             )
+        
+        
 
     def synthetic_spectrum(self):
         

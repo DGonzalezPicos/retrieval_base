@@ -135,7 +135,7 @@ def fig_flux_calib_2MASS(wave,
         #plt.show()
         plt.close(fig)
 
-def fig_sigma_clip(wave, flux, flux_wo_clip, sigma_clip_bounds, order_wlen_ranges, sigma, prefix=None, w_set=''):
+def fig_sigma_clip_old(wave, flux, flux_wo_clip, sigma_clip_bounds, order_wlen_ranges, sigma, prefix=None, w_set=''):
 
     # Plot zoom-ins of the sigma-clipping procedure
     n_orders = order_wlen_ranges.shape[0]
@@ -169,6 +169,34 @@ def fig_sigma_clip(wave, flux, flux_wo_clip, sigma_clip_bounds, order_wlen_range
         plt.savefig(prefix+f'plots/sigma_clip_zoom_ins_{w_set}.pdf')
     #plt.show()
     plt.close(fig)
+    
+def fig_sigma_clip(d_spec, clip_mask, fig_name=None):
+    
+    assert d_spec.flux.shape == clip_mask.shape, f'Shapes of d_spec.flux and flux_clip do not match \
+        ({d_spec.flux.shape} vs. {clip_mask.shape})'
+    ylabel = r'$F_\lambda\ (\mathrm{erg\ s^{-1}\ cm^{-2}\ nm^{-1}})$'
+    fig, ax = fig_order_subplots(d_spec.n_orders, ylabel=ylabel)
+    lw = 0.8
+    for i in range(d_spec.n_orders):
+        for j in range(d_spec.n_dets):
+            
+            mask = clip_mask[i,j]
+            f_clip = np.where(mask, d_spec.flux[i,j], np.nan)
+            f_clean  = np.where(~mask, d_spec.flux[i,j], np.nan) 
+            ax[i].plot(d_spec.wave[i,j], f_clip, c='r', lw=lw)
+            # if overplot_array is not None:
+            ax[i].plot(d_spec.wave[i,j], f_clean, c='k', lw=lw, alpha=0.9)
+        
+        xlim = (d_spec.wave[i,:].min()-0.5, d_spec.wave[i,:].max()+0.5)
+        ax[i].set(xlim=xlim)
+
+    if fig_name is not None:
+        fig_name = fig_name if fig_name is not None else prefix+f'plots/spec_to_fit_{w_set}.pdf'
+        plt.savefig(fig_name)
+        print(f' Figure saved as {fig_name}')
+        #plt.show()
+        plt.close(fig)
+    return fig, ax
 
 def fig_spec_to_fit(d_spec, prefix=None, w_set=''):
 
@@ -182,9 +210,11 @@ def fig_spec_to_fit(d_spec, prefix=None, w_set=''):
         for j in range(d_spec.n_dets):
             ax[i].plot(d_spec.wave[i,j], d_spec.flux[i,j], c='k', lw=0.5)
         
-        ax[i].set(xlim=(d_spec.order_wlen_ranges[i].min()-0.5, 
-                        d_spec.order_wlen_ranges[i].max()+0.5)
-                  )
+        # ax[i].set(xlim=(d_spec.order_wlen_ranges[i].min()-0.5, 
+        #                 d_spec.order_wlen_ranges[i].max()+0.5)
+        #           )
+        xlim = (d_spec.wave[i,:].min()-0.5, d_spec.wave[i,:].max()+0.5)
+        ax[i].set(xlim=xlim)
 
     if prefix is not None:
         plt.savefig(prefix+f'plots/spec_to_fit_{w_set}.pdf')
@@ -454,14 +484,15 @@ def fig_PT(PT,
             fig=None,
             xlim=None, 
             xlim_grad=None,
-            bestfit_color='C0',
-            envelopes_color='C0',
-            int_contr_em_color='red',
+            bestfit_color='brown',
+            envelopes_color='brown',
+            int_contr_em_color='k',
             text_color='gray',
             # weigh_alpha=True,
             show_photosphere=True,
             show_knots=True,
             show_text=True,
+            plot_sonora=False,
             fig_name=None,
     ):
 
@@ -473,34 +504,42 @@ def fig_PT(PT,
     assert hasattr(PT, 'temperature_envelopes'), 'No temperature envelopes found'
     
     p = PT.pressure
-    if hasattr(PT, 'int_contr_em'):
-        # Plot the integrated contribution emission
-        print(' - Plotting integrated contribution emission')
+    # if hasattr(PT, 'int_contr_em'):
+    if len(PT.int_contr_em) > 0:
         ax_twin = ax.twiny()
-        ax_twin.plot(
-            PT.int_contr_em, p, 
-            c=int_contr_em_color, lw=2, alpha=0.4,
-            )
+
+        int_contr_em_color = np.atleast_1d(int_contr_em_color)
+        for i, w_set in enumerate(PT.int_contr_em.keys()):
+            # Plot the integrated contribution emission
+            print(' - Plotting integrated contribution emission')
+            ax_twin.plot(
+                PT.int_contr_em[w_set], p, 
+                # c=int_contr_em_color[i],
+                bestfit_color,
+                lw=2, alpha=0.4,
+                )
+            peaf_icf = np.nanmax(PT.int_contr_em[w_set])
+            print(f' - Peak integrated contribution emission: {peaf_icf:.2f} at {p[np.argmax(PT.int_contr_em[w_set])]:.2e} bar')
 
         
-        # if weigh_alpha:
-        #     af.weigh_alpha(PT.int_contr_em, p, np.linspace(0,10000,p.size), ax, alpha_min=0.5, plot=True)
-        # define photosphere as region where PT.int_contr_em > np.quantile(PT.int_contr_em, 0.9)
-        if show_photosphere:
-            photosphere = PT.int_contr_em > np.quantile(PT.int_contr_em, 0.95)
-            P_phot = np.mean(p[photosphere])
-            T_phot = np.mean(PT.temperature_envelopes[3][photosphere])
-            T_phot_err = np.std(PT.temperature_envelopes[3][photosphere])
-            # print(f' - Photospheric temperature: {T_phot:.1f} +- {T_phot_err:.1f} K')
-            # make empty marker
-            ax.scatter(T_phot, P_phot, c='red',
-                        marker='o', 
-                        s=50, 
-                        alpha=0.5,
-                        zorder=10,
-                        label=f'{T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
-            
-            ax.legend(loc='upper right', fontsize=12)
+            # if weigh_alpha:
+            #     af.weigh_alpha(PT.int_contr_em, p, np.linspace(0,10000,p.size), ax, alpha_min=0.5, plot=True)
+            # define photosphere as region where PT.int_contr_em > np.quantile(PT.int_contr_em, 0.9)
+            if show_photosphere and getattr(PT, 'temperature_envelopes', None) is not None:
+                photosphere = PT.int_contr_em[w_set] > np.quantile(PT.int_contr_em[w_set], 0.95)
+                P_phot = np.mean(p[photosphere])
+                T_phot = np.mean(PT.temperature_envelopes[3][photosphere])
+                T_phot_err = np.std(PT.temperature_envelopes[3][photosphere])
+                # print(f' - Photospheric temperature: {T_phot:.1f} +- {T_phot_err:.1f} K')
+                # make empty marker
+                ax.scatter(T_phot, P_phot, c='red',
+                            marker='o', 
+                            s=50, 
+                            alpha=0.5,
+                            zorder=10,
+                            label=f'{T_phot:.0f} $\pm$ {T_phot_err:.0f} K')
+                
+                ax.legend(loc='upper right', fontsize=12)
 
         # remove xticks
         ax_twin.set_xticks([])
@@ -508,7 +547,7 @@ def fig_PT(PT,
         ax_twin.spines['bottom'].set_visible(False)
         ax_twin.set(
             # xlabel='Integrated contribution emission',
-            xlim=(0,np.max(PT.int_contr_em)*1.5),
+            xlim=(0,np.max([ice for ice in PT.int_contr_em.values()])*1.5),
             )
     if hasattr(PT, 'log_P_knots') and show_knots:
         
@@ -534,6 +573,16 @@ def fig_PT(PT,
     else:
         ax.plot(PT.temperature, p, c=bestfit_color, lw=2)
         xlim = (0, PT.temperature.max()*1.06) if xlim is None else xlim
+        
+    if hasattr(PT, 'sonora') and plot_sonora:
+        try:
+            seo = SonoraElfOwl(teff=PT.sonora.get('teff', 2400), log_g=PT.sonora.get('log_g', 3.5))
+            seo.load_PT().get_dlnT_dlnP()
+            ax_PT = seo.plot_PT(ax=ax, color='magenta', label=f'Sonora\nT={seo.teff}K\nlog g ={seo.log_g:.1f}')
+            if ax_grad is not None:
+                ax_grad.plot(seo.dlnT_dlnP, seo.pressure, color='magenta')
+        except:
+            print(' - Could not plot Sonora PT profile')
 
     # if hasattr(PT, "dlnT_dlnP_envelopes") and ax_grad is not None:
     if ax_grad is not None:
@@ -556,7 +605,7 @@ def fig_PT(PT,
             yticks=[],
             )
 
-    ax.set(xlabel='Temperature (K)', ylabel='Pressure (bar)',
+    ax.set(xlabel='Temperature / K', ylabel='Pressure / bar',
             ylim=(p.max(), p.min()), yscale='log',
             # xlim=(0, None),
             xlim=xlim,
@@ -565,7 +614,7 @@ def fig_PT(PT,
     if fig_name is not None:
         fig.savefig(fig_name)
         print(f' - Saved {fig_name}')
-        plt.close(fig)
+    plt.close(fig)
 
     if is_new_fig:
         return fig, ax

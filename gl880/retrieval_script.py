@@ -12,7 +12,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 target = 'gl880'
-run = 'run_1' # important to set this to the correct run
+run = 'run_2' # important to set this to the correct run
 
 if __name__ == '__main__':
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         ret = Retrieval(
             conf=conf, 
             evaluation=args.evaluation,
-            plot_ccf=args.ccf
+            # plot_ccf=args.ccf
             )
             
         ret.PMN_callback_func(

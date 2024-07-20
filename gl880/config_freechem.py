@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_1'
+run = 'run_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -49,7 +49,7 @@ opacity_params = {
     # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
-    'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
+    # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
     # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
@@ -61,7 +61,7 @@ opacity_params = {
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
 
-    # 'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
+    'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
     # 'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     # 'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
@@ -82,11 +82,11 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
-    'log_g': [(2.0,5.0), r'$\log\ g$'], 
-    # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
+    'log_g': [(3.0,5.5), r'$\log\ g$'], 
+    'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
-    # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
+    'vsini': [(2,30), r'$v\ \sin\ i$'], 
     'rv': [(-40.,40.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
@@ -117,7 +117,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 1 # spline knots (continuum fitting)
+N_knots = 10 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties

@@ -510,6 +510,7 @@ class Retrieval:
                 n_params=self.Param.n_params, 
                 scale_flux=self.conf.scale_flux, 
                 scale_err=self.conf.scale_err, 
+                N_spline_knots=getattr(self.conf, 'N_knots', 1),
                 )
 
         self.PT = get_PT_profile_class(
@@ -646,16 +647,24 @@ class Retrieval:
                                                     parallax=self.Param.params["parallax"],
                                                     wave_cm=self.d_spec[w_set].wave*1e-7)
   
+            # Normalize model as in the data
+            if self.d_spec[w_set].normalized:
+                self.m_spec[w_set].normalize_flux_per_order(fun='median')
+                
+            
             # Spline decomposition
-            self.N_knots = self.Param.params.get('N_knots', 1)
-            if self.N_knots > 1:
-                # print(f'Performing spline decomposition with {self.N_knots} knots...')
-                # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
-                self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
-                # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')
-            else:
-                # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
-                self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
+            # self.N_knots = self.Param.params.get('N_knots', 1)
+            self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
+            # NEW: spline decomposition in LogLikelihood
+            
+            # if self.N_knots > 1:
+            #     # print(f'Performing spline decomposition with {self.N_knots} knots...')
+            #     # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
+            #     self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
+            #     # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')
+            # else:
+            #     # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
+            #     self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
             
 
             for i in range(self.d_spec[w_set].n_orders):

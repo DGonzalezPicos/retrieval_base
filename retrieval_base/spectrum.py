@@ -329,6 +329,7 @@ class Spectrum:
             self.err /= value
             
         self.normalized = True
+        # self.normalize_args = {'fun': fun, 'tell_threshold': tell_threshold}
         return self
     
     def fill_nans(self, min_finite_pixels=100, debug=True):

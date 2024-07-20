@@ -19,7 +19,7 @@ class CallBack:
     plot_cov_matrix = False
     plot_residual_ACF = False
     plot_ccf = False
-    plot_summary = False
+    plot_summary = True
     
     def __init__(self, 
                  d_spec, 
@@ -146,7 +146,8 @@ class CallBack:
             # if self.LogLike[w_set].scale_flux:
             if hasattr(self.LogLike[w_set], 'phi'):
                 print('\nOptimal flux-scaling parameters:')
-                print(self.LogLike[w_set].phi.round(2))
+                # print(self.LogLike[w_set].phi.round(2))
+                print(f' phi = {self.LogLike[w_set].phi}')
             if self.LogLike[w_set].scale_err:
                 print('\nOptimal uncertainty-scaling parameters:')
                 print(self.LogLike[w_set].s.round(2))
@@ -155,7 +156,8 @@ class CallBack:
         
         # Save the bestfit parameters in a .json file
         # and the ModelSpectrum instance as .pkl
-        self.save_bestfit()
+        if self.evaluation:
+            self.save_bestfit()
             
         # Save a separate figure of the PT profile
         fig, ax = plt.subplots(1, 2, 
@@ -182,6 +184,20 @@ class CallBack:
         # Make a summary figure
         if self.plot_summary:
             self.fig_summary()
+            
+        for i, w_set in enumerate(list(self.d_spec.keys())):
+            # Plot the best-fitting spectrum
+            figs.fig_bestfit_model(
+                d_spec=self.d_spec[w_set], 
+                m_spec=self.m_spec[w_set], 
+                LogLike=self.LogLike[w_set], 
+                Cov=self.Cov[w_set], 
+                bestfit_color=self.bestfit_color, 
+                # ax_spec=ax_spec[i], 
+                # ax_res=ax_res[i], 
+                prefix=self.prefix, 
+                xlabel=['Wavelength (nm)', None][i]
+                )
 
         if self.evaluation:
             

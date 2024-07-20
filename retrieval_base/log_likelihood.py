@@ -119,7 +119,7 @@ class LogLikelihood:
                 #     phi_ij = 1
                     
                 # model matrix, at least shape (1, N_ij)
-                M_ij = SplineModel(N_knots=self.N_knots, spline_degree=3)(m_flux_ij) if self.N_knots > 1 else m_spec.flux[:,i,j,mask_ij]
+                M_ij = SplineModel(N_knots=self.N_knots, spline_degree=3)(m_spec.flux[0,i,j,mask_ij]) if self.N_knots > 1 else m_spec.flux[:,i,j,mask_ij]
                 if m_spec.N_veiling > 0:
                     # add veiling model matrix along axis 0
                     # print(f' Adding veiling model matrix to M_ij')

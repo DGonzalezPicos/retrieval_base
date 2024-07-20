@@ -70,8 +70,8 @@ class LogLikelihood:
             for j in range(self.d_spec.n_dets):
 
                 # Apply mask to model and data, calculate residuals
-                print(f' shape mask_isfinite {self.d_spec.mask_isfinite.shape}')
-                print(f' shape flux {self.d_spec.flux.shape}')
+                # print(f' shape mask_isfinite {self.d_spec.mask_isfinite.shape}')
+                # print(f' shape flux {self.d_spec.flux.shape}')
                 mask_ij = self.d_spec.mask_isfinite[i,j,:]
                 # print(f' order {i}, detector {j} --> {mask_ij.sum()} finite pixels')
                 # Number of data points
@@ -79,7 +79,7 @@ class LogLikelihood:
                 # if N_ij == 0:
                 if N_ij < 200:
                     continue
-                print(f' m_spec.flux.shape {m_spec.flux.shape}')
+                # print(f' m_spec.flux.shape {m_spec.flux.shape}')
                 # m_flux_ij = m_spec.flux[i,j,mask_ij]
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err

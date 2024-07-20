@@ -1,14 +1,11 @@
 import argparse
 import subprocess
-import os
-cwd = os.getcwd()
-if 'dgonzalezpi' in cwd:
-    path = '/home/dgonzalezpi/retrieval_base/'
-if 'dario' in cwd:
-    path = '/home/dario/phd/retrieval_base/'
     
 from retrieval_base.retrieval import pre_processing_spirou, prior_check, Retrieval
 from retrieval_base.config import Config
+from retrieval_base.auxiliary_functions import get_path
+path = get_path()
+
 import config_freechem as conf
 
 

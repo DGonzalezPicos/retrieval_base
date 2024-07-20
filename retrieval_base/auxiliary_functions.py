@@ -11,6 +11,18 @@ from astropy.io import fits
 
 import petitRADTRANS.nat_cst as nc
 
+def get_path():
+    
+    cwd = os.getcwd()
+    if 'dgonzalezpi' in cwd:
+        path = '/home/dgonzalezpi/retrieval_base/'
+        import matplotlib
+        matplotlib.use('Agg') # disable interactive plots
+    if 'dario' in cwd:
+        path = '/home/dario/phd/retrieval_base/'
+        
+    return path
+
 def pickle_save(file, object_to_pickle):
 
     with open(file, 'wb') as f:

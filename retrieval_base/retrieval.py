@@ -362,6 +362,8 @@ def prior_check(conf, n=3,
     # plot PT
     fig, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
     
+    fig_chem, ax_chem = plt.subplots(1,1, figsize=(5,5))
+    lss = ['-', '--', ':' , '-.', '-', '--', ':' , '-.']
     time_list = []
     for i, theta_i in enumerate(theta):
         start = time.time()
@@ -397,7 +399,50 @@ def prior_check(conf, n=3,
                     fig=fig,
                     fig_name=str(fig_name).replace('.pdf', '_PT.pdf') if i==(len(theta)-1) else None)
         
+        figs.fig_VMR(ret.Chem,
+                      ax=ax_chem,
+                      fig=fig_chem,
+                        species_to_plot=conf.species_to_plot_VMR,
+                        pressure=ret.PT.pressure,
+                        showlegend=(i==0),
+                        ls=lss[i],
+                        fig_name=str(fig_name).replace('.pdf', f'_VMR.pdf') if i==(len(theta)-1) else None)
+                        
+        # print(ret.Chem.mass_fractions)
+        # ax_chem = None if i==0 else ax_chem
+        # ax_chem = figs.fig_VMR(ax=ax_chem,
+        #                                 Chem=ret.Chem,
+        #                                 species_to_plot=conf.species_to_plot_VMR,
+        #                                 pressure=ret.PT.pressure,
+        #                                 #  yticks=np.logspace(-5, 2, 7),
+        #                                 # xlim=(1e-10, 1e-2),
+        #                                 ls=lss[i],
+        #                                 # fig_name=str(fig_name).replace('.pdf', '_VMR.pdf') if i==(len(theta)-1) else None)
+        #                                 fig_name=str(fig_name).replace('.pdf', f'{i}_VMR.pdf'))
+        # print(ret.Chem.mass_fractions.keys())
+        # print(conf.species_to_plot_VMR)
+    #     MMW = ret.Chem.mass_fractions['MMW']
+    #     for species_i in conf.species_to_plot_VMR:
+    #         mass_i  = ret.Chem.read_species_info(species_i, info_key='mass')
+    #         color_i = ret.Chem.read_species_info(species_i, info_key='color')
+    #         label_i = ret.Chem.read_species_info(species_i, info_key='label')
+    #         line_species_i = ret.Chem.read_species_info(species_i, info_key='pRT_name')
+    #         # print(f' line species {species_i} = {line_species_i}')
+    #         vmr_i = ret.Chem.mass_fractions[line_species_i] * (MMW / mass_i)
+    #         # vmr_i = ret.Chem.VMRs[line_species_i]
+    #         if vmr_i is None:
+    #             print(f'No VMR for {species_i}')
+    #             continue
+    #         label_i = label_i if i == 0 else None
+    #         ax_chem.plot(vmr_i, ret.PT.pressure, label=label_i, ls=lss[i], color=color_i)
+            
+    # ax_chem.set(xscale='log', yscale='log', xlabel='Pressure / bar', ylabel='Volume mixing ratio',
+    #             ylim=(np.max(ret.PT.pressure), np.min(ret.PT.pressure)))
+    # ax_chem.legend()
+    # fig_chem.savefig(str(fig_name).replace('.pdf', '_VMR.pdf'))
+    # print(f'--> Saved {fig_name}')
 
+    
     print(f' --> Time per evaluation: {np.mean(time_list):.2f} +- {np.std(time_list):.2f} s')
     # use PDF pages to save multiple plots for each order into one PDF
     with PdfPages(fig_name) as pdf:

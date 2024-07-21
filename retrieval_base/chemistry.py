@@ -111,6 +111,7 @@ class Chemistry:
         
         #'H2': ('C16', r'H$_2$'), 
         'HD': ('C17', r'HD'), 
+        'OH': ('C18', r'OH'),
 
         'K': ('C18', r'K'), 
         # 'Na': ('purple', r'Na'), 
@@ -317,8 +318,11 @@ class FreeChemistry(Chemistry):
                     VMR_knots = np.array([self.VMRs[f'{species_i}_{j}'] for j in range(3)])[::-1]
                     
                     # Use a k-th order spline to vary the abundance profile
-                    spl = make_interp_spline(log_P_knots, np.log10(VMR_knots), k=self.spline_order)
-                    VMR_i = 10**spl(np.log10(self.pressure))
+                    # spl = make_interp_spline(log_P_knots, np.log10(VMR_knots), k=self.spline_order)
+                    # linear interpolation
+                    
+                    # VMR_i = 10**spl(np.log10(self.pressure))
+                    VMR_i = 10.0**(np.interp(np.log10(self.pressure), log_P_knots, np.log10(VMR_knots)))
 
                 self.VMRs[species_i] = VMR_i
 

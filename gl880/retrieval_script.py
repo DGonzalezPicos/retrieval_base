@@ -12,7 +12,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 target = 'gl880'
-run = 'run_2' # important to set this to the correct run
+run = 'run_3' # important to set this to the correct run
 
 if __name__ == '__main__':
 
@@ -40,8 +40,8 @@ if __name__ == '__main__':
         #     )
         # ret.prior_check()
         prior_check(conf,
-                    n=4,
-                    random=False,
+                    n=3,
+                    random=True,
                     w_set='spirou',
                     fig_name=conf.prefix + 'plots/prior_check.pdf',
         )

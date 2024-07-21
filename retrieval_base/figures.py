@@ -791,21 +791,71 @@ def fig_opa_cloud(ax_opa_cloud, integrated_opa_cloud, pressure, xlim=(1e0, 1e-10
         xlabel=r'$\kappa_\mathrm{cloud}\ (\mathrm{cm^2\ g^{-1}})$', 
         xlim=xlim, xscale='log', 
         )
+    
+def fig_VMR(Chem,
+            ax=None,
+            fig=None,
+            species_to_plot=[],
+            pressure=[],
+            ylabel=r'$P\ \mathrm{(bar)}$',
+            ls='-',
+            xlim=(1e-12, 1e-2),
+            showlegend=True,
+            fig_name=None,
+            ):
+    
+    is_new_fig = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(7,7))
+        is_new_fig = True
+    
+    MMW = Chem.mass_fractions['MMW']
+    for species_i in species_to_plot:
+        mass_i  = Chem.read_species_info(species_i, info_key='mass')
+        color_i = Chem.read_species_info(species_i, info_key='color')
+        label_i = Chem.read_species_info(species_i, info_key='label')
+        line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
+        vmr_i = Chem.mass_fractions[line_species_i] * (MMW / mass_i)
+        # vmr_i = Chem.VMRs[line_species_i]
+        if vmr_i is None:
+            print(f'No VMR for {species_i}')
+            continue
+        print(f' - Plotting {species_i} ({line_species_i})')
+
+        label_i = label_i if showlegend else None
+        ax.plot(vmr_i, pressure, label=label_i, ls=ls, color=color_i)
+        
+        
+    ax.set(xscale='log', yscale='log', xlabel='VMR', ylabel=ylabel, xlim=xlim,
+                ylim=(np.max(pressure), np.min(pressure)))
+    if showlegend:
+        ax.legend()
+    if (fig_name is not None):
+        fig.savefig(fig_name)
+        print(f'--> Saved {fig_name}')
+        plt.close(fig)
+    return ax
 
 
-def fig_VMR(ax_VMR, 
+def fig_VMR_old(ax, 
             Chem, 
             species_to_plot, 
             pressure, 
             ylabel=r'$P\ \mathrm{(bar)}$', 
             yticks=np.logspace(-6, 2, 9), 
             xlim=(1e-12, 1e-2), 
+            ls='-',
+            fig_name=None,
             ):
 
+    is_new_fig = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(7,7))
+        is_new_fig = True
+        
     MMW = Chem.mass_fractions['MMW']
 
     for species_i in Chem.species_info.keys():
-        
         if species_i not in species_to_plot:
             continue
 
@@ -813,6 +863,8 @@ def fig_VMR(ax_VMR,
         line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
         if line_species_i not in Chem.line_species:
             continue
+        print(f' - Plotting {species_i}')
+
 
         # Read the mass, color and label
         mass_i  = Chem.read_species_info(species_i, info_key='mass')
@@ -843,55 +895,61 @@ def fig_VMR(ax_VMR,
                 )
             VMR_envelope_colors_i = cmap_i([0.4,0.6,0.8])
 
-            ax_VMR.fill_betweenx(
+            ax.fill_betweenx(
                 y=pressure, x1=x1, x2=x2, color=VMR_envelope_colors_i[1], ec='none', alpha=0.5
                 )
 
         # Plot volume-mixing ratio as function of pressure
-        ax_VMR.plot(VMR_i, pressure, c=color_i, lw=1, label=label_i)
+        ax.plot(VMR_i, pressure, c=color_i, lw=1, label=label_i, ls=ls)
 
-        if not hasattr(Chem, 'P_quench'):
-            continue
+        # if not hasattr(Chem, 'P_quench'):
+        #     continue
 
-        for quench_key, P_quench in Chem.P_quench.items():
+        # for quench_key, P_quench in Chem.P_quench.items():
 
-            if not (species_i in Chem.quench_setup[quench_key]):
-                continue
+        #     if not (species_i in Chem.quench_setup[quench_key]):
+        #         continue
 
-            if (P_quench < pressure.min()) or (P_quench > pressure.max()):
-                continue
+        #     if (P_quench < pressure.min()) or (P_quench > pressure.max()):
+        #         continue
 
-            # Place a marker at the quench pressure
-            P_quench_i   = pressure[pressure < P_quench][-1]
-            VMR_quench_i = VMR_i[pressure < P_quench][-1]
+        #     # Place a marker at the quench pressure
+        #     P_quench_i   = pressure[pressure < P_quench][-1]
+        #     VMR_quench_i = VMR_i[pressure < P_quench][-1]
 
-            # Interpolate to find the quenched VMR
-            ax_VMR.scatter(VMR_quench_i, P_quench_i, c=color_i, s=20, marker='_')
+        #     # Interpolate to find the quenched VMR
+        #     ax.scatter(VMR_quench_i, P_quench_i, c=color_i, s=20, marker='_')
 
-            # Find the un-quenched VMR
-            unquenched_mass_fraction_i = Chem.unquenched_mass_fractions[line_species_i]
-            if Chem.mass_fractions_envelopes is not None:
-                unquenched_mass_fraction_i = Chem.mass_fractions_envelopes[line_species_i][3]
+        #     # Find the un-quenched VMR
+        #     unquenched_mass_fraction_i = Chem.unquenched_mass_fractions[line_species_i]
+        #     if Chem.mass_fractions_envelopes is not None:
+        #         unquenched_mass_fraction_i = Chem.mass_fractions_envelopes[line_species_i][3]
 
-            unquenched_VMR_i = unquenched_mass_fraction_i * MMW/mass_i
+        #     unquenched_VMR_i = unquenched_mass_fraction_i * MMW/mass_i
 
-            # Plot volume-mixing ratio as function of pressure
-            ax_VMR.plot(
-                unquenched_VMR_i, pressure, c=color_i, lw=1, ls='--', alpha=0.8
-                )
+        #     # Plot volume-mixing ratio as function of pressure
+        #     ax.plot(
+        #         unquenched_VMR_i, pressure, c=color_i, lw=1, ls='--', alpha=0.8
+        #         )
 
-    ax_VMR.legend(
+    
+    ax.set(
+        xlabel='VMR', xscale='log', xlim=xlim, 
+        ylabel=ylabel, yscale='log', yticks=yticks, 
+        ylim=(pressure.max(), pressure.min()),
+        )
+    
+    if fig_name is not None:
+        ax.legend(
         loc='upper left', ncol=2, handlelength=0.5, 
         handletextpad=0.3, framealpha=0.7
         )
-    ax_VMR.set(
-        xlabel='VMR', xscale='log', xlim=xlim, 
-        ylabel=ylabel, yscale='log', yticks=yticks, 
-        ylim=(pressure.min(), pressure.max()), 
-        )
-    ax_VMR.invert_yaxis()
+        
+        plt.savefig(fig_name)
+        print(f' - Saved {fig_name}')
+        # plt.close()
 
-    return ax_VMR
+    return ax
 
 def fig_hist_posterior(posterior_i, 
                        param_range_i, 

@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_2'
+run = 'run_3'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -18,7 +18,7 @@ config_data = {
         'wave_range': (2295, 2440), # 2 orders
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 8,
+        'lbl_opacity_sampling' : 6,
         'slit': 'spirou',
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
@@ -62,6 +62,7 @@ opacity_params = {
     # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
 
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
+    'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     # 'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     # 'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
@@ -87,7 +88,7 @@ free_params = {
     
     # Velocities
     'vsini': [(2,30), r'$v\ \sin\ i$'], 
-    'rv': [(-40.,40.), r'$v_\mathrm{rad}$'],
+    'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(3e3,16e3), r'$T_0$'], 
@@ -104,6 +105,15 @@ free_params = {
     'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
 }
 free_params.update({k:v[0] for k,v in opacity_params.items()})
+# replace keys with 3-knot profile
+opacity_profiles = ['H2O', 'OH']
+# replace log_H2O with 3-knot profile
+for op in opacity_profiles:
+    free_params.pop(f'log_{op}')
+    free_params[f'log_{op}_0'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_0$']
+    free_params[f'log_{op}_1'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_1$']
+    free_params[f'log_{op}_2'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_2$']
+    free_params[f'log_P_{op}'] = [(-4.5,1.5), f'$\log\ P_\mathrm{{{op}}}_0$']
 
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -159,12 +169,15 @@ chem_kwargs = dict()
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
-line_species =[v[1] for _,v in opacity_params.items()]
+line_species =list(set([v[1] for _,v in opacity_params.items()]))
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
 # line_species.append('H2_main_iso') # TODO: this?
 
-species_to_plot_VMR , species_to_plot_CCF = [], []
+# species_to_plot_VMR , species_to_plot_CCF = [], []
+species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
+# species_to_plot_VMR = ['H2O', 'OH', '12CO']
+species_to_plot_CCF = []
 
 ####################################################################################
 # Covariance parameters

@@ -826,8 +826,11 @@ def fig_VMR(Chem,
         ax.plot(vmr_i, pressure, label=label_i, ls=ls, color=color_i)
         
         
-    ax.set(xscale='log', yscale='log', xlabel='VMR', ylabel=ylabel, xlim=xlim,
-                ylim=(np.max(pressure), np.min(pressure)))
+    ax.set(xscale='log', yscale='log', xlabel='VMR',
+           ylabel=ylabel, 
+           xlim=xlim,
+            ylim=(np.max(pressure), np.min(pressure)),
+            )
     if showlegend:
         ax.legend()
     if (fig_name is not None):

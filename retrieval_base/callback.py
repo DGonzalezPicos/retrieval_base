@@ -75,6 +75,7 @@ class CallBack:
                  m_spec, 
                  pRT_atm, 
                  posterior, 
+                 species_to_plot_VMR=[],
                  m_spec_species=None, 
                  pRT_atm_species=None, 
                  ):
@@ -200,6 +201,17 @@ class CallBack:
                 )
 
         if self.evaluation:
+            fig_chem, ax_chem = plt.subplots(1, 1, figsize=(6,6))
+            fig_name_chem = self.prefix+f'plots/bestfit_VMRs.pdf'
+            figs.fig_VMR(Chem,
+                    ax=ax_chem,
+                    fig=fig_chem,
+                    species_to_plot=species_to_plot_VMR,
+                    pressure=PT.pressure,
+                    showlegend=True,
+                    ls='-',
+                    fig_name=fig_name_chem,
+                    )
             
             for w_set in self.d_spec.keys():
 

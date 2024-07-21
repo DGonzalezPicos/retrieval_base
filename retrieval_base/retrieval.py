@@ -273,7 +273,7 @@ def pre_processing_spirou(conf, conf_data):
         file_target=conf_data['file_target'], 
         file_wave=None, 
         slit=conf_data.get('slit', 'spirou'),
-        wave_range=conf_data['wave_range'], 
+        wave_range=conf_data.get('wave_range', None),
         w_set=conf_data['w_set'], 
         )
     
@@ -285,7 +285,7 @@ def pre_processing_spirou(conf, conf_data):
 
     # Re-shape the spectrum to a 3-dimensional array
     # d_spec.reshape_orders_dets()
-    d_spec.select_orders(orders=[46,47]) # 48 reddest order
+    d_spec.select_orders(orders=list(conf_data.get('orders', (47, 48))))
     d_spec.normalize_flux_per_order()
     d_spec.sigma_clip(sigma=conf_data.get('sigma_clip', 3),
                       filter_width=conf_data.get('sigma_clip_width', 21),
@@ -407,40 +407,6 @@ def prior_check(conf, n=3,
                         showlegend=(i==0),
                         ls=lss[i],
                         fig_name=str(fig_name).replace('.pdf', f'_VMR.pdf') if i==(len(theta)-1) else None)
-                        
-        # print(ret.Chem.mass_fractions)
-        # ax_chem = None if i==0 else ax_chem
-        # ax_chem = figs.fig_VMR(ax=ax_chem,
-        #                                 Chem=ret.Chem,
-        #                                 species_to_plot=conf.species_to_plot_VMR,
-        #                                 pressure=ret.PT.pressure,
-        #                                 #  yticks=np.logspace(-5, 2, 7),
-        #                                 # xlim=(1e-10, 1e-2),
-        #                                 ls=lss[i],
-        #                                 # fig_name=str(fig_name).replace('.pdf', '_VMR.pdf') if i==(len(theta)-1) else None)
-        #                                 fig_name=str(fig_name).replace('.pdf', f'{i}_VMR.pdf'))
-        # print(ret.Chem.mass_fractions.keys())
-        # print(conf.species_to_plot_VMR)
-    #     MMW = ret.Chem.mass_fractions['MMW']
-    #     for species_i in conf.species_to_plot_VMR:
-    #         mass_i  = ret.Chem.read_species_info(species_i, info_key='mass')
-    #         color_i = ret.Chem.read_species_info(species_i, info_key='color')
-    #         label_i = ret.Chem.read_species_info(species_i, info_key='label')
-    #         line_species_i = ret.Chem.read_species_info(species_i, info_key='pRT_name')
-    #         # print(f' line species {species_i} = {line_species_i}')
-    #         vmr_i = ret.Chem.mass_fractions[line_species_i] * (MMW / mass_i)
-    #         # vmr_i = ret.Chem.VMRs[line_species_i]
-    #         if vmr_i is None:
-    #             print(f'No VMR for {species_i}')
-    #             continue
-    #         label_i = label_i if i == 0 else None
-    #         ax_chem.plot(vmr_i, ret.PT.pressure, label=label_i, ls=lss[i], color=color_i)
-            
-    # ax_chem.set(xscale='log', yscale='log', xlabel='Pressure / bar', ylabel='Volume mixing ratio',
-    #             ylim=(np.max(ret.PT.pressure), np.min(ret.PT.pressure)))
-    # ax_chem.legend()
-    # fig_chem.savefig(str(fig_name).replace('.pdf', '_VMR.pdf'))
-    # print(f'--> Saved {fig_name}')
 
     
     print(f' --> Time per evaluation: {np.mean(time_list):.2f} +- {np.std(time_list):.2f} s')
@@ -1160,6 +1126,7 @@ class Retrieval:
         self.CB(
             self.Param, self.LogLike, self.Cov, self.PT, self.Chem, 
             self.m_spec, pRT_atm_to_use, posterior, 
+            species_to_plot_VMR=self.conf.species_to_plot_VMR,
             m_spec_species=self.m_spec_species, 
             pRT_atm_species=self.pRT_atm_species
             )

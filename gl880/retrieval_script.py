@@ -41,7 +41,7 @@ if __name__ == '__main__':
         # ret.prior_check()
         prior_check(conf,
                     n=3,
-                    random=True,
+                    random=False,
                     w_set='spirou',
                     fig_name=conf.prefix + 'plots/prior_check.pdf',
         )

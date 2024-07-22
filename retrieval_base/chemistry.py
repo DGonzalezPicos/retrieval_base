@@ -2,6 +2,8 @@ import numpy as np
 from scipy.interpolate import make_interp_spline
 import petitRADTRANS.nat_cst as nc
 
+from retrieval_base.auxiliary_functions import quantiles
+
 def get_Chemistry_class(line_species, pressure, mode, **kwargs):
 
     if mode == 'free':
@@ -236,6 +238,7 @@ class Chemistry:
         
         assert hasattr(self, 'mass_fractions_posterior')
         self.VMRs_posterior = {}
+        self.VMRs_envelopes = {}
         info = self.species_info
         MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
 
@@ -248,7 +251,10 @@ class Chemistry:
             mu = info[key_i][2] # atomic mass
             # free-chemistry = constant VMR
             # WARNING: equilibrium chemistry should use the mean value or something else
-            self.VMRs_posterior[key_i] = self.mass_fractions_posterior[line_species_i][:,0] * (MMW/ mu)
+            vmr_i = self.mass_fractions_posterior[line_species_i] * (MMW/ mu)
+            self.VMRs_posterior[key_i] = vmr_i[:,0]
+            print(f' vmr_i.shape = {vmr_i.shape}')
+            self.VMRs_envelopes[key_i] = quantiles(vmr_i, q=[0.16, 0.5, 0.84], axis=0)
             
         if "13CO" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
             self.VMRs_posterior["12_13CO"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["13CO"]
@@ -388,20 +394,24 @@ class FreeChemistry(Chemistry):
 
         return self.mass_fractions
     
-    def VMRs_envelopes(self):
+    def get_VMRs_envelopes(self):
         
         assert hasattr(self, 'mass_fractions_envelopes'), 'Mass fractions not yet evaluated.'
         
         self.VMRs_envelopes = {}
-        MMW = self.mass_fractions_envelopes['MMW'][3].mean()
-        for line_species_i, key in zip(self.line_species, self.VMRs.keys()):
+        # MMW = self.mass_fractions_envelopes['MMW'][3].mean()
+        # for line_species_i, key in zip(self.line_species, self.VMRs.keys()):
+        for key in self.mass_fractions_envelopes.keys():
             
             # get atomic mass
-            mu_i = self.read_species_info(key, 'mass')
+            # print(f'key = {key}')
+            # mu_i = self.read_species_info(key, 'mass')
             # print(f'mu_{key} = {mu_i}')
             # mu_i = 1.
-            self.VMRs_envelopes[key] = self.mass_fractions_envelopes[line_species_i] * (MMW / mu_i)
-        return self.VMRs_envelopes
+            # self.VMRs_envelopes[key] = self.mass_fractions_envelopes[line_species_i] * (MMW / mu_i)
+            self.VMRs_envelopes[key] = quantiles(self.VMRs_posterior[key])
+        # return self.VMRs_envelopes
+        return self
     
     
 class EqChemistry(Chemistry):

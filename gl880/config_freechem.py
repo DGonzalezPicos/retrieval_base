@@ -178,7 +178,7 @@ line_species =list(set([v[1] for _,v in opacity_params.items()]))
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO']
+species_to_plot_VMR = ['H2O', 'OH', '12CO','CN','FeH','TiO','VO']
 species_to_plot_CCF = []
 
 ####################################################################################
@@ -226,7 +226,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.10
 evidence_tolerance = 1.0
 n_live_points = 100
-n_iter_before_update = n_live_points * 2
+n_iter_before_update = n_live_points * 3
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

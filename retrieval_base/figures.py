@@ -820,10 +820,18 @@ def fig_VMR(Chem,
         if vmr_i is None:
             print(f'No VMR for {species_i}')
             continue
-        print(f' - Plotting {species_i} ({line_species_i})')
+        # print(f' - Plotting {species_i} ({line_species_i})')
 
         label_i = label_i if showlegend else None
-        ax.plot(vmr_i, pressure, label=label_i, ls=ls, color=color_i)
+        if hasattr(Chem, 'VMRs_envelopes'):
+            ax.fill_betweenx(
+                y=pressure, x1=Chem.VMRs_envelopes[species_i][0], 
+                x2=Chem.VMRs_envelopes[species_i][-1], 
+                color=color_i, ec='none', alpha=0.4,
+                )
+            ax.plot(Chem.VMRs_envelopes[species_i][1], pressure, label=label_i, ls=ls, color=color_i)
+        else:
+            ax.plot(vmr_i, pressure, label=label_i, ls=ls, color=color_i)
         
         
     ax.set(xscale='log', yscale='log', xlabel='VMR',
@@ -866,7 +874,7 @@ def fig_VMR_old(ax,
         line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
         if line_species_i not in Chem.line_species:
             continue
-        print(f' - Plotting {species_i}')
+        # print(f' - Plotting {species_i}')
 
 
         # Read the mass, color and label

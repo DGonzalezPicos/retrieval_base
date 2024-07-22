@@ -203,6 +203,7 @@ class CallBack:
         if self.evaluation:
             fig_chem, ax_chem = plt.subplots(1, 1, figsize=(6,6))
             fig_name_chem = self.prefix+f'plots/bestfit_VMRs.pdf'
+            # Chem.get_VMRs_envelopes() # deprecated, VMRs_envelopes already computed with posterior
             figs.fig_VMR(Chem,
                     ax=ax_chem,
                     fig=fig_chem,
@@ -449,25 +450,71 @@ class CallBack:
         self.median_params = np.array(list(self.param_quantiles[:,1]))
 
         if fig is None:
-            fig = plt.figure(figsize=(15,15))
+            fig = plt.figure(figsize=(20,20)) # was (15,15) before...
         
         # Only select the included parameters
         mask_params = np.ones(len(self.Param.param_keys), dtype=bool)
-        if included_params is not None:
-            mask_params = np.isin(
-                self.Param.param_keys, test_elements=included_params
-                )
+        # if included_params is not None:
+        #     mask_params = np.isin(
+        #         self.Param.param_keys, test_elements=included_params
+        #         )
 
         # Number of parameters
         n_params = mask_params.sum()
         labels = self.param_labels[mask_params]
-        assert len(labels) == n_params, f'len(labels)={len(labels)} != n_params={n_params}'
+        def test_labels(labels):
+            bad_labels = []
+            for label in labels:
+                try:
+                    plt.figure()
+                    plt.text(0.5, 0.5, label, fontsize=12)
+                    plt.title(f'Test: {label}')
+                    # plt.show()
+                    plt.close()
+                    print(f"Label {label} rendered successfully")
+                except Exception as e:
+                    print(f"Error with label: {label}\n{e}")
+                    bad_labels.append((label, str(e)))
+            return bad_labels
+
+        # Test each label and capture bad labels
+        check_labels = False
+        if check_labels:
+            bad_labels = test_labels(labels)
+            for i, (label, error) in enumerate(bad_labels):
+                print(f"Error with label: {label}\n{error}")
+                # replace label with index
+                labels = labels.replace(label, str(i))
+                
+        # remove following characters from labels: [$, \, _, mathrm, {, }. ^]
+        # for i, label in enumerate(labels):
+        #     labels[i] = label.replace('$', '').replace('\\', '').replace('_', '').replace('mathrm', '').replace('{', '').replace('}', '').replace('^', '')
         
+        assert len(labels) == n_params, f'len(labels)={len(labels)} != n_params={n_params}'
+        # print(labels)
+        # replace labels
+        replace = {'$\\log\\ P_\\mathrm{OH}_0$' : '$\\log \\mathrm{P(OH)}$',
+                    '$\\log\\ P_\\mathrm{H_2O}_0$' : '$\\log \\mathrm{P(H_2O)}$',
+                    '$\\log\\ P_\\mathrm{H2O}_0$' : '$\\log \\mathrm{P(H_2O)}$',
+                    '$\\log\\ \\mathrm{H2O}_0$' : '$\\log \\mathrm{H_2O} (0)$',
+                    '$\\log\\ \\mathrm{H2O}_1$' : '$\\log \\mathrm{H_2O} (1)$',
+                    '$\\log\\ \\mathrm{H2O}_2$' : '$\\log \\mathrm{H_2O} (2)$',
+                    '$\\log\\ \\mathrm{OH}_0$' : '$\\log \\mathrm{OH} (0)$',
+                    '$\\log\\ \\mathrm{OH}_1$' : '$\\log \\mathrm{OH} (1)$',
+                    '$\\log\\ \\mathrm{OH}_2$' : '$\\log \\mathrm{OH} (2)$',
+        }
+        labels = [replace.get(label, label) for label in labels]
+        # # replace last 10 labels
+        # labels[-20:] = [i for i in range(20)]
+        # labels = [str(i) for i in range(n_params)]
+        # print(labels)
+
         fig = corner.corner(
             self.posterior[:,mask_params], 
             fig=fig, 
             quiet=True, 
-            labels=self.param_labels[mask_params], 
+            # labels=self.param_labels[mask_params], 
+            labels=labels,
             show_titles=True, 
             use_math_text=True, 
             title_fmt='.2f', 
@@ -588,43 +635,7 @@ class CallBack:
             xlim_grad=(-0.02, 0.34),
             # fig_name=self.prefix+f'plots/PT_grad_profile.pdf',
         )
-        # remove yticks from ax_grad
-        # ax_grad.set_yticks([])
-        #ax_contr = ax_PT.twiny()
 
-        # Plot the VMR per species
-        # ax_VMR = figs.fig_VMR(
-        #     ax_VMR=ax_VMR, 
-        #     Chem=self.Chem, 
-        #     species_to_plot=self.species_to_plot_VMR, 
-        #     pressure=self.PT.pressure, 
-        #     )
-
-        # Plot the best-fitting PT profile
-        # x1, x2 = np.min(self.PT.temperature), np.max(self.PT.temperature)
-        # x_pad = 0.05*(x2-x1)
-        # x1 -= x_pad
-        # x2 += x_pad
-        
-        # ax_PT = figs.old_fig_PT(
-        #     PT=self.PT, 
-        #     pRT_atm=self.pRT_atm, 
-        #     #integrated_contr_em=self.pRT_atm.int_contr_em, 
-        #     #integrated_contr_em_per_order=self.pRT_atm.int_contr_em_per_order, 
-        #     #integrated_opa_cloud=self.pRT_atm.int_opa_cloud, 
-        #     ax_PT=ax_PT, 
-        #     envelope_colors=self.envelope_colors, 
-        #     posterior_color=self.posterior_color, 
-        #     bestfit_color=self.bestfit_color, 
-        #     ylabel=None, 
-        #     yticks=[],
-        #     xlim=(x1,x2), 
-        #     )
-
-        # Plot the integrated emission contribution function
-        #ax_contr = self.fig_contr_em(ax_contr)
-
-        #plt.show()
         label = 'final' if self.evaluation else f'live_{self.cb_count}'
         if self.evaluation:
             if self.plot_histograms:
@@ -648,8 +659,11 @@ class CallBack:
         #     fig.savefig(self.prefix+'plots/live_summary_{self.cb_count}.pdf')
             
             # fig.savefig(self.prefix+f'plots/live_summary_{self.cb_count}.png', dpi=100)
-        fig.savefig(self.prefix+f'plots/{label}_summary.pdf')
-        print(f'- Saved {self.prefix}plots/{label}_summary.pdf')
+        fig_name = self.prefix+f'plots/{label}_summary.pdf'
+        print(f' Saving... {fig_name}')
+        fig.savefig(fig_name)
+        print(f'- Saved {fig_name}')
+
         plt.close(fig)
 
         for w_set in self.d_spec.keys():

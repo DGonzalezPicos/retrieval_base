@@ -48,6 +48,9 @@ def create_output_dir(prefix, file_params):
     # Make the data directory
     if not os.path.exists(prefix+'data'):
         os.makedirs(prefix+'data')
+        
+    if not os.path.exists(prefix+'output'):
+        os.makedirs(prefix+'output')
 
     # Make a copy of the parameters file
     shutil.copy(file_params, prefix+'data/'+file_params)

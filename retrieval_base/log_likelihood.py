@@ -127,15 +127,23 @@ class LogLikelihood:
                     
                     
                 # print(f' M_ij shape {M_ij.shape}')
+                # check for NaNs
+                assert not np.isnan(M_ij).any(), f'NaNs in M_ij for order {i} and detector {j}'
+                assert not np.isnan(d_flux_ij).any(), f'NaNs in d_flux_ij for order {i} and detector {j}'
+                assert not np.isnan(d_err_ij).any(), f'NaNs in d_err_ij for order {i} and detector {j}'
+                # print(f' M_ij shape {M_ij.shape}')
+
                 # left-hand side and right-hand side of the linear system
                 if Cov[i,j].is_matrix:
                     LHS = np.dot(M_ij, Cov[i,j].solve(M_ij.T))
                     RHS = np.dot(M_ij, Cov[i,j].solve(d_flux_ij))
                 else:
+                    
                     inv_cov = np.diag(1/Cov[i,j].cov)
                     LHS = np.dot(M_ij, np.dot(inv_cov, M_ij.T))
                     RHS = np.dot(M_ij, np.dot(inv_cov, d_flux_ij))
                 try:
+                    
                     phi_ij = nnls(LHS, RHS)[0] 
                 except RuntimeError:
                     phi_ij = np.zeros(M_ij.shape[0])

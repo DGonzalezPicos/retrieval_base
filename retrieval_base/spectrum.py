@@ -5,6 +5,7 @@ from scipy.sparse import triu
 
 import pickle
 import os
+import warnings
 
 from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
@@ -77,13 +78,19 @@ class Spectrum:
 
         self.high_pass_filtered = False
 
-    def update_isfinite_mask(self, array=None):
+    def update_isfinite_mask(self, array=None, check_err=False):
 
         if array is None:
             self.mask_isfinite = np.isfinite(self.flux)
         else:
             self.mask_isfinite = np.isfinite(array)
+            
+        if check_err:
+            self.mask_isfinite &= np.isfinite(self.err)
+            
         self.n_data_points = self.mask_isfinite.sum()
+        
+        
 
     def rv_shift(self, rv, wave=None, replace_wave=False):
 

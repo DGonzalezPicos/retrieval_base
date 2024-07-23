@@ -287,10 +287,11 @@ def pre_processing_spirou(conf, conf_data):
     # d_spec.reshape_orders_dets()
     d_spec.select_orders(orders=list(conf_data.get('orders', (47, 48))))
     d_spec.normalize_flux_per_order()
+    
+    d_spec.reshape_spirou()
     d_spec.sigma_clip(sigma=conf_data.get('sigma_clip', 3),
                       filter_width=conf_data.get('sigma_clip_width', 21),
                       fig_name=conf.prefix + 'plots/sigma_clip.pdf')
-    d_spec.reshape_spirou()
 
     
     
@@ -456,6 +457,8 @@ class Retrieval:
 
         self.conf = conf
         self.evaluation = evaluation
+        self.conf_output = '/'.join(self.conf.prefix.split('/')[:-1])+'/test_output/'+self.conf.prefix.split('/')[-1]
+
 
         self.d_spec  = {}
         self.pRT_atm = {}
@@ -492,6 +495,8 @@ class Retrieval:
             self.Cov[w_set] = np.empty(
                 (self.d_spec[w_set].n_orders, self.d_spec[w_set].n_dets), dtype=object
                 )
+            
+            self.d_spec[w_set].update_isfinite_mask(check_err=True)
             for i in range(self.d_spec[w_set].n_orders):
                 for j in range(self.d_spec[w_set].n_dets):
                     
@@ -1023,7 +1028,8 @@ class Retrieval:
         # Set-up analyzer object
         analyzer = pymultinest.Analyzer(
             n_params=self.Param.n_params, 
-            outputfiles_basename=self.conf.prefix
+            # outputfiles_basename=self.conf_output
+            outputfiles_basename=self.conf_output,
             )
         stats = analyzer.get_stats()
 
@@ -1142,7 +1148,7 @@ class Retrieval:
             LogLikelihood=self.PMN_lnL_func, 
             Prior=self.Param, 
             n_dims=self.Param.n_params, 
-            outputfiles_basename=self.conf.prefix, 
+            outputfiles_basename=self.conf_output, 
             resume=True, 
             verbose=True, 
             const_efficiency_mode=self.conf.const_efficiency_mode, 

@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_4'
+run = 'run_5'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -51,13 +51,13 @@ opacity_params = {
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso'), # DGP (2024-07-16): accidentally removed 
     # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
-    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
+    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
     'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
     'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
-    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
+    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
     # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
     # 'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
@@ -135,10 +135,10 @@ N_knots = 10 # spline knots (continuum fitting)
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
-    'parallax': parallax_mas, 
+    # 'parallax': parallax_mas, 
     'epsilon_limb': 0.5, 
     # 'log_g': 3.5,
-    'vsini':1.,
+    # 'vsini':1.,
 
     # PT profile
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
@@ -209,7 +209,7 @@ if free_params.get('log_l') is not None:
 
 PT_kwargs = dict(
     conv_adiabat = True, 
-
+    
     ln_L_penalty_order = 3, 
     PT_interp_mode = PT_interp_mode, 
 

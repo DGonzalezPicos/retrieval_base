@@ -26,6 +26,7 @@ class Parameters:
             free_params, 
             constant_params, 
             PT_mode='free', 
+            PT_adiabatic=True,
             n_T_knots=None, 
             enforce_PT_corr=False, 
             chem_mode='free', 
@@ -57,7 +58,8 @@ class Parameters:
         # Check the used PT profile
         self.PT_mode = PT_mode
         assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere', 'RCE'])
-
+        self.PT_adiabatic = PT_adiabatic
+        
         self.n_T_knots = n_T_knots
         self.enforce_PT_corr = enforce_PT_corr
 
@@ -117,7 +119,11 @@ class Parameters:
 
             # Sample within the boundaries
             low, high = self.param_priors[key_i]
-            if (self.PT_mode == 'RCE') and (key_i.startswith('dlnT_dlnP_')) and (key_i != 'dlnT_dlnP_RCE'):
+            
+            cond = (self.PT_mode == 'RCE') and (key_i.startswith('dlnT_dlnP_')) and (key_i != 'dlnT_dlnP_RCE')
+            cond = cond and (self.PT_adiabatic) # default is True
+            
+            if cond:
                 high = min(self.params['dlnT_dlnP_RCE'], high)
                 low =  min(self.params['dlnT_dlnP_RCE'], low)
             cube[i] = low + (high-low)*cube[i]

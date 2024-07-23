@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl12_M_1'
+run = 'lbl12_M_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -88,14 +88,14 @@ free_params = {
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     # 'log_l': [(-2,0.3), r'$\log\ l$'], 
-    'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
+    # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
     # R = 0.29 [R_sun]
     # convert to jupiter radii
     # R = 0.29 * 9.73116 = 2.82 [R_jup]
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(1.0, 4.0), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(0.7, 4.0), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
@@ -103,28 +103,28 @@ free_params = {
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(1.0, 30.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
     'T_d': [(100, 800), r'$T_d$'], # disk temperature in K
     # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
-    'rv': [(-40.,40.), r'$v_\mathrm{rad}$'],
+    'rv': [(-20.,20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(1000,8000), r'$T_0$'], 
-    'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
+    'log_P_RCE': [(-2.5,1.0), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.34), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_0':   [(0.04, 0.34), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_1':   [(0.04, 0.34), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_2':   [(0.04, 0.34), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.34), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.34), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
+    'dlnT_dlnP_RCE': [(0.06, 0.38), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_0':   [(0.06, 0.38), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_1':   [(0.06, 0.38), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_2':   [(0.06, 0.38), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_3':   [(0.00, 0.38), r'$\nabla_{T,3}$'],
+    'dlnT_dlnP_4':   [(0.00, 0.38), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(0.00, 0.38), r'$\nabla_{T,5}$'], # new points
 
     # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
     # 'res_G235': [(1500, 4000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
@@ -230,6 +230,7 @@ if free_params.get('log_l') is not None:
 
 PT_kwargs = dict(
     conv_adiabat = True, 
+    adiabatic=False, # NEW (2024-07-23): do not enforce that nabla_ad > nabla_i for all i
 
     ln_L_penalty_order = 3, 
     PT_interp_mode = PT_interp_mode, 

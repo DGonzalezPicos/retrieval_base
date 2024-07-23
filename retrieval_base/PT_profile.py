@@ -501,7 +501,7 @@ class PT_profile_RCE(PT_profile):
     '''Temperature profile for a radiative-convective equilibrium atmosphere with 
     **one** convective region'''
 
-    def __init__(self, pressure, PT_interp_mode='quadratic', **kwargs):
+    def __init__(self, pressure, PT_interp_mode='quadratic', adiabatic=True, **kwargs):
 
         # Give arguments to the parent class
         super().__init__(pressure)
@@ -514,7 +514,7 @@ class PT_profile_RCE(PT_profile):
             setattr(self, key, value)
 
 
-        self.PT_adiabatic = True # default for RCE
+        self.PT_adiabatic = adiabatic # default for RCE
 
 
     def __call__(self, params):

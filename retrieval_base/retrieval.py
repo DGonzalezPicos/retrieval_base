@@ -277,7 +277,7 @@ def pre_processing_spirou(conf, conf_data):
         w_set=conf_data['w_set'], 
         )
     
-    n_edge_pixels = conf_data.get('n_edge_pixels', 30)
+    n_edge_pixels = conf_data.get('Nedge', 30) # DGP (2024-07-23): fix this to read proper key
     d_spec.clip_det_edges(n_edge_pixels)
     
     # Crop the spectrum

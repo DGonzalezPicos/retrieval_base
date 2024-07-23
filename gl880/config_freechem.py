@@ -26,10 +26,10 @@ config_data = {
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 21, 
-        'Nedge': 40,
+        'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 30, 
+        'n_atm_layers': 30, # FIXME: update to 50 at some point...
         
         'file_target':'data/test.npy'
         }, 

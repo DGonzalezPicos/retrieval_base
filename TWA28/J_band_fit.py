@@ -23,7 +23,7 @@ if target not in cwd:
     os.chdir(target)
 
 conf_data = conf.config_data['NIRSpec']
-for key in ['data', 'plots']:
+for key in ['data', 'plots', 'output']:
     pathlib.Path(f'{conf.prefix}{key}/').mkdir(parents=True, exist_ok=True)
 gratings = [
             'g140h-f100lp', 

@@ -19,7 +19,7 @@ run = None
 conf_data = conf.config_data['NIRSpec']
 # create output directory
 
-for key in ['data', 'plots']:
+for key in ['data', 'plots', 'output']:
     pathlib.Path(f'{conf.prefix}{key}/').mkdir(parents=True, exist_ok=True)
     # print(f'--> Created {conf.prefix}{key}/')
     

@@ -23,7 +23,7 @@ config_data = {
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 21, 
-        'Nedge': 80,
+        'Nedge': 10,
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, 

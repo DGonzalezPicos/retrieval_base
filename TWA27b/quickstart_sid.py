@@ -24,7 +24,7 @@ gratings_list = list(set(conf.constant_params['gratings']))
 gratings = [gratings_dict[g] for g in gratings_list]
 
 conf_data = conf.config_data['NIRSpec']
-for key in ['data', 'plots']:
+for key in ['data', 'plots', 'output']:
     pathlib.Path(f'{conf.prefix}{key}/').mkdir(parents=True, exist_ok=True)
 # each grating has two filters, make list [a,b] to [a,a,b,b]
 # gratings_list = [g.split('-')[0] for g in gratings for _ in range(2)]

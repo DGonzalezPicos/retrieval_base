@@ -19,7 +19,7 @@ run = None
 conf_data = conf.config_data['NIRSpec']
 # create output directory
 
-for key in ['data', 'plots']:
+for key in ['data', 'plots', 'output']:
     pathlib.Path(f'{conf.prefix}{key}/').mkdir(parents=True, exist_ok=True)
     # print(f'--> Created {conf.prefix}{key}/')
     
@@ -72,7 +72,7 @@ if args.pre_processing:
     # spec.fix_wave_nans() # experimental...
     spec.sigma_clip_reshaped(use_flux=False, 
                                 # sigma=3, # KM bands
-                                sigma=conf_data.get('sigma', 2),
+                                sigma=conf_data.get('sigma_clip', 2),
                                 width=conf_data.get('sigma_clip_width', 30),
                                 max_iter=5,
                                 fun='median', 

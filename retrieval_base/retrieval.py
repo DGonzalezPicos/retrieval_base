@@ -365,7 +365,7 @@ class Retrieval:
             print(f' Updating conf.prefix to {tmp_path}retrieval_outputs/{self.conf.run}/test_')
             self.conf.prefix = f'{tmp_path}retrieval_outputs/{self.conf.run}/test_'
             
-        self.conf_output = '/'.join(self.conf.prefix.split('/')[:-1])+'/output/'+self.conf.prefix.split('/')[-1]
+        self.conf_output = '/'.join(self.conf.prefix.split('/')[:-1])+'/test_output/'+self.conf.prefix.split('/')[-1]
         self.evaluation = evaluation
 
         self.d_spec  = {}

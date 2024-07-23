@@ -82,10 +82,23 @@ class SpectrumJWST:
             self.err  *= 1e-7
             self.flux_unit = 'erg/s/cm2/nm'
             
+        # split into two filters
+        split_id = self.flux.shape[0] // 2
+        print(f' Splitting data into two filters at {split_id}')
+        # self.wave = np.array([self.wave[:split_id], self.wave[split_id:]])
+        # self.flux = np.array([self.flux[:split_id], self.flux[split_id:]])
+        # self.err = np.array([self.err[:split_id], self.err[split_id:]])
+        attrs = ['wave', 'flux', 'err']
+        for attr in attrs:
+            setattr(self, attr, af.make_array([getattr(self, attr)[:split_id], getattr(self, attr)[split_id:]]))
+        print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
         # change shape into (1, n_pixels)
-        self.wave = self.wave[None, :]
-        self.flux = self.flux[None, :]
-        self.err = self.err[None, :]
+        # self.wave = self.wave[None, :]
+        # self.flux = self.flux[None, :]
+        # self.err = self.err[None, :]
+        
+        if self.Nedge > 0:
+            self.clip_det_edges(n=self.Nedge)
         # self.n_orders = 1
         return self
     
@@ -105,6 +118,20 @@ class SpectrumJWST:
         print(f' shape of wave: {self.wave.shape}')
         print(f' shape of flux: {self.flux.shape}')
         return self
+    
+    def select_filter(self, filter_id=0):
+        
+        assert len(self.flux.shape) == 3, f'Flux array must be 3D, not {self.flux.shape}'
+        assert self.flux.shape[0] > 1, f'Flux array must have more than one filter, not {self.flux.shape[0]}'
+        
+        attrs = ['wave', 'flux', 'err']
+        for attr in attrs:
+            setattr(self, attr, getattr(self, attr)[filter_id][None,...])
+            
+        print(f' Selected filter {filter_id} with cenwave {np.nanmedian(self.wave):.2f} nm')
+        print(f' shape of wave: {self.wave.shape}')
+        return self
+    
     
     def __add__(self, spec_list):
         """ Add a list of SpectrumJWST objects with proper padding"""
@@ -353,6 +380,7 @@ class SpectrumJWST:
     
     def clip_det_edges(self, n=20):
         assert len(self.flux.shape) == 2, f'Data must be reshaped to (orders, pixels) instead of {self.flux.shape}'
+        print(f' Clipping {n} pixels from the edges of each order')
         self.flux[..., :n] = np.nan
         self.flux[...,-n:] = np.nan
         return self

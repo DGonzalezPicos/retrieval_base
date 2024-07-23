@@ -365,6 +365,7 @@ class Retrieval:
             print(f' Updating conf.prefix to {tmp_path}retrieval_outputs/{self.conf.run}/test_')
             self.conf.prefix = f'{tmp_path}retrieval_outputs/{self.conf.run}/test_'
             
+        self.conf_output = '/'.join(self.conf.prefix.split('/')[:-1])+'/output/'+self.conf.prefix.split('/')[-1]
         self.evaluation = evaluation
 
         self.d_spec  = {}
@@ -940,11 +941,21 @@ class Retrieval:
     def PMN_analyze(self):
         
         # Set-up analyzer object
-        analyzer = pymultinest.Analyzer(
-            n_params=self.Param.n_params, 
-            outputfiles_basename=self.conf.prefix
-            )
-        stats = analyzer.get_stats()
+        try:
+            analyzer = pymultinest.Analyzer(
+                n_params=self.Param.n_params, 
+                outputfiles_basename=self.conf.prefix
+                )
+            stats = analyzer.get_stats()
+
+        except:
+            s = self.conf.prefix # hacky way to check if the outputfiles_basename is a directory
+            analyzer = pymultinest.Analyzer(
+                n_params=self.Param.n_params, 
+                # outputfiles_basename='/'.join(s.split('/')[:-1])+'/output/'+s.split('/')[-1]
+                outputfiles_basename=self.conf_output,
+                )
+            stats = analyzer.get_stats()
 
         # Load the equally-weighted posterior distribution
         posterior = analyzer.get_equal_weighted_posterior()
@@ -1075,7 +1086,7 @@ class Retrieval:
             LogLikelihood=self.PMN_lnL_func, 
             Prior=self.Param, 
             n_dims=self.Param.n_params, 
-            outputfiles_basename=self.conf.prefix, 
+            outputfiles_basename=self.conf_output, 
             resume=True, 
             verbose=True, 
             const_efficiency_mode=self.conf.const_efficiency_mode, 

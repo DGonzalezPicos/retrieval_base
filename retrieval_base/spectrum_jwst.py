@@ -143,9 +143,11 @@ class SpectrumJWST:
         for i, spec in enumerate(spec_list):
             for attr in attrs:
                 if hasattr(spec, attr):
+                    n_orders = len(getattr(spec, attr))
+                    print(f'[__add__] n_orders = {n_orders}')
                     # attr_pad = np.nan * np.ones((2, n))
-                    attr_pad = np.nan * np.ones((1, n))
-                    for order in range(1):
+                    attr_pad = np.nan * np.ones((n_orders, n))
+                    for order in range(n_orders):
                         n_order = len(getattr(spec, attr)[order])
                         if n_order < n:
                             print(f' Padding order {order} from {n_order} to {n}...')
@@ -156,9 +158,13 @@ class SpectrumJWST:
                             attr_pad[order] = getattr(spec, attr)[order]
                     setattr(spec_list[i], attr, attr_pad)
                     # print(f' shape of {attr}: {getattr(spec_list[i], attr).shape}')
+        new_wave = np.vstack([spec.wave for spec in spec_list])
+        # sort first axis
+        idx = np.argsort(np.nanmedian(new_wave, axis=1))
+        
         for attr in attrs:
             if hasattr(self, attr):
-                setattr(self, attr, np.vstack([getattr(spec, attr) for spec in spec_list]))
+                setattr(self, attr, np.vstack([getattr(spec, attr) for spec in spec_list])[idx])
         # self.set_n_orders()
         assert self.n_orders > 1, 'No data loaded'
         # Stack the arrays                    

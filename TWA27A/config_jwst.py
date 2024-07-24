@@ -8,25 +8,25 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl10_K_1'
+run = 'lbl10_KM_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
     'NIRSpec': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
-        'wave_range': (1650, 3200), # g235h-f170lp
-        # 'wave_range': (1650, 5300), 
+        # 'wave_range': (1650, 3200), # g235h-f170lp
+        'wave_range': (1650, 5300), 
         # 'wave_range': (1630, 3250), 
         
         'lbl_opacity_sampling' : 10,
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, 
-        'Nedge': 10,
+        'Nedge': 20,
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 35, 
+        'n_atm_layers': 40, 
         }, 
     }
 
@@ -50,7 +50,7 @@ opacity_params = {
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
+    # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
     'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
@@ -61,7 +61,7 @@ opacity_params = {
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
-    'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
+    # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
     'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
     'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
     'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
@@ -72,9 +72,9 @@ opacity_params = {
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
-    # 'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
+    'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
@@ -164,8 +164,11 @@ constant_params = {
                 'g235h',
                 'g235h',
                 'g235h',
-                # 'g395h',
-                # 'g395h'
+                
+                'g395h',
+                'g395h',
+                'g395h',
+                'g395h',
                 ], 
 }
 
@@ -245,8 +248,8 @@ PT_kwargs = dict(
 
 const_efficiency_mode = True
 sampling_efficiency = 0.05
-evidence_tolerance = 1.0
-n_live_points = 100
+evidence_tolerance = 0.5
+n_live_points = 200
 n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

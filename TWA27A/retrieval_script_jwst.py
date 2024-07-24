@@ -68,6 +68,7 @@ if args.pre_processing:
     files = [f'jwst/{target}_{g}.fits' for g in gratings]
     Nedge = conf_data.get('Nedge', 40)
     spec = SpectrumJWST(Nedge=Nedge).load_gratings(files)
+    print(f' Orders: {spec.n_orders}')
     spec.reshape(spec.n_orders*2, 1)
     # spec.fix_wave_nans() # experimental...
     sigma_clip_width = conf_data.get('sigma_clip_width', 30)

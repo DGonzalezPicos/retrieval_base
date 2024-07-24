@@ -240,10 +240,16 @@ class CallBack:
                 #     )
 
             # Plot the abundances in a corner-plot
+            
+            del self.LogLike, self.m_spec, self.pRT_atm
             self.fig_abundances_corner()
 
         # Remove attributes from memory
-        del self.Param, self.LogLike, self.PT, self.Chem, self.m_spec, self.pRT_atm, self.posterior
+        delattrs = ['Param', 'LogLike', 'PT', 'Chem', 'm_spec', 'pRT_atm', 'posterior']
+        for attr in delattrs:
+            if hasattr(self, attr):
+                delattr(self, attr)
+        # del self.Param, self.LogLike, self.PT, self.Chem, self.m_spec, self.pRT_atm, self.posterior
 
         time_B = time.time()
         print('\nPlotting took {:.0f} seconds\n'.format(time_B-time_A))
@@ -407,9 +413,10 @@ class CallBack:
 
             included_params.extend(['C/O', 'Fe/H'])
 
-        figsize = (
-            4/3*len(included_params), 4/3*len(included_params)
-            )
+        # figsize = (
+        #     # 4/3*len(included_params), 4/3*len(included_params)
+        #     )
+        figsize = (18,18)
         fig, ax = self.fig_corner(
             included_params=included_params, 
             fig=plt.figure(figsize=figsize), 
@@ -417,13 +424,14 @@ class CallBack:
             )
 
         # Plot the VMR per species
-        ax_VMR = fig.add_axes([0.6,0.6,0.32,0.32])
-        ax_VMR = figs.fig_VMR(
-            ax_VMR=ax_VMR, 
-            Chem=self.Chem, 
-            species_to_plot=self.species_to_plot_VMR, 
-            pressure=self.PT.pressure, 
-            )
+        if len(self.species_to_plot_VMR) > 0:
+            ax_VMR = fig.add_axes([0.6,0.6,0.32,0.32])
+            ax_VMR = figs.fig_VMR(
+                ax_VMR=ax_VMR, 
+                Chem=self.Chem, 
+                species_to_plot=self.species_to_plot_VMR, 
+                pressure=self.PT.pressure, 
+                )
 
         plt.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.08, wspace=0, hspace=0)
         fig.savefig(self.prefix+'plots/abundances.pdf')

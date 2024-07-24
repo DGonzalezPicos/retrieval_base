@@ -8,21 +8,21 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl12_KM_1'
+run = 'lbl10_K_1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
     'NIRSpec': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
-        # 'wave_range': (1650, 3200), # g235h-f170lp
-        'wave_range': (1650, 5300), 
+        'wave_range': (1650, 3200), # g235h-f170lp
+        # 'wave_range': (1650, 5300), 
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 12,
+        'lbl_opacity_sampling' : 10,
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
-        'sigma_clip_width': 21, 
+        'sigma_clip_width': 31, 
         'Nedge': 10,
     
         'log_P_range': (-5,2),
@@ -49,13 +49,13 @@ opacity_params = {
     'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
-    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard'),
+    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
-    # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
+    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
     'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
-    # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
+    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
     'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
@@ -85,7 +85,7 @@ free_params = {
     # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
     # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
     # 'log_l': [(-2,0.3), r'$\log\ l$'], 
-    'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
+    # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
     # R = 0.29 [R_sun]
@@ -100,10 +100,10 @@ free_params = {
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(1.0, 30.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(100, 800), r'$T_d$'], # disk temperature in K
+    'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
     # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -150,7 +150,7 @@ constant_params = {
     'parallax': parallax_mas, 
     'epsilon_limb': 0.5, 
     # 'log_g': 3.5,
-    'vsini':1.,
+    'vsini':0.,
 
     # PT profile
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
@@ -161,8 +161,10 @@ constant_params = {
     # 'fit_radius': True,
     'gratings':[
                 'g235h', 
-                # 'g235h',
-                'g395h',
+                'g235h',
+                'g235h',
+                'g235h',
+                # 'g395h',
                 # 'g395h'
                 ], 
 }
@@ -242,7 +244,7 @@ PT_kwargs = dict(
 ####################################################################################
 
 const_efficiency_mode = True
-sampling_efficiency = 0.10
+sampling_efficiency = 0.05
 evidence_tolerance = 1.0
 n_live_points = 100
 n_iter_before_update = n_live_points * 2

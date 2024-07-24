@@ -294,15 +294,16 @@ class SpectrumJWST:
                             max_iter=5, 
                             fun='median',
                             fig_name=False,
-                            debug=False):
+                            ):
         
         array = self.flux if use_flux else self.err
         assert use_flux == False, f'Only sigma-clip on errors is implemented'
+        debug = (fig_name != None)
         if debug:
             # keep a copy of the original data
             self.flux_uncorr = self.flux.copy()
             self.err_uncorr = self.err.copy()
-            fig, ax = plt.subplots(self.n_orders, 1, figsize=(10, 5))
+            fig, ax = plt.subplots(self.n_orders, 1, figsize=(10, 8), tight_layout=True)
             
         for order in range(self.n_orders):
             for det in range(self.n_dets):
@@ -317,11 +318,18 @@ class SpectrumJWST:
                 # self.flux[order,det,:] = clip # this is the flux with bad values replaced by the function values
                 if debug:
                     # print(f' Clipped {np.sum(np.isnan(clip)) - np.sum(nans_in)} points in order {order}, detector {det}')
-                    ax[order].plot(self.wave[order,det], self.err[order,det], label='Original', color='k')
-                    ax[order].plot(self.wave[order,det], clip, label='Clipped', color='r')
-                    ax[order].legend()
+                    ax[order].plot(self.wave[order,det], self.err[order,det],
+                                   label=f'std={np.nanstd(self.err[order,det]):.2e}', color='k')
+                    
+                    ax[order].plot(self.wave[order,det], clip, label=f'std={np.nanstd(clip):.2e}', color='r')
+                    ax[order].legend(frameon=False)
                 self.err[order,det,] = clip
-
+                # print(f' Mean error {order},{det} = {np.nanmean(self.err[order,det]):.2e}')
+                print(f' Mean SNR ~ {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}')
+        if debug:
+            fig.savefig(fig_name)
+            print(f'--> Saved {fig_name}')
+            plt.close(fig)
         return self
     
     def reshape(self, n_orders=1, n_dets=1):

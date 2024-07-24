@@ -68,15 +68,17 @@ if args.pre_processing:
     files = [f'jwst/{target}_{g}.fits' for g in gratings]
     Nedge = conf_data.get('Nedge', 40)
     spec = SpectrumJWST(Nedge=Nedge).load_gratings(files)
-    spec.reshape(spec.n_orders, 1)
+    spec.reshape(spec.n_orders*2, 1)
     # spec.fix_wave_nans() # experimental...
-    spec.sigma_clip_reshaped(use_flux=False, 
-                                # sigma=3, # KM bands
-                                sigma=conf_data.get('sigma_clip', 2),
-                                width=conf_data.get('sigma_clip_width', 30),
-                                max_iter=5,
-                                fun='median', 
-                                debug=False)
+    sigma_clip_width = conf_data.get('sigma_clip_width', 30)
+    for i in range(2):
+        spec.sigma_clip_reshaped(use_flux=False, 
+                                    # sigma=3, # KM bands
+                                    sigma=conf_data.get('sigma_clip', 2),
+                                    width=sigma_clip_width * (i+1)**2,
+                                    max_iter=5,
+                                    fun='median', 
+                                    fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
@@ -87,7 +89,6 @@ if args.pre_processing:
     spec.gratings_list = conf.constant_params['gratings']
 
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)
-    print(f'--> Saved {f"{conf.prefix}data/d_spec_{spec.w_set}.pkl"}')
 
 
     ## Create pRT_atm object

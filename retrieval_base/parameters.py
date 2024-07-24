@@ -124,6 +124,9 @@ class Parameters:
                 
                 # Sample from the Gaussian prior
                 cube[i] = norm.ppf(cube[i], loc=mu, scale=sigma)
+                # Clip to 1-sigma
+                cube[i] = np.clip(cube[i], mu-sigma, mu+sigma)
+                self.params[key_i[9:]] = cube[i] # store key without 'gaussian_'
             
             else:
                 # Sample within the boundaries

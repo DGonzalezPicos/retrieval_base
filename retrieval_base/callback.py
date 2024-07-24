@@ -152,6 +152,10 @@ class CallBack:
             if self.LogLike[w_set].scale_err:
                 print('\nOptimal uncertainty-scaling parameters:')
                 print(self.LogLike[w_set].s.round(2))
+                
+            if hasattr(self.m_spec[w_set], 'int_contr_em'):
+                # print(f' int_contr_em = {self.m_spec[w_set].int_contr_em}')
+                self.PT.int_contr_em[w_set] = np.copy(self.m_spec[w_set].int_contr_em)
         
         self.bestfit_params = np.array(self.bestfit_params)
         
@@ -502,6 +506,11 @@ class CallBack:
                     '$\\log\\ \\mathrm{OH}_0$' : '$\\log \\mathrm{OH} (0)$',
                     '$\\log\\ \\mathrm{OH}_1$' : '$\\log \\mathrm{OH} (1)$',
                     '$\\log\\ \\mathrm{OH}_2$' : '$\\log \\mathrm{OH} (2)$',
+                    # add the 12CO
+                    '$\\log\\ \\mathrm{12CO}_0$' : '$\\log \\mathrm{12CO} (0)$',
+                    '$\\log\\ \\mathrm{12CO}_1$' : '$\\log \\mathrm{12CO} (1)$',
+                    '$\\log\\ \\mathrm{12CO}_2$' : '$\\log \\mathrm{12CO} (2)$',
+                    '$\\log\\ P_\\mathrm{12CO}_0$' : '$\\log \\mathrm{P(12CO)}$',
         }
         labels = [replace.get(label, label) for label in labels]
         # # replace last 10 labels

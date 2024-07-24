@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_7'
+run = 'run_8'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -87,7 +87,8 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
-    'log_g': [(3.0,6.0), r'$\log\ g$'], 
+    # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
+    'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
@@ -112,7 +113,8 @@ free_params.update({k:v[0] for k,v in opacity_params.items()})
 # replace keys with 3-knot profile
 # opacity_profiles = ['H2O', 'OH']
 # WARNING: implemented only for n_knots = (2, 3)
-opacity_profiles = {'12CO': 2,
+opacity_profiles = {
+                    # '12CO': 2,
                     'H2O': 3,
                     'OH': 3,
                 }
@@ -121,11 +123,11 @@ for op in opacity_profiles.keys():
     free_params.pop(f'log_{op}')
     
     for i in range(opacity_profiles[op]):
-        free_params[f'log_{op}_{i}'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_{i}$']
+        free_params[f'log_{op}_{i}'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}[{i}]$']
         
     # free_params[f'log_{op}_1'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_1$']
     # free_params[f'log_{op}_2'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_2$']
-    free_params[f'log_P_{op}'] = [(-4.5,1.5), f'$\log\ P_\mathrm{{{op}}}_0$']
+    free_params[f'log_P_{op}'] = [(-4.5,1.5), f'$\log\ P_\mathrm{{{op}}}$']
 
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -169,7 +171,7 @@ cloud_species = None
 
 # mask_lines = {'Ni': (2298.2, 2299.4)}
 mask_lines = {} # FIXME: manage the Ni line and other missing opacity sources...
-
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
 
 ####################################################################################
 # Chemistry parameters
@@ -235,9 +237,9 @@ PT_kwargs = dict(
 ####################################################################################
 
 const_efficiency_mode = True
-sampling_efficiency = 0.10
-evidence_tolerance = 1.0
-n_live_points = 100
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 200
 n_iter_before_update = n_live_points * 3
 # n_iter_before_update = 1
 # generate a .txt version of this file

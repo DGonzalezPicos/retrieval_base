@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl12_M_2'
+run = 'lbl10_M_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -19,7 +19,7 @@ config_data = {
         'wave_range': (4100., 5300.), 
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 12,
+        'lbl_opacity_sampling' : 10,
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 2,
         'sigma_clip_width': 25, 

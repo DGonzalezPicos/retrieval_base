@@ -189,7 +189,8 @@ class CallBack:
             show_text=True,
             plot_sonora=self.evaluation,
             fig_name=self.prefix+f'plots/PT_grad_profile.pdf' if self.evaluation else None,
-            xlim=(1000, 5000), # fix view
+            # xlim=(1000, 5000), # fix view
+            # xlim=(0, 3000),
         )
 
         # Make a summary figure

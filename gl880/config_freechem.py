@@ -95,18 +95,18 @@ free_params = {
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
-   'T_0': [(3e3,16e3), r'$T_0$'], 
+   'T_0': [(4e3,16e3), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
     'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     # 'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     # 'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.38), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
     'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
     'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_2':   [(0.06, 0.42), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_2':   [(0.04, 0.42), r'$\nabla_{T,2}$'],
     'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
+    'dlnT_dlnP_4':   [(-0.04, 0.32), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(-0.04, 0.32), r'$\nabla_{T,5}$'], # new points
 }
 free_params.update({k:v[0] for k,v in opacity_params.items()})
 # replace keys with 3-knot profile

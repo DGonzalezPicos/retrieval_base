@@ -289,6 +289,20 @@ def pre_processing_spirou(conf, conf_data):
     print(f' Selecting orders {conf_data.get("orders", (47, 48))}')
     d_spec.select_orders(orders=list(conf_data.get('orders', (47, 48))))
     d_spec.normalize_flux_per_order()
+    # Mask emission lines in the target spectrum
+    if len(conf.mask_lines) > 0:
+        assert len(d_spec.flux.shape) ==2, f'[mask_lines] Expected 2D array, got {d_spec.flux.shape}'
+        for order in range(d_spec.n_orders):
+            for key, value in conf.mask_lines.items():
+                # wave_flat = d_spec.wave.flatten()
+                # mask = (wave_flat > value[0]) & (wave_flat < value[1])
+                mask = (d_spec.wave[order] > value[0]) & (d_spec.wave[order] < value[1])
+                if mask.sum() > 0:
+                    print(f'Masking {key}: {value[0]} - {value[1]} (n={mask.sum()})')
+
+                    d_spec.flux[order, mask] = np.nan
+                    
+        # d_spec.update_isfinite_mask(d_spec.flux, check_err=True)
     
     d_spec.reshape_spirou()
     d_spec.sigma_clip(sigma=conf_data.get('sigma_clip', 3),

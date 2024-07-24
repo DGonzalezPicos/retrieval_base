@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_5'
+run = 'run_6'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -29,9 +29,9 @@ config_data = {
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 30, # FIXME: update to 50 at some point...
+        'n_atm_layers': 35, # FIXME: update to 50 at some point...
         
-        'file_target':'data/test.npy'
+        'file_target':'data/spec.npy'
         }, 
     }
 
@@ -42,11 +42,11 @@ config_data = {
 opacity_params = {
     'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
     'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
-    # 'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
+    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
     # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
     
     'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
-    # 'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
+    'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso'), # DGP (2024-07-16): accidentally removed 
     # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
@@ -66,6 +66,7 @@ opacity_params = {
 
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
+    'log_13CN': ([(-14,-2), r'$\log\ \mathrm{^{13}CN}$'], 'CN_34_high'),
     # 'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     # 'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
@@ -86,11 +87,11 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
-    'log_g': [(3.0,5.5), r'$\log\ g$'], 
+    # 'log_g': [(3.0,5.5), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
-    'vsini': [(2,30), r'$v\ \sin\ i$'], 
+    'vsini': [(1,30), r'$v\ \sin\ i$'], 
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
@@ -130,14 +131,14 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 10 # spline knots (continuum fitting)
+N_knots = 15 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
-    'epsilon_limb': 0.5, 
-    # 'log_g': 3.5,
+    # 'epsilon_limb': 0.5, 
+    'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 
     # PT profile
@@ -158,7 +159,7 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
-mask_lines = {} 
+mask_lines = {'Ni': (2299.0, 2299.4)}
 
 ####################################################################################
 # Chemistry parameters
@@ -179,7 +180,7 @@ line_species =list(set([v[1] for _,v in opacity_params.items()]))
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO','CN','FeH','TiO','VO']
+species_to_plot_VMR = ['H2O', 'OH', '12CO']
 species_to_plot_CCF = []
 
 ####################################################################################

@@ -416,6 +416,7 @@ class DataSpectrum(Spectrum):
             
         elif w_set == 'spirou':
             wave, flux, err = self.load_spectrum_spirou(file_target)
+            assert np.sum(np.isnan(flux)) < flux.size, '[load_spectrum_spirou] All flux values are NaNs!'
         
         super().__init__(wave, flux, err, w_set)
 
@@ -441,6 +442,12 @@ class DataSpectrum(Spectrum):
         # Set to None by default
         self.separation = None
         self.err_eff, self.flux_eff = None, None
+        
+    def all_nans(self, label=''):
+        
+        nans = np.sum(np.isnan(self.flux))
+        assert nans < self.flux.size, f'[{label}] All flux values are NaNs! {nans}/{self.flux.size}'
+        return self
 
     def load_spectrum_excalibuhr(self, file_target, file_wave=None):
 
@@ -484,10 +491,10 @@ class DataSpectrum(Spectrum):
     
     def load_spectrum_spirou(self, file_target):
         wave, flux, err = np.load(file_target).T
-        print(f' shape wave: {wave.shape}, flux: {flux.shape}, err: {err.shape}')
-        print(f' Wavelength (min, mean, max): {wave.min()}, {wave.mean()}, {wave.max()}')
-        print(f' Number of orders: {flux.shape[0]}')
-        return wave, flux, err # TODO: check this
+        print(f' [load_spectrum_spirou] shape wave: {wave.shape}, flux: {flux.shape}, err: {err.shape}')
+        print(f' [load_spectrum_spirou] Wavelength (min, mean, max): {wave.min()}, {wave.mean()}, {wave.max()}')
+        # print(f' [load_spectrum_spirou] Number of orders: {flux.shape[0]}')
+        return wave, flux, err
 
     def crop_spectrum(self):
 
@@ -694,6 +701,7 @@ class DataSpectrum(Spectrum):
 
     def clip_det_edges(self, n_edge_pixels=30):
         
+        assert len(self.flux.shape) == 1, 'The spectrum must be 1D!'
         # Loop over the orders and detectors
         for i in range(self.n_orders):
             for j in range(self.n_dets):
@@ -706,6 +714,15 @@ class DataSpectrum(Spectrum):
 
         # Update the isfinite mask
         self.update_isfinite_mask()
+        
+    def clip_det_edges_reshaped(self, n_edge_pixels=30):
+        assert len(self.flux.shape) == 2, 'The spectrum must be 2D! (order, pixel)'
+        for i in range(self.n_orders):
+            self.flux[i,:n_edge_pixels] = np.nan
+            self.flux[i,-n_edge_pixels:] = np.nan
+        
+        self.all_nans('clip_det_edges_reshaped')
+        return self
 
     def load_molecfit_transm(self, file_transm, 
                              tell_threshold=0.0,

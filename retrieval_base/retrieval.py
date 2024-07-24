@@ -278,13 +278,15 @@ def pre_processing_spirou(conf, conf_data):
         )
     
     n_edge_pixels = conf_data.get('Nedge', 30) # DGP (2024-07-23): fix this to read proper key
-    d_spec.clip_det_edges(n_edge_pixels)
-    
+    if n_edge_pixels > 1:
+        d_spec.clip_det_edges_reshaped(n_edge_pixels)
+    d_spec.all_nans()
     # Crop the spectrum
     # d_spec.crop_spectrum()
 
     # Re-shape the spectrum to a 3-dimensional array
     # d_spec.reshape_orders_dets()
+    print(f' Selecting orders {conf_data.get("orders", (47, 48))}')
     d_spec.select_orders(orders=list(conf_data.get('orders', (47, 48))))
     d_spec.normalize_flux_per_order()
     
@@ -310,11 +312,12 @@ def pre_processing_spirou(conf, conf_data):
             )
 
     # Prepare the wavelength separation and average squared error arrays
-    d_spec.prepare_for_covariance(
-        prepare_err_eff=conf.cov_kwargs['prepare_for_covariance']
-        )
+    if conf.cov_mode == 'GP':
+        d_spec.prepare_for_covariance(
+            prepare_err_eff=conf.cov_kwargs['prepare_for_covariance']
+            )
 
-    d_spec.update_isfinite_mask()
+    d_spec.update_isfinite_mask(check_err=True)
     # Plot the pre-processed spectrum
     figs.fig_spec_to_fit(
         d_spec, prefix=conf.prefix, w_set=d_spec.w_set
@@ -324,25 +327,30 @@ def pre_processing_spirou(conf, conf_data):
     af.pickle_save(conf.prefix+f'data/d_spec_{d_spec.w_set}.pkl', d_spec)
 
     # --- Set up a pRT model --------------------------------------------
+    pRT_file = conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl'
+    if os.path.exists(pRT_file):
+        print(f' Already exists: {pRT_file}')
+        # pRT_atm = af.pickle_load(pRT_file)
+    else:
+        print(f' Creating: {pRT_file}')
+        # Create the Radtrans objects
+        pRT_atm = pRT_model(
+            line_species=conf.line_species, 
+            d_spec=d_spec, 
+            mode='lbl', 
+            lbl_opacity_sampling=conf_data['lbl_opacity_sampling'], 
+            cloud_species=None, 
+            # rayleigh_species=['H2', 'He'], 
+            # continuum_opacities=['H2-H2', 'H2-He'], 
+            rayleigh_species=conf.rayleigh_species,
+            continuum_opacities=conf.continuum_opacities,
+            log_P_range=conf_data.get('log_P_range'), 
+            n_atm_layers=conf_data.get('n_atm_layers'), 
+            rv_range=conf.free_params['rv'][0], 
+            )
 
-    # Create the Radtrans objects
-    pRT_atm = pRT_model(
-        line_species=conf.line_species, 
-        d_spec=d_spec, 
-        mode='lbl', 
-        lbl_opacity_sampling=conf_data['lbl_opacity_sampling'], 
-        cloud_species=None, 
-        # rayleigh_species=['H2', 'He'], 
-        # continuum_opacities=['H2-H2', 'H2-He'], 
-        rayleigh_species=conf.rayleigh_species,
-        continuum_opacities=conf.continuum_opacities,
-        log_P_range=conf_data.get('log_P_range'), 
-        n_atm_layers=conf_data.get('n_atm_layers'), 
-        rv_range=conf.free_params['rv'][0], 
-        )
-
-    # Save as pickle
-    af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
+        # Save as pickle
+        af.pickle_save(pRT_file, pRT_atm)
     
 def prior_check(conf, n=3, 
                 random=False, 
@@ -505,21 +513,32 @@ class Retrieval:
 
                     if not mask_ij.any():
                         continue
+                    
+                    if self.conf.cov_mode == 'GP':
+                        sep_ij = self.d_spec[w_set].separation[i,j]
+                        err_eff_ij = self.d_spec[w_set].err_eff[i,j]
+                    else:
+                        sep_ij = None
+                        err_eff_ij = None
 
                     self.Cov[w_set][i,j] = get_Covariance_class(
                         self.d_spec[w_set].err[i,j,mask_ij], 
                         self.Param.cov_mode, 
-                        separation=self.d_spec[w_set].separation[i,j], 
-                        err_eff=self.d_spec[w_set].err_eff[i,j], 
+                        separation=sep_ij, 
+                        err_eff=err_eff_ij,
                         # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
                         **self.conf.cov_kwargs
                         )
 
-            del self.d_spec[w_set].separation, 
-            del self.d_spec[w_set].err_eff, 
-            if hasattr(self.d_spec[w_set], 'flux_eff'):
-                del self.d_spec[w_set].flux_eff
-            del self.d_spec[w_set].err
+            delattrs = ['err', 'err_eff', 'flux_eff', 'separation']
+            for attr in delattrs:
+                if hasattr(self.d_spec[w_set], attr):
+                    delattr(self.d_spec[w_set], attr)
+            # del self.d_spec[w_set].separation, 
+            # del self.d_spec[w_set].err_eff, 
+            # if hasattr(self.d_spec[w_set], 'flux_eff'):
+            #     del self.d_spec[w_set].flux_eff
+            # del self.d_spec[w_set].err
 
             self.LogLike[w_set] = LogLikelihood(
                 self.d_spec[w_set], 

@@ -37,6 +37,7 @@ class Chemistry:
         'NH3':     ('NH3_coles_main_iso',      'H3N1',     14.0067 + 3*1.00784,        (0,0,3)), 
         'HCN':     ('HCN_main_iso',            'C1H1N1_1', 1.00784 + 12.011 + 14.0067, (1,0,1)), 
         'CN' :     ('CN_high',             'C1N1',     12.011 + 14.0067,           (1,0,0)),
+        '13CN':    ('CN_34_high',              None,       13.003355 + 14.0067,        (1,0,0)),
         # 'H2S':     ('H2S_ExoMol_main_iso',     'H2S1',     2*1.00784 + 32.065,         (0,0,2)), 
         'H2S':    ('H2S_Sid_main_iso',        'H2S1',     2*1.00784 + 32.065,         (0,0,2)),
         'FeH':     ('FeH_main_iso',            'Fe1H1',    55.845 + 1.00784,           (0,0,1)), 
@@ -128,6 +129,7 @@ class Chemistry:
         'Si': ('C25', r'Si'),
         #'He': ('C22', r'He'), 
         'CN': ('magenta', r'CN'),
+        '13CN': ('#ff71ce', r'$^{13}$CN'),
         'C2H2': ('#50FF45', r'C$_2$H$_2$'),
         # '13CH4': ('magenta', r'$^{13}$CH$_4$'),
         # ions

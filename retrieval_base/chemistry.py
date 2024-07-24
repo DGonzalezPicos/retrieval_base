@@ -306,6 +306,17 @@ class FreeChemistry(Chemistry):
                 if self.VMRs.get(species_i) is not None:
                     # Single value given: constant, vertical profile
                     VMR_i = self.VMRs[species_i] * np.ones(self.n_atm_layers)
+                    
+                    if species_i == '13CO' and self.VMRs.get(f'12CO_1') is not None:
+                        # 12CO is given with a altitude profile, normalized to middle layer
+                        VMR_i *= (self.VMRs['12CO'] / self.VMRs['12CO_1'])
+                    if species_i == 'C18O' and self.VMRs.get(f'12CO_1') is not None:
+                        # 12CO is given with a altitude profile
+                        VMR_i *= (self.VMRs['12CO'] / self.VMRs['12CO_1'])
+                    
+                    if species_i == 'H2O_181' and self.VMRs.get(f'H2O_1') is not None:
+                        # H2O is given with a altitude profile
+                        VMR_i *= (self.VMRs['H2O'] / self.VMRs['H2O_1'])                          
 
                 if self.VMRs.get(f'{species_i}_0') is not None:
                     # Multiple values given, use spline interpolation
@@ -323,14 +334,16 @@ class FreeChemistry(Chemistry):
                             )
                     
                     # Define the abundances at the knots
-                    VMR_knots = np.array([self.VMRs[f'{species_i}_{j}'] for j in range(3)])[::-1]
+                    # VMR_knots = np.array([self.VMRs[f'{species_i}_{j}'] for j in range(3)])[::-1]
+                    # passing keys from bottom to top (0, 1, 2) and inverting here to match the pressure (top to bottom)
+                    # VMR_knots = np.array([self.VMRs.get(f'{species_i}_{j}', None) for j in range(3)])[::-1]
+                    VMR_knots = [self.VMRs.get(f'{species_i}_{j}', None) for j in range(3)]
+                    if VMR_knots[-1] is None: # corresponding to log_VMR_2 in the free_params dictionary
+                        VMR_knots[-1] = VMR_knots[1] # constant VMR at the top
                     
-                    # Use a k-th order spline to vary the abundance profile
-                    # spl = make_interp_spline(log_P_knots, np.log10(VMR_knots), k=self.spline_order)
                     # linear interpolation
-                    
-                    # VMR_i = 10**spl(np.log10(self.pressure))
-                    VMR_i = 10.0**(np.interp(np.log10(self.pressure), log_P_knots, np.log10(VMR_knots)))
+                    VMR_i = 10.0**(np.interp(np.log10(self.pressure), log_P_knots, np.log10(np.array(VMR_knots)[::-1])))
+                     
 
                 self.VMRs[species_i] = VMR_i
 

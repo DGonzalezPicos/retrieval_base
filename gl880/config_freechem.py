@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_6'
+run = 'run_7'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -66,7 +66,7 @@ opacity_params = {
 
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
-    'log_13CN': ([(-14,-2), r'$\log\ \mathrm{^{13}CN}$'], 'CN_34_high'),
+    # 'log_13CN': ([(-14,-2), r'$\log\ \mathrm{^{13}CN}$'], 'CN_34_high'),
     # 'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     # 'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
@@ -87,7 +87,7 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
-    # 'log_g': [(3.0,5.5), r'$\log\ g$'], 
+    'log_g': [(3.0,6.0), r'$\log\ g$'], 
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
@@ -110,13 +110,21 @@ free_params = {
 }
 free_params.update({k:v[0] for k,v in opacity_params.items()})
 # replace keys with 3-knot profile
-opacity_profiles = ['H2O', 'OH']
+# opacity_profiles = ['H2O', 'OH']
+# WARNING: implemented only for n_knots = (2, 3)
+opacity_profiles = {'12CO': 2,
+                    'H2O': 3,
+                    'OH': 3,
+                }
 # replace log_H2O with 3-knot profile
-for op in opacity_profiles:
+for op in opacity_profiles.keys():
     free_params.pop(f'log_{op}')
-    free_params[f'log_{op}_0'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_0$']
-    free_params[f'log_{op}_1'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_1$']
-    free_params[f'log_{op}_2'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_2$']
+    
+    for i in range(opacity_profiles[op]):
+        free_params[f'log_{op}_{i}'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_{i}$']
+        
+    # free_params[f'log_{op}_1'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_1$']
+    # free_params[f'log_{op}_2'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_2$']
     free_params[f'log_P_{op}'] = [(-4.5,1.5), f'$\log\ P_\mathrm{{{op}}}_0$']
 
 # Constants to use if prior is not given
@@ -131,14 +139,14 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 15 # spline knots (continuum fitting)
+N_knots = 21 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
     # 'epsilon_limb': 0.5, 
-    'log_g': 4.72, # +- 0.12 (M15)
+    # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 
     # PT profile
@@ -159,7 +167,7 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
-mask_lines = {'Ni': (2299.0, 2299.4)}
+mask_lines = {'Ni': (2298.2, 2299.4)}
 
 ####################################################################################
 # Chemistry parameters
@@ -180,7 +188,7 @@ line_species =list(set([v[1] for _,v in opacity_params.items()]))
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO']
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'H2O_181']
 species_to_plot_CCF = []
 
 ####################################################################################

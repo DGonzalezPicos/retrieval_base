@@ -313,6 +313,8 @@ class FreeChemistry(Chemistry):
                     if species_i == 'C18O' and self.VMRs.get(f'12CO_1') is not None:
                         # 12CO is given with a altitude profile
                         VMR_i *= (self.VMRs['12CO'] / self.VMRs['12CO_1'])
+                    if species_i == 'C17O' and self.VMRs.get(f'12CO_1') is not None:
+                        VMR_i *= (self.VMRs['12CO'] / self.VMRs['12CO_1'])
                     
                     if species_i == 'H2O_181' and self.VMRs.get(f'H2O_1') is not None:
                         # H2O is given with a altitude profile

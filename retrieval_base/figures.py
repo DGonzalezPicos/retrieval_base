@@ -185,7 +185,7 @@ def fig_sigma_clip(d_spec, clip_mask, fig_name=None):
             f_clean  = np.where(~mask, d_spec.flux[i,j], np.nan) 
             ax[i].plot(d_spec.wave[i,j], f_clip, c='r', lw=lw)
             # if overplot_array is not None:
-            ax[i].plot(d_spec.wave[i,j], f_clean, c='k', lw=lw, alpha=0.9)
+            ax[i].plot(d_spec.wave[i,j], f_clean, c='k', lw=lw, alpha=0.4)
         
         xlim = (d_spec.wave[i,:].min()-0.5, d_spec.wave[i,:].max()+0.5)
         ax[i].set(xlim=xlim)

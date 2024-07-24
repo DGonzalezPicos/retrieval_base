@@ -24,8 +24,8 @@ config_data = {
         'lbl_opacity_sampling' : 5,
         'slit': 'spirou',
         # 'lbl_opacity_sampling' : None,
-        'sigma_clip': 3,
-        'sigma_clip_width': 21, 
+        'sigma_clip': 5,
+        'sigma_clip_width': 11, 
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),

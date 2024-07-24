@@ -21,7 +21,7 @@ config_data = {
         # 'wave_range': (2295, 2440), # 2 orders
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 6,
+        'lbl_opacity_sampling' : 5,
         'slit': 'spirou',
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
@@ -29,7 +29,7 @@ config_data = {
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 35, # FIXME: update to 50 at some point...
+        'n_atm_layers': 40, # FIXME: update to 50 at some point...
         
         'file_target':'data/spec.npy'
         }, 

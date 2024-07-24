@@ -167,7 +167,9 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
-mask_lines = {'Ni': (2298.2, 2299.4)}
+# mask_lines = {'Ni': (2298.2, 2299.4)}
+mask_lines = {} # FIXME: manage the Ni line and other missing opacity sources...
+
 
 ####################################################################################
 # Chemistry parameters

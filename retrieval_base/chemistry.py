@@ -114,7 +114,7 @@ class Chemistry:
         
         #'H2': ('C16', r'H$_2$'), 
         'HD': ('C17', r'HD'), 
-        'OH': ('C18', r'OH'),
+        'OH': ('#FF7B0D', r'OH'), # orange
 
         'K': ('C18', r'K'), 
         # 'Na': ('purple', r'Na'), 
@@ -307,18 +307,19 @@ class FreeChemistry(Chemistry):
                     # Single value given: constant, vertical profile
                     VMR_i = self.VMRs[species_i] * np.ones(self.n_atm_layers)
                     
-                    if species_i == '13CO' and self.VMRs.get(f'12CO_1') is not None:
-                        # 12CO is given with a altitude profile, normalized to middle layer
-                        VMR_i *= (self.VMRs['12CO'] / self.VMRs['12CO_1'])
-                    if species_i == 'C18O' and self.VMRs.get(f'12CO_1') is not None:
-                        # 12CO is given with a altitude profile
-                        VMR_i *= (self.VMRs['12CO'] / self.VMRs['12CO_1'])
-                    if species_i == 'C17O' and self.VMRs.get(f'12CO_1') is not None:
-                        VMR_i *= (self.VMRs['12CO'] / self.VMRs['12CO_1'])
+                    iso_profiles = {'13CO': '12CO',
+                                    'C18O': '12CO',
+                                    'C17O': '12CO',
+                                    'H2O_181': 'H2O'}
+                    # iso_profiles = {}
+                    if len(iso_profiles) > 0:
+                        for k, v in iso_profiles.items():
+                            if species_i == k and self.VMRs.get(v) is not None:
                     
-                    if species_i == 'H2O_181' and self.VMRs.get(f'H2O_1') is not None:
-                        # H2O is given with a altitude profile
-                        VMR_i *= (self.VMRs['H2O'] / self.VMRs['H2O_1'])                          
+                                VMR_i = (self.VMRs[v] / self.VMRs[v].max()) * self.VMRs[k]
+                                # check that is is smaller than 1.0
+                                assert (VMR_i <= 1.0).all(), f'VMR_{v} = {VMR_i} > 1.0'         
+                       
 
                 if self.VMRs.get(f'{species_i}_0') is not None:
                     # Multiple values given, use spline interpolation
@@ -364,7 +365,8 @@ class FreeChemistry(Chemistry):
         #     self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * 
             
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
-        
+        # assert self.mass_fractions['H2'].all() < 1, 'H2 mass fraction > 1'
+        # assert self.mass_fractions['He'].all() < 1, 'He mass fraction > 1'
     
         # self.mass_fractions['H-'] = 6e-9 # solar
         self.mass_fractions['H-'] = self.VMRs.get('H-', 6e-9)
@@ -376,9 +378,10 @@ class FreeChemistry(Chemistry):
         H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
         self.mass_fractions['H'] = H
 
-        if VMR_wo_H2.any() > 1:
+        if VMR_wo_H2.any() > 1: #or (self.mass_fractions['H2'] > 1).any():
             # Other species are too abundant
             self.mass_fractions = -np.inf
+            print(f' VMR_wo_H2 = {VMR_wo_H2} > 1 --> mass_fractions = -np.inf')
             return self.mass_fractions
 
         # Compute the mean molecular weight from all species

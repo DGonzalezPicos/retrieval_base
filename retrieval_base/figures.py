@@ -840,7 +840,8 @@ def fig_VMR(Chem,
             ylim=(np.max(pressure), np.min(pressure)),
             )
     if showlegend:
-        ax.legend()
+        ncol = len(species_to_plot)//2
+        ax.legend(ncol=ncol, loc=(0.00, 1.01+0.08*(ncol-3)), frameon=False)
     if (fig_name is not None):
         fig.savefig(fig_name)
         print(f'--> Saved {fig_name}')

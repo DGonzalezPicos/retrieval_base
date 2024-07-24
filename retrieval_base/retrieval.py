@@ -377,9 +377,9 @@ def prior_check(conf, n=3,
     # first evaluation the model at 'n' different parameter values
     if random:
         # random values between 0 and 1
-        theta = np.random.rand(n)
+        theta = [np.random.rand(len(ret.Param.param_keys)) for _ in range(n)]
     else:
-        theta = np.linspace(0, 1, n)
+        theta = np.linspace(0, 1, n) * np.ones(len(ret.Param.param_keys))
     m_spec_list = []
     logL_list = [] 
     # plot PT
@@ -388,14 +388,19 @@ def prior_check(conf, n=3,
     fig_chem, ax_chem = plt.subplots(1,1, figsize=(5,5))
     lss = ['-', '--', ':' , '-.', '-', '--', ':' , '-.']
     time_list = []
-    for i, theta_i in enumerate(theta):
+    for i in range(n):
         start = time.time()
 
-        ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
+        # ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
+        theta_i = theta[i]
+        ret.Param(theta_i)
         sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
         print(sample)
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
+        if ln_L == -np.inf:
+            print(f'ln_L = -inf\n')
+            continue
         # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
         print(f'ln_L = {ln_L:.4e}\n')
         end = time.time()
@@ -429,6 +434,7 @@ def prior_check(conf, n=3,
                         pressure=ret.PT.pressure,
                         showlegend=(i==0),
                         ls=lss[i],
+                        xlim=[1e-12, 1e0],
                         fig_name=str(fig_name).replace('.pdf', f'_VMR.pdf') if i==(len(theta)-1) else None)
 
     

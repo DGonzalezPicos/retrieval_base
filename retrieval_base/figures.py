@@ -815,6 +815,9 @@ def fig_VMR(Chem,
         color_i = Chem.read_species_info(species_i, info_key='color')
         label_i = Chem.read_species_info(species_i, info_key='label')
         line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
+        if line_species_i not in Chem.mass_fractions.keys():
+            print(f'No mass fraction for {species_i}')
+            continue
         vmr_i = Chem.mass_fractions[line_species_i] * (MMW / mass_i)
         # vmr_i = Chem.VMRs[line_species_i]
         if vmr_i is None:

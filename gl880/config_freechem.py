@@ -192,7 +192,7 @@ line_species =list(set([v[1] for _,v in opacity_params.items()]))
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'H2O_181']
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O']
 species_to_plot_CCF = []
 
 ####################################################################################

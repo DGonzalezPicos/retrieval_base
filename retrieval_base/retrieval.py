@@ -590,7 +590,7 @@ class Retrieval:
             # Spline decomposition
             self.N_knots = self.Param.params.get('N_knots', 1)
             if self.N_knots > 1:
-                print(f'Performing spline decomposition with {self.N_knots} knots...')
+                # print(f'Performing spline decomposition with {self.N_knots} knots...')
                 # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
                 self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
                 # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')

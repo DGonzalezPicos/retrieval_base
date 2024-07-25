@@ -294,7 +294,8 @@ class PT_profile_free_gradient(PT_profile):
         
         # clip negative values to zero
         self.dlnT_dlnP_array = interp_func(np.log10(self.pressure))[::-1]
-        self.dlnT_dlnP_array = np.clip(self.dlnT_dlnP_array, 0, None)
+        # DGP (2024-07-25): comment this out for Gl 880...
+        # self.dlnT_dlnP_array = np.clip(self.dlnT_dlnP_array, 0, None)
 
         # Compute the temperatures based on the gradient
         self.temperature = [params['T_0'], ]

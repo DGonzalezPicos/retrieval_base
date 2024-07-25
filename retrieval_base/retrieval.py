@@ -549,6 +549,7 @@ class Retrieval:
                         # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
                         **self.conf.cov_kwargs
                         )
+                    self.Cov[w_set][i,j].get_logdet()
 
             delattrs = ['err', 'err_eff', 'flux_eff', 'separation']
             for attr in delattrs:
@@ -721,19 +722,19 @@ class Retrieval:
             #     # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
             #     self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
             
+            if self.conf.cov_mode == 'GP':
+                for i in range(self.d_spec[w_set].n_orders):
+                    for j in range(self.d_spec[w_set].n_dets):
 
-            for i in range(self.d_spec[w_set].n_orders):
-                for j in range(self.d_spec[w_set].n_dets):
+                        if not self.d_spec[w_set].mask_isfinite[i,j].any():
+                            continue
 
-                    if not self.d_spec[w_set].mask_isfinite[i,j].any():
-                        continue
-
-                    # Update the covariance matrix
-                    self.Cov[w_set][i,j](
-                        self.Param.params, w_set, 
-                        order=i, det=j, 
-                        **self.conf.cov_kwargs, 
-                        )
+                        # Update the covariance matrix
+                        self.Cov[w_set][i,j](
+                            self.Param.params, w_set, 
+                            order=i, det=j, 
+                            **self.conf.cov_kwargs, 
+                            )
 
             self.m_spec[w_set].fit_radius = ('R_p' in self.Param.param_keys)
             # print(f'Fit radius: {self.m_spec[w_set].fit_radius}')

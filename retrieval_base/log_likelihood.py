@@ -27,6 +27,8 @@ class LogLikelihood:
         self.scale_err    = scale_err
         
         self.N_knots = N_spline_knots
+        if self.N_knots > 1:
+            self.spline = SplineModel(N_knots=self.N_knots, spline_degree=3)
         
     def __call__(self, m_spec, Cov, is_first_w_set=False, ln_L_penalty=0, evaluation=False):
         '''
@@ -83,65 +85,29 @@ class LogLikelihood:
                 # m_flux_ij = m_spec.flux[i,j,mask_ij]
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err
+                
+                # model matrix, at least shape (1, N_ij)
+                M_ij = self.spline(m_spec.flux[0,i,j,mask_ij]) if self.N_knots > 1 else m_spec.flux[:,i,j,mask_ij]
 
                 # res_ij = (d_flux_ij - m_flux_ij)
                 
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky()
-                # else:
-                #     # Covariance matrix is diagonal
-                #     Cov[i,j].make_matrix()
+                    Cov[i,j].get_logdet()
 
-
-                # Without linear scaling of detectors
-                # if self.scale_flux and not (i==self.reference_order and j==self.reference_det):
-                #     # Only scale the flux relative to the first order/detector
-
-                #     if self.N_knots <= 1:
-                #         # Scale the model flux to minimize the chi-squared error
-                #         m_flux_ij_scaled, phi_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij, Cov[i,j])
-                #     else:
-                #         # print(f'Spline decomposition {self.N_knots}.')
-                #         m_flux_ij_spline = SplineModel(N_knots=self.N_knots, spline_degree=3)(m_flux_ij)
-                #         phi = nnls(np.dot(m_flux_ij_spline, Cov[i,j].solve(m_flux_ij_spline.T)), np.dot(m_flux_ij_spline, Cov[i,j].solve(d_flux_ij)))[0]
-                #         # print(f' SPline coefficients {phi}')
-                #         # take the central point of the spline
-                #         phi_ij = 2 * phi[self.N_knots//2]
-                #         self.phi[i,j] = phi
-                #         m_flux_ij_scaled = phi @ m_flux_ij_spline
-                    
-                #     # Recalculate the residuals
-                #     res_ij = (d_flux_ij - m_flux_ij_scaled)
-
-                # else:
-                #     # Without linear scaling of detectors
-                #     phi_ij = 1
-                    
-                # model matrix, at least shape (1, N_ij)
-                M_ij = SplineModel(N_knots=self.N_knots, spline_degree=3)(m_spec.flux[0,i,j,mask_ij]) if self.N_knots > 1 else m_spec.flux[:,i,j,mask_ij]
-                if m_spec.N_veiling > 0:
-                    # add veiling model matrix along axis 0
-                    # print(f' Adding veiling model matrix to M_ij')
-                    M_ij = np.vstack([M_ij, m_spec.M_veiling[:,mask_ij]])
-                    
-                    
-                # print(f' M_ij shape {M_ij.shape}')
-                # check for NaNs
-                assert not np.isnan(M_ij).any(), f'NaNs in M_ij for order {i} and detector {j}'
-                assert not np.isnan(d_flux_ij).any(), f'NaNs in d_flux_ij for order {i} and detector {j}'
-                assert not np.isnan(d_err_ij).any(), f'NaNs in d_err_ij for order {i} and detector {j}'
-                # print(f' M_ij shape {M_ij.shape}')
-
-                # left-hand side and right-hand side of the linear system
-                if Cov[i,j].is_matrix:
                     LHS = np.dot(M_ij, Cov[i,j].solve(M_ij.T))
                     RHS = np.dot(M_ij, Cov[i,j].solve(d_flux_ij))
                 else:
-                    
                     inv_cov = np.diag(1/Cov[i,j].cov)
                     LHS = np.dot(M_ij, np.dot(inv_cov, M_ij.T))
                     RHS = np.dot(M_ij, np.dot(inv_cov, d_flux_ij))
+
+                # check for NaNs
+                # assert not np.isnan(M_ij).any(), f'NaNs in M_ij for order {i} and detector {j}'
+                # assert not np.isnan(d_flux_ij).any(), f'NaNs in d_flux_ij for order {i} and detector {j}'
+                # assert not np.isnan(d_err_ij).any(), f'NaNs in d_err_ij for order {i} and detector {j}'
+                # print(f' M_ij shape {M_ij.shape}')
                 try:
                     
                     phi_ij = nnls(LHS, RHS)[0] 
@@ -158,12 +124,6 @@ class LogLikelihood:
                 inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
                 chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
                 
-                # if self.scale_err:
-                #     # Scale the flux uncertainty that maximizes the log-likelihood
-                #     s2_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)
-                # else:
-                #     # No additional uncertainty scaling
-                #     s2_ij = 1
                 s2_ij = chi_squared_ij_scaled / N_ij
                 
 
@@ -173,7 +133,6 @@ class LogLikelihood:
                 # if not Cov[i,j].is_matrix:
                 #     Cov[i,j].add_data_err_scaling(np.sqrt(s2_ij))
                 # Get the log of the determinant (log prevents over/under-flow)
-                Cov[i,j].get_logdet()
                 
                 # Set up the log-likelihood for this order/detector
                 # Chi-squared and optimal uncertainty scaling terms still need to be added
@@ -188,29 +147,10 @@ class LogLikelihood:
                 self.chi_squared += np.nansum((res_ij/d_err_ij)**2)
 
                 # Store in the arrays
-                self.phi[i,j]    = phi_ij # linear amplitudes
-                self.s[i,j] = np.sqrt(s2_ij) # uncertainty scaling
+                self.phi[i,j]       = phi_ij # linear amplitudes
+                self.s[i,j]         = np.sqrt(s2_ij) # uncertainty scaling
                 self.m[i,j,mask_ij] = m_ij # full model spectrum
 
-                # if evaluation:
-                #     # Following Peter McGill's advice
-                #     g_k = 1/s2_ij * inv_cov_ij_res_ij
-                #     sigma_bar_kk = np.diag(
-                #         1/s2_ij * Cov[i,j].solve(np.eye(N_ij))
-                #         )
-
-                #     # Conditional mean and standard deviation
-                #     mu_tilde_k = d_flux_ij - g_k/sigma_bar_kk
-                #     sigma_tilde_k = 1/sigma_bar_kk
-
-                #     # Scale the ln L penalty by the number of good pixels
-                #     self.ln_L_per_pixel[i,j,mask_ij] += -(
-                #         1/2*np.log(2*np.pi*sigma_tilde_k) + \
-                #         1/2*(d_flux_ij - mu_tilde_k)**2/sigma_tilde_k
-                #         )
-
-                #     self.chi_squared_per_pixel[i,j,mask_ij] = \
-                #         (d_flux_ij - mu_tilde_k)**2/sigma_tilde_k
 
         # Reduced chi-squared
         self.chi_squared_red = self.chi_squared / self.n_dof

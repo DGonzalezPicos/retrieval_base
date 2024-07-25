@@ -1452,6 +1452,11 @@ def fig_free_parameter(ret, free_parameter,
     d_spec = ret.d_spec[w_set]
     n_orders = d_spec.n_orders
     
+    if len(fixed_parameters) == 0:
+        # fixed_parameters = {k:0.5 for k in ret.Param.param
+        bestfit_params, _ = ret.PMN_analyze()
+        fixed_parameters = dict(zip(ret.Param.param_keys, bestfit_params))
+    
     for key_i in list(fixed_parameters.keys()):
         if key_i.startswith('log_'):
             linear_key = key_i.replace('log_', '')
@@ -1482,19 +1487,22 @@ def fig_free_parameter(ret, free_parameter,
     ret.CB.active = True # to compute the emission contribution function
     for i, theta_i in enumerate(free_parameter_range):        
         
-        ret.Param.params.update(fixed_parameters)
-        ret.Param.params.update({free_parameter: theta_i})
-        if free_parameter.startswith('log_'):
-            linear_key = free_parameter.replace('log_', '')
-            ret.Param.params.update({linear_key: 10**theta_i})
+        # ret.Param.params.update(fixed_parameters)
+        # ret.Param.params.update({free_parameter: theta_i})
+        # if free_parameter.startswith('log_'):
+        #     linear_key = free_parameter.replace('log_', '')
+        #     ret.Param.params.update({linear_key: 10**theta_i})
             
-        ret.Param.read_PT_params()
-        ret.Param.read_uncertainty_params()
-        ret.Param.read_chemistry_params()
-        ret.Param.read_cloud_params()
+        # ret.Param.read_PT_params()
+        # ret.Param.read_uncertainty_params()
+        # ret.Param.read_chemistry_params()
+        # ret.Param.read_cloud_params()
         
-        new_samples = {k:ret.Param.params[k] for k in ret.Param.param_keys}
-        print(new_samples)
+        # new_samples = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+        # print(new_samples)
+        params_copy = fixed_parameters.copy()
+        params_copy[free_parameter] = theta_i
+        ret.evaluate_model(list(params_copy.values()))
         ln_L = ret.PMN_lnL_func()
         print(f'ln(L) = {ln_L:.2e}\n')
         # chi2 = ret.LogLike[w_set].chi_squared_red
@@ -1506,7 +1514,7 @@ def fig_free_parameter(ret, free_parameter,
             # ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
             # ret.PT.plot
             ax_PT.plot(ret.PT.temperature, ret.PT.pressure, color=colors[i], alpha=0.85)
-            if free_parameter.startswith('dlnT_dlnP'):
+            if free_parameter.startswith('dlnT_dlnP') and not free_parameter.endswith('RCE'):
                 print(f' Adding hline for {free_parameter}')
                 knot_id = int(free_parameter[-1])
                 ax_PT.axhline(ret.PT.P_knots[::-1][knot_id], color='magenta', alpha=0.50, ls='-')
@@ -1535,14 +1543,15 @@ def fig_free_parameter(ret, free_parameter,
                 x = d_spec.wave[order, det]
                 
                 label = f'ln(L)={ln_L:.3e}' if (order+det) == 0 else None
-                if hasattr(ret.LogLike[w_set], 'phi'):
-                    m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
-                    m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
+                # if hasattr(ret.LogLike[w_set], 'phi'):
+                #     m_flux_spline = SplineModel(N_knots=ret.LogLike[w_set].N_knots, spline_degree=3)(ret.m_spec[w_set].flux[order, det])
+                #     m_flux = ret.LogLike[w_set].phi[order, det] @ m_flux_spline
                     
-                else:
-                    phi = ret.LogLike[w_set].phi[order, det]
-                    m_flux = ret.m_spec[w_set].flux[order, det] * phi
+                # else:
+                #     phi = ret.LogLike[w_set].phi[order, det]
+                #     m_flux = ret.m_spec[w_set].flux[order, det] * phi
                     
+                m_flux = ret.LogLike[w_set].m[order,det]
                 ax_spec[order].plot(x, m_flux, color=colors[i], alpha=0.85, label=label)
                 
                 if i == 0:

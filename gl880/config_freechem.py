@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_8'
+run = 'run_9'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -29,7 +29,7 @@ config_data = {
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, # FIXME: update to 50 at some point...
+        'n_atm_layers': 50, # FIXME: update to 50 at some point...
         
         'file_target':'data/spec.npy'
         }, 
@@ -43,10 +43,10 @@ opacity_params = {
     'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
     'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
-    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
+    # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
     
     'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
-    'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
+    # 'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso'), # DGP (2024-07-16): accidentally removed 
     # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
@@ -56,7 +56,7 @@ opacity_params = {
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
     'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
-    'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
+    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
     # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
@@ -88,7 +88,7 @@ free_params = {
 
     # General properties
     # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
-    'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
+    # 'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
     'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
@@ -98,9 +98,9 @@ free_params = {
 
    'T_0': [(4e3,16e3), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
-    'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
-    # 'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
-    # 'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
+    # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
+    'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
+    'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
     'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
     'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
     'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
@@ -148,7 +148,7 @@ constant_params = {
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
     # 'epsilon_limb': 0.5, 
-    # 'log_g': 4.72, # +- 0.12 (M15)
+    'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 
     # PT profile

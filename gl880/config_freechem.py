@@ -1,32 +1,37 @@
 import numpy as np
 import os
 
-file_params = 'config_jwst.py'
+file_params = 'config_freechem.py'
 
 ####################################################################################
 # Files and physical parameters
 ####################################################################################
 
-# run = 'ck_K_2'
-run = 'lbl10_KM_3'
+run = 'run_8'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
-    'NIRSpec': {
+    'spirou': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
-        'w_set': 'NIRSpec',
+        'w_set': 'spirou',
         # 'wave_range': (1650, 3200), # g235h-f170lp
-        'wave_range': (1650, 5300), 
+        
+        # 'orders': (30,31,32,45,46,47,48), # J+K band
+        'orders': (46,47,48), # K band
+        # 'wave_range': (2295, 2440), # 2 orders
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 10,
+        'lbl_opacity_sampling' : 5,
+        'slit': 'spirou',
         # 'lbl_opacity_sampling' : None,
-        'sigma_clip': 3,
-        'sigma_clip_width': 31, 
-        'Nedge': 20,
+        'sigma_clip': 5,
+        'sigma_clip_width': 11, 
+        'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, 
+        'n_atm_layers': 40, # FIXME: update to 50 at some point...
+        
+        'file_target':'data/spec.npy'
         }, 
     }
 
@@ -35,19 +40,16 @@ config_data = {
 # Model parameters
 ####################################################################################
 opacity_params = {
-    'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
-    'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
+    'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
+    'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
     'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
     
-    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso'), # DGP (2024-07-16): accidentally removed 
-    'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
-    
-    'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
-    'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
+    # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
@@ -56,25 +58,22 @@ opacity_params = {
     'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
     'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
-    'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
+    # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
-    'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
+    # 'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
-    # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
-    'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
-    'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
-    'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
-    # 'log_ScH': ([(-14,-2), r'$\log\ \mathrm{ScH}$'], 'ScH_main_iso'), # DGP (2024-07-16): try
 
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
+    'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
+    # 'log_13CN': ([(-14,-2), r'$\log\ \mathrm{^{13}CN}$'], 'CN_34_high'),
     # 'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
-    'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
-    'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
-    'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
+    # 'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
+    # 'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    # 'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
@@ -88,51 +87,51 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # General properties
-    # R = 0.29 [R_sun]
-    # convert to jupiter radii
-    # R = 0.29 * 9.73116 = 2.82 [R_jup]
-    # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(1.5, 4.0), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-    # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-    'log_g': [(2.0,5.0), r'$\log\ g$'], 
-    # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
+    # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
+    'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
+    'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
-    # veiling parameters
-    # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
-    # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
-    # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
-    # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
-    # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities
-    # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
-    'rv': [(-40.,40.), r'$v_\mathrm{rad}$'],
+    'vsini': [(1,30), r'$v\ \sin\ i$'], 
+    'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
-   'T_0': [(2000,8000), r'$T_0$'], 
+   'T_0': [(4e3,16e3), r'$T_0$'], 
     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
-    # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
-    'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
-    'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.34), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_0':   [(0.04, 0.34), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_1':   [(0.04, 0.34), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_2':   [(0.04, 0.34), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.34), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.34), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
-
-    # 'f_slope': [(-0.1, 0.1), r'$f_\mathrm{slope}$'],
-    # 'res_G235': [(1500, 4000), r'$\mathrm{R}_{G235}$'], # instrumental spectral resolution
-    # 'res_G395': [(1500, 5000), r'$\mathrm{R}_{G395}$'], # instrumental spectral resolution
-    # 'res_M': [(1500, 5000), r'$\mathrm{R}_M$'], # instrumental spectral resolution    
+    'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
+    # 'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
+    # 'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
+    'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_2':   [(0.04, 0.42), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
+    'dlnT_dlnP_4':   [(-0.04, 0.32), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(-0.04, 0.32), r'$\nabla_{T,5}$'], # new points
 }
 free_params.update({k:v[0] for k,v in opacity_params.items()})
+# replace keys with 3-knot profile
+# opacity_profiles = ['H2O', 'OH']
+# WARNING: implemented only for n_knots = (2, 3)
+opacity_profiles = {
+                    # '12CO': 2,
+                    'H2O': 3,
+                    'OH': 3,
+                }
+# replace log_H2O with 3-knot profile
+for op in opacity_profiles.keys():
+    free_params.pop(f'log_{op}')
+    
+    for i in range(opacity_profiles[op]):
+        free_params[f'log_{op}_{i}'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}[{i}]$']
+        
+    # free_params[f'log_{op}_1'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_1$']
+    # free_params[f'log_{op}_2'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_2$']
+    free_params[f'log_P_{op}'] = [(-4.5,1.5), f'$\log\ P_\mathrm{{{op}}}$']
 
 # Constants to use if prior is not given
 # distance in pc to parallax
-parallax_mas = 16.46 # Gaia DR3
+parallax_mas = 16.88 # Gaia DR3
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 
 # dlnT_dlnP = [free_params[key] for key in free_params.keys() if 'dlnT_dlnP' in key]
@@ -142,40 +141,26 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 5 # spline knots (continuum fitting)
+N_knots = 21 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
-    'parallax': parallax_mas, 
-    'epsilon_limb': 0.5, 
-    # 'log_g': 3.5,
-    'vsini':0.,
+    # 'parallax': parallax_mas, 
+    # 'epsilon_limb': 0.5, 
+    # 'log_g': 4.72, # +- 0.12 (M15)
+    # 'vsini':1.,
 
     # PT profile
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
     # 'log_P_knots': log_P_knots,
     'N_knots': N_knots, # avoid using spline to fit the continuum
-    # 'res_G235': 2800, # instrumental spectral resolution
-    # 'res_G395': 3000, # instrumental spectral resolution
-    # 'fit_radius': True,
-    'gratings':[
-                'g235h', 
-                'g235h',
-                'g235h',
-                'g235h',
-                
-                'g395h',
-                'g395h',
-                'g395h',
-                'g395h',
-                ], 
 }
 
 ####################################################################################
 #
 ####################################################################################
-scale_flux = False
+scale_flux = True
 scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
 scale_err  = True
 apply_high_pass_filter = False
@@ -184,7 +169,9 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
-mask_lines = {} 
+# mask_lines = {'Ni': (2298.2, 2299.4)}
+mask_lines = {} # FIXME: manage the Ni line and other missing opacity sources...
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
 
 ####################################################################################
 # Chemistry parameters
@@ -198,12 +185,15 @@ chem_kwargs = dict()
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
-line_species =[v[1] for _,v in opacity_params.items()]
+line_species =list(set([v[1] for _,v in opacity_params.items()]))
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
 # line_species.append('H2_main_iso') # TODO: this?
 
-species_to_plot_VMR , species_to_plot_CCF = [], []
+# species_to_plot_VMR , species_to_plot_CCF = [], []
+# species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'H2O_181']
+species_to_plot_CCF = []
 
 ####################################################################################
 # Covariance parameters
@@ -232,7 +222,7 @@ if free_params.get('log_l') is not None:
 
 PT_kwargs = dict(
     conv_adiabat = True, 
-
+    
     ln_L_penalty_order = 3, 
     PT_interp_mode = PT_interp_mode, 
 
@@ -250,7 +240,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 evidence_tolerance = 0.5
 n_live_points = 200
-n_iter_before_update = n_live_points * 2
+n_iter_before_update = n_live_points * 3
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

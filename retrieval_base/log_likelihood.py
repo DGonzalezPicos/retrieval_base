@@ -229,9 +229,15 @@ class LogLikelihood:
         '''Solution to the linear system of equations M^T * cov^-1 * M * f = M^T * cov^-1 * d
         using scipy.nnls. This is a non-negative least-squares solver.
         '''
-        lhs = np.dot(M, Cov.solve(M.T))
-        # Right-hand side
-        rhs = np.dot(M, Cov.solve(data))
+        if Cov.is_matrix:
+            lhs = np.dot(M, Cov.solve(M.T))
+            # Right-hand side
+            rhs = np.dot(M, Cov.solve(data))
+        else:
+            inv_cov = np.diag(1/Cov.cov)
+            lhs = np.dot(M, np.dot(inv_cov, M.T))
+            # Right-hand side
+            rhs = np.dot(M, np.dot(inv_cov, data))
         # Solve
         f, _ = nnls(lhs, rhs)
         return f

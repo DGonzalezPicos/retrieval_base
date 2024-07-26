@@ -566,7 +566,7 @@ class Retrieval:
             
         if self.Param.PT_mode == 'SPHINX':
             from retrieval_base.sphinx import SPHINX
-            sp = SPHINX(path='/home/dario/phd/retrieval_base/SPHINX/')
+            sp = SPHINX(path=af.get_path()+'SPHINX')
 
             sp.load_PT_grid(species=conf.chem_kwargs['species'])
             assert np.allclose(sp.pressure, self.pRT_atm[w_set].pressure), 'Pressure grids do not match'

@@ -180,7 +180,7 @@ constant_params = {
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
     # 'epsilon_limb': 0.5, 
-    'log_g': 4.72, # +- 0.12 (M15)
+    # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 
     # PT profile

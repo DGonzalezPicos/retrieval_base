@@ -646,7 +646,7 @@ class SPHINXChemistry(Chemistry):
         [setattr(self, attr, params.get(attr)) for attr in grid_attrs]
         
         self.VMRs = {}
-    for s in self.sphinx_species:
+        for s in self.sphinx_species:
             self.VMRs[s] = self.vmr_interpolator[s]([self.Teff, self.logg, self.Z, self.C_O])[0]
             # print(f' VMR_{s} = {self.VMRs[s]}')
             # assert len(self.VMRs[s]) == 40, f' VMR_{s} has wrong length: {len(self.VMRs[s])}'

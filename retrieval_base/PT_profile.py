@@ -646,4 +646,5 @@ class PT_profile_SPHINX(PT_profile):
         # Teff, logg, Z, C_O must be keys of `params` dictionary
         assert 'Teff' in params.keys(), 'Teff is required for SPHINX PT profile'
         self.temperature = self.temp_interpolator([params['Teff'], params['logg'], params['Z'], params['C_O']])[0]
+        assert len(self.temperature) == len(self.pressure), 'SPHINX temperature profile must have the same length as the pressure profile'
         return self.temperature

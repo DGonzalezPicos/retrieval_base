@@ -584,14 +584,26 @@ class CallBack:
         plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05, wspace=0, hspace=0)
 
         return fig, ax
+    
+    def plot_PT(ax=None, **kwargs):
+        
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(7, 7))
+            
+        ax.plot()
+        
 
     def fig_summary(self):
 
         fig, ax = self.fig_corner()
 
         n_w_set = len(self.d_spec)
-        l, b, w, h = [0.4,0.70,0.57,0.25]
-
+        
+        # --> fig = corner.corner()
+        l, b, w, h = [0.4,0.70,0.57,0.25] # left, bottom, width, height
+        # --> ax_PT = fig.add_axes([l,b,w,h])
+        # --> plot_PT(ax=ax_PT)
+        
         ax_spec, ax_res = [], []        
         #ax_res_dims, ax_spec_dims = [], []
         for i, w_set in enumerate(list(self.d_spec.keys())):

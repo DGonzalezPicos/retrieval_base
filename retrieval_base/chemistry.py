@@ -644,8 +644,14 @@ class SPHINXChemistry(Chemistry):
         
         assert all([params.get(attr) is not None for attr in grid_attrs]), 'Missing grid attributes'
         [setattr(self, attr, params.get(attr)) for attr in grid_attrs]
-        VMRs_values = self.vmr_interpolator([self.Teff, self.logg, self.Z, self.C_O])[0] # shape (n_layers, n_species)
-        self.VMRs = dict(zip(self.sphinx_species, VMRs_values.T))
+        
+        self.VMRs = {}
+    for s in self.sphinx_species:
+            self.VMRs[s] = self.vmr_interpolator[s]([self.Teff, self.logg, self.Z, self.C_O])[0]
+            # print(f' VMR_{s} = {self.VMRs[s]}')
+            # assert len(self.VMRs[s]) == 40, f' VMR_{s} has wrong length: {len(self.VMRs[s])}'
+        # VMRs_values = self.vmr_interpolator([self.Teff, self.logg, self.Z, self.C_O]) # shape (n_layers, n_species)
+        # self.VMRs = dict(zip(self.sphinx_species, VMRs_values.T))
         self.VMRs = {self.replace_keys.get(k, k):v for k,v in self.VMRs.items()}
         
         # Total VMR without H2, starting with He

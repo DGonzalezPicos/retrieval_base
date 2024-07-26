@@ -568,9 +568,10 @@ class Retrieval:
             from retrieval_base.sphinx import SPHINX
             sp = SPHINX(path=af.get_path()+'SPHINX')
 
-            sp.load_PT_grid(species=conf.chem_kwargs['species'])
-            assert np.allclose(sp.pressure, self.pRT_atm[w_set].pressure), 'Pressure grids do not match'
-            
+            # sp.load_PT_grid(species=conf.chem_kwargs['species'])
+            sp.load_interpolator(species=conf.chem_kwargs['species'])
+            assert np.allclose(sp.pressure_full, self.pRT_atm[w_set].pressure), 'Pressure grids do not match'
+        
             self.conf.PT_kwargs['temp_interpolator'] = sp.temp_interpolator
         if self.Param.chem_mode == 'SPHINX':
             self.conf.chem_kwargs['vmr_interpolator'] = sp.vmr_interpolator
@@ -682,6 +683,15 @@ class Retrieval:
         
         # check nans in temperature or mass fractions
         assert np.sum(np.isnan(temperature)) == 0, 'NaNs in temperature'
+        if np.sum(np.isnan(temperature)) > 0:
+            print(f'NaNs in temperature (n={np.sum(np.isnan(temperature))})')
+            # ax = plt.gca()
+            # ax.plot(temperature, self.PT.pressure, 'k-', lw=1)
+            # ax.set(yscale='log', ylabel='Pressure / bar', xlabel='Temperature / K', ylim=(self.PT.pressure.max(), self.PT.pressure.min()))
+            # plt.show()
+            
+            
+            
         for key, value in mass_fractions.items():
             assert np.sum(np.isnan(value)) == 0, f'NaNs in mass fractions ({key})'
             

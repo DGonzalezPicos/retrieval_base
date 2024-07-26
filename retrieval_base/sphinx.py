@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pathlib
-from scipy.interpolate import RegularGridInterpolator
+from scipy.interpolate import RegularGridInterpolator, Akima1DInterpolator, NearestNDInterpolator, LinearNDInterpolator
 
 ## species
 # ['H2H2', 'H2He', 'HMFF', 'HMBF', 'H2O', 'CO', 'CO2', 'CH4', 'NH3', 
@@ -19,6 +19,7 @@ class SPHINX:
     C_O_bounds = (0.3, 0.9, 0.2)
     
     grid_attrs = ['Teff', 'logg', 'Z', 'C_O']
+    n_species = 0 # default
     
     pressure_full = np.logspace(-5., 2., 40) # WARNING: manually fixed...
     
@@ -26,7 +27,7 @@ class SPHINX:
     def __init__(self, Teff=2300, logg=4.0, Z=0.0, C_O=0.5, path=None):
         
         self.__in_grid(Teff, logg, Z, C_O)
-        self.__set_attrs(Teff, logg, Z, C_O)
+        self.set_attrs(Teff, logg, Z, C_O)
         
         self.path = self.path if path is None else pathlib.Path(path) # path should point to dir with (ATMS, ABUNDANCES)
         
@@ -34,7 +35,7 @@ class SPHINX:
         self.file = self.get_file(kind='atms')
         assert self.file.exists(), f'File {self.file} does not exist'
         
-    def __set_attrs(self, Teff, logg, Z, C_O):
+    def set_attrs(self, Teff, logg, Z, C_O):
         self.Teff = Teff
         self.logg = logg
         idx = 1 if (self.logg % 1) == 0 else 2
@@ -55,7 +56,7 @@ class SPHINX:
         return True
         
         
-    def get_file(self, kind='atms'):
+    def get_file(self, kind='atms', update=False):
         
         folder = {'atms': 'ATMS', 'mixing_ratios': 'ABUNDANCES'}
         assert kind in folder.keys(), f'kind must be in {folder.keys()}'
@@ -63,6 +64,9 @@ class SPHINX:
         file_stem = f'Teff_{self.Teff:.1f}_logg_{self.logg}_logZ_{self.sign}{self.Z}_CtoO_{self.C_O:.1f}_{kind}'
         file = self.path / folder[kind] / f'{file_stem}.txt'
         assert file.exists(), f'File {file} does not exist'
+        if update:
+            self.file = file
+            return self
         return file
         
     def load_PT(self):
@@ -192,7 +196,130 @@ class SPHINX:
             
         return self
     
-    def load_PT_grid(self, species={}):
+    def check_grid(self):
+        self.__init_grid()
+        all_nans = []
+        for i, Teff in enumerate(self.Teff_grid):
+            for j, logg in enumerate(self.logg_grid):
+                for k, Z in enumerate(self.Z_grid):
+                    for l, C_O in enumerate(self.C_O_grid):
+                        self.set_attrs(Teff, logg, Z, C_O)
+                        self.file = self.get_file(kind='atms')
+                        assert self.file.exists(), f'File {self.file} does not exist'
+                        self.load_PT()
+                        nans = np.isnan(self.temperature)
+                        if np.all(nans):
+                            all_nans.append((Teff, logg, Z, C_O))
+                        # self.file = self.get_file(kind='mixing_ratios')
+                        # assert self.file.exists(), f'File {self.file} does not exist'
+        
+        if len(all_nans) > 0:
+            print(f'All Nans in {len(all_nans)} files')
+            print(all_nans)
+        return all_nans
+    
+    def fix_grid(self, all_nans=[]):
+        '''given list of all_nans file, create grid ignoring these and interpolate over them'''
+        
+        Teff_grid_nonans, logg_grid_nonans, Z_grid_nonans, C_O_grid_nonans = [], [], [], []
+        temperature_grid_nonans = []
+        for i, Teff in enumerate(self.Teff_grid):
+            for j, logg in enumerate(self.logg_grid):
+                for k, Z in enumerate(self.Z_grid):
+                    for l, C_O in enumerate(self.C_O_grid):
+                        if (Teff, logg, Z, C_O) in all_nans:
+                            continue
+                        Teff_grid_nonans.append(Teff)
+                        logg_grid_nonans.append(logg)
+                        Z_grid_nonans.append(Z)
+                        C_O_grid_nonans.append(C_O)
+                        self.set_attrs(Teff, logg, Z, C_O)
+                        self.file = self.get_file(kind='atms')
+                        self.load_PT()
+                        temperature_grid_nonans.append(self.interp_makima(self.pressure_full, self.pressure, self.temperature, smooth_nans=True))
+                        
+        # temperature_grid_nonans 
+        # create interpolator for non-rectilinear grid
+        interpolator = NearestNDInterpolator((Teff_grid_nonans, logg_grid_nonans, Z_grid_nonans, C_O_grid_nonans), temperature_grid_nonans)
+        return self
+    
+    @classmethod
+    def get_attrs(cls, f):
+        Teff = float(f.name.split('_')[1])
+        logg = float(f.name.split('_')[3])
+        Z_sign = f.name.split('_')[5][0]
+        Z_abs = float(f.name.split('_')[5][1:])
+        Z = Z_abs * (-1)**(Z_sign == '-')
+        
+        C_O = float(f.name.split('_')[7])
+        return Teff, logg, Z, C_O
+        
+    def load_interpolator(self, species=[]):
+        # load all files in grid
+        files = sorted((self.path / 'ATMS').glob('*atms.txt'))
+        assert len(list(files)) > 0, 'No files found'
+        self.n_species = len(species)  
+        
+        # create interpolator for 4D grid 
+        points = []
+        temps = []
+        # create empty dict for species with empty lists
+        vmrs = {k:v for k, v in zip(species, [[] for _ in range(len(species))])}
+        for f in files:
+            Teff, logg, Z, C_O = self.get_attrs(f)
+            # TODO:
+            # check_bounds = self.check_bounds({'Teff': (value, min, max),
+            #                                   'logg': (value, min, max),
+            # ...})
+            # if not check_bounds:
+            #     continue
+            print(f'Checking {f.name:90}', end='\r')
+            self.set_attrs(Teff=Teff, logg=logg, Z=Z, C_O=C_O)
+            self.get_file(kind='atms', update=True)
+            self.load_PT()
+            nans = np.isnan(self.temperature)
+            if np.all(nans):
+                print(f'[SPHINX.load_interpolator] All nans for {f.name}')
+                continue
+            
+            if self.n_species > 0:
+                self.load_abundances(species=species)
+                nans_ab = np.array([np.isnan(ab_i).all() for ab_i in self.abundances])
+                
+                if np.any(nans_ab):
+                    print(f'[SPHINX.load_interpolator] ANY nans for {f.name} abundances')
+                    continue
+                # vmr = np.array([self.interp_makima(self.pressure_full, self.pressure_ab, ab_i) for ab_i in self.abundances])
+                for i, s in enumerate(species):
+                    vmrs[s].append(self.interp_makima(self.pressure_full, self.pressure_ab, self.abundances[i]))
+                
+            
+            points.append((Teff, logg, Z, C_O))
+            temps.append(self.interp_makima(self.pressure_full, self.pressure, self.temperature, smooth_nans=True))
+            
+        self.pressure = self.pressure_full
+        print(f'[SPHINX.load_interpolator] Loaded {len(points)} files')
+        print(f'[SPHINX.load_interpolator] Preparing temperature interpolator')
+        points = np.array(points)
+        temps = np.array(temps)
+        self.temp_interpolator = LinearNDInterpolator(points, temps, fill_value=np.nan)
+        
+        if self.n_species > 0:
+            print(f'[SPHINX.load_interpolator] Preparing VMRs interpolator')
+            # vmrs = np.array(vmrs)
+            self.vmr_interpolator = {}
+            for i, s in enumerate(species):
+                print(f'[SPHINX.load_interpolator] Preparing VMRs interpolator for {s}')
+                
+                # print(f' --> shape of vmrs: {np.array(vmrs[s]).shape}')
+                self.vmr_interpolator[s] = LinearNDInterpolator(points, np.array(vmrs[s]), fill_value=np.nan)
+                
+        del self.abundances
+        del self.temperature
+        
+        return self
+    
+    def load_PT_grid_old(self, species={}):
         
         # load all files in grid
         files = sorted((self.path / 'ATMS').glob('*atms.txt'))
@@ -205,7 +332,7 @@ class SPHINX:
             for j, logg in enumerate(self.logg_grid):
                 for k, Z in enumerate(self.Z_grid):
                     for l, C_O in enumerate(self.C_O_grid):
-                        self.__set_attrs(Teff, logg, Z, C_O)
+                        self.set_attrs(Teff, logg, Z, C_O)
                         self.file = self.get_file(kind='atms')
                         self.load_PT()
                         if self.n_species > 0:
@@ -213,7 +340,24 @@ class SPHINX:
                             self.vmr_grid[i, j, k, l,...] = np.array([np.interp(self.pressure_full, self.pressure_ab, ab_i) for ab_i in self.abundances]).T
                         
                         if len(self.pressure) != len(self.pressure_full):
-                            self.temperature = np.interp(self.pressure_full, self.pressure, self.temperature)
+                            # self.temperature = np.interp(self.pressure_full, self.pressure, self.temperature)
+                            nans = np.isnan(self.temperature)
+                            # assert not np.all(nans), f'ALL Nans in temperature: {np.sum(nans)} for Teff: {Teff}, logg: {logg}, Z: {Z}, C_O: {C_O}'
+                            if np.any(nans):
+                                print(f' --> Before interpolation: Nans in temperature: {np.sum(nans)}')
+                            if np.all(nans):
+                                print(f' WARNING: ALL Nans in temperature: {np.sum(nans)} for Teff: {Teff}, logg: {logg}, Z: {Z}, C_O: {C_O}')
+                            # print shapes
+                            # print(f'Pressure: {self.pressure.shape}, Pressure_full: {self.pressure_full.shape}')
+                            # print(f'Temperature: {self.temperature.shape}')
+                            self.temperature = self.interp_makima(self.pressure_full, self.pressure, self.temperature)
+                            nans = np.isnan(self.temperature)
+                            if np.any(nans):
+                                print(f'After interpolation: Nans in temperature: {np.sum(nans)}')
+                                print(f'Teff: {Teff}, logg: {logg}, Z: {Z}, C_O: {C_O}')
+                                # print(f'Pressure: {self.pressure}')
+                                # print(f'Temperature: {self.temperature}')
+                                # break
                         self.temperature_grid[i, j, k, l, :] = self.temperature
                             
         # interpolator
@@ -232,13 +376,27 @@ class SPHINX:
         [delattr(self, attr+'_grid') for attr in delattrs]
             
         return self
+    
+    @classmethod
+    def interp_makima(self, new_x, x, y, smooth_nans=True):
+        nans = np.isnan(y)
+        new_y = Akima1DInterpolator(x[~nans], y[~nans], method='makima')(new_x)
+        if smooth_nans:
+            new_y = self.smooth_nans(new_y)
+        return new_y
+        
+    @classmethod
+    def smooth_nans(cls, x):
+        nans = np.isnan(x)
+        x[nans] = np.interp(np.flatnonzero(nans), np.flatnonzero(~nans), x[~nans])
+        return x
         
         
     
     def interpolate_PT(self, Teff, logg, Z, C_O):
         
         self.__in_grid(Teff, logg, Z, C_O)
-        self.__set_attrs(Teff, logg, Z, C_O)
+        self.set_attrs(Teff, logg, Z, C_O)
         assert hasattr(self, 'temp_interpolator'), 'Load PT grid first'
         
         return self.temp_interpolator([Teff, logg, Z, C_O])[0]
@@ -247,14 +405,14 @@ class SPHINX:
     def interpolate_vmr(self, Teff, logg, Z, C_O):
         
         self.__in_grid(Teff, logg, Z, C_O)
-        self.__set_attrs(Teff, logg, Z, C_O)
+        self.set_attrs(Teff, logg, Z, C_O)
         assert hasattr(self, 'vmr_interpolator'), 'Load PT grid first'
         
         return self.vmr_interpolator([Teff, logg, Z, C_O])[0]
     
     def interpolate(self, Teff, logg, Z, C_O):
         self.__in_grid(Teff, logg, Z, C_O)
-        self.__set_attrs(Teff, logg, Z, C_O)
+        self.set_attrs(Teff, logg, Z, C_O)
         assert hasattr(self, 'temp_interpolator'), 'Load PT grid first'
         assert hasattr(self, 'vmr_interpolator'), 'Load PT grid first'
         return self.temp_interpolator([Teff, logg, Z, C_O])[0], self.vmr_interpolator([Teff, logg, Z, C_O])[0]

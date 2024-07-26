@@ -555,12 +555,7 @@ class Retrieval:
             for attr in delattrs:
                 if hasattr(self.d_spec[w_set], attr):
                     delattr(self.d_spec[w_set], attr)
-            # del self.d_spec[w_set].separation, 
-            # del self.d_spec[w_set].err_eff, 
-            # if hasattr(self.d_spec[w_set], 'flux_eff'):
-            #     del self.d_spec[w_set].flux_eff
-            # del self.d_spec[w_set].err
-
+        
             self.LogLike[w_set] = LogLikelihood(
                 self.d_spec[w_set], 
                 n_params=self.Param.n_params, 
@@ -568,7 +563,21 @@ class Retrieval:
                 scale_err=self.conf.scale_err, 
                 N_spline_knots=getattr(self.conf, 'N_knots', 1),
                 )
+            
+        if self.Param.PT_mode == 'SPHINX':
+            from retrieval_base.sphinx import SPHINX
+            sp = SPHINX(path='/home/dario/phd/retrieval_base/SPHINX/')
 
+            sp.load_PT_grid(species=conf.chem_kwargs['species'])
+            assert np.allclose(sp.pressure, self.pRT_atm[w_set].pressure), 'Pressure grids do not match'
+            
+            self.conf.PT_kwargs['temp_interpolator'] = sp.temp_interpolator
+        if self.Param.chem_mode == 'SPHINX':
+            self.conf.chem_kwargs['vmr_interpolator'] = sp.vmr_interpolator
+            # self.conf.chem_kwargs['sphinx_species'] = sp.species
+            
+        del sp
+            
         self.PT = get_PT_profile_class(
             self.pRT_atm[w_set].pressure, 
             self.Param.PT_mode, 
@@ -660,6 +669,8 @@ class Retrieval:
             mass_fractions = self.Chem(self.Param.VMR_species, self.Param.params)
         elif self.Param.chem_mode in ['eqchem', 'fastchem', 'SONORAchem']:
             mass_fractions = self.Chem(self.Param.params, temperature)
+        elif self.Param.chem_mode == 'SPHINX':
+            mass_fractions = self.Chem(self.Param.params)
 
         if not isinstance(mass_fractions, dict):
             # Non-H2 abundances added up to > 1

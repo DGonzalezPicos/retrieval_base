@@ -22,6 +22,9 @@ def get_PT_profile_class(pressure, mode, **kwargs):
     
     if mode == 'RCE':
         return PT_profile_RCE(pressure, **kwargs)
+    
+    if mode == 'SPHINX':
+        return PT_profile_SPHINX(pressure, **kwargs)
 
 class PT_profile():
 
@@ -626,3 +629,21 @@ class PT_profile_RCE(PT_profile):
         ax.set(yscale='log', xlabel='dlnT/dlnP', ylabel='Pressure [bar]')
 
         return ax
+    
+class PT_profile_SPHINX(PT_profile):
+
+    def __init__(self, pressure, **kwargs):
+
+        # Give arguments to the parent class
+        super().__init__(pressure)
+        
+        self.temp_interpolator = kwargs['temp_interpolator']
+        assert self.temp_interpolator is not None, 'temp_interpolator is required for SPHINX PT profile'
+
+    def __call__(self, params):
+
+        # Retrieve the temperature profile from the SPHINX model
+        # Teff, logg, Z, C_O must be keys of `params` dictionary
+        assert 'Teff' in params.keys(), 'Teff is required for SPHINX PT profile'
+
+        return self.temp_interpolator([params['Teff'], params['logg'], params['Z'], params['C_O']])[0]

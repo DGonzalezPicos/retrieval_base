@@ -55,14 +55,14 @@ class Parameters:
 
         # Check the used PT profile
         self.PT_mode = PT_mode
-        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere', 'RCE'])
+        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere', 'RCE', 'SPHINX'])
 
         self.n_T_knots = n_T_knots
         self.enforce_PT_corr = enforce_PT_corr
 
         # Check the used chemistry type
         self.chem_mode = chem_mode
-        assert(self.chem_mode in ['eqchem', 'free', 'fastchem', 'SONORAchem'])
+        assert(self.chem_mode in ['eqchem', 'free', 'fastchem', 'SONORAchem', 'SPHINX'])
         
         # Check the used cloud type
         self.cloud_mode = cloud_mode
@@ -130,6 +130,8 @@ class Parameters:
             
             else:
                 # Sample within the boundaries
+                print(f' [Parameters.__call__]: key_i = {key_i}')
+                
                 low, high = self.param_priors[key_i]
                 cube[i] = low + (high-low)*cube[i]
 
@@ -138,8 +140,8 @@ class Parameters:
             if key_i.startswith('log_'):
                 self.params = self.log_to_linear(self.params, key_i)
 
-            if key_i.startswith('invgamma_'):
-                self.params[key_i.replace('invgamma_', '')] = self.params[key_i]
+            # if key_i.startswith('invgamma_'):
+            #     self.params[key_i.replace('invgamma_', '')] = self.params[key_i]
 
             if key_i.startswith('gaussian_'):
                 self.params[key_i.replace('gaussian_', '')] = self.params[key_i]
@@ -160,8 +162,10 @@ class Parameters:
         if self.params.get('temperature') is not None:
             return cube
 
-        if self.PT_mode == 'grid':
+        if self.PT_mode in ['grid', 'SPHINX']:
+            self.params['logg'] = self.params['log_g'] # alias
             return cube
+        
 
 
         if self.PT_mode in ['free', 'free_gradient', 'Molliere']:
@@ -304,7 +308,7 @@ class Parameters:
 
     def read_chemistry_params(self):
 
-        if self.chem_mode in ['eqchem', 'fastchem', 'SONORAchem']:
+        if self.chem_mode in ['eqchem', 'fastchem', 'SONORAchem', 'SPHINX']:
             # Use chemical equilibrium
             self.VMR_species = None
 
@@ -344,6 +348,14 @@ class Parameters:
                     self.VMR_species[species_i] = self.params['18O/16O_ratio'] * self.params['H2O']
                 if species_i == 'H2O_171' and ('log_17O/16O_ratio' in self.param_keys):
                     self.VMR_species[species_i] = self.params['17O/16O_ratio'] * self.params['H2O']
+                    
+        # elif self.chem_mode == 'SPHINX':
+            
+        #     isotopologues = {'12CO': ['13CO', 'C18O', 'C17O'], 
+        #                      'H2O': ['H2O_181', 'H2O_171']}
+        #     for main, iso in isotopologues.items():
+        #         line_species_i = self.Chem.sp
+        #         line_species_i = self.read_species_info(species_i, 'pRT_name')
         
     def read_cloud_params(self, pressure=None, temperature=None):
 

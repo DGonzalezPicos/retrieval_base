@@ -14,6 +14,8 @@ def get_Chemistry_class(line_species, pressure, mode, **kwargs):
         return FastChemistry(line_species, pressure, **kwargs)
     if mode == 'SONORAchem':
         return SONORAChemistry(line_species, pressure, **kwargs)
+    if mode == 'SPHINX':
+        return SPHINXChemistry(line_species, pressure, **kwargs)
 
 class Chemistry:
 
@@ -57,7 +59,9 @@ class Chemistry:
         'SiO':    ('SiO_SiOUVenIR_main_iso',  'O1Si1',    28.085 + 15.999,            (0,1,0)),
         'CO2':     ('CO2_main_iso',            'C1O2',     12.011 + 2*15.999,          (1,2,0)),
     
-        'HF':      ('HF_main_iso',             'F1H1',     1.00784 + 18.998403,        (0,0,1)), 
+        # 'HF':      ('HF_main_iso',             'F1H1',     1.00784 + 18.998403,        (0,0,1)), 
+        'HF':      ('HF_high',             'F1H1',     1.00784 + 18.998403,        (0,0,1)), 
+
         'HCl':     ('HCl_main_iso',            'Cl1H1',    1.00784 + 35.453,           (0,0,1)), 
         'C2H2':  ('C2H2_main_iso',           'C2H2',     2*12.011 + 2*1.00784,       (2,0,2)),
         
@@ -79,6 +83,8 @@ class Chemistry:
         'CaII':   ('Ca+',                    'CaII',     40.078,                     (0,0,0)),
         'FeII':   ('Fe+',                    'FeII',     55.845,                     (0,0,0)),
         }
+    
+    pRT_name_dict = {v[0]: k for k, v in species_info.items()}
 
     species_plot_info = {
         # '12CO': ('green', r'$^{12}$CO'), 
@@ -601,6 +607,112 @@ class EqChemistry(Chemistry):
         # Remove certain species
         self.remove_species()
 
+        return self.mass_fractions
+    
+class SPHINXChemistry(Chemistry):
+    
+    
+    isotopologues_dict = {'12CO': ['13CO', 'C18O', 'C17O'], 
+                    'H2O': ['H2O_181', 'H2O_171']}
+    # reverse dictionary so every value is a key
+    isotopologues_dict_rev = {value: key for key, values in isotopologues_dict.items() for value in values}
+    isotopologues = list(isotopologues_dict_rev.keys())
+    
+    def __init__(self, line_species, pressure, **kwargs):
+
+        # Give arguments to the parent class
+        super().__init__(line_species, pressure)
+        
+        assert kwargs.get('vmr_interpolator') is not None, 'No VMR interpolator given'
+        self.vmr_interpolator = kwargs.get('vmr_interpolator')
+        
+        self.sphinx_species = kwargs.get('species')
+        # replace keys
+        self.replace_keys = {"CO": "12CO",
+                            #  'H2H2': 'H2',
+                            # 'H2He': 'He',
+                            # 'HMFF': 'H-',
+                                }
+        # TODO: review H- and e- mixing ratios... take them from HMFF and H2H2?
+
+    def __call__(self, params):
+
+        # Update the parameters
+        grid_attrs = ['Teff', 'logg', 'Z', 'C_O']
+        
+        assert all([params.get(attr) is not None for attr in grid_attrs]), 'Missing grid attributes'
+        [setattr(self, attr, params.get(attr)) for attr in grid_attrs]
+        VMRs_values = self.vmr_interpolator([self.Teff, self.logg, self.Z, self.C_O])[0] # shape (n_layers, n_species)
+        self.VMRs = dict(zip(self.sphinx_species, VMRs_values.T))
+        self.VMRs = {self.replace_keys.get(k, k):v for k,v in self.VMRs.items()}
+        
+        # Total VMR without H2, starting with He
+        VMR_He = 0.15
+        VMR_wo_H2 = 0 + VMR_He
+
+        # Create a dictionary for all used species
+        self.mass_fractions = {}
+
+        # C, O, H = 0, 0, 0
+
+        # for species_i in self.species_info.keys():
+        for line_species_i in self.line_species:
+            # line_species_i = self.read_species_info(species_i, 'pRT_name')
+            species_i = self.pRT_name_dict.get(line_species_i, None)
+            if species_i is None:
+                continue
+            
+            mass_i = self.read_species_info(species_i, 'mass')
+            COH_i  = self.read_species_info(species_i, 'COH')
+
+            if species_i in ['H2', 'He']:
+                continue
+
+            # Convert VMR to mass fraction using molecular mass number
+            
+            if species_i in self.isotopologues:
+                main = self.isotopologues_dict_rev[species_i]
+                ratio = params.get(f'{main}/{species_i}') # in VMR
+                assert ratio is not None, f'No ratio {main}/{species_i} given'
+                self.mass_fractions[line_species_i] = mass_i * (self.VMRs[main] / ratio)
+            if species_i in params.keys():
+                self.mass_fractions[line_species_i] = mass_i * params[species_i] * np.ones(self.n_atm_layers)
+            else:   
+                self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
+            
+            VMR_wo_H2 += self.VMRs[species_i]
+
+
+        # Add the H2 and He abundances
+        self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He
+        self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
+    
+        # self.mass_fractions['H-'] = 6e-9 # solar
+        self.mass_fractions['H-'] = self.VMRs.get('H-', 6e-9)
+        # self.mass_fractions['e-'] = 1e-10# solar
+        self.mass_fractions['e-'] = 1e-10 * (self.mass_fractions['H-'] / 6e-9)
+        
+    
+        # Add to the H-bearing species
+        H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
+        self.mass_fractions['H'] = H
+
+        if VMR_wo_H2.any() > 1: #or (self.mass_fractions['H2'] > 1).any():
+            # Other species are too abundant
+            self.mass_fractions = -np.inf
+            print(f' VMR_wo_H2 = {VMR_wo_H2} > 1 --> mass_fractions = -np.inf')
+            return self.mass_fractions
+
+        # Compute the mean molecular weight from all species
+        MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
+        print(f' MMW = {MMW}')
+
+        # Turn the molecular masses into mass fractions
+        for line_species_i in self.mass_fractions.keys():
+            self.mass_fractions[line_species_i] /= MMW
+
+        # pRT requires MMW in mass fractions dictionary
+        self.mass_fractions['MMW'] = MMW
         return self.mass_fractions
     
     

@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'run_9'
+run = 'sphinx_1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -29,7 +29,7 @@ config_data = {
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 50, # FIXME: update to 50 at some point...
+        'n_atm_layers': 40, # FIXME: update to 50 at some point... WARNING: 40 for SPHINX
         
         'file_target':'data/spec.npy'
         }, 
@@ -48,7 +48,7 @@ opacity_params = {
     'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     # 'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
-    'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso'), # DGP (2024-07-16): accidentally removed 
+    'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'), # DGP (2024-07-16): accidentally removed 
     # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
@@ -86,6 +86,13 @@ free_params = {
     # 'log_l': [(-2,0.3), r'$\log\ l$'], 
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
+    # SPHINX
+    'Teff': [(2900, 4000), r'$T_\mathrm{eff}$'],
+    'log_g': [(4.0,5.5), r'$\log\ g$'],
+    'Z': [(-0.5, 0.5), 'Z'],
+    'C_O': [(0.3, 0.9), 'C/O'],
+    
+    
     # General properties
     # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
     # 'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
@@ -96,27 +103,51 @@ free_params = {
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
-   'T_0': [(4e3,16e3), r'$T_0$'], 
-    'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
-    # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
-    'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
-    'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_2':   [(0.04, 0.42), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(-0.04, 0.32), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(-0.04, 0.32), r'$\nabla_{T,5}$'], # new points
+#    'T_0': [(4e3,16e3), r'$T_0$'], 
+#     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
+#     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
+#     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
+#     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
+#     'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
+#     'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
+#     'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
+#     'dlnT_dlnP_2':   [(0.04, 0.42), r'$\nabla_{T,2}$'],
+#     'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
+#     'dlnT_dlnP_4':   [(-0.04, 0.32), r'$\nabla_{T,4}$'],
+#     'dlnT_dlnP_5':   [(-0.04, 0.32), r'$\nabla_{T,5}$'], # new points
 }
-free_params.update({k:v[0] for k,v in opacity_params.items()})
+# free_params.update({k:v[0] for k,v in opacity_params.items()})
+SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3', 
+                  'HCN', 'C2H2', 'TiO', 'VO', 'SiO', 'FeH', 'CaH',
+                  'MgH', 'CrH', 'AlH', 'TiH', 'Na', 'K', 'Fe', 'Mg',
+                  'Ca', 'C', 'Si', 'Ti', 'O', 'FeII', 'MgII', 'TiII', 'CaII', 'CII', 
+                  'N2', 'AlO', 'SH', 'OH', 'NO', 'SO2']
+
+isotopologues_dict = {'13CO': ['log_12CO/13CO', (1., 3.)],
+                      'C18O': ['log_12CO/C18O', (1.5, 4.)],
+                        'C17O': ['log_12CO/C17O', (1.5, 4.)]}
+
+
+                      
+for log_k, v in opacity_params.items():
+    k = log_k[4:]
+    if k in SPHINX_species:
+        pass
+    if k in isotopologues_dict.keys():
+        # add isotope ratio as free parameter
+        free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]
+    else:
+        free_params[log_k] = v[0]
+        
+
+print(f' --> {free_params} free parameters')
 # replace keys with 3-knot profile
 # opacity_profiles = ['H2O', 'OH']
 # WARNING: implemented only for n_knots = (2, 3)
 opacity_profiles = {
                     # '12CO': 2,
-                    'H2O': 3,
-                    'OH': 3,
+                    # 'H2O': 3,
+                    # 'OH': 3,
                 }
 # replace log_H2O with 3-knot profile
 for op in opacity_profiles.keys():
@@ -139,7 +170,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 # N_PT_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)
 # assert len(dlnT_dlnP) == N_PT_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 PT_interp_mode = 'linear'
-PT_mode = 'RCE'
+PT_mode = 'SPHINX'
 
 N_knots = 21 # spline knots (continuum fitting)
 
@@ -178,9 +209,31 @@ mask_lines = {'telluric_red': (2493.0, 2500.0)}
 ####################################################################################
 
 #chem_mode  = 'free'
-chem_mode  = 'free'
+chem_mode  = 'SPHINX'
+if chem_mode == 'SPHINX':
+    assert PT_mode == 'SPHINX', 'SPHINX mode requires SPHINX PT mode'
+    assert config_data['spirou']['n_atm_layers'] == 40, 'SPHINX mode requires 40 atm layers'
 
-chem_kwargs = dict()
+chem_kwargs = dict(species=[
+            # 'H2H2',
+            # 'H2He',
+            # 'HMFF',
+            'H2O', 
+              'CO', 
+            #   'TiO', 'VO',
+            #   'SiO', 
+            #   'FeH', 
+            #   'CaH', 'MgH', 
+              'Na', 
+            #   'K', 
+              'Fe', 
+              'Mg',
+              'Ca',
+            #   'Si', 
+              'Ti',
+            #   'AlO',
+            #   'SH',
+              'OH'])
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']

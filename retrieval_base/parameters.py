@@ -130,8 +130,8 @@ class Parameters:
             
             else:
                 # Sample within the boundaries
-                print(f' [Parameters.__call__]: key_i = {key_i}')
-                
+                # print(f' [Parameters.__call__]: key_i = {key_i}')
+                # print(f' [Parameters.__call__]: self.param_priors[key_i] = {self.param_priors[key_i]}')
                 low, high = self.param_priors[key_i]
                 cube[i] = low + (high-low)*cube[i]
 

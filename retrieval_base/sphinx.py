@@ -3,18 +3,13 @@ import matplotlib.pyplot as plt
 import pathlib
 from scipy.interpolate import RegularGridInterpolator
 
-import seaborn as sns
-colors = sns.color_palette('tab20', 20)
-# shuffle colors
-# define random seed
-# np.random.seed(981)
-# colors = np.random.permutation(colors)
-# set color cycle from sns
-plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
-
+## species
+# ['H2H2', 'H2He', 'HMFF', 'HMBF', 'H2O', 'CO', 'CO2', 'CH4', 'NH3', 
+# 'H2S', 'PH3', 'HCN', 'C2H2', 'TiO', 'VO', 'SiO',
+# 'FeH', 'CaH', 'MgH', 'CrH', 'AlH', 'TiH', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'C', 'Si', 'Ti', 'O',
+# 'FeII', 'MgII', 'TiII', 'CaII', 'CII', 'N2', 'AlO', 'SH', 'OH', 'NO', 'SO2']
 class SPHINX:
-    
-    
+
     path = pathlib.Path(__file__).parent.absolute()
     
     # grid range
@@ -109,6 +104,7 @@ class SPHINX:
         self.pressure_ab = data[0, :]
         self.abundances = data[1:, :]
         self.species = self.species[1:] # ignore "Pressure", first element
+        self.all_species = header[1:]
         return self
     
     def plot_abundances(self, ax=None, min_abundance=1e-6, show_temperature=True,
@@ -147,7 +143,6 @@ class SPHINX:
             ls_last = axi.lines[-1].get_linestyle() if len(axi.lines) > 0 else '-'
             ls = '--' if ls_last == '-' else '-'
             axi.plot(ab, self.pressure_ab, label=f'{self.species[i+1]}', lw=3., alpha=0.9,
-                        # color=colors[i%20], 
                      ls=ls)
             
         ax[0].legend(ncol=5, fontsize=12, loc=(0.0, 1.08), frameon=False)
@@ -276,8 +271,9 @@ if __name__ == '__main__':
     logg = 4.5
     colors = plt.cm.inferno(np.linspace(0, 1, len(Teff_range)))
     for i, Teff in enumerate(Teff_range):
-        sphinx = SPHINX(Teff=Teff, logg=logg, Z=0.0, C_O=0.5)
+        sphinx = SPHINX(Teff=Teff, logg=logg, Z=0.0, C_O=0.5, path='SPHINX')
         sphinx.load_PT()
+        sphinx.load_abundances()
         sphinx.plot_PT(ax=ax[0], color=colors[i], lw=lw)
         sphinx.plot_gradient(ax=ax[1], color=colors[i], lw=lw)
         

@@ -585,7 +585,7 @@ def fig_PT(PT,
             print(' - Could not plot Sonora PT profile')
 
     # if hasattr(PT, "dlnT_dlnP_envelopes") and ax_grad is not None:
-    if ax_grad is not None:
+    if ax_grad is not None and hasattr(PT, "dlnT_dlnP_array"):
         if hasattr(PT, "dlnT_dlnP_envelopes"):
             for i in range(3):
                 ax_grad.fill_betweenx(
@@ -843,7 +843,7 @@ def fig_VMR(Chem,
             ylim=(np.max(pressure), np.min(pressure)),
             )
     if showlegend:
-        ncol = len(species_to_plot)//2
+        ncol = 1 + len(species_to_plot)//2
         ax.legend(ncol=ncol, loc=(0.00, 1.01+0.08*(ncol-3)), frameon=False)
     if (fig_name is not None):
         fig.savefig(fig_name)

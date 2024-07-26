@@ -23,7 +23,8 @@ class Chemistry:
     # (pRT_name, pyfc_name, mass, number of (C,O,H) atoms
     species_info = {
         # '12CO':    ('CO_main_iso',             'C1O1',     12.011 + 15.999,            (1,1,0)), 
-       '12CO':    ('CO_high',                 'C1O1',     12.011 + 15.999,            (1,1,0)), 
+    #    '12CO':    ('CO_high',                 'C1O1',     12.011 + 15.999,            (1,1,0)), 
+        '12CO':    ('CO_high_Sam',                 'C1O1',     12.011 + 15.999,            (1,1,0)), 
         # '13CO':    ('CO_36',                   None,       13.003355 + 15.999,         (1,1,0)), 
        '13CO':    ('CO_36_high',              None,       13.003355 + 15.999,         (1,1,0)), 
         'C18O':    ('CO_28',                   None,       12.011 + 17.9991610,        (1,1,0)), 
@@ -628,7 +629,8 @@ class SPHINXChemistry(Chemistry):
         
         self.sphinx_species = kwargs.get('species')
         # replace keys
-        self.replace_keys = {"CO": "12CO",
+        self.replace_keys = {
+                            "CO": "12CO",
                             #  'H2H2': 'H2',
                             # 'H2He': 'He',
                             # 'HMFF': 'H-',
@@ -653,12 +655,13 @@ class SPHINXChemistry(Chemistry):
         # Create a dictionary for all used species
         self.mass_fractions = {}
 
-        # C, O, H = 0, 0, 0
+        C, O, H = 0, 0, 0
 
         # for species_i in self.species_info.keys():
         for line_species_i in self.line_species:
             # line_species_i = self.read_species_info(species_i, 'pRT_name')
             species_i = self.pRT_name_dict.get(line_species_i, None)
+            # print(f' species_i = {species_i} ({line_species_i})')
             if species_i is None:
                 continue
             
@@ -669,26 +672,31 @@ class SPHINXChemistry(Chemistry):
                 continue
 
             # Convert VMR to mass fraction using molecular mass number
-            
+            # print(f' {line_species_i} ({species_i})')
+            # print(f' self.isotopologues = {self.isotopologues}')
             if species_i in self.isotopologues:
                 main = self.isotopologues_dict_rev[species_i]
                 ratio = params.get(f'{main}/{species_i}') # in VMR
                 assert ratio is not None, f'No ratio {main}/{species_i} given'
-                self.mass_fractions[line_species_i] = mass_i * (self.VMRs[main] / ratio)
+                self.VMRs[species_i] = self.VMRs[main] / ratio
+                # self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i]
+            # elif species_i in params.keys():
             if species_i in params.keys():
-                self.mass_fractions[line_species_i] = mass_i * params[species_i] * np.ones(self.n_atm_layers)
-            else:   
-                self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
+                # self.mass_fractions[line_species_i] = mass_i * params[species_i] * np.ones(self.n_atm_layers)
+                self.VMRs[species_i] = params[species_i] * np.ones(self.n_atm_layers)
+            # else:   
+            #     self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
             
+            self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
             VMR_wo_H2 += self.VMRs[species_i]
 
 
         # Add the H2 and He abundances
-        self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He
+        self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He * np.ones(self.n_atm_layers)
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
     
         # self.mass_fractions['H-'] = 6e-9 # solar
-        self.mass_fractions['H-'] = self.VMRs.get('H-', 6e-9)
+        self.mass_fractions['H-'] = self.VMRs.get('H-', 6e-9) * np.ones(self.n_atm_layers)
         # self.mass_fractions['e-'] = 1e-10# solar
         self.mass_fractions['e-'] = 1e-10 * (self.mass_fractions['H-'] / 6e-9)
         
@@ -704,8 +712,9 @@ class SPHINXChemistry(Chemistry):
             return self.mass_fractions
 
         # Compute the mean molecular weight from all species
+        # assert 'CO_high_Sam' in self.mass_fractions.keys(), 'CO_high_Sam not found'
         MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
-        print(f' MMW = {MMW}')
+        # print(f' MMW = {MMW}')
 
         # Turn the molecular masses into mass fractions
         for line_species_i in self.mass_fractions.keys():

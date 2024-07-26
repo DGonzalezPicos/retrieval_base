@@ -645,5 +645,5 @@ class PT_profile_SPHINX(PT_profile):
         # Retrieve the temperature profile from the SPHINX model
         # Teff, logg, Z, C_O must be keys of `params` dictionary
         assert 'Teff' in params.keys(), 'Teff is required for SPHINX PT profile'
-
-        return self.temp_interpolator([params['Teff'], params['logg'], params['Z'], params['C_O']])[0]
+        self.temperature = self.temp_interpolator([params['Teff'], params['logg'], params['Z'], params['C_O']])[0]
+        return self.temperature

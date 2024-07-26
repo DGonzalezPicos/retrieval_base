@@ -40,7 +40,7 @@ config_data = {
 # Model parameters
 ####################################################################################
 opacity_params = {
-    'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
+    'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
     'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
     # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
@@ -123,9 +123,10 @@ SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3',
                   'Ca', 'C', 'Si', 'Ti', 'O', 'FeII', 'MgII', 'TiII', 'CaII', 'CII', 
                   'N2', 'AlO', 'SH', 'OH', 'NO', 'SO2']
 
-isotopologues_dict = {'13CO': ['log_12CO/13CO', (1., 3.)],
-                      'C18O': ['log_12CO/C18O', (1.5, 4.)],
-                        'C17O': ['log_12CO/C17O', (1.5, 4.)]}
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1., 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
+                      'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{^{12}CO/^{18}CO}$']],
+                        'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{^{12}CO/^{17}CO}$']],
+}
 
 
                       
@@ -133,7 +134,7 @@ for log_k, v in opacity_params.items():
     k = log_k[4:]
     if k in SPHINX_species:
         pass
-    if k in isotopologues_dict.keys():
+    elif k in isotopologues_dict.keys():
         # add isotope ratio as free parameter
         free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]
     else:

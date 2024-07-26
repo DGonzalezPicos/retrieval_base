@@ -433,7 +433,7 @@ def prior_check(conf, n=3,
                         species_to_plot=conf.species_to_plot_VMR,
                         pressure=ret.PT.pressure,
                         showlegend=(i==0),
-                        ls=lss[i],
+                        ls=lss[i % len(lss)],
                         xlim=[1e-12, 1e0],
                         fig_name=str(fig_name).replace('.pdf', f'_VMR.pdf') if i==(len(theta)-1) else None)
 
@@ -679,6 +679,12 @@ class Retrieval:
         if self.CB.return_PT_mf:
             # Return temperatures and mass fractions during evaluation
             return (temperature, mass_fractions)
+        
+        # check nans in temperature or mass fractions
+        assert np.sum(np.isnan(temperature)) == 0, 'NaNs in temperature'
+        for key, value in mass_fractions.items():
+            assert np.sum(np.isnan(value)) == 0, f'NaNs in mass fractions ({key})'
+            
 
         self.m_spec = {}
         ln_L = ln_L_penalty

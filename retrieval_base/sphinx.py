@@ -218,10 +218,10 @@ class SPHINX:
                             
         # interpolator
         self.temp_interpolator = RegularGridInterpolator((self.Teff_grid, self.logg_grid, self.Z_grid, self.C_O_grid),
-                                                    self.temperature_grid, method='linear', bounds_error=True, fill_value=np.nan) 
+                                                    self.temperature_grid, method='linear', bounds_error=True, fill_value=None) 
         if self.n_species > 0:
             self.vmr_interpolator = RegularGridInterpolator((self.Teff_grid, self.logg_grid, self.Z_grid, self.C_O_grid),
-                                                    self.vmr_grid, method='linear', bounds_error=True, fill_value=np.nan)
+                                                    self.vmr_grid, method='linear', bounds_error=True, fill_value=None)
         self.pressure = self.pressure_full
         delattrs = self.grid_attrs + ['temperature']
         if self.n_species > 0:

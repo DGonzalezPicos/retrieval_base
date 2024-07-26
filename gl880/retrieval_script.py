@@ -40,7 +40,7 @@ if __name__ == '__main__':
         #     )
         # ret.prior_check()
         prior_check(conf,
-                    n=4,
+                    n=12,
                     random=True,
                     w_set='spirou',
                     fig_name=conf.prefix + 'plots/prior_check.pdf',

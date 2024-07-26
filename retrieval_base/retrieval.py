@@ -698,6 +698,10 @@ class Retrieval:
                 get_contr=self.evaluation,
                 get_full_spectrum=self.evaluation, 
                 )
+            if np.sum(np.isnan(self.m_spec[w_set].flux)) > 0:
+                print(f'NaNs in model spectrum (n={np.sum(np.isnan(self.m_spec[w_set].flux))})')
+                return -np.inf
+                
             
             # Add veiling to the model spectrum (NEW, 2024-05-27)
             # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum before adding veiling'

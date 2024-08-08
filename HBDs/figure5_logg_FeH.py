@@ -99,6 +99,11 @@ for i, (target, retrieval_id) in enumerate(targets.items()):
     # FeH = get_FeH(chem)
     # FeH = get_CH(chem)
     FeH = chem.FeH_posterior
+    # get quantiles and print best-fit values with 1-sigma uncertainties
+    FeH_q = np.quantile(FeH, [0.16, 0.5, 0.84])
+    # type in latex
+    print(f'{target}: [C/H] = {FeH_q[1]:.2f}^{{+{FeH_q[2]-FeH_q[1]:.2f}}}_{{-{FeH_q[1]-FeH_q[0]:.2f}}}')
+    
     print(f'Posterior shape = {posterior.shape}')
     samples = np.array([logg, FeH]).T
 
@@ -172,7 +177,7 @@ leg = fig.legend(handles=handles, labels=labels, loc=(0.57, 0.6),
                  frameon=False, prop={'weight':'bold', 'size': 16},
                  )
 plt.show()
-save= True
+save= False
 if save:
     fig.savefig(out_path / f'fig5_logg_FeH.pdf', bbox_inches='tight', dpi=300)
     plt.close()

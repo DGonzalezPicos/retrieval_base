@@ -34,3 +34,10 @@ data/companion_data
 *.pdf
 *.Vega
 HBDs/test.py
+SPHINX/
+SED_runs/
+*pkl
+profile_*
+MANIFEST*
+TWA28/jwst/curve_data.csv
+TWA28/lbl_test/bestfit.json

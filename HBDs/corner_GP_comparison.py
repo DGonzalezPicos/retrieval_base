@@ -140,7 +140,6 @@ for r, run in enumerate(runs):
         
         
     # add new titles
-    
     for j, title in enumerate(titles):
         if title == '':
             continue
@@ -148,12 +147,13 @@ for r, run in enumerate(runs):
         # first only the name of the parameter
         s = title.split('=')
         # fig.axes[j].text(0.5, 1.30, title, fontsize=22,
-        if r == 0:
+        if r == 0: # first run, add parameter name
             fig.axes[j].text(0.5, 1.55, s[0], fontsize=fs,
                             ha='center', va='bottom',
                             transform=fig.axes[j].transAxes,
                             color='k',
                             weight='normal')
+        # add parameter value with custom color and spacing
         fig.axes[j].text(0.5, 1.55-(0.25*(r+1)), s[1], fontsize=fs,
                         ha='center', va='bottom',
                         transform=fig.axes[j].transAxes,

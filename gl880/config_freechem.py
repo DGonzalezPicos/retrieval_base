@@ -92,12 +92,12 @@ free_params = {
     'Z': [(-0.5, 0.5), 'Z'],
     'C_O': [(0.3, 0.9), 'C/O'],
     
-    'alpha_Na': [(-4., 4.), r'$\alpha(Na)$'],
-    'alpha_Ca': [(-4., 4.), r'$\alpha(Ca)$'],
-    'alpha_Ti': [(-4., 4.), r'$\alpha(Ti)$'],
-    'alpha_Mg': [(-4., 4.), r'$\alpha(Mg)$'],
-    'alpha_Fe': [(-4., 4.), r'$\alpha(Fe)$'],
-    'alpha_OH': [(-4., 4.), r'$\alpha(OH)$'],
+    'alpha_Na': [(-4., 2.), r'$\alpha(Na)$'],
+    'alpha_Ca': [(-4., 2.), r'$\alpha(Ca)$'],
+    'alpha_Ti': [(-4., 2.), r'$\alpha(Ti)$'],
+    'alpha_Mg': [(-4., 2.), r'$\alpha(Mg)$'],
+    'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'],
+    'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
     
     
     # General properties

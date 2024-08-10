@@ -636,6 +636,14 @@ class SPHINXChemistry(Chemistry):
                             # 'HMFF': 'H-',
                                 }
         # TODO: review H- and e- mixing ratios... take them from HMFF and H2H2?
+        
+    @property
+    def CO(self): # alias for C/O ratio
+        return self.C_O
+    
+    @property
+    def FeH(self): # alias for Fe/H ratio
+        return self.Z
 
     def __call__(self, params):
 
@@ -645,9 +653,11 @@ class SPHINXChemistry(Chemistry):
         assert all([params.get(attr) is not None for attr in grid_attrs]), 'Missing grid attributes'
         [setattr(self, attr, params.get(attr)) for attr in grid_attrs]
         
+        
         self.VMRs = {}
         for s in self.sphinx_species:
             self.VMRs[s] = self.vmr_interpolator[s]([self.Teff, self.logg, self.Z, self.C_O])[0]
+            
             # print(f' VMR_{s} = {self.VMRs[s]}')
             # assert len(self.VMRs[s]) == 40, f' VMR_{s} has wrong length: {len(self.VMRs[s])}'
         # VMRs_values = self.vmr_interpolator([self.Teff, self.logg, self.Z, self.C_O]) # shape (n_layers, n_species)
@@ -667,6 +677,8 @@ class SPHINXChemistry(Chemistry):
         for line_species_i in self.line_species:
             # line_species_i = self.read_species_info(species_i, 'pRT_name')
             species_i = self.pRT_name_dict.get(line_species_i, None)
+            # check alpha enhancement
+            alpha_i = params.get(f'alpha_{s}', 0.0)
             # print(f' species_i = {species_i} ({line_species_i})')
             if species_i is None:
                 continue
@@ -693,7 +705,7 @@ class SPHINXChemistry(Chemistry):
             # else:   
             #     self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
             
-            self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
+            self.mass_fractions[line_species_i] = mass_i * (self.VMRs[species_i]+alpha_i) # VMRs is already an array
             VMR_wo_H2 += self.VMRs[species_i]
 
 

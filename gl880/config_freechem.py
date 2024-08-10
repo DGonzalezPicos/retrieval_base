@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx_1'
+run = 'sphinx_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -92,6 +92,13 @@ free_params = {
     'Z': [(-0.5, 0.5), 'Z'],
     'C_O': [(0.3, 0.9), 'C/O'],
     
+    'alpha_Na': [(-4., 4.), r'$\alpha(Na)$'],
+    'alpha_Ca': [(-4., 4.), r'$\alpha(Ca)$'],
+    'alpha_Ti': [(-4., 4.), r'$\alpha(Ti)$'],
+    'alpha_Mg': [(-4., 4.), r'$\alpha(Mg)$'],
+    'alpha_Fe': [(-4., 4.), r'$\alpha(Fe)$'],
+    'alpha_OH': [(-4., 4.), r'$\alpha(OH)$'],
+    
     
     # General properties
     # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
@@ -101,6 +108,8 @@ free_params = {
     # Velocities
     'vsini': [(1,30), r'$v\ \sin\ i$'], 
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
+    
+    'resolution': [(50e3, 90e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
 #    'T_0': [(4e3,16e3), r'$T_0$'], 
@@ -124,8 +133,8 @@ SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3',
                   'N2', 'AlO', 'SH', 'OH', 'NO', 'SO2']
 
 isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1., 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
-                      'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{^{12}CO/^{18}CO}$']],
-                        'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{^{12}CO/^{17}CO}$']],
+                      'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
+                        'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
 }
 
 

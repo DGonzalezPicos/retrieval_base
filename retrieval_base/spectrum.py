@@ -1031,19 +1031,19 @@ class ModelSpectrum(Spectrum):
         # Model resolution depends on the opacity sampling
         self.resolution = int(1e6/lbl_opacity_sampling)
 
-    def rebin(self, d_wave, replace_wave_flux=False):
+    # def rebin(self, d_wave, replace_wave_flux=False):
 
-        # Interpolate onto the observed spectrum's wavelength grid
-        flux_rebinned = np.interp(d_wave, xp=self.wave, fp=self.flux)
+    #     # Interpolate onto the observed spectrum's wavelength grid
+    #     flux_rebinned = np.interp(d_wave, xp=self.wave, fp=self.flux)
 
-        if replace_wave_flux:
-            self.flux = flux_rebinned
-            self.wave = d_wave
+    #     if replace_wave_flux:
+    #         self.flux = flux_rebinned
+    #         self.wave = d_wave
 
-            # Update the isfinite mask
-            self.update_isfinite_mask()
+    #         # Update the isfinite mask
+    #         self.update_isfinite_mask()
         
-        return flux_rebinned
+    #     return flux_rebinned
     def rebin(self, d_wave, kind='spectres', replace_wave_flux=True):
         '''Linear Interpolation to observed wavelength grid'''
         

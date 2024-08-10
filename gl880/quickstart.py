@@ -17,4 +17,4 @@ run = 'run_1' # important to set this to the correct run
 
 
 for conf_data_i in conf.config_data.values():
-        pre_processing_spirou(conf=conf, conf_data=conf_data_i)
+    pre_processing_spirou(conf=conf, conf_data=conf_data_i)

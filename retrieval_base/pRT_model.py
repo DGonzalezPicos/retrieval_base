@@ -315,7 +315,7 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution, 
+                out_res=self.params.get('resolution', self.d_resolution), 
                 in_res=m_spec_i.resolution, 
                 rebin=False, 
                 )
@@ -408,7 +408,7 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution, 
+                out_res=self.params.get('resolution', self.d_resolution), 
                 in_res=m_spec_i.resolution, 
                 rebin=True, 
                 )
@@ -433,7 +433,7 @@ class pRT_model:
                 rv=self.params['rv'], 
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
-                out_res=self.d_resolution, 
+                out_res=self.params.get('resolution', self.d_resolution), 
                 in_res=m_spec_i.resolution, 
                 rebin=True, 
                 )

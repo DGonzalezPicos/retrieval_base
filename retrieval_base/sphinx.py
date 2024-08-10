@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pathlib
 from scipy.interpolate import RegularGridInterpolator, Akima1DInterpolator, NearestNDInterpolator, LinearNDInterpolator
-
+import pickle
 ## species
 # ['H2H2', 'H2He', 'HMFF', 'HMBF', 'H2O', 'CO', 'CO2', 'CH4', 'NH3', 
 # 'H2S', 'PH3', 'HCN', 'C2H2', 'TiO', 'VO', 'SiO',
@@ -254,7 +254,17 @@ class SPHINX:
         C_O = float(f.name.split('_')[7])
         return Teff, logg, Z, C_O
         
-    def load_interpolator(self, species=[]):
+    def load_interpolator(self, species=[], cache=True):
+        
+        interp_pickle = self.path / 'sphinx_interpolator.pkl'
+        if interp_pickle.exists() and cache:
+            print(f' Loading interpolator from {interp_pickle}')
+            with open(interp_pickle, 'rb') as f:
+                interp = pickle.load(f)
+            self.temp_interpolator = interp['temp_interpolator']
+            self.vmr_interpolator = interp['vmr_interpolator']
+            return self
+        
         # load all files in grid
         files = sorted((self.path / 'ATMS').glob('*atms.txt'))
         assert len(list(files)) > 0, 'No files found'
@@ -316,6 +326,12 @@ class SPHINX:
                 
         del self.abundances
         del self.temperature
+        
+        # save pickle with interpolators
+        interp = {'temp_interpolator': self.temp_interpolator, 'vmr_interpolator': self.vmr_interpolator}
+        with open(interp_pickle, 'wb') as f:
+            pickle.dump(interp, f)
+        print(f'[SPHINX.load_interpolator] Saved interpolators to {interp_pickle}')
         
         return self
     

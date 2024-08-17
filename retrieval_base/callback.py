@@ -190,19 +190,19 @@ class CallBack:
         if self.plot_summary:
             self.fig_summary()
             
-        for i, w_set in enumerate(list(self.d_spec.keys())):
+        # for i, w_set in enumerate(list(self.d_spec.keys())):
             # Plot the best-fitting spectrum
-            figs.fig_bestfit_model(
-                d_spec=self.d_spec[w_set], 
-                m_spec=self.m_spec[w_set], 
-                LogLike=self.LogLike[w_set], 
-                Cov=self.Cov[w_set], 
-                bestfit_color=self.bestfit_color, 
-                # ax_spec=ax_spec[i], 
-                # ax_res=ax_res[i], 
-                prefix=self.prefix, 
-                xlabel=['Wavelength (nm)', None][i]
-                )
+            # figs.fig_bestfit_model(
+            #     d_spec=self.d_spec[w_set], 
+            #     m_spec=self.m_spec[w_set], 
+            #     LogLike=self.LogLike[w_set], 
+            #     Cov=self.Cov[w_set], 
+            #     bestfit_color=self.bestfit_color, 
+            #     # ax_spec=ax_spec[i], 
+            #     # ax_res=ax_res[i], 
+            #     prefix=self.prefix, 
+            #     xlabel=['Wavelength (nm)', None][i]
+            #     )
 
         if self.evaluation:
             fig_chem, ax_chem = plt.subplots(1, 1, figsize=(6,6))
@@ -267,6 +267,19 @@ class CallBack:
                         color=self.bestfit_color,
                         fig_name=self.prefix+f'plots/veiling_factors.pdf',
                         )
+                if self.LogLike[w_set].N_knots > 1:
+                    
+                    figs.fig_spline_model(
+                        d_spec=self.d_spec[w_set], 
+                        m_spec=self.m_spec[w_set], 
+                        LogLike=self.LogLike[w_set], 
+                        Cov=self.Cov[w_set], 
+                        bestfit_color=self.bestfit_color, 
+                        # ax_spec=ax_spec[i], 
+                        # ax_res=ax_res[i], 
+                        prefix=self.prefix, 
+                        xlabel='Wavelength / nm',
+                        )
 
             # Plot the abundances in a corner-plot
             # self.fig_abundances_corner()
@@ -278,8 +291,7 @@ class CallBack:
                                     fontsize=14,
                                     fig_name=self.prefix+f'plots/chemistry.pdf'
             )
-            
-                
+                            
 
         # Remove attributes from memory
         del self.Param, self.LogLike, self.PT, self.Chem, self.m_spec, self.pRT_atm, self.posterior
@@ -700,3 +712,4 @@ class CallBack:
                 prefix=self.prefix, 
                 w_set=w_set
                 )
+            

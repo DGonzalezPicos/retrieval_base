@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx_2'
+run = 'sphinx_3'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -41,8 +41,8 @@ config_data = {
 ####################################################################################
 opacity_params = {
     'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
-    'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
-    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
+    'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
+    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
     # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
     
     'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
@@ -185,7 +185,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'SPHINX'
 
-N_knots = 21 # spline knots (continuum fitting)
+N_knots = 9 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties

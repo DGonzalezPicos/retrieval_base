@@ -1754,5 +1754,173 @@ def fig_chemistry(
     return fig
 
     
+def fig_spline_model(
+        d_spec, 
+        m_spec, 
+        LogLike, 
+        Cov, 
+        xlabel='Wavelength (nm)', 
+        bestfit_color='C1', 
+        ax_spec=None, 
+        ax_res=None, 
+        prefix=None, 
+        w_set=''
+        ):
+
+    if (ax_spec is None) and (ax_res is None):
+        # Create a new figure
+        is_new_fig = True
+        n_orders = d_spec.n_orders
+
+        fig, ax = plt.subplots(
+            figsize=(10,2.5*n_orders*2), nrows=n_orders*3, 
+            gridspec_kw={'hspace':0, 'height_ratios':[1,1/3,1/5]*n_orders, 
+                        'left':0.1, 'right':0.95, 
+                        'top':(1-0.02*7/(n_orders*3)), 
+                        'bottom':0.035*7/(n_orders*3), 
+                        }
+            )
+    else:
+        is_new_fig = False
+
+    ylabel_spec = r'$F_\lambda$'+'\n'+r'$(\mathrm{erg\ s^{-1}\ cm^{-2}\ nm^{-1}})$'
+    if d_spec.high_pass_filtered:
+        ylabel_spec = r'$F_\lambda$ (high-pass filtered)'
+
+    # Use the same ylim, also for multiple axes
+    ylim_spec = (np.nanmean(d_spec.flux)-4*np.nanstd(d_spec.flux), 
+                 np.nanmean(d_spec.flux)+4*np.nanstd(d_spec.flux)
+                )
+    ylim_res = (1/3*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
+                1/3*(ylim_spec[1]-np.nanmean(d_spec.flux))
+                )
+    N_knots = LogLike.N_knots # number of spline knots for spectrum
+    if N_knots <= 1:
+        print(f' N_knots must be > 1 to plot the spline continuum model')
+        return None
+        
+
+    for i in range(d_spec.n_orders):
+
+        if is_new_fig:
+            # Spectrum and residual axes
+            ax_spec = ax[i*3]
+            ax_res  = ax[i*3+1]
+
+            # Remove the temporary axis
+            ax[i*3+2].remove()
+
+            # Use a different xlim for the separate figures
+            xlim = (d_spec.wave[i,:].min()-0.5, 
+                    d_spec.wave[i,:].max()+0.5)
+        else:
+            xlim = (d_spec.wave.min()-0.5, 
+                    d_spec.wave.max()+0.5)
+
+        ax_spec.set(xlim=xlim, xticks=[],
+                    # ylim=ylim_spec,
+                    )
+        ax_res.set(xlim=xlim, ylim=ylim_res)
+
+        for j in range(d_spec.n_dets):
+        
+            mask_ij = d_spec.mask_isfinite[i,j]
+            if np.sum(mask_ij) == 0:
+                continue
+            # if mask_ij.any():
+            # Show the observed and model spectra
+            ax_spec.plot(
+                d_spec.wave[i,j], d_spec.flux[i,j], 
+                c='k', lw=0.5, label='Observation'
+                )
+
+            label = 'Best-fit model ' + \
+                    r'$(\chi^2_\mathrm{red}$ (w/o $\sigma$-model)$=' + \
+                    '{:.2f}'.format(LogLike.chi_squared_red) + \
+                    r')$'
+                    
+            # PLot model (check if spline decomposition used during retrieval)
+            # if hasattr(LogLike, 'phi'):
+            #         m_flux_spline = SplineModel(N_knots=LogLike.N_knots, spline_degree=3)(m_spec.flux[i,j])
+            #         m_flux = LogLike.phi[i,j] @ m_flux_spline
+                    
+            # else:
+                
+            #     f = LogLike.phi[i,j]
+            #     m_flux = m_spec.flux[i,j] * f
+            
+            m_flux = LogLike.m[i,j] 
+            # phi_flat = np.ones_like(LogLike.phi[i,j])
+            # m_flux_spline = SplineModel(N_knots=N_knots, spline_degree=3)(m_spec.flux[i,j])
+            # m_flux_flat = phi_flat @ m_flux_spline
+            m_flux_flat = m_spec.flux[0,i,j,:]
+            
+            spline_cont = m_flux_flat / m_flux
+                    
+            ax_spec.plot(
+                d_spec.wave[i,j], m_flux, 
+                c=bestfit_color, lw=1, label=label
+                )
+            ax_spec.plot(
+                d_spec.wave[i,j], m_flux_flat, 
+                c='magenta', lw=1, label='Best-fit model (flat)'
+                )
+            ax_spec.plot(
+                d_spec.wave[i,j], spline_cont, 
+                c='deepskyblue', lw=3, label='Spline continuum', alpha=0.5,
+                )
+            
+            # Plot the residuals
+            # res_ij = d_spec.flux[i,j] - LogLike.phi[i,j]*m_spec.flux[i,j]
+            res_ij = d_spec.flux[i,j] - m_flux
+            res_ij_flat = d_spec.flux[i,j] - m_flux_flat
+            ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
+            ax_res.plot(d_spec.wave[i,j], res_ij_flat, c='magenta', lw=0.5)
+            ax_res.plot(
+                [d_spec.wave[i,j].min(), d_spec.wave[i,j].max()], 
+                [0,0], c=bestfit_color, lw=1
+            )
+
+            # Show the mean error
+            mean_err_ij = np.mean(Cov[i,j].err)
+            ax_res.errorbar(
+                d_spec.wave[i,j].min()-0.2, 0, yerr=1*mean_err_ij, 
+                fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
+                label=r'$\langle\sigma_{ij}\rangle$'
+                )
+
+            # Get the covariance matrix
+            cov = Cov[i,j].get_dense_cov()
+            
+            # Scale with the optimal uncertainty-scaling
+            cov *= LogLike.s[i,j]**2
+
+            # Get the mean error from the trace
+            mean_scaled_err_ij = np.mean(np.diag(np.sqrt(cov)))
+
+            ax_res.errorbar(
+                d_spec.wave[i,j].min()-0.4, 0, yerr=1*mean_scaled_err_ij, 
+                fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
+                #label=r'$\s_{ij}\langle\sigma_{ij}\rangle$'
+                label=r'$\s_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
+                )
+
+            if i==0 and j==0:
+                ax_spec.legend(
+                    loc='upper right', ncol=2, fontsize=8, handlelength=1, 
+                    framealpha=0.7, handletextpad=0.3, columnspacing=0.8
+                    )
+
+    # Set the labels for the final axis
+    ax_spec.set(ylabel=ylabel_spec)
+    ax_res.set(xlabel=xlabel, ylabel='Res.')
+
+    if is_new_fig and (prefix is not None):
+        plt.savefig(prefix+f'plots/bestfit_spline_model_{w_set}.pdf')
+        plt.close(fig)
+    else:
+        return ax_spec, ax_res
+
+    
 
 # if __name__ == '__main__':

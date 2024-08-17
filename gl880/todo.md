@@ -12,7 +12,11 @@
     - [ ] Implement matching vertical profile of H2(18)O to H2O
 
 - ~~[ ] SPHINX retrievals: use PT and chemistry interpolators for SPHINX models~~
-- [ ] Line Spread Function: Fit for FWHM and Gamma of Gaussian and Lorentzian profiles?
-- [ ] Add  $\alpha(X)$ free parameters as log X = log X (SPHINX) + $\alpha(X)$
+- ~~[ ] Add  $\alpha(X)$ free parameters as log X = log X (SPHINX) + $\alpha(X)$~~, so in linear space
+$$
+        X = X (\texttt{SPHINX}) \cdot 10^{\alpha(X)}
+$$
 - [ ] Instrumental broadening of SPIRou: Gaussian of std. dev. 1.83 km/s (equiv. to FWHM = 4.3 km/s <-> R=69k, see Cristofari+2022)
     - [ ] Additional broadening due to macroturbulence? probably negligible...
+    - Now fitting resolution as a free parameter between 60k and 80k for a single Gaussian profile
+    - [ ] Line Spread Function: Fit for FWHM and Gamma of Gaussian and Lorentzian profiles?

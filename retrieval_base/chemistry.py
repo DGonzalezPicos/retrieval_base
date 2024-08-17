@@ -705,7 +705,7 @@ class SPHINXChemistry(Chemistry):
             # else:   
             #     self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
             
-            self.mass_fractions[line_species_i] = mass_i * (self.VMRs[species_i]+alpha_i) # VMRs is already an array
+            self.mass_fractions[line_species_i] = mass_i * (self.VMRs[species_i] * 10.**alpha_i) # VMRs is already an array
             VMR_wo_H2 += self.VMRs[species_i]
 
 

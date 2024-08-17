@@ -98,6 +98,9 @@ free_params = {
     'alpha_Mg': [(-4., 2.), r'$\alpha(Mg)$'],
     'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'],
     'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
+    # FIXME: NaNs in model spectrum???? 
+    # alpha is in log-space so add as 10**alpha?? try this
+    # print(fixme)
     
     
     # General properties
@@ -109,7 +112,7 @@ free_params = {
     'vsini': [(1,30), r'$v\ \sin\ i$'], 
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     
-    'resolution': [(50e3, 90e3), r'$R$'], # 
+    'resolution': [(60e3, 80e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
 #    'T_0': [(4e3,16e3), r'$T_0$'], 

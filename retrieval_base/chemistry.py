@@ -138,16 +138,20 @@ class Chemistry:
         assert hasattr(self, 'mass_fractions_posterior')
         self.VMRs_posterior = {}
         self.VMRs_envelopes = {}
-        info = self.species_info
+        # info = self.species_info
         MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
 
         for line_species_i in self.line_species:
-            key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]
+            # key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]
+            key_i = self.pRT_name_dict.get(line_species_i, None)
+            # key_i = 
             # check key_i is not empty
             # print(f' {line_species_i} ({key_i}) -> {info[key_i][2]}')
             if len(key_i) == 0:
                 continue
-            mu = info[key_i][2] # atomic mass
+            # mu = info[key_i][2] # atomic mass
+            mu = self.read_species_info(key_i, 'mass')
+            # print(f' mu_{key_i} = {mu}')
             # free-chemistry = constant VMR
             # WARNING: equilibrium chemistry should use the mean value or something else
             vmr_i = self.mass_fractions_posterior[line_species_i] * (MMW/ mu)

@@ -87,9 +87,9 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # SPHINX
-    'Teff': [(2900, 4000), r'$T_\mathrm{eff}$'],
-    'log_g': [(4.0,5.5), r'$\log\ g$'],
-    'Z': [(-0.5, 0.5), 'Z'],
+    'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
+    'log_g': [(4.5,5.0), r'$\log\ g$'],
+    'Z': [(0.0, 0.5), 'Z'],
     'C_O': [(0.3, 0.9), 'C/O'],
     
     'alpha_Na': [(-4., 2.), r'$\alpha(Na)$'],
@@ -98,21 +98,17 @@ free_params = {
     'alpha_Mg': [(-4., 2.), r'$\alpha(Mg)$'],
     'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'],
     'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
-    # FIXME: NaNs in model spectrum???? 
-    # alpha is in log-space so add as 10**alpha?? try this
-    # print(fixme)
-    
     
     # General properties
     # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
     # 'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
-    'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
+    # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
     'vsini': [(1,30), r'$v\ \sin\ i$'], 
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     
-    'resolution': [(60e3, 80e3), r'$R$'], # 
+    # 'resolution': [(60e3, 80e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
 #    'T_0': [(4e3,16e3), r'$T_0$'], 
@@ -185,13 +181,14 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'SPHINX'
 
-N_knots = 9 # spline knots (continuum fitting)
+N_knots = 21 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
-    # 'epsilon_limb': 0.5, 
+    'epsilon_limb': 0.20, 
+    'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
     # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 

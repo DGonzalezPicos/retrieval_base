@@ -216,6 +216,7 @@ class CallBack:
                     showlegend=True,
                     ls='-',
                     fig_name=fig_name_chem,
+                    xlim=(1e-9,1e-2),
                     )
             
             for w_set in self.d_spec.keys():
@@ -437,6 +438,7 @@ class CallBack:
             Chem=self.Chem, 
             species_to_plot=self.species_to_plot_VMR, 
             pressure=self.PT.pressure, 
+            xlim=(1e-9,1e-2),
             )
 
         plt.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.08, wspace=0, hspace=0)

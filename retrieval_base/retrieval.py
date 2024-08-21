@@ -379,7 +379,7 @@ def prior_check(conf, n=3,
         # random values between 0 and 1
         theta = [np.random.rand(len(ret.Param.param_keys)) for _ in range(n)]
     else:
-        theta = np.linspace(0, 1, n) * np.ones(len(ret.Param.param_keys))
+        theta = np.outer(np.linspace(0,1,n), np.ones(len(ret.Param.param_keys)))
     m_spec_list = []
     logL_list = [] 
     # plot PT

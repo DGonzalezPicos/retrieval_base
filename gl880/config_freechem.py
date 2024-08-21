@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx_3'
+run = 'sphinx_4'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {

@@ -20,3 +20,6 @@ $$
     - [ ] Additional broadening due to macroturbulence? probably negligible...
     - Now fitting resolution as a free parameter between 60k and 80k for a single Gaussian profile
     - [ ] Line Spread Function: Fit for FWHM and Gamma of Gaussian and Lorentzian profiles?
+
+- [ ] FIx Mg line 
+    - Recompute to 6000 K?

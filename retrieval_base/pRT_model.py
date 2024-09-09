@@ -110,7 +110,7 @@ class pRT_model:
                 wave_range=(4.1,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
                 wave_step=None,
                 grating=None,
-                path_to_moldata=str(path/'data/hitran'),
+                path_to_moldata=path+'data/hitran',
                 )
 
         # Make the pRT.Radtrans objects

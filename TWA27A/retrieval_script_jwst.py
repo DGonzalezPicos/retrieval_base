@@ -110,6 +110,7 @@ if args.pre_processing:
             log_P_range=conf_data.get('log_P_range'), 
             n_atm_layers=conf_data.get('n_atm_layers'), 
             rv_range=conf.free_params['rv'][0], 
+            disk_species=conf.disk_species,
             )
         # check parent directory
         # pRT_file.parent.mkdir(parents=True, exist_ok=True)

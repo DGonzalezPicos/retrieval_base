@@ -82,6 +82,13 @@ class Parameters:
         # check that the keys are in ['K2166', 'NIRSpec']
         assert all([key in ['K2166', 'NIRSpec'] for key in self.wlen_settings.keys()]), 'wlen_settings keys must be in [K2166, NIRSpec]'
         
+        # check distance / parallax parameters
+        for p in ['parallax', 'parallax_mas']:
+            if p in self.param_keys:
+                self.params['d_pc'] = 1 / (self.params[p] * 1e-3)
+            
+            
+        
     def __str__(self):
         out = '** Parameters **\n'
         # add line of dashes
@@ -140,7 +147,7 @@ class Parameters:
         self.read_chemistry_params()
         self.read_cloud_params()
         self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grating
-        
+        self.read_disk_params()
 
         if (ndim is None) and (nparams is None):
             return cube
@@ -339,7 +346,9 @@ class Parameters:
 
             # Loop over all possible species
             self.VMR_species = {}
-            for species_i in Chemistry.species_info.keys():
+            # for species_i in Chemistry.species_info.keys():
+            for species_i in Chemistry.species_info.name.tolist():
+            
                 # print(f'[Parameters.read_chemistry_params]: {species_i}')
                 # If multiple VMRs are given
                 for j in range(3):
@@ -444,3 +453,31 @@ class Parameters:
     #     cube = np.random.rand(self.n_params)
     #     return self.__call__(cube)
         
+        
+    def read_disk_params(self):
+        ''' Read the disk parameters '''
+        disk_default = {
+            'T_ex': [600.0],
+            'N_mol': [1e17],
+            'A_au': [1.0],
+            'dV': [1.0],
+        }
+        all_keys = list(self.params.keys())
+        for k in disk_default.keys():
+            
+            v_list = [self.params[key] for key in all_keys if key.startswith(f'{k}_')]
+            if len(v_list) == 0:
+                v_list = disk_default[k]
+
+            self.params[k] = np.array([np.array(v_list)])
+            # print(f' [Parameters.read_disk_params]: k = {k}, self.params[k] = {self.params[k]}')
+
+            
+        # if 'R_d' in self.param_keys:
+        #     rjup_cm = 7.1492e9
+        #     au_cm = 1.496e13
+        #     self.params['A_au'] = np.pi * (self.params['R_d'] * (rjup_cm/au_cm))**2
+        
+            
+        
+            

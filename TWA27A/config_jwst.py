@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl10_KM_3'
+run = 'lbl10_KM_4'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -19,7 +19,7 @@ config_data = {
         'wave_range': (1650, 5300), 
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 10,
+        'lbl_opacity_sampling' : 15,
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, 
@@ -35,15 +35,15 @@ config_data = {
 # Model parameters
 ####################################################################################
 opacity_params = {
-    'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high'),
-    'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high'),
-    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28'),
-    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27'),
+    'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
+    'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
+    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
+    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
-    'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso'), # DGP (2024-07-16): accidentally removed 
+    'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'), # DGP (2024-07-16): accidentally removed 
     'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
@@ -51,19 +51,19 @@ opacity_params = {
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
-    'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
-    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
-    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
-    'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
+    'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
+    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
+    # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
+    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
-    'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
+    # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
     # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
     'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
-    'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
+    # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
     'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
     # 'log_ScH': ([(-14,-2), r'$\log\ \mathrm{ScH}$'], 'ScH_main_iso'), # DGP (2024-07-16): try
 
@@ -104,6 +104,11 @@ free_params = {
     # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
     'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
+    # disk emission parameters
+    'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
+    'log_N_mol_12CO': [(12, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
+    'log_A_au_12CO': [(-3, 3), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    
     # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities
     # 'vsini': [(2,30), r'$v\ \sin\ i$'], 
@@ -142,7 +147,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
-N_knots = 5 # spline knots (continuum fitting)
+N_knots = 1 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
@@ -199,6 +204,8 @@ chem_kwargs = dict()
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
 line_species =[v[1] for _,v in opacity_params.items()]
+
+disk_species = ['12CO']
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
 # line_species.append('H2_main_iso') # TODO: this?

@@ -12,6 +12,9 @@ import petitRADTRANS.nat_cst as nc
 
 from .spectrum import Spectrum, ModelSpectrum
 
+from retrieval_base.auxiliary_functions import get_path
+path = get_path()
+
 class pRT_model:
 
     def __init__(self, 
@@ -27,6 +30,7 @@ class pRT_model:
                  cloud_mode=None, 
                  chem_mode='free', 
                  rv_range=(-50,50), 
+                 disk_species=[],
                  ):
         '''
         Create instance of the pRT_model class.
@@ -91,6 +95,23 @@ class pRT_model:
         if n_atm_layers is None:
             n_atm_layers = 50
         self.pressure = np.logspace(log_P_range[0], log_P_range[1], n_atm_layers)
+        
+        print(f' disk_species = {disk_species}')
+        if len(disk_species) > 0:
+            print(f' [pRT_model] Disk species: {disk_species}')
+            # import iris as iris
+            # from iris import setup
+            # from iris import spectrum as sp
+            from retrieval_base.slab_model import Disk
+            
+            self.disk_species = disk_species
+            self.disk = Disk(molecules=self.disk_species,
+                # wave_range=(wmin, wmax),
+                wave_range=(4.1,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
+                wave_step=None,
+                grating=None,
+                path_to_moldata=str(path/'data/hitran'),
+                )
 
         # Make the pRT.Radtrans objects
         if mode == 'lbl':
@@ -98,6 +119,11 @@ class pRT_model:
         elif mode == 'c-k':
             self.get_atmospheres_gratings(d_spec.gratings_list, CB_active=False)
             self.gratings = set(d_spec.gratings_list) # unique gratings
+            
+            
+        
+            
+            
     def get_atmospheres(self, CB_active=False):
 
         # pRT model is somewhat wider than observed spectrum
@@ -220,6 +246,9 @@ class pRT_model:
 
         # Add clouds if requested
         self.add_clouds()
+        
+        self.disk_emission = ("T_ex" in params.keys())
+        self.disk_params = {k: params[k] for k in ['T_ex', 'N_mol', 'A_au', 'dV'] if k in params.keys()}
 
         # Generate a model spectrum
         m_spec = self.get_model_spectrum(
@@ -327,14 +356,6 @@ class pRT_model:
         for i, atm_i in enumerate(self.atm):
             
             # Compute the emission spectrum
-            
-            # assert np.isnan(self.temperature).sum() == 0, 'NaNs in temperature'
-            # assert np.isinf(self.temperature).sum() == 0, 'Infs in temperature'
-            # assert np.isnan(self.mass_fractions['MMW']).sum() == 0, 'NaNs in MMW'
-            # assert np.isinf(self.mass_fractions['MMW']).sum() == 0, 'Infs in MMW'
-            # assert np.isnan(self.params['log_g']).sum() == 0, 'NaNs in log_g'
-            # start_cf = time.time()
-            
             atm_i.calc_flux(
                 self.temperature, 
                 self.mass_fractions, 
@@ -349,13 +370,9 @@ class pRT_model:
             # end_cf = time.time()
             # print(f'Order {i} took {end_cf-start_cf:.3f} s to compute the flux')
             wave_i = nc.c / atm_i.freq
-            # flux_i = np.nan_to_num(atm_i.flux, nan=0.0)
             finite = np.isfinite(atm_i.flux)
             assert np.sum(finite) == len(finite), f'NaNs in flux ({np.sum(~finite)} non-finite values)'
-            flux_i = np.where(np.isfinite(atm_i.flux), atm_i.flux, 0.0)
-            # overflow = np.log(atm_i.flux) > 20
-            # print(f'Overflow in order {i} = {overflow.sum()}')
-            # atm_i.flux[overflow] = 0.0
+            flux_i = np.where(np.isfinite(atm_i.flux), atm_i.flux, 0.0)        
             # [erg cm^{-2} s^{-1} Hz^{-1}] -> [erg cm^{-2} s^{-1} cm^{-1}]
             flux_i = atm_i.flux *  nc.c / (wave_i**2)
 
@@ -371,6 +388,21 @@ class pRT_model:
                 (self.params.get('R_p', 1.0)*nc.r_jup_mean) / \
                 (1e3/self.params['parallax']*nc.pc)
                 )**2
+            
+            # then broaden and resample together with the model spectrum
+            if self.disk_emission and wave_i[0] > 4.1e3: # only for G395H reddest filter
+                # Compute the disk emission
+                # Add the disk emission to the model spectrum
+                self.disk.set_fine_wgrid(wave_i)
+                # disk params must be a dictionary containing (at least): T_ex, N_mol, A_au, dV
+                disk_keys = ['T_ex', 'N_mol', 'A_au', 'dV']
+                assert all([k in self.disk_params.keys() for k in disk_keys]), \
+                    'Disk parameters must contain T_ex, N_mol, A_au, dV'
+                    
+                disk_dict = {k: self.params[k] for k in disk_keys}
+                # print(f' disk_dict = {disk_dict}')
+                flux_i += self.disk(disk_dict,
+                                    wave_i * 1e-3)
 
             # Create a ModelSpectrum instance
             m_spec_i = ModelSpectrum(
@@ -443,7 +475,7 @@ class pRT_model:
         if get_contr: # Store the integrated emission contribution
             m_spec.int_contr_em = np.copy(self.int_contr_em)
         #     # m_spec.int_contr_em_per_order = np.copy(self.int_contr_em_per_order)
-        #     m_spec.contr_em = np.copy(self.contr_em)
+        #     m_spec.contr_em = np.copy(self.contr_e    m)
             # m_spec.int_opa_cloud = self.int_opa_cloud   
 
         # Convert to arrays
@@ -539,3 +571,9 @@ class pRT_model:
                         array=opa_cloud_ij.flux[d_mask_i].flatten(), 
                         )
         return self
+
+
+class SlabModel(pRT_model):
+    """ 1D model for disk emission at a given temperature and pressure """
+    
+    

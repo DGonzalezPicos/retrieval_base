@@ -380,7 +380,7 @@ class Retrieval:
             self.pRT_atm[w_set] = af.pickle_load(self.conf.prefix+f'data/pRT_atm_{w_set}.pkl')
             param_wlen_settings[w_set] = [self.d_spec[w_set].n_orders, self.d_spec[w_set].n_dets]
             
-            if len(conf.disk_species) > 0:
+            if len(conf.disk_species) > 0 and not hasattr(self.pRT_atm[w_set], 'disk'):
                 print(f' [pRT_model] Disk species: {conf.disk_species}')
                 from retrieval_base.slab_model import Disk
                 

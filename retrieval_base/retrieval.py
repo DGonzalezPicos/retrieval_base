@@ -380,18 +380,18 @@ class Retrieval:
             self.pRT_atm[w_set] = af.pickle_load(self.conf.prefix+f'data/pRT_atm_{w_set}.pkl')
             param_wlen_settings[w_set] = [self.d_spec[w_set].n_orders, self.d_spec[w_set].n_dets]
             
-            if len(conf.disk_species) > 0 and not hasattr(self.pRT_atm[w_set], 'disk'):
-                print(f' [pRT_model] Disk species: {conf.disk_species}')
-                from retrieval_base.slab_model import Disk
+            # if len(conf.disk_species) > 0 and not hasattr(self.pRT_atm[w_set], 'disk'):
+            #     print(f' [pRT_model] Disk species: {conf.disk_species}')
+            #     from retrieval_base.slab_model import Disk
                 
-                self.pRT_atm[w_set].disk_species = conf.disk_species
-                self.pRT_atm[w_set].disk = Disk(molecules=self.pRT_atm[w_set].disk_species,
-                    # wave_range=(wmin, wmax),
-                    wave_range=(4.1,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
-                    wave_step=None,
-                    grating=None,
-                    path_to_moldata=af.get_path()+'data/hitran',
-                    )
+            #     self.pRT_atm[w_set].disk_species = conf.disk_species
+            #     self.pRT_atm[w_set].disk = Disk(molecules=self.pRT_atm[w_set].disk_species,
+            #         # wave_range=(wmin, wmax),
+            #         wave_range=(4.1,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
+            #         wave_step=None,
+            #         grating=None,
+            #         path_to_moldata=af.get_path()+'data/hitran',
+            #         )
 
 
                 

@@ -330,13 +330,29 @@ class CallBack:
             # #     )
 
     def fig_abundances_corner(self):
+        # TODO: this function is way more complicated than it needs to be
 
         included_params = []
+        
+        if len(getattr(self, 'VMRs_posterior', {}))==0:
+            print(f' - Computing VMRs posterior')
+            self.Chem.get_VMRs_posterior()
 
         # Plot the abundances
         if self.Param.chem_mode == 'free':
 
-            for species_i, (line_species_i, _, mass_i, COH_i) in self.Chem.species_info.items():
+            # for species_i, (line_species_i, _, mass_i, COH_i) in self.Chem.species_info.items():
+            # for line_species_i in self.Chem.line_species:
+            for line_species_i in self.Chem.line_species:
+                species_i = self.Chem.pRT_name_dict.get(line_species_i, None)
+                
+                if species_i is None:
+                    continue
+                
+                mass_i = self.Chem.read_species_info(species_i, 'mass')
+                COH_i  = [self.Chem.read_species_info(species_i, 'C'), 
+                        self.Chem.read_species_info(species_i, 'O'), 
+                        self.Chem.read_species_info(species_i, 'H')]
                 # print(f'line_species_i = {line_species_i}', f'mass_i = {mass_i}', f'COH_i = {COH_i}')
                 # Add to the parameters to be plotted
                 if (line_species_i in self.Chem.line_species) and \
@@ -351,76 +367,116 @@ class CallBack:
                 included_params.append('log_C_ratio')
 
             # Add C/O and Fe/H to the parameters to be plotted
-            if self.evaluation:
+            # if self.evaluation:
                 
                 # Add to the posterior
-                self.posterior = np.concatenate(
-                    (self.posterior, self.Chem.CO_posterior[:,None], 
-                     self.Chem.FeH_posterior[:,None]), axis=1
-                    )
-                # Add to the parameter keys
-                self.Param.param_keys = np.concatenate(
-                    (self.Param.param_keys, ['C/O', 'C/H'])
-                )
-                self.param_labels = np.concatenate(
-                    (self.param_labels, ['C/O', '[C/H]'])
-                    )
+                # self.posterior = np.concatenate(
+                #     (self.posterior, self.Chem.CO_posterior[:,None], 
+                #      self.Chem.FeH_posterior[:,None]), axis=1
+                #     )
+                # # Add to the parameter keys
+                # self.Param.param_keys = np.concatenate(
+                #     (self.Param.param_keys, ['C/O', 'C/H'])
+                # )
+                # self.param_labels = np.concatenate(
+                #     (self.param_labels, ['C/O', '[C/H]'])
+                #     )
                 
-                self.bestfit_params = np.concatenate(
-                    (self.bestfit_params, [self.Chem.CO, self.Chem.CH])
-                )
-                included_params.extend(['C/O', 'C/H'])
+                # self.bestfit_params = np.concatenate(
+                #     (self.bestfit_params, [self.Chem.CO, self.Chem.CH])
+                # )
+                # included_params.extend(['C/O', 'C/H'])
                 
-                if 'log_13CO' in self.Param.param_keys:
-                    posterior_12CO = self.Chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / 28.0
-                    posterior_13CO = self.Chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / 29.0
+        #         if 'log_13CO' in self.Param.param_keys:
+        #             posterior_12CO = self.Chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / 28.0
+        #             posterior_13CO = self.Chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / 29.0
                     
-                    # chem.C12C13_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_36_high'],axis=-1)
-                    self.Chem.C12C13_posterior = posterior_12CO / posterior_13CO
-                    self.posterior = np.concatenate(
-                        (self.posterior, self.Chem.C12C13_posterior[:,None]), axis=1
-                        )
-                    self.Param.param_keys = np.concatenate(
-                        (self.Param.param_keys, ['C12C13'])
-                    )
+        #             # chem.C12C13_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_36_high'],axis=-1)
+        #             self.Chem.C12C13_posterior = posterior_12CO / posterior_13CO
+        #             self.posterior = np.concatenate(
+        #                 (self.posterior, self.Chem.C12C13_posterior[:,None]), axis=1
+        #                 )
+        #             self.Param.param_keys = np.concatenate(
+        #                 (self.Param.param_keys, ['C12C13'])
+        #             )
                     
-                    self.param_labels = np.concatenate(
-                        (self.param_labels, [r'$^{12}$C/$^{13}$C'])
-                        )
-                    self.bestfit_params = np.concatenate(
-                        (self.bestfit_params, [np.median(self.Chem.C12C13_posterior)])
-                    )
-                    included_params.append('C12C13')
+        #             self.param_labels = np.concatenate(
+        #                 (self.param_labels, [r'$^{12}$C/$^{13}$C'])
+        #                 )
+        #             self.bestfit_params = np.concatenate(
+        #                 (self.bestfit_params, [np.median(self.Chem.C12C13_posterior)])
+        #             )
+        #             included_params.append('C12C13')
                     
                     
             
 
-        elif self.Param.chem_mode in ['eqchem', 'fastchem', 'SONORAchem']:
+        # elif self.Param.chem_mode in ['eqchem', 'fastchem', 'SONORAchem']:
             
-            for key in self.Param.param_keys:
-                if key.startswith('log_C_ratio'):
-                    included_params.append(key)
+        #     for key in self.Param.param_keys:
+        #         if key.startswith('log_C_ratio'):
+        #             included_params.append(key)
                 
-                elif key.startswith('log_C13_12_ratio'):
-                    included_params.append(key)
-                elif key.startswith('log_O18_16_ratio'):
-                    included_params.append(key)
-                elif key.startswith('log_O17_16_ratio'):
-                    included_params.append(key)
+        #         elif key.startswith('log_C13_12_ratio'):
+        #             included_params.append(key)
+        #         elif key.startswith('log_O18_16_ratio'):
+        #             included_params.append(key)
+        #         elif key.startswith('log_O17_16_ratio'):
+        #             included_params.append(key)
 
-                elif key.startswith('log_P_quench'):
-                    included_params.append(key)
+        #         elif key.startswith('log_P_quench'):
+        #             included_params.append(key)
 
-            included_params.extend(['C/O', 'Fe/H'])
+        #     included_params.extend(['C/O', 'Fe/H'])
 
         # figsize = (
         #     # 4/3*len(included_params), 4/3*len(included_params)
         #     )
-        figsize = (18,18)
-        fig, ax = self.fig_corner(
-            included_params=included_params, 
-            fig=plt.figure(figsize=figsize), 
-            smooth=False, ann_fs=10
+        # figsize = (18,18)
+        # fig, ax = self.fig_corner(
+        #     included_params=included_params, 
+        #     fig=plt.figure(figsize=figsize), 
+        #     smooth=False, ann_fs=10,
+        #     posterior=self.Chem.VMRs_posterior,
+        #     )
+        # compute quantiles
+        # Q = np.percentile(np.array(list(self.Chem.VMRs_posterior.values())), [16, 50, 84], axis=0)
+        # ranges = np.array([4*(Q[1]-Q[0])+Q[1], 4*(Q[2]-Q[1])+Q[1]]) # FIXME: this does not work...
+        quantiles = np.array([np.quantile(p_i , q=[0.16, 0.50, 0.84]) for p_i in np.array(self.Chem.VMRs_posterior.values()).T]) # FIXME: this does not work...
+        ranges = np.array([(4*q_i[0] - 3*q_i[1], 4*q_i[2] - 3*q_i[1]) for q_i in quantiles])
+        # ranges = np.array([4*q
+        print(f' ranges.shape = {ranges.shape}')
+        print(f' posterior.shape = {np.array(self.Chem.VMRs_posterior.values()).shape}')
+        
+        fig = corner.corner(
+            np.array(self.Chem.VMRs_posterior.values()),
+            labels=list(self.Chem.VMRs_posterior.keys()),
+            range=ranges, 
+                    show_titles=True,
+                    use_math_text=True,
+                    title_fmt='.2f',
+                    bins=20,
+                    max_n_ticks=3,
+                    quiet=True,
+                    quantiles=[0.16, 0.84], 
+                    title_quantiles=[0.16,0.50, 0.84],
+                    title_kwargs={'fontsize': 12, 'wrap': True,
+                                  'pad':7},
+                    label_kwargs={'fontsize': 11}, 
+                    hist_kwargs={'density': True,
+                                 'histtype': 'stepfilled',
+                                 'alpha': 0.7,
+                                 'color': 'brown',
+                                 'linewidth': 1.0,
+                                 'zorder': 1,
+                                 'edgecolor':'black'
+                                 
+                                },
+                    labelpad=0.2,
+                    color='brown',
+                    fill_contours=True,
+                    smooth=1.5,
+                    plot_density=True,
             )
 
         # Plot the VMR per species
@@ -444,12 +500,13 @@ class CallBack:
             self.param_labels     = self.param_labels[:-2]
             self.bestfit_params   = self.bestfit_params[:-2]
         
-    def fig_corner(self, included_params=None, fig=None, smooth=False, ann_fs=9):
+    def fig_corner(self, included_params=None, fig=None, smooth=False, ann_fs=9, posterior=None):
         
+        posterior = self.posterior if posterior is None else posterior
         # Compute the 0.16, 0.5, and 0.84 quantiles
         self.param_quantiles = np.array(
-            [af.quantiles(self.posterior[:,i], q=[0.16,0.5,0.84]) \
-             for i in range(self.posterior.shape[1])]
+            [af.quantiles(posterior[:,i], q=[0.16,0.5,0.84]) \
+             for i in range(posterior.shape[1])]
              )
         # Base the axes-limits off of the quantiles
         self.param_range = np.array(
@@ -475,7 +532,7 @@ class CallBack:
         assert len(labels) == n_params, f'len(labels)={len(labels)} != n_params={n_params}'
         
         fig = corner.corner(
-            self.posterior[:,mask_params], 
+            posterior[:,mask_params], 
             fig=fig, 
             quiet=True, 
             labels=self.param_labels[mask_params], 

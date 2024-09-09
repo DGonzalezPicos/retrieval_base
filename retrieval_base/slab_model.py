@@ -49,9 +49,9 @@ class Disk:
                      path_to_moldata=self.path_to_moldata)
 
         
-        if grating in ['g235h', 'g395h', 'g140h']:
-            self.grating = grating
-            self.load_fwhm_nirspec(grating=self.grating)
+        # if grating in ['g235h', 'g395h', 'g140h']:
+        #     self.grating = grating
+        #     self.load_fwhm_nirspec(grating=self.grating)
         
     def set_properties(self, distance=100.,
                           T_ex=np.array([600.]),
@@ -117,19 +117,19 @@ class Disk:
                                            )
         return self
     
-    def load_fwhm_nirspec(self, grating='g235h'):
-        ''' Load the FWHM of the NIRSpec resolution profile '''
-        _, resolution = load_nirspec_resolution_profile(grating=grating, wave=self.fine_wgrid*1e3)
-        self.fwhm = 2.99792458e5 / (resolution)
-        return self
+    # def load_fwhm_nirspec(self, grating='g235h'):
+    #     ''' Load the FWHM of the NIRSpec resolution profile '''
+    #     _, resolution = load_nirspec_resolution_profile(grating=grating, wave=self.fine_wgrid*1e3)
+    #     self.fwhm = 2.99792458e5 / (resolution)
+    #     return self
     
-    def broaden(self, fwhm=None):
-        ''' Broaden the flux density of the disk '''
-        assert (fwhm is not None) or hasattr(self, 'fwhm'), 'fwhm must be provided or load_fwhm_nirspec must be called'
-        fwhm = fwhm if fwhm is not None else self.fwhm
+    # def broaden(self, fwhm=None):
+    #     ''' Broaden the flux density of the disk '''
+    #     assert (fwhm is not None) or hasattr(self, 'fwhm'), 'fwhm must be provided or load_fwhm_nirspec must be called'
+    #     fwhm = fwhm if fwhm is not None else self.fwhm
             
-        self.flux = InstrumentalBroadening(self.slab.fine_wgrid, self.flux)(fwhm=fwhm, kernel='gaussian_variable')
-        return self
+    #     self.flux = InstrumentalBroadening(self.slab.fine_wgrid, self.flux)(fwhm=fwhm, kernel='gaussian_variable')
+    #     return self
     
     def resample(self):
         ''' Resample the flux density of the disk '''
@@ -211,7 +211,8 @@ if __name__=='__main__':
     
     wave_step_obs = np.median(np.diff(wave))
     print(f' Wave step of observation: {wave_step_obs:.2e}')
-    disk.set_grid(obs_wgrid=wave)
+    disk.set_obs_wgrid(obs_wgrid=wave)
+    # disk.set_fine_wgrid()
     
     
     time_list = []

@@ -264,6 +264,8 @@ class FreeChemistry(Chemistry):
         #     self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * 
             
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
+        if self.read_species_info('H2', 'pRT_name') in self.line_species:
+            self.mass_fractions[self.read_species_info('H2', 'pRT_name')] = self.mass_fractions['H2']
         
     
         # self.mass_fractions['H-'] = 6e-9 # solar
@@ -310,21 +312,6 @@ class FreeChemistry(Chemistry):
         self.remove_species()
 
         return self.mass_fractions
-    
-    # def VMRs_envelopes(self):
-        
-    #     assert hasattr(self, 'mass_fractions_envelopes'), 'Mass fractions not yet evaluated.'
-        
-    #     self.VMRs_envelopes = {}
-    #     MMW = self.mass_fractions_envelopes['MMW'][3].mean()
-    #     for line_species_i, key in zip(self.line_species, self.VMRs.keys()):
-            
-    #         # get atomic mass
-    #         mu_i = self.read_species_info(key, 'mass')
-    #         # print(f'mu_{key} = {mu_i}')
-    #         # mu_i = 1.
-    #         self.VMRs_envelopes[key] = self.mass_fractions_envelopes[line_species_i] * (MMW / mu_i)
-    #     return self.VMRs_envelopes
     
     def get_VMRs_envelopes(self):
         

@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl10_KM_4'
+run = 'lbl15_KM_5'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -41,13 +41,13 @@ opacity_params = {
     'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
-    'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
+    # 'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'), # DGP (2024-07-16): accidentally removed 
     'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
-    'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
+    # 'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
@@ -55,7 +55,7 @@ opacity_params = {
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
     # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
-    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
     # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
@@ -64,17 +64,17 @@ opacity_params = {
     # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
     'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
     # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
-    'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
+    # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
     # 'log_ScH': ([(-14,-2), r'$\log\ \mathrm{ScH}$'], 'ScH_main_iso'), # DGP (2024-07-16): try
 
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MoLLIST_main_iso'),
-    # 'log_H2': ([(-12,-0.1), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
+    # 'log_H2': ([(-12,-0.01), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
@@ -107,7 +107,7 @@ free_params = {
     # disk emission parameters
     'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
     'log_N_mol_12CO': [(12, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
-    'log_A_au_12CO': [(-3, 3), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    'log_A_au_12CO': [(-4, 0), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
     
     # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities
@@ -189,7 +189,8 @@ apply_high_pass_filter = False
 cloud_mode = None
 cloud_species = None
 
-mask_lines = {} 
+# mask_lines = {} 
+mask_lines = {'missing_opacity':(2050, 2080)}
 
 ####################################################################################
 # Chemistry parameters
@@ -208,7 +209,7 @@ line_species =[v[1] for _,v in opacity_params.items()]
 disk_species = ['12CO']
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
-# line_species.append('H2_main_iso') # TODO: this?
+line_species.append('H2_main_iso') # testing (2024-09-10)
 
 species_to_plot_VMR , species_to_plot_CCF = [], []
 

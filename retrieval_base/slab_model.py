@@ -81,7 +81,7 @@ class Disk:
         assert len(dV) == len(self.molecules), 'dV must have the same length as molecules'
         
         self.slab.setup_disk(distance, T_ex, N_mol, A_au, dV)
-        return self
+        # return self
         
     def set_obs_wgrid(self, obs_wgrid):
         ''' Set the grid for the disk
@@ -136,18 +136,32 @@ class Disk:
         self.flux = spectres(self.slab.obs_wgrid, self.slab.fine_wgrid, self.flux)
         return self
     
-    def __call__(self, params, wave):
+    def __call__(self, params, 
+                 wave=None, # this is the fine_wgrid in um
+                 ):
         
-        self.set_properties(distance=params.get('distance', 100.0),
-                            T_ex=params.get('T_ex', np.array(np.array([600.]))),
-                            N_mol=params.get('N_mol', np.array(np.array([1e17]))),
-                            A_au=params.get('A_au', np.array(np.array([1.0]))),
-                            dV=params.get('dV', np.array(np.array([1.0]))),
-                            )
+        # self.set_properties(distance=params.get('distance', 100.0),
+        #                     T_ex=params.get('T_ex', np.array(np.array([600.]))),
+        #                     N_mol=params.get('N_mol', np.array(np.array([1e17]))),
+        #                     A_au=params.get('A_au', np.array(np.array([1.0]))),
+        #                     dV=params.get('dV', np.array(np.array([1.0]))),
+        #                     )
+        
+        self.slab.setup_disk(distance=params.get('d_pc', 100.0),
+                             T_ex=params.get('T_ex', np.array([600.])),
+                             N_mol=params.get('N_mol', np.array([1e17])),
+                             A_au=params.get('A_au', np.array([1.0])),
+                             dV=params.get('dV', np.array([1.0])),
+                             )
+        assert hasattr(self.slab, 'distance'), f'Distance not set'
+        
+        if wave is not None:
+            self.fine_wgrid = jnp.array(wave)
+        assert hasattr(self.slab, 'fine_wgrid'), 'fine_wgrid not set'
         
         # start = time.time()
-        if not hasattr(self.slab, 'obs_wgrid'):
-            self.set_obs_wgrid(wave)
+        # if not hasattr(self.slab, 'obs_wgrid'):
+        #     self.set_obs_wgrid(wave)
             # self.set_grid(obs_wgrid=wave,
                         #   R=params.get('R', 3200),
                         #   )

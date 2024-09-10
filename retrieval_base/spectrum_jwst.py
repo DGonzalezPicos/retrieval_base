@@ -611,6 +611,14 @@ class SpectrumJWST:
         self.err = np.array(self.err).reshape(shape_in)
         return self              
            
+    def mask_lines(self, lines={'weird_line':(2050, 2080)}):
+        
+        for name, wrange in lines.items():
+            mask = (self.wave > wrange[0]) & (self.wave < wrange[1])
+            if np.sum(mask) > 0:
+                print(f' Masking {name} ({wrange}) with {np.sum(mask)} points.')
+                self.flux[mask] = np.nan
+        return self        
         
             
             

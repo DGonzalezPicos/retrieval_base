@@ -96,15 +96,16 @@ class pRT_model:
             n_atm_layers = 50
         self.pressure = np.logspace(log_P_range[0], log_P_range[1], n_atm_layers)
         
-        print(f' disk_species = {disk_species}')
-        if len(disk_species) > 0:
+        # print(f' disk_species = {disk_species}')
+        self.disk_species = disk_species
+        if len(self.disk_species) > 0:
             print(f' [pRT_model] Disk species: {disk_species}')
             # import iris as iris
             # from iris import setup
             # from iris import spectrum as sp
             from retrieval_base.slab_model import Disk
             
-            self.disk_species = disk_species
+            # self.disk_species = disk_species
             self.disk = Disk(molecules=self.disk_species,
                 # wave_range=(wmin, wmax),
                 wave_range=(4.1,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
@@ -247,7 +248,7 @@ class pRT_model:
         # Add clouds if requested
         self.add_clouds()
         
-        self.disk_emission = ("T_ex" in params.keys())
+        # self.disk_emission = ("T_ex" in params.keys())
         self.disk_params = {k: params[k] for k in ['T_ex', 'N_mol', 'A_au', 'dV'] if k in params.keys()}
 
         # Generate a model spectrum
@@ -390,19 +391,30 @@ class pRT_model:
                 )**2
             
             # then broaden and resample together with the model spectrum
-            if self.disk_emission and wave_i[0] > 4.1e3: # only for G395H reddest filter
+            # print(f' [pRT_model] wave_i[0] = {wave_i[0]}')
+            if (len(self.disk_species)>0) and wave_i[0] > 4000.0: # only for G395H reddest filter
                 # Compute the disk emission
                 # Add the disk emission to the model spectrum
-                self.disk.set_fine_wgrid(wave_i)
+                # print(f' [pRT_model] Computing disk emission for order {i}...')
+                self.disk.set_fine_wgrid(wave_i * 1e-3)
                 # disk params must be a dictionary containing (at least): T_ex, N_mol, A_au, dV
-                disk_keys = ['T_ex', 'N_mol', 'A_au', 'dV']
-                assert all([k in self.disk_params.keys() for k in disk_keys]), \
-                    'Disk parameters must contain T_ex, N_mol, A_au, dV'
+                disk_keys = ['T_ex', 'N_mol', 'A_au', 'dV', 'd_pc']
+                # assert all([k in self.disk_params.keys() for k in disk_keys]), \
+                #     'Disk parameters must contain T_ex, N_mol, A_au, dV'
                     
                 disk_dict = {k: self.params[k] for k in disk_keys}
                 # print(f' disk_dict = {disk_dict}')
-                flux_i += self.disk(disk_dict,
-                                    wave_i * 1e-3)
+                
+                # print(f' [pRT_model] self.disk.slab.distance = {self.disk.slab.distance}')
+                # print(f' [pRT_model] self.disk.slab.A_au = {self.disk.slab.A_au}')
+                # print(f' [pRT_model] self.disk.slab.T_ex = {self.disk.slab.T_ex}')
+                # print(f' [pRT_model] self.disk.slab.N_mol = {self.disk.slab.N_mol}')
+                # print(f' [pRT_model] self.disk.slab.dV = {self.disk.slab.dV}')
+                flux_disk = self.disk(disk_dict,
+                                    wave=None)
+                # print(f' [pRT_model] flux_disk.shape = {flux_disk.shape}')
+                # print(f' [pRT_model] mean(flux_disk) = {np.mean(flux_disk)}')
+                flux_i += flux_disk
 
             # Create a ModelSpectrum instance
             m_spec_i = ModelSpectrum(

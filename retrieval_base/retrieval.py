@@ -994,10 +994,13 @@ class Retrieval:
                 self.Param.params[key_i.replace('invgamma_', '')] = self.Param.params[key_i]
 
         # Update the parameters
-        self.Param.read_PT_params(cube=None)
-        self.Param.read_uncertainty_params()
-        self.Param.read_chemistry_params()
-        self.Param.read_cloud_params()
+        # self.Param.read_PT_params(cube=None)
+        # self.Param.read_uncertainty_params()
+        # self.Param.read_chemistry_params()
+        # self.Param.read_cloud_params()
+        # self.read_disk_params()
+        self.Param.read_params()
+
         
         # self.Param.params.update(self.Param.constant_params)
         # check for resolution parameters and place them in a list `res`
@@ -1005,7 +1008,7 @@ class Retrieval:
         # if len(res_keys) > 0:
         #     self.Param.params['res'] = [self.Param.params[key] for key in res_keys]
         #     print(f' res: {self.Param.params["res"]}')
-        self.Param.read_resolution_params()
+        # self.Param.read_resolution_params()
         return self
         
         

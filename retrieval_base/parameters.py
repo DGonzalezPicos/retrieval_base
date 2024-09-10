@@ -84,7 +84,7 @@ class Parameters:
         
         # check distance / parallax parameters
         for p in ['parallax', 'parallax_mas']:
-            if p in self.param_keys:
+            if p in self.params.keys():
                 self.params['d_pc'] = 1 / (self.params[p] * 1e-3)
             
             
@@ -142,12 +142,13 @@ class Parameters:
             
 
         # Read the parameters for the model's segments
-        cube = self.read_PT_params(cube)
-        self.read_uncertainty_params()
-        self.read_chemistry_params()
-        self.read_cloud_params()
-        self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grating
-        self.read_disk_params()
+        # cube = self.read_PT_params(cube)
+        # self.read_uncertainty_params()
+        # self.read_chemistry_params()
+        # self.read_cloud_params()
+        # self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grating
+        # self.read_disk_params()
+        self.read_params()
 
         if (ndim is None) and (nparams is None):
             return cube
@@ -471,7 +472,9 @@ class Parameters:
 
             self.params[k] = np.array([np.array(v_list)])
             # print(f' [Parameters.read_disk_params]: k = {k}, self.params[k] = {self.params[k]}')
-
+            
+        
+        assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
             
         # if 'R_d' in self.param_keys:
         #     rjup_cm = 7.1492e9
@@ -481,3 +484,12 @@ class Parameters:
             
         
             
+    def read_params(self):
+        '''Parse the parameters from the parameter dictionary.'''
+        self.read_PT_params()
+        self.read_uncertainty_params()
+        self.read_chemistry_params()
+        self.read_cloud_params()
+        self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grating
+        self.read_disk_params()
+        return self

@@ -72,6 +72,9 @@ if args.pre_processing:
     spec.reshape(spec.n_orders*2, 1)
     # spec.fix_wave_nans() # experimental...
     sigma_clip_width = conf_data.get('sigma_clip_width', 30)
+    if len(conf.mask_lines)>0:
+        spec.mask_lines(conf.mask_lines)
+        
     for i in range(2):
         spec.sigma_clip_reshaped(use_flux=False, 
                                     # sigma=3, # KM bands
@@ -82,6 +85,7 @@ if args.pre_processing:
                                     fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
+    
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     
     if conf.cov_mode == 'GP':

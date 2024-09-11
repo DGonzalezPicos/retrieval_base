@@ -12,10 +12,12 @@ import petitRADTRANS.nat_cst as nc
 
 from .spectrum import Spectrum, ModelSpectrum
 
-from retrieval_base.auxiliary_functions import get_path
+from retrieval_base.auxiliary_functions import get_path, apply_extinction
 path = get_path()
 
 class pRT_model:
+    
+    Av = 0.0 # default, no extinction
 
     def __init__(self, 
                  line_species, 
@@ -251,6 +253,7 @@ class pRT_model:
         # self.disk_emission = ("T_ex" in params.keys())
         self.disk_params = {k: params[k] for k in ['T_ex', 'N_mol', 'A_au', 'dV'] if k in params.keys()}
 
+        self.Av = params.get('Av', 0.0)
         # Generate a model spectrum
         m_spec = self.get_model_spectrum(
             get_contr=get_contr, 
@@ -389,6 +392,9 @@ class pRT_model:
                 (self.params.get('R_p', 1.0)*nc.r_jup_mean) / \
                 (1e3/self.params['parallax']*nc.pc)
                 )**2
+            
+            if self.Av > 0.0:
+                flux_i = apply_extinction(flux_i, wave_i * 1e-3, self.Av) # wave in [um]
             
             # then broaden and resample together with the model spectrum
             # print(f' [pRT_model] wave_i[0] = {wave_i[0]}')
@@ -583,9 +589,3 @@ class pRT_model:
                         array=opa_cloud_ij.flux[d_mask_i].flatten(), 
                         )
         return self
-
-
-class SlabModel(pRT_model):
-    """ 1D model for disk emission at a given temperature and pressure """
-    
-    

@@ -62,7 +62,7 @@ opacity_params = {
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
     # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
-    'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
+    'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_AloHa_main_iso'),
     # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
     # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
     # 'log_ScH': ([(-14,-2), r'$\log\ \mathrm{ScH}$'], 'ScH_main_iso'), # DGP (2024-07-16): try
@@ -73,6 +73,7 @@ opacity_params = {
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
+    'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
@@ -108,7 +109,7 @@ free_params = {
     # 'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
     # 'log_N_mol_12CO': [(12, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
     # 'log_A_au_12CO': [(-4, 0), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
-    'Av': [(0, 10.0), r'$A_v$'], # extinction in magnitudes
+    'Av': [(0.0, 10.0), r'$A_v$'], # extinction in magnitudes
     
     # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities
@@ -207,7 +208,7 @@ rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
 line_species =[v[1] for _,v in opacity_params.items()]
 
-disk_species = ['12CO']
+disk_species = []
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
 line_species.append('H2_main_iso') # testing (2024-09-10)
@@ -257,7 +258,8 @@ PT_kwargs = dict(
 
 const_efficiency_mode = True
 sampling_efficiency = 0.05
-evidence_tolerance = 0.5
+# evidence_tolerance = 0.5
+evidence_tolerance = 1.0
 n_live_points = 200
 n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1

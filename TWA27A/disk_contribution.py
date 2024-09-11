@@ -15,7 +15,7 @@ path = af.get_path()
 config_file = 'config_jwst.txt'
 target = 'TWA27A'
 # run = None
-run = 'lbl10_KM_4'
+run = 'lbl15_KM_5'
 w_set='NIRSpec'
 
 cwd = os.getcwd()
@@ -42,6 +42,10 @@ m_flux_full = np.squeeze(ret.LogLike[w_set].m_flux)
 chi2_full = ret.LogLike[w_set].chi_squared_red
 wave = np.squeeze(ret.d_spec[w_set].wave)
 
+# save best-fit model as [wave, flux] in .npy file
+np.save(f'{conf.prefix}data/bestfit_model.npy', [wave, m_flux_full])
+print(f'--> Saved {conf.prefix}data/bestfit_model.npy')
+
 disk_param_keys = ['T_ex', 'N_mol', 'A_au']
 
 
@@ -52,6 +56,7 @@ def plot_species(ret,
                  disk_species, 
                  bestfit_params_dict, 
                  emission=True,
+                 overplot_extinction=False,
                   **kwargs):
 
     label = 'disk_' + 'blackbody' if (emission==False) else f'emission{disk_species}'
@@ -100,14 +105,21 @@ def plot_species(ret,
             ax[1].axhline(0, color='b', lw=0.5, ls='--')
             ax[0].set_ylabel('Flux / erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$')
             ax[1].set_ylabel('Residuals')
-            if order==0:
-                ax[0].legend()
+            
             if order==n_orders-1:
                 ax[1].set_xlabel('Wavelength / nm')
-                # ax[1].legend()
+                
+            if overplot_extinction:
+                Av = 10.
+                ax[0].plot(wave[order,], af.apply_extinction(m_flux_full[order,], wave[order] * 1e-3, Av), # wave must be in [um]
+                           color='blue', lw=lw,  ls='--', label=f'Av={Av}')
+            
+            if order==0:
+                ax[0].legend()
             pdf.savefig(fig)
         plt.close(fig)  
     print(f'--> Saved {fig_name}')
     
-# plot_species(ret, wave, m_flux_full, chi2_full, '12CO', bestfit_params_dict, emission=True)
-plot_species(ret, wave, m_flux_full, chi2_full, '12CO', bestfit_params_dict, emission=False)
+# plot_species(ret, wave, m_flux_full, chi2_full, '12CO', bestfit_params_dict, emission=True, apply_extinction=True)
+plot_species(ret, wave, m_flux_full, chi2_full, '12CO', bestfit_params_dict, emission=False, overplot_extinction=True)
+

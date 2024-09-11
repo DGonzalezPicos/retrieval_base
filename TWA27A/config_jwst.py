@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl15_KM_5'
+run = 'lbl15_KM_6'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -60,7 +60,7 @@ opacity_params = {
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
-    # 'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
+    'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
     # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
     'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_main_iso'),
     # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
@@ -105,9 +105,10 @@ free_params = {
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
     'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
     # disk emission parameters
-    'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
-    'log_N_mol_12CO': [(12, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
-    'log_A_au_12CO': [(-4, 0), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    # 'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
+    # 'log_N_mol_12CO': [(12, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
+    # 'log_A_au_12CO': [(-4, 0), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    'Av': [(0, 10.0), r'$A_v$'], # extinction in magnitudes
     
     # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
     # Velocities

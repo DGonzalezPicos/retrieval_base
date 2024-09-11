@@ -38,6 +38,10 @@ class Disk:
         # only CO implemented for now...
         CO_iso = {'12CO': 1, '13CO': 2, 'C18O': 3}
         for mol in self.molecules:
+            
+            if mol == 'H2O':
+                setup.setup_linelists(mol, 'H2O', 1, path_to_moldata=path_to_moldata)
+                continue
             assert mol in CO_iso.keys(), f'{mol} not in {CO_iso.keys()}'
             setup.setup_linelists(mol, 'CO', CO_iso[mol], path_to_moldata=path_to_moldata)
         
@@ -201,9 +205,10 @@ if __name__=='__main__':
     # get directory of script
     dir_path = pathlib.Path(__file__).parent.absolute()
     
-    # wmin, wmax = 4.1, 5.3
-    wmin, wmax = 1.9, 2.6
-    disk = Disk(molecules=['12CO',],
+    wmin, wmax = 4.1, 5.3
+    # wmin, wmax = 1.9, 2.6
+    molecules = ['12CO', 'H2O']
+    disk = Disk(molecules=molecules,
                 wave_range=(wmin, wmax),
                 wave_step=1e-5,
                 grating='g395h',
@@ -211,11 +216,10 @@ if __name__=='__main__':
                 )
     
     params = {'distance': 59.0,
-              'T_ex': np.array([np.array([800.])]),
-                'N_mol': np.array([np.array([1e17])]),
-                'A_au': np.array([np.array([2.0])]),
-                'dV': np.array([np.array([2.0])]),
-              'R': 3200,
+              'T_ex': np.array([np.array([1000., 1000.])]),
+                'N_mol': np.array([np.array([1e17, 1e17])]),
+                'A_au': np.array([np.array([0.05, 0.05])]),
+                'dV': np.array([np.array([2.0, 2.0])]),
               }
     
     wave = np.load('../TWA28/wave_NIRSPec.npy')[-1] * 1e-3
@@ -226,7 +230,7 @@ if __name__=='__main__':
     wave_step_obs = np.median(np.diff(wave))
     print(f' Wave step of observation: {wave_step_obs:.2e}')
     disk.set_obs_wgrid(obs_wgrid=wave)
-    # disk.set_fine_wgrid()
+    disk.set_fine_wgrid(fine_wgrid=np.arange(wmin, wmax, 1e-5))
     
     
     time_list = []
@@ -245,13 +249,14 @@ if __name__=='__main__':
     if plot:
         fig, ax = plt.subplots(1,1, figsize=(10,6))
         # ax.plot(wave, disk.flux, label='CO')
-        ax.plot(disk.slab.fine_wgrid, flux, label='12CO')
+        label = '_'.join(molecules)
+        ax.plot(disk.slab.fine_wgrid, flux, label=label)
         ax.legend()
         ax.set(xlabel='Wavelength / um', ylabel='Flux / erg cm$^{-2}$ s$^{-1}$ nm$^{-1}$',
             #    xlim=(4.71, 4.92),
                )
         
-        fig_name = f'CO_emission_wave_{wmin:.2f}-{wmax:.2f}.pdf'
+        fig_name = f'{label}_emission_wave_{wmin:.2f}-{wmax:.2f}.pdf'
         fig.savefig('../'+fig_name, bbox_inches='tight')
         print(f'Saved figure: {fig_name}')
         plt.show()        

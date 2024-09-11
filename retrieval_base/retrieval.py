@@ -1034,6 +1034,7 @@ class Retrieval:
 
             # Get the PT and mass-fraction envelopes
             self.get_PT_mf_envelopes(posterior)
+            self.Chem.get_VMRs_posterior()
             
             # Get the model flux envelope
             #flux_envelope = self.get_all_spectra(posterior, save_spectra=False)

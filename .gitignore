@@ -32,7 +32,13 @@ J0856/CN_opacity_comparison.png
 J0856/retrieval_evaluation.sh
 */data_old/
 *ames*
-data/
+data/ames-cond
+data/ames-dusty
+data/companion_data
+data/hitran
+data/PHOENIX
+*.tgz
+*.Vega
 *.fits
 *.pdf
 *.zip

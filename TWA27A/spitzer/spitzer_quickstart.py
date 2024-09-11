@@ -38,26 +38,29 @@ err = err * (1e-23) * (2.998e10 / wave_cm**2) * 1e-7
 
 # flux[mask] = np.nan
 
-fig, ax_spec = plt.subplots(4,1, figsize=(8,6))
-ax = ax_spec[:3]
+fig, ax_spec = plt.subplots(3,1, figsize=(12,8), gridspec_kw={'height_ratios': [1, 2, 1],
+                                                             'hspace': 0.20,
+                                                             'left': 0.09,})
+ax = ax_spec[:2]
 ax_res = ax_spec[-1]
 
 # plot two blackbodies with temperatures T1 and T2
 
-T = [2480, # Photosphere
-    #  460,  # Inner disk (hot gas)
-    200.,
-    #  250,  # Mid plane warm gas??
-     80,   # Outer disk (cold dust)
+T = [2440, # Photosphere
+     510,  # Inner disk (hot gas)
+    180.,
+    #  250,  # Mid plane warmgas??
+    #  80,   # Outer disk (cold dust)
      ]
 bb_list = []
 
 # rjup to cm
 R_jup = np.array([2.80, 
                 #   16.,
-                80.,
-                #   20.,
-                  400,
+                # 80.,
+                15.,
+                  80.,
+                #   400,
                   ])
 R_cm =  R_jup * 7.1492e9 # [R_jup] -> [cm]
 # pc to cm
@@ -65,37 +68,42 @@ R_cm =  R_jup * 7.1492e9 # [R_jup] -> [cm]
 parallax_mas = 16.46 # Gaia DR3
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 d_cm = d_pc * 3.086e18 # [pc] -> [cm]
+
+bb_name = ['Photosphere', 'Inner disk', 'Outer disk']
 for i, T_i in enumerate(T):
     bb_list.append(blackbody(wave_cm, T_i) * (R_cm[i] / d_cm)**2)
-    ax[-1].plot(wave, bb_list[-1], label=f'T = {T_i} K\nR= {R_jup[i]:.1f} R$_{{Jup}}$', alpha=0.4)
+    ax[-1].plot(wave, bb_list[-1], label=f'{bb_name[i]}\nT = {T_i} K\nR= {R_jup[i]:.1f} R$_{{Jup}}$', alpha=0.8)
 
 model = sum(bb_list)
-ax[-1].plot(wave, model, color='magenta')
+ax[-1].plot(wave, model, color='magenta', label=r'$\Sigma_i$BB$_i$')
 
 res = flux - model
 ax_res.plot(wave, res, color='black')
 ax_res.axhline(0, color='magenta', ls='-', lw=0.5)
 ax_res.set(xscale='log', yscale='linear', ylabel='Residuals')
 
-ax[0].errorbar(wave, flux_Jy, yerr=err_Jy, fmt='o', color='black', ms=1, alpha=0.8)
-ax[0].set_ylabel('Flux density / Jy')
-for i, axi in enumerate(ax[1:]):
+for i, axi in enumerate(ax):
     axi.errorbar(wave, flux, yerr=err, fmt='o', color='black', ms=1, alpha=0.8)
     axi.errorbar(wave[mask_clip], flux[mask_clip], yerr=err[mask_clip], fmt='o', color='red', ms=1)
 
     
 ax[-1].set(xscale='log', yscale='log')
 
-
 xlim = (np.nanmin(wave), np.nanmax(wave))
 ax[0].set_xlim(xlim)
-ax[1].set_xlim(xlim)
-ax[-1].legend(ncol=len(T), loc='upper right', frameon=False, fontsize=8)
+ax[-1].legend(ncol=len(T)+1, loc='upper right', frameon=False, fontsize=8)
 ax[-1].set(xlim=xlim, ylim=(1e-18, None))
-ax[-1].set_xlabel(r'Wavelength / $\mu$m')
+ax_res.set_xlabel(r'Wavelength / $\mu$m')
+# xticks for xscale='log'
+xticks_log = [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 15.0, 20.0, 30.0]
+for axi in [ax[1], ax_res]:
+    axi.set_xticks(xticks_log)
+    axi.get_xaxis().set_major_formatter(plt.ScalarFormatter())  # linear scale
+    # axi.set_xlabel(r'Wavelength / $\mu$m')
+
 # ax[1].set_ylabel(f'Flux / {flux_units}')
 # common ylabel for two last axes
-fig.text(0.03, 0.45, f'Flux / {flux_units}', va='center', rotation='vertical')
+fig.text(0.03, 0.62, f'Flux / {flux_units}', va='center', rotation='vertical')
 fig_name = path / 'spitzer_quickstart.pdf'
 fig.savefig(fig_name, bbox_inches='tight')
 print(f' Figure saved to {fig_name}')

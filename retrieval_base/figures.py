@@ -2,6 +2,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 # import pdf pages
 from matplotlib.backends.backend_pdf import PdfPages
+import corner
 
 import numpy as np
 from scipy.ndimage import generic_filter, gaussian_filter1d
@@ -1212,3 +1213,115 @@ def fig_contr_em(contr_em,
             plt.close(fig)
     print(f' - Saved {fig_name}')
     
+    
+def fig_corner_VMRs_posterior(Chem,
+                              fig_name=None,
+                              **kwargs):
+    
+    if not hasattr(Chem, 'VMRs_posterior'):
+        print(' - No VMRs posterior found')
+        Chem.get_VMRs_posterior()
+        
+    assert len(Chem.VMRs_posterior) > 0, 'No VMRs posterior found'
+    # log of posterior 
+    P = np.log10(np.array(list(Chem.VMRs_posterior.values())).T)
+    P_labels =  [f'log_{species}' for species in Chem.VMRs_posterior.keys()]
+
+    labels = []
+    for i, (label_i, p_i) in enumerate(zip(P_labels, P.T)):
+        if '/' in label_i:
+            # ratios are plotted in linear space
+            P[:,i] = 10**p_i
+            labels.append(label_i[4:])
+            
+        else:
+            labels.append(label_i)
+    
+    print(f'[fig_corner_VMRs_posterior] P.shape = {P.shape}')
+    
+    assert len(labels) == P.shape[1], f'len(labels) = {len(labels)}, P.shape[1] = {P.shape[1]}'
+    
+    # compute quantiles
+    q = [0.16, 0.5, 0.84]
+    Q = np.array([np.quantile(p, q) for p in P.T])
+    # ranges for plotting as 4 sigma around median
+    R = np.array([(4*(q_i[0]-q_i[1])+q_i[1], 4*(q_i[2]-q_i[1])+q_i[1]) for q_i in Q])
+    print(f'[fig_corner_VMRs_posterior] Q.shape = {Q.shape}')
+    print(f'[fig_corner_VMRs_posterior] R.shape = {R.shape}')
+    
+    color = kwargs.get('color', 'brown')
+    
+    figsize = kwargs.get('figsize', (P.shape[1] * 0.95, P.shape[1]*1.1))
+    
+    # increase margin on top and left
+    fig = plt.figure(figsize=figsize)
+    
+    fig = corner.corner(P,
+                        labels=labels,
+                        range=R, 
+                    show_titles=True,
+                    use_math_text=True,
+                    title_fmt='.2f',
+                    bins=20,
+                    max_n_ticks=3,
+                    quiet=True,
+                    quantiles=[0.16, 0.84], 
+                    title_quantiles=[0.16,0.50, 0.84],
+                    title_kwargs={'fontsize': 12, 'wrap': True,
+                                  'pad':7},
+                    label_kwargs={'fontsize': 11}, 
+                    hist_kwargs={'density': True,
+                                 'histtype': 'stepfilled',
+                                 'alpha': 0.7,
+                                 'color': color,
+                                 'linewidth': 1.0,
+                                 'zorder': 1,
+                                 'edgecolor':'black'
+                                 
+                                },
+                    labelpad=0.2,
+                    color=color,
+                    fill_contours=kwargs.get('fill_contours', True),
+                    smooth=kwargs.get('smooth', 1.0),
+                    plot_density=True,
+                    fig=fig,
+            )
+    
+    fix_corner_axes(fig)
+    plt.subplots_adjust(left=0.04, right=0.95, top=0.98, bottom=0.03)
+
+    
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f' - Saved {fig_name}')
+    plt.close(fig)
+    
+    
+def fix_corner_axes(fig, ts=10):
+    # Reshape the axes to a square matrix
+    ax = np.array(fig.axes)
+    for ax_i in ax:
+        ax_i.tick_params(axis='both', direction='inout')
+
+    ax = ax.reshape((int(np.sqrt(len(ax))), 
+                        int(np.sqrt(len(ax))))
+                    )
+    # rewrite titles to span two rows
+    # collect all titles
+    titles = [axi.title.get_text() for axi in fig.axes]
+    for i, title in enumerate(titles):
+        # print(f'i = {i}, title = {title}')
+        if len(title) > ts: # change 30 to 1 if you want all titles to be split
+            title_split = title.split('=')
+            titles[i] = title_split[0] + '\n ' + title_split[1]
+        fig.axes[i].title.set_text(titles[i])
+    # hide solid line from top axis of diagonal axes
+    for i in range(ax.shape[0]):
+        ax[i,i].spines['top'].set_visible(False)
+        ax[i,i].spines['right'].set_visible(False)
+        ax[i,i].spines['left'].set_visible(False)
+    
+                        
+    
+    
+                             

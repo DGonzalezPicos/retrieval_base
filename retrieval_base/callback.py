@@ -242,7 +242,9 @@ class CallBack:
             # Plot the abundances in a corner-plot
             
             del self.LogLike, self.m_spec, self.pRT_atm
-            self.fig_abundances_corner()
+            # self.fig_abundances_corner()
+            figs.fig_corner_VMRs_posterior(self.Chem, fig_name=self.prefix+'plots/VMRs_posterior.pdf')
+
 
         # Remove attributes from memory
         delattrs = ['Param', 'LogLike', 'PT', 'Chem', 'm_spec', 'pRT_atm', 'posterior']

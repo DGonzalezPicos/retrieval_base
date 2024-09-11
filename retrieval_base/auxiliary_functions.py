@@ -492,3 +492,102 @@ def profile_attributes(obj, max_depth=3, depth=0, min_size_mb=0.1):
         except Exception as e:
             print(f"{indent}{attr_name}: {e}")
             pass
+        
+def ism_extinction(
+    av_mag, rv_red, wave):
+    """
+    Author: Tomas Stolker
+    
+    Function for calculating the optical and IR extinction
+    with the empirical relation from `Cardelli et al. (1989)
+    <https://ui.adsabs.harvard.edu/abs/1989ApJ...345..245C/abstract>`_.
+
+    Parameters
+    ----------
+    av_mag : float
+        Extinction (mag) in the $V$ band.
+    rv_red : float
+        Reddening in the $V$ band, ``R_V = A_V / E(B-V)``. Standard diffuse ISM = 3.1.
+    wave : np.ndarray, list(float), float
+        Array or list with the wave (um) for which
+        the extinction is calculated. It is also possible
+        to provide a single value as float.
+
+    Returns
+    -------
+    np.ndarray
+        Extinction (mag) at ``wave``.
+    """
+
+    if isinstance(wave, float):
+        wave = np.array([wave])
+
+    elif isinstance(wave, list):
+        wave = np.array(wave)
+
+    x_wavel = 1.0 / wave
+    y_wavel = x_wavel - 1.82
+
+    a_coeff = np.zeros(x_wavel.size)
+    b_coeff = np.zeros(x_wavel.size)
+
+    indices = np.where(x_wavel < 1.1)[0]
+
+    if len(indices) > 0:
+        a_coeff[indices] = 0.574 * x_wavel[indices] ** 1.61
+        b_coeff[indices] = -0.527 * x_wavel[indices] ** 1.61
+
+    indices = np.where(x_wavel >= 1.1)[0]
+
+    if len(indices) > 0:
+        a_coeff[indices] = (
+            1.0
+            + 0.17699 * y_wavel[indices]
+            - 0.50447 * y_wavel[indices] ** 2
+            - 0.02427 * y_wavel[indices] ** 3
+            + 0.72085 * y_wavel[indices] ** 4
+            + 0.01979 * y_wavel[indices] ** 5
+            - 0.77530 * y_wavel[indices] ** 6
+            + 0.32999 * y_wavel[indices] ** 7
+        )
+
+        b_coeff[indices] = (
+            1.41338 * y_wavel[indices]
+            + 2.28305 * y_wavel[indices] ** 2
+            + 1.07233 * y_wavel[indices] ** 3
+            - 5.38434 * y_wavel[indices] ** 4
+            - 0.62251 * y_wavel[indices] ** 5
+            + 5.30260 * y_wavel[indices] ** 6
+            - 2.09002 * y_wavel[indices] ** 7
+        )
+
+    return av_mag * (a_coeff + b_coeff / rv_red)
+
+def apply_extinction(
+    flux, wave, av_mag, rv_red=3.1):
+    """
+    Apply extinction to a spectrum. The extinction is calculated with
+    the empirical relation from `Cardelli et al. (1989)
+    <https://ui.adsabs.harvard.edu/abs/1989ApJ...345..245C/abstract>`_.
+
+    Parameters
+    ----------
+    flux : np.ndarray
+        Spectrum to which the extinction is applied.
+    wave : np.ndarray
+        Wavelengths (um) of the spectrum.
+
+    av_mag : float  
+        Extinction (mag) in the $V$ band.
+
+    rv_red : float
+        Reddening in the $V$ band, ``R_V = A_V / E(B-V)``. Standard diffuse ISM = 3.1.
+
+    Returns
+    -------
+    np.ndarray
+        Spectrum with extinction applied.
+    """
+    
+    # extinction = ism_extinction(av_mag, rv_red, wave)
+    return flux * 10 ** (-0.4 * ism_extinction(av_mag, rv_red, wave))

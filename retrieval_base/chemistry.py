@@ -75,6 +75,8 @@ class Chemistry:
     def __init__(self, line_species, pressure):
 
         self.line_species = line_species
+        self.species = [self.pRT_name_dict[line_species_i] for line_species_i in self.line_species]
+        self.line_species_labels = [self.read_species_info(species_i, 'label') for species_i in self.species]
 
         self.pressure     = pressure
         self.n_atm_layers = len(self.pressure)
@@ -155,14 +157,16 @@ class Chemistry:
             self.VMRs_posterior[key_i] = self.mass_fractions_posterior[line_species_i][:,0] * (MMW/ mu)
             
         if "13CO" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
-            self.VMRs_posterior["12_13CO"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["13CO"]
+            self.VMRs_posterior["12CO/13CO"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["13CO"]
         if "C18O" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
             self.VMRs_posterior["C16O/C18O"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["C18O"]
         if "C17O" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
             self.VMRs_posterior["C16O/C17O"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["C17O"]
+        if "C18O" in list(self.VMRs_posterior.keys()) and "C17O" in list(self.VMRs_posterior.keys()):
+            self.VMRs_posterior["C18O/C17O"] = self.VMRs_posterior["C18O"] / self.VMRs_posterior["C17O"]
         
         if "H2O_181" in list(self.VMRs_posterior.keys()) and "H2O" in list(self.VMRs_posterior.keys()):
-            self.VMRs_posterior["H2_16_18O"] = self.VMRs_posterior["H2O"] / self.VMRs_posterior["H2O_181"]
+            self.VMRs_posterior["H216O/H218O"] = self.VMRs_posterior["H2O"] / self.VMRs_posterior["H2O_181"]
             
         if hasattr(self, 'CO_posterior'):
             self.VMRs_posterior["C/O"] = self.CO_posterior
@@ -170,6 +174,7 @@ class Chemistry:
             self.VMRs_posterior["Fe/H"] = self.FeH_posterior
         del self.mass_fractions_posterior
         return self
+
 
 class FreeChemistry(Chemistry):
 

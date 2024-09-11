@@ -50,10 +50,14 @@ def plot_species(ret,
                  chi2_full,
                  line_species, 
                  bestfit_params_dict, 
+                 overplot_extinction=False,
                   **kwargs):
 
     fig_name = f'{conf.prefix}plots/bestfit_spec_{line_species}.pdf'
     n_orders = len(wave)
+    
+    # if overplot_extinction:
+
     
     with PdfPages(fig_name) as pdf:
         
@@ -98,6 +102,9 @@ def plot_species(ret,
             if order==n_orders-1:
                 ax[1].set_xlabel('Wavelength / nm')
                 # ax[1].legend()
+                
+            
+
             pdf.savefig(fig)
         plt.close(fig)  
     print(f'--> Saved {fig_name}')

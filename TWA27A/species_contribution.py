@@ -15,7 +15,7 @@ path = af.get_path()
 config_file = 'config_jwst.txt'
 target = 'TWA27A'
 # run = None
-run = 'lbl10_KM_4'
+run = 'lbl15_KM_6'
 w_set='NIRSpec'
 
 cwd = os.getcwd()

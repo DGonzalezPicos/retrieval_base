@@ -255,7 +255,7 @@ class pRT_model:
         
         self.geom_thin_disk_args = {k: params[k] for k in ['T_star', 'R_p', 'R_cav', 'R_out', 'i', 'd_pc', 'q'] if k in params.keys()}
         self.geom_thin_disk_emission = (len(self.geom_thin_disk_args) == 7)
-        print(f' [pRT_model] geom_thin_disk_emission = {self.geom_thin_disk_emission}')
+        # print(f' [pRT_model] geom_thin_disk_emission = {self.geom_thin_disk_emission}')
 
         self.Av = params.get('Av', 0.0)
         # Generate a model spectrum

@@ -12,7 +12,7 @@ import petitRADTRANS.nat_cst as nc
 
 from .spectrum import Spectrum, ModelSpectrum
 
-from retrieval_base.auxiliary_functions import get_path, apply_extinction
+from retrieval_base.auxiliary_functions import get_path, apply_extinction, geom_thin_disk_emission
 path = get_path()
 
 class pRT_model:
@@ -252,6 +252,10 @@ class pRT_model:
         
         # self.disk_emission = ("T_ex" in params.keys())
         self.disk_params = {k: params[k] for k in ['T_ex', 'N_mol', 'A_au', 'dV'] if k in params.keys()}
+        
+        self.geom_thin_disk_args = {k: params[k] for k in ['T_star', 'R_p', 'R_cav', 'R_out', 'i', 'd_pc', 'q'] if k in params.keys()}
+        self.geom_thin_disk_emission = (len(self.geom_thin_disk_args) == 7)
+        print(f' [pRT_model] geom_thin_disk_emission = {self.geom_thin_disk_emission}')
 
         self.Av = params.get('Av', 0.0)
         # Generate a model spectrum
@@ -421,6 +425,11 @@ class pRT_model:
                 # print(f' [pRT_model] flux_disk.shape = {flux_disk.shape}')
                 # print(f' [pRT_model] mean(flux_disk) = {np.mean(flux_disk)}')
                 flux_i += flux_disk
+            if self.geom_thin_disk_emission:
+                f_geom_thin_disk = geom_thin_disk_emission(wave_nm=wave_i, **self.geom_thin_disk_args)
+                # print(f' [pRT_model] f_geom_thin_disk.shape = {f_geom_thin_disk.shape}')
+                print(f' [pRT_model] mean(f_geom_thin_disk) = {np.mean(f_geom_thin_disk)}')
+                flux_i += f_geom_thin_disk
 
             # Create a ModelSpectrum instance
             m_spec_i = ModelSpectrum(

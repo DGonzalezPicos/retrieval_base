@@ -15,7 +15,7 @@ path = af.get_path()
 config_file = 'config_jwst.txt'
 target = 'TWA27A'
 # run = None
-run = 'lbl15_KM_5'
+run = 'lbl15_KM_6'
 w_set='NIRSpec'
 
 cwd = os.getcwd()
@@ -45,6 +45,16 @@ wave = np.squeeze(ret.d_spec[w_set].wave)
 # save best-fit model as [wave, flux] in .npy file
 np.save(f'{conf.prefix}data/bestfit_model.npy', [wave, m_flux_full])
 print(f'--> Saved {conf.prefix}data/bestfit_model.npy')
+
+# generate model without disk
+generate_no_disk = True
+if generate_no_disk:
+    bestfit_params_dict['R_d'] = 0.0
+    ret.evaluate_model(np.array(list(bestfit_params_dict.values())))
+    ret.PMN_lnL_func()
+    m_flux = np.squeeze(ret.LogLike[w_set].m_flux)
+    # save best-fit model as [wave, flux] in .npy file
+    np.save(f'{conf.prefix}data/bestfit_model_no_disk.npy', [wave, m_flux])
 
 disk_param_keys = ['T_ex', 'N_mol', 'A_au']
 
@@ -117,6 +127,7 @@ def plot_species(ret,
             if order==0:
                 ax[0].legend()
             pdf.savefig(fig)
+            plt.close(fig)
         plt.close(fig)  
     print(f'--> Saved {fig_name}')
     

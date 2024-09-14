@@ -8,15 +8,15 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl15_K2'
+run = 'lbl15_KM7'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
     'NIRSpec': {
         # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
-        'wave_range': (1650, 3200), # g235h-f170lp
-        # 'wave_range': (1650, 5300), 
+        # 'wave_range': (1650, 3200), # g235h-f170lp
+        'wave_range': (1650, 5300), 
         # 'wave_range': (1630, 3250), 
         
         'lbl_opacity_sampling' : 15,
@@ -38,30 +38,35 @@ opacity_params = {
     'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
     'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
-    # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
+    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
-    # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
+    'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'), # DGP (2024-07-16): accidentally removed 
-    # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
+    'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
-    # 'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
+    'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     # 'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
+    'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
-    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),# TODO: update to Mg_high when ready?
-    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
-    # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
-    # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
+    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),# TODO: update to Mg_high when ready?
+    'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
+    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    'log_Li': ([(-14,-2), r'$\log\ \mathrm{Li}$'], 'Li_high'),
+    # 'log_Rb': ([(-14,-2), r'$\log\ \mathrm{Rb}$'], 'Rb_high'),
+    # 'log_Cs': ([(-14,-2), r'$\log\ \mathrm{Cs}$'], 'Cs_high'),
+    # 'log_Ba': ([(-14,-2), r'$\log\ \mathrm{Ba}$'], 'Ba_high'),
+    # 'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
+    'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al_high'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
-    # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
+    'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
     'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_AloHa_main_iso'),
     # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
     # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
@@ -72,7 +77,7 @@ opacity_params = {
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
-    # 'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
+    'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
@@ -101,14 +106,19 @@ free_params = {
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    # 'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
+    # 'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
     # disk emission parameters
     # 'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
     # 'log_N_mol_12CO': [(12, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
     # 'log_A_au_12CO': [(-4, 0), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    'R_cav': [(1.0, 30.0), r'$R_\mathrm{cav}$'], # disk radius in R_jup
+    'R_out': [(1.0, 200.0), r'$R_\mathrm{out}$'], # disk radius in R_jup
+    'q': [(0.4, 1.2), r'$q$'], # disk temperature exponent
+    'i_deg': [(0, 90), r'$i$'], # disk inclination in degrees
+    
     'Av': [(0.0, 10.0), r'$A_v$'], # extinction in magnitudes
     
     # 'T_d': [(100, 101), r'$T_d$'], # disk temperature in K
@@ -158,6 +168,7 @@ constant_params = {
     'epsilon_limb': 0.5, 
     # 'log_g': 3.5,
     'vsini':0.,
+    'T_star': 2430.0, # effective temperature in K, Cooper+2024 (Gaia DR3)
 
     # PT profile
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
@@ -172,10 +183,10 @@ constant_params = {
                 'g235h',
                 'g235h',
                 
-                # 'g395h',
-                # 'g395h',
-                # 'g395h',
-                # 'g395h',
+                'g395h',
+                'g395h',
+                'g395h',
+                'g395h',
                 ], 
 }
 

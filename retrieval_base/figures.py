@@ -1246,6 +1246,22 @@ def fig_corner_VMRs_posterior(Chem,
     Q = np.array([np.quantile(p, q) for p in P.T])
     # ranges for plotting as 4 sigma around median
     R = np.array([(4*(q_i[0]-q_i[1])+q_i[1], 4*(q_i[2]-q_i[1])+q_i[1]) for q_i in Q])
+    # check there are no nans or infs in R, pop them from labels
+    delete_idx = []
+    for i, (q_i, r_i, label_i) in enumerate(zip(Q, R, labels)):
+        if np.isnan(r_i).any() or np.isinf(r_i).any() or (np.abs(q_i) > 1e4).any():
+            delete_idx.append(i)
+            print(f' - Deleting {label_i} from labels')
+    for i in delete_idx[::-1]:
+        labels.pop(i)
+        P = np.delete(P, i, axis=1)
+        Q = np.delete(Q, i, axis=0)
+        R = np.delete(R, i, axis=0)
+        
+    # P = np.delete(P, delete_idx, axis=1)
+    # Q = np.delete(Q, delete_idx, axis=0)
+    # R = np.delete(R, delete_idx, axis=0)
+            
     print(f'[fig_corner_VMRs_posterior] Q.shape = {Q.shape}')
     print(f'[fig_corner_VMRs_posterior] R.shape = {R.shape}')
     

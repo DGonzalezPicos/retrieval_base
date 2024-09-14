@@ -133,12 +133,17 @@ class Parameters:
             if cond:
                 high = min(self.params['dlnT_dlnP_RCE'], high)
                 low =  min(self.params['dlnT_dlnP_RCE'], low)
+                
+            if key_i == 'R_out':
+                low = max(self.params['R_cav'], low)
+                
             cube[i] = low + (high-low)*cube[i]
 
             self.params[key_i] = cube[i]
 
             if key_i.startswith('log_'):
                 self.params = self.log_to_linear(self.params, key_i)
+                                
             
 
         # Read the parameters for the model's segments
@@ -457,25 +462,35 @@ class Parameters:
         
     def read_disk_params(self):
         ''' Read the disk parameters '''
-        disk_default = {
-            'T_ex': [600.0],
-            'N_mol': [1e17],
-            'A_au': [1.0],
-            'dV': [1.0],
-        }
-        all_keys = list(self.params.keys())
-        for k in disk_default.keys():
-            
-            v_list = [self.params[key] for key in all_keys if key.startswith(f'{k}_')]
-            if len(v_list) == 0:
-                v_list = disk_default[k]
-
-            self.params[k] = np.array([np.array(v_list)])
-            # print(f' [Parameters.read_disk_params]: k = {k}, self.params[k] = {self.params[k]}')
-            
         
-        assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
+        if 'T_ex' in self.params.keys():
+            disk_default = {
+                'T_ex': [600.0],
+                'N_mol': [1e17],
+                'A_au': [1.0],
+                'dV': [1.0],
+            }
+            all_keys = list(self.params.keys())
+            for k in disk_default.keys():
+                
+                v_list = [self.params[key] for key in all_keys if key.startswith(f'{k}_')]
+                if len(v_list) == 0:
+                    v_list = disk_default[k]
+
+                self.params[k] = np.array([np.array(v_list)])
+                # print(f' [Parameters.read_disk_params]: k = {k}, self.params[k] = {self.params[k]}')
+        
+            assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
             
+        if 'R_cav' in self.param_keys:
+            self.params['R_cav'] = self.params['R_cav']
+            self.params['R_out'] = self.params.get('R_out', self.params['R_cav'] * 100.0)
+            # self.params['T_star']
+            assert 'T_star' in self.params.keys(), ' [Parameters.read_disk_params]: T_star not found in the parameter keys'
+            self.params['i'] = np.radians(self.params.get('i_deg', 45.0))
+            
+            assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
+            self.params['q'] = self.params.get('q', 0.75)
         # if 'R_d' in self.param_keys:
         #     rjup_cm = 7.1492e9
         #     au_cm = 1.496e13

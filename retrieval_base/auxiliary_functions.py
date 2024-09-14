@@ -11,6 +11,8 @@ from scipy.signal import savgol_filter
 from astropy.io import fits
 
 import petitRADTRANS.nat_cst as nc
+pi = 3.14159265358979323846
+rjup_cm = 7.1492e9 # 1 Jupiter radius in cm
 
 def get_path():
     
@@ -591,3 +593,70 @@ def apply_extinction(
     
     # extinction = ism_extinction(av_mag, rv_red, wave)
     return flux * 10 ** (-0.4 * ism_extinction(av_mag, rv_red, wave))
+
+
+# Disk temperature profile Td(r)
+def T_disk(r, T_star, R_p, q=0.75):
+    """Temperature profile for the disk, returns the temperature at each radius."""
+    return T_star * (2 / (3 * pi))**0.25 * (r / R_p)**-q # TODO: check this eq.
+
+# Emission from the disk (fully vectorized)
+def geom_thin_disk_emission(wave_nm, T_star, R_p, R_cav, R_out, i=0.785, d_pc=1.0, q=0.75, n_rings=100):
+    """Calculate the total flux emission from the disk at an array of wavelengths (nm).
+    
+       Uses full vectorization to avoid looping over wavelengths.
+       
+       Parameters
+         ----------
+            wave_nm : np.ndarray
+                Array of wavelengths in nm.
+            T_star : float
+                Temperature of the star in K.
+            R_p : float
+                Radius of the planet in R_jup.
+            R_cav : float
+                Inner disk radius in R_jup.
+            R_out : float
+                Outer disk radius in R_jup.
+            i : float
+                Inclination angle in radians.
+            d_pc : float
+                Distance to the system in parsecs.
+            q : float
+                Temperature profile exponent.
+            n_rings : int
+                Number of rings used for the integration.
+
+        Returns
+        -------
+            np.ndarray
+                Array of fluxes units of erg/s/cm^2/nm.
+    """
+                
+    
+    # Convert wavelength from nm to cm (1 nm = 1e-7 cm)
+    wave_cm = wave_nm * 1e-7
+    
+    # Create an array of radii for the disk (using n_rings for integration precision)
+    r_values = np.linspace(R_cav, R_out, n_rings) * rjup_cm
+    
+    # Compute the temperature profile for the disk at all radii
+    T_values = T_disk(r_values, T_star, R_p * rjup_cm, q=q)
+    # mask T < 10 K, ignore this region --> negligible contribution
+    # speed up computation
+    mask = T_values > 60.0
+    # print(f' mask: {mask.sum()} / {mask.size}')
+    r_values = r_values[mask]
+    T_values = T_values[mask]
+    
+    # Compute the Planck function (blackbody) for all wavelengths and all radii
+    # Shape of blackbody_grid: (n_rings, len(wave_cm))
+    blackbody_grid = blackbody(wave_cm[:, np.newaxis], T_values)
+    # print(f' blackbody_grid: {blackbody_grid.shape}')
+    # Integrate over the disk radii for all wavelengths
+    integrand = 2 * pi * r_values * blackbody_grid * np.cos(i)
+    
+    # Perform trapezoidal integration over the radius (axis=1)
+    flux = np.trapz(integrand, r_values, axis=1) / (d_pc * 3.086e18)**2
+    # print(f' mean flux: {np.mean(flux)}')
+    return flux

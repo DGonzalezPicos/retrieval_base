@@ -428,7 +428,7 @@ class pRT_model:
             if self.geom_thin_disk_emission:
                 f_geom_thin_disk = geom_thin_disk_emission(wave_nm=wave_i, **self.geom_thin_disk_args)
                 # print(f' [pRT_model] f_geom_thin_disk.shape = {f_geom_thin_disk.shape}')
-                print(f' [pRT_model] mean(f_geom_thin_disk) = {np.mean(f_geom_thin_disk)}')
+                # print(f' [pRT_model] mean(f_geom_thin_disk) = {np.mean(f_geom_thin_disk)}')
                 flux_i += f_geom_thin_disk
 
             # Create a ModelSpectrum instance

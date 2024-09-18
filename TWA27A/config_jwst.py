@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl15_KM7'
+run = 'lbl10_KM5'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -19,7 +19,7 @@ config_data = {
         'wave_range': (1650, 5300), 
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 15,
+        'lbl_opacity_sampling' : 10,
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, 
@@ -42,26 +42,26 @@ opacity_params = {
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
-    'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
+    # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'), # DGP (2024-07-16): accidentally removed 
     'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     # 'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
-    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K_high'),
+    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'],'Na_allard_high'),
+    'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
-    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),# TODO: update to Mg_high when ready?
-    'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
-    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
-    'log_Li': ([(-14,-2), r'$\log\ \mathrm{Li}$'], 'Li_high'),
+    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
+    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
+    # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    # 'log_Li': ([(-14,-2), r'$\log\ \mathrm{Li}$'], 'Li_high'),
     # 'log_Rb': ([(-14,-2), r'$\log\ \mathrm{Rb}$'], 'Rb_high'),
     # 'log_Cs': ([(-14,-2), r'$\log\ \mathrm{Cs}$'], 'Cs_high'),
     # 'log_Ba': ([(-14,-2), r'$\log\ \mathrm{Ba}$'], 'Ba_high'),
     # 'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
-    'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al_high'),
+    # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al_high'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
@@ -80,7 +80,7 @@ opacity_params = {
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
@@ -112,8 +112,10 @@ free_params = {
     # 'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
     # disk emission parameters
     # 'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
-    # 'log_N_mol_12CO': [(12, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
-    # 'log_A_au_12CO': [(-4, 0), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    'T_ex_12CO': [(400.0, 900.0), r'$T_\mathrm{ex}$'], # disk temperature in K
+    'log_N_mol_12CO': [(15, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
+    'log_A_au_12CO': [(-4, 1), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    
     'R_cav': [(1.0, 30.0), r'$R_\mathrm{cav}$'], # disk radius in R_jup
     'R_out': [(1.0, 200.0), r'$R_\mathrm{out}$'], # disk radius in R_jup
     'q': [(0.4, 1.2), r'$q$'], # disk temperature exponent
@@ -271,7 +273,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 1.0
-n_live_points = 200
+n_live_points = 100
 n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

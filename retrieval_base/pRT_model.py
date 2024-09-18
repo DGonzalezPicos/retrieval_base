@@ -110,7 +110,7 @@ class pRT_model:
             # self.disk_species = disk_species
             self.disk = Disk(molecules=self.disk_species,
                 # wave_range=(wmin, wmax),
-                wave_range=(4.1,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
+                wave_range=(4.2,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
                 wave_step=None,
                 grating=None,
                 path_to_moldata=path+'data/hitran',

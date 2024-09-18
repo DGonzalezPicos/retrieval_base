@@ -135,21 +135,19 @@ class Disk:
     #     self.flux = InstrumentalBroadening(self.slab.fine_wgrid, self.flux)(fwhm=fwhm, kernel='gaussian_variable')
     #     return self
     
-    def resample(self):
-        ''' Resample the flux density of the disk '''
-        self.flux = spectres(self.slab.obs_wgrid, self.slab.fine_wgrid, self.flux)
+    def resample(self, wave=None):
+        ''' Resample the flux density of the disk 
+        obs_wgrid in um
+        fine_wgrid in um
+        '''
+        wave = wave or self.slab.obs_wgrid
+        self.flux = spectres(wave, self.slab.fine_wgrid, self.flux)
         return self
     
-    def __call__(self, params, 
-                 wave=None, # this is the fine_wgrid in um
+    def __call__(self, 
+                 params, 
+                 wave=None, # this is the obs wave grid, resample to this grid
                  ):
-        
-        # self.set_properties(distance=params.get('distance', 100.0),
-        #                     T_ex=params.get('T_ex', np.array(np.array([600.]))),
-        #                     N_mol=params.get('N_mol', np.array(np.array([1e17]))),
-        #                     A_au=params.get('A_au', np.array(np.array([1.0]))),
-        #                     dV=params.get('dV', np.array(np.array([1.0]))),
-        #                     )
         
         self.slab.setup_disk(distance=params.get('d_pc', 100.0),
                              T_ex=params.get('T_ex', np.array([600.])),
@@ -158,24 +156,9 @@ class Disk:
                              dV=params.get('dV', np.array([1.0])),
                              )
         assert hasattr(self.slab, 'distance'), f'Distance not set'
-        
-        if wave is not None:
-            self.fine_wgrid = jnp.array(wave)
         assert hasattr(self.slab, 'fine_wgrid'), 'fine_wgrid not set'
         
-        # start = time.time()
-        # if not hasattr(self.slab, 'obs_wgrid'):
-        #     self.set_obs_wgrid(wave)
-            # self.set_grid(obs_wgrid=wave,
-                        #   R=params.get('R', 3200),
-                        #   )
-        # end = time.time()
-        # print(f'Setup time: {end-start:.2e} s')
-        # self.calc_flux()
-        # start = time.time()
         self.flux = calc_flux_jit(self.slab.catalog, self.slab.distance, self.slab.A_au, self.slab.T_ex, self.slab.N_mol, self.slab.dV, self.slab.fine_wgrid)
-        # end = time.time()
-        # print(f'calc_flux_jit time: {end-start:.2f} s')
         
         # convert Jy to [erg cm^{-2} s^{-1} nm^{-1}]
         wave_cm = self.slab.fine_wgrid * 1e-4 # [um] -> [cm]
@@ -183,14 +166,10 @@ class Disk:
         # [erg cm^{-2} s^{-1} cm^{-1}] -> [erg cm^{-2} s^{-1} nm^{-1}]
         self.flux *= 1e-7
         
-        # start = time.time()
-        # self.broaden(fwhm=self.fwhm)
-        # print(f'Instrumental broadening time: {time.time()-start:.2f} s')
-        # # self.flux = instrumental_broadening_jit(self.slab.fine_wgrid, self.flux, self.fwhm)
+        if wave is not None:
+            # self.resample()
+            self.flux = spectres(wave, self.slab.fine_wgrid, self.flux)
         
-        # start = time.time()
-        # self.resample()
-        # print(f'Resampling time: {time.time()-start:.2f} s')
         return self.flux
     
 @jit

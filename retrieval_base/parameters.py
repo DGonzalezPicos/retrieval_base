@@ -45,6 +45,8 @@ class Parameters:
 
         self.param_keys = np.array(list(self.param_priors.keys()))
         self.n_params = len(self.param_keys)
+        
+        # self.initial_guess = 
 
         # Create dictionary with constant parameter-values
         self.params = self.all_params.copy()
@@ -114,7 +116,7 @@ class Parameters:
         nparams : int or None
             Number of free parameters.
         '''
-
+        new_cube = np.array(cube) # copy the cube to avoid changing the original
         # Convert to numpy array if necessary
         if (ndim is None) and (nparams is None):
             self.cube_copy = cube
@@ -137,11 +139,14 @@ class Parameters:
             if key_i == 'R_out':
                 low = max(self.params['R_cav'], low)
                 
-            cube[i] = low + (high-low)*cube[i]
+            # print(f' [Parameters.__call__]: key_i = {key_i}, low = {low}, high = {high}')
+            # cube[i] = low + (high-low)*cube[i]
+            new_cube[i] = low + (high-low)*cube[i]
 
-            self.params[key_i] = cube[i]
+            self.params[key_i] = new_cube[i]
 
             if key_i.startswith('log_'):
+                # print(f' [Parameters.__call__]: log_to_linear for {key_i}')
                 self.params = self.log_to_linear(self.params, key_i)
                                 
             
@@ -156,7 +161,7 @@ class Parameters:
         self.read_params()
 
         if (ndim is None) and (nparams is None):
-            return cube
+            return new_cube
         else:
             return
     

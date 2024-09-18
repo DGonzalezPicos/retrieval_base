@@ -390,6 +390,7 @@ class pRT_model:
 
             # Convert [cm] -> [nm]
             wave_i *= 1e7
+            # print(f'[pRT_model.get_model_spectrum] np.nanmean(np.diff(wave_i)) = {1e-3 * np.nanmean(np.diff(wave_i))} um')
 
             # Convert to observation by scaling with planetary radius
             flux_i *= (
@@ -406,24 +407,19 @@ class pRT_model:
                 # Compute the disk emission
                 # Add the disk emission to the model spectrum
                 # print(f' [pRT_model] Computing disk emission for order {i}...')
-                self.disk.set_fine_wgrid(wave_i * 1e-3)
+                wave_i_um = wave_i * 1e-3
+                # DGP sep 17: fine_wgrid must have a spacing of <= 1e-5 um
+                fine_wgrid = np.arange(np.nanmin(wave_i_um), np.nanmax(wave_i_um)+1e-5, 1e-5)
+                self.disk.set_fine_wgrid(fine_wgrid)
                 # disk params must be a dictionary containing (at least): T_ex, N_mol, A_au, dV
                 disk_keys = ['T_ex', 'N_mol', 'A_au', 'dV', 'd_pc']
                 # assert all([k in self.disk_params.keys() for k in disk_keys]), \
                 #     'Disk parameters must contain T_ex, N_mol, A_au, dV'
                     
                 disk_dict = {k: self.params[k] for k in disk_keys}
-                # print(f' disk_dict = {disk_dict}')
-                
-                # print(f' [pRT_model] self.disk.slab.distance = {self.disk.slab.distance}')
-                # print(f' [pRT_model] self.disk.slab.A_au = {self.disk.slab.A_au}')
-                # print(f' [pRT_model] self.disk.slab.T_ex = {self.disk.slab.T_ex}')
-                # print(f' [pRT_model] self.disk.slab.N_mol = {self.disk.slab.N_mol}')
-                # print(f' [pRT_model] self.disk.slab.dV = {self.disk.slab.dV}')
                 flux_disk = self.disk(disk_dict,
-                                    wave=None)
-                # print(f' [pRT_model] flux_disk.shape = {flux_disk.shape}')
-                # print(f' [pRT_model] mean(flux_disk) = {np.mean(flux_disk)}')
+                                    wave=wave_i_um,)
+
                 flux_i += flux_disk
             if self.geom_thin_disk_emission:
                 f_geom_thin_disk = geom_thin_disk_emission(wave_nm=wave_i, **self.geom_thin_disk_args)

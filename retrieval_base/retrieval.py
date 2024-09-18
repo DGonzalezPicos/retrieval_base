@@ -979,6 +979,7 @@ class Retrieval:
 
         # Read the parameters of the best-fitting model
         bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+        # print(f' bestfit_params.shape = {bestfit_params.shape}')
         return bestfit_params, posterior
     
     def evaluate_model(self, bestfit_params):
@@ -986,7 +987,7 @@ class Retrieval:
         for i, key_i in enumerate(self.Param.param_keys):
             # Update the Parameters instance
             self.Param.params[key_i] = bestfit_params[i]
-            print(f' {key_i}: {bestfit_params[i]}')
+            # print(f' {key_i}: {bestfit_params[i]}')
             if key_i.startswith('log_'):
                 self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)
 
@@ -1245,3 +1246,24 @@ class Retrieval:
             print(f' --> Maximum number of CPUs: {int(336.0/cpu_GB)}')
             
         return self
+    
+    def gradient_based_optimization(self, method='L-BFGS-B', bounds=None, options=None):
+        from scipy.optimize import minimize
+        
+        # if bounds is None:
+        #     bounds = self.Param.bounds
+        
+        # if options is None:
+        #     options = {'disp': True}
+            
+        # initial guess
+        x0 = 0.5 * np.ones(self.Param.n_params)
+        
+        # Update the parameters
+        # self.Param.read_params()
+        bounds = np.array(list(self.Param.param_priors.values()))
+        # Run the optimization
+        res = minimize(self.PMN_lnL_func, x0, method=method, bounds=bounds, options=options)
+        # show the results
+        print(res)
+        return res

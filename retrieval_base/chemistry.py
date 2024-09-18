@@ -75,7 +75,17 @@ class Chemistry:
     def __init__(self, line_species, pressure):
 
         self.line_species = line_species
-        self.species = [self.pRT_name_dict[line_species_i] for line_species_i in self.line_species]
+        # self.species = [self.pRT_name_dict[line_species_i] for line_species_i in self.line_species]
+        # DGP sep. 17: hot fix for updating species_info while computing high-temp. opacities
+        self.species = []
+        for line_species_i in self.line_species:
+            species_i = self.pRT_name_dict.get(line_species_i, None)
+            if species_i is None:
+                species_i = self.pRT_name_dict.get(line_species_i+'_high', None)
+                
+            assert species_i is not None, f'line_species_i = {line_species_i} not in species_info'
+            self.species.append(species_i)
+
         self.line_species_labels = [self.read_species_info(species_i, 'label') for species_i in self.species]
 
         self.pressure     = pressure

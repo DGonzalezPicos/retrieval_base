@@ -43,6 +43,7 @@ parser.add_argument('--retrieval', '-r', action='store_true', default=False)
 parser.add_argument('--evaluation', '-e', action='store_true', default=False)
 # parser.add_argument('--time_profiler', '-t', action='store_true', default=False)
 parser.add_argument('--memory_profiler', '-m', action='store_true', default=False)
+parser.add_argument('--minimize', action='store_true', default=False)
 args = parser.parse_args()
 
 if args.pre_processing:
@@ -140,6 +141,11 @@ if args.prior_check:
         for w_set in ret.d_spec.keys():
             ret.list_memory_allocation(obj=ret.pRT_atm[w_set], min_size_mb=0.1)
         
+if args.minimize:
+    print('--> Running minimization..')
+    ret = Retrieval(conf=conf, evaluation=False)
+    ret.gradient_based_optimization(method='L-BFGS-B', options={'maxiter': 100})
+    
 if args.retrieval:
     ret = Retrieval(
         conf=conf, 

@@ -116,7 +116,7 @@ class Parameters:
         nparams : int or None
             Number of free parameters.
         '''
-        new_cube = np.array(cube) # copy the cube to avoid changing the original
+        # new_cube = np.array(cube) # copy the cube to avoid changing the original
         # Convert to numpy array if necessary
         if (ndim is None) and (nparams is None):
             self.cube_copy = cube
@@ -140,10 +140,10 @@ class Parameters:
                 low = max(self.params['R_cav'], low)
                 
             # print(f' [Parameters.__call__]: key_i = {key_i}, low = {low}, high = {high}')
-            # cube[i] = low + (high-low)*cube[i]
-            new_cube[i] = low + (high-low)*cube[i]
+            cube[i] = low + (high-low)*cube[i]
+            # new_cube[i] = low + (high-low)*cube[i]
 
-            self.params[key_i] = new_cube[i]
+            self.params[key_i] = cube[i]
 
             if key_i.startswith('log_'):
                 # print(f' [Parameters.__call__]: log_to_linear for {key_i}')
@@ -161,7 +161,7 @@ class Parameters:
         self.read_params()
 
         if (ndim is None) and (nparams is None):
-            return new_cube
+            return cube
         else:
             return
     

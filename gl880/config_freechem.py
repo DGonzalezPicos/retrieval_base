@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx_6'
+run = 'sphinx_7'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -29,7 +29,7 @@ config_data = {
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, # FIXME: update to 50 at some point... WARNING: 40 for SPHINX
+        'n_atm_layers': 40, # WARNING: 40 for SPHINX
         
         'file_target':'data/spec.npy'
         }, 
@@ -52,12 +52,16 @@ opacity_params = {
     # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
+    'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
     'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
-    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
+    'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    'log_Cs': ([(-14,-2), r'$\log\ \mathrm{Cs}$'], 'Cs_high'),
+    'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
+    'log_Ni': ([(-14,-2), r'$\log\ \mathrm{Ni}$'], 'Ni_high'),
+    
     # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
     # 'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
@@ -87,12 +91,12 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # SPHINX
-    # 'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
-    'gaussian_Teff': [(3720, 60), r'$T_\mathrm{eff}$'],
-    # 'log_g': [(4.5,5.0), r'$\log\ g$'],
-    'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
-    # 'Z': [(0.0, 0.5), 'Z'],
-    'gaussian_Z': [(0.21, 0.08), 'Z'],
+    'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
+    # 'gaussian_Teff': [(3720, 60), r'$T_\mathrm{eff}$'],
+    'log_g': [(4.5,5.0), r'$\log\ g$'],
+    # 'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
+    'Z': [(0.0, 0.5), 'Z'],
+    # 'gaussian_Z': [(0.21, 0.08), 'Z'],
     'C_O': [(0.3, 0.9), 'C/O'],
     
     'alpha_Na': [(-4., 2.), r'$\alpha$(Na)'],
@@ -101,6 +105,8 @@ free_params = {
     'alpha_Mg': [(-4., 2.), r'$\alpha$(Mg)'],
     'alpha_Fe': [(-4., 2.), r'$\alpha$(Fe)'],
     'alpha_OH': [(-4., 2.), r'$\alpha$(OH)'],
+    'alpha_K': [(-4., 2.), r'$\alpha$(K)'],
+    
     
     # General properties
     # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
@@ -217,9 +223,10 @@ cloud_species = None
 
 # mask_lines = {'Ni': (2298.2, 2299.4)}
 mask_lines = {} # FIXME: manage the Ni line and other missing opacity sources...
-mask_lines = {'telluric_red': (2493.0, 2500.0),
-              'Ni': (2298.2, 2299.4),
-              '2340': (2340.8, 2341.6),
+mask_lines = {
+                'telluric_red': (2493.0, 2500.0),
+            #   'Ni': (2298.2, 2299.4),
+            #   '2340': (2340.8, 2341.6),
 }
 
 ####################################################################################
@@ -264,6 +271,7 @@ line_species =list(set([v[1] for _,v in opacity_params.items()]))
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
 species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe',
+                       'K', 'Cs', 'Sc', 'Ni', 'Mn', 
                        'HF', 'CN']
 species_to_plot_CCF = []
 

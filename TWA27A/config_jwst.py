@@ -8,7 +8,8 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 # run = 'ck_K_2'
-run = 'lbl10_KM5'
+lbl = 15
+run = f'lbl{lbl}_KM8'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -19,7 +20,7 @@ config_data = {
         'wave_range': (1650, 5300), 
         # 'wave_range': (1630, 3250), 
         
-        'lbl_opacity_sampling' : 10,
+        'lbl_opacity_sampling' : lbl,
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, 
@@ -106,20 +107,19 @@ free_params = {
     # veiling parameters
     # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
     # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    # 'R_d': [(1.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
+    'R_d': [(0.0, 100.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    # 'T_d': [(100, 900), r'$T_d$'], # disk temperature in K
+    'T_d': [(300, 900), r'$T_d$'], # disk temperature in K
     # disk emission parameters
     # 'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
-    'T_ex_12CO': [(400.0, 900.0), r'$T_\mathrm{ex}$'], # disk temperature in K
-    'log_N_mol_12CO': [(15, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
-    'log_A_au_12CO': [(-4, 1), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
-    
-    'R_cav': [(1.0, 30.0), r'$R_\mathrm{cav}$'], # disk radius in R_jup
-    'R_out': [(1.0, 200.0), r'$R_\mathrm{out}$'], # disk radius in R_jup
-    'q': [(0.4, 1.2), r'$q$'], # disk temperature exponent
-    'i_deg': [(0, 90), r'$i$'], # disk inclination in degrees
+    # 'T_ex_12CO': [(400.0, 900.0), r'$T_\mathrm{ex}$'], # disk temperature in K
+    # 'log_N_mol_12CO': [(15, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
+    # 'log_A_au_12CO': [(-4, 1), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
+    # 'R_cav': [(1.0, 30.0), r'$R_\mathrm{cav}$'], # disk radius in R_jup
+    # 'R_out': [(1.0, 200.0), r'$R_\mathrm{out}$'], # disk radius in R_jup
+    # 'q': [(0.4, 1.2), r'$q$'], # disk temperature exponent
+    # 'i_deg': [(0, 90), r'$i$'], # disk inclination in degrees
     
     'Av': [(0.0, 10.0), r'$A_v$'], # extinction in magnitudes
     
@@ -149,6 +149,8 @@ free_params = {
 }
 free_params.update({k:v[0] for k,v in opacity_params.items()})
 
+disk_species = ['H2O', '12CO', '13CO']
+free_params.update({f'log_A_au_{sp}': [(-4, 0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
 # Constants to use if prior is not given
 # distance in pc to parallax
 parallax_mas = 16.46 # Gaia DR3
@@ -221,7 +223,7 @@ rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
 line_species =[v[1] for _,v in opacity_params.items()]
 
-disk_species = []
+# disk_species = []
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
 line_species.append('H2_main_iso') # testing (2024-09-10)

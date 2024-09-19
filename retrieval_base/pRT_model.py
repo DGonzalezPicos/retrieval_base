@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import pathlib
 
 try:
     import line_profiler
@@ -98,24 +99,42 @@ class pRT_model:
             n_atm_layers = 50
         self.pressure = np.logspace(log_P_range[0], log_P_range[1], n_atm_layers)
         
-        # print(f' disk_species = {disk_species}')
+        print(f' disk_species = {disk_species}')
         self.disk_species = disk_species
         if len(self.disk_species) > 0:
             print(f' [pRT_model] Disk species: {disk_species}')
             # import iris as iris
             # from iris import setup
             # from iris import spectrum as sp
-            from retrieval_base.slab_model import Disk
+            # from retrieval_base.slab_model import Disk
             
-            # self.disk_species = disk_species
-            self.disk = Disk(molecules=self.disk_species,
-                # wave_range=(wmin, wmax),
-                wave_range=(4.2,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
-                wave_step=None,
-                grating=None,
-                path_to_moldata=path+'data/hitran',
-                )
-
+            # # self.disk_species = disk_species
+            # self.disk = Disk(molecules=self.disk_species,
+            #     # wave_range=(wmin, wmax),
+            #     wave_range=(4.2,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
+            #     wave_step=None,
+            #     grating=None,
+            #     path_to_moldata=path+'data/hitran',
+            #     )
+            
+            # NEW slab model: load precomputed models for each species
+            self.gratings = set(d_spec.gratings_list) # unique gratings
+            
+            self.slab = {}
+            for disk_species_i in self.disk_species:
+                self.slab[disk_species_i] = {}
+                for grating in self.gratings:
+                    file_name = pathlib.Path(path) / 'data/slab_models' / f'slab_model_{disk_species_i}_{grating}.npy'
+                    # print(f' [pRT_model] Loading {file_name}')
+                    assert file_name.exists(), f'File {file_name} does not exist'
+                    self.slab[disk_species_i][grating] = np.load(file_name, allow_pickle=True)
+                    # wave = self.slab[disk_species_i][grating][0,:] in [um]
+                    # flux = self.slab[disk_species_i][grating][1,:] in [erg s^-1 cm^-2 um^-1]
+                    print(f' [pRT_model] Loaded {file_name}')
+                    # print(f' [pRT_model] shape = {self.slab[disk_species_i][grating].shape}')
+                    print(f' [pRT_model] wave range = {np.min(self.slab[disk_species_i][grating][0,:]), np.max(self.slab[disk_species_i][grating][0,:])}')
+                    print(f' [pRT_model] flux range = {np.min(self.slab[disk_species_i][grating][1,:]), np.max(self.slab[disk_species_i][grating][1,:])}')
+        # print(stop)
         # Make the pRT.Radtrans objects
         if mode == 'lbl':
             self.get_atmospheres(CB_active=False)
@@ -263,6 +282,7 @@ class pRT_model:
             get_contr=get_contr, 
             get_full_spectrum=get_full_spectrum
             )
+
         return m_spec
 
     def add_clouds(self):
@@ -403,7 +423,8 @@ class pRT_model:
             
             # then broaden and resample together with the model spectrum
             # print(f' [pRT_model] wave_i[0] = {wave_i[0]}')
-            if (len(self.disk_species)>0) and wave_i[0] > 4000.0: # only for G395H reddest filter
+            # WARNING: disk emisission deprecated... use self.slab instead
+            if False and (len(self.disk_species)>0) and wave_i[0] > 4000.0: # only for G395H reddest filter
                 # Compute the disk emission
                 # Add the disk emission to the model spectrum
                 # print(f' [pRT_model] Computing disk emission for order {i}...')
@@ -458,6 +479,28 @@ class pRT_model:
 
             # Rebin onto the data's wavelength grid
             # m_spec_i.rebin(d_wave=self.d_wave[i,:], replace_wave_flux=True)
+            
+            if len(self.disk_species) > 0:
+                for ds_i in self.disk_species:
+                    grating = self.params['gratings'][i]
+                    # units are correct because input model already multiplied by A_au**2 / d_pc**2 with correct units
+                    factor = self.params[f'A_au_{ds_i}'] / np.pi / self.params['d_pc']**2
+                    # print(f' self.params[f"A_au_{ds_i}"] = {self.params[f"A_au_{ds_i}"]}')
+                    # print(f' self.params["d_pc"] = {self.params["d_pc"]}')
+                    # print(f' factor = {factor}')
+                    # print(f' mean flux before scaling = {np.mean(self.slab[ds_i][grating][1,:])}')
+                    
+                    f_slab_i = self.slab[ds_i][grating][1,:] * (self.params[f'A_au_{ds_i}'] / np.pi) / self.params['d_pc']**2
+                    w_slab_i = self.slab[ds_i][grating][0,:] * 1e3 # [um] -> [nm]
+                    # print(f' [pRT_model] mean wave {ds_i} = {np.mean(w_slab_i)}')
+                    # print(f' [pRT_model] f_slab_i.shape = {f_slab_i.shape}')
+                    # print(f' [pRT_model] mean flux {ds_i} = {np.mean(f_slab_i)}')
+                    # skip if all values of flux are below 1e-18
+                    if np.nanmax(f_slab_i) < 1e-20:
+                        continue
+                    
+                    m_spec_i.flux += np.interp(m_spec_i.wave, w_slab_i, f_slab_i)
+                
             m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True)
             # end_sbr = time.time()   
             # print(f'Order {i} took {end_sbr-start_sbr:.3f} s to shift, broaden and rebin')

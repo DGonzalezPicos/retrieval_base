@@ -149,7 +149,7 @@ class Disk:
                  wave=None, # this is the obs wave grid, resample to this grid
                  ):
         
-        self.slab.setup_disk(distance=params.get('d_pc', 100.0),
+        self.slab.setup_disk(distance=params.get('d_pc', params.get('distance', 100.)),
                              T_ex=params.get('T_ex', np.array([600.])),
                              N_mol=params.get('N_mol', np.array([1e17])),
                              A_au=params.get('A_au', np.array([1.0])),

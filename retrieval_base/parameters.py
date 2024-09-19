@@ -496,6 +496,13 @@ class Parameters:
             
             assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
             self.params['q'] = self.params.get('q', 0.75)
+            
+        if 'log_A_au_12CO' in self.param_keys:
+            # self.params['A_au_12CO'] = 10**self.params['log_A_au_12CO']
+            # self.params['A_au_13CO'] = 10**self.params['log_A_au_13CO']
+            # self.params['A_au_H2O'] = 10**self.params['log_A_au_H2O']
+            
+            assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
         # if 'R_d' in self.param_keys:
         #     rjup_cm = 7.1492e9
         #     au_cm = 1.496e13

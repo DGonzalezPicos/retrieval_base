@@ -59,8 +59,9 @@ opacity_params = {
     'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
     'log_Cs': ([(-14,-2), r'$\log\ \mathrm{Cs}$'], 'Cs_high'),
-    'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
+    # 'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
     'log_Ni': ([(-14,-2), r'$\log\ \mathrm{Ni}$'], 'Ni_high'),
+    'log_Si': ([(-14,-2), r'$\log\ \mathrm{Si}$'], 'Si_high'),
     
     # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
@@ -106,6 +107,7 @@ free_params = {
     'alpha_Fe': [(-4., 2.), r'$\alpha$(Fe)'],
     'alpha_OH': [(-4., 2.), r'$\alpha$(OH)'],
     'alpha_K': [(-4., 2.), r'$\alpha$(K)'],
+    'alpha_Si': [(-4., 2.), r'$\alpha$(Si)'],
     
     
     # General properties
@@ -238,7 +240,8 @@ chem_mode  = 'SPHINX'
 if chem_mode == 'SPHINX':
     assert PT_mode == 'SPHINX', 'SPHINX mode requires SPHINX PT mode'
     assert config_data['spirou']['n_atm_layers'] == 40, 'SPHINX mode requires 40 atm layers'
-
+    sphinx_grid_cache = True
+    
 chem_kwargs = dict(species=[
             # 'H2H2',
             # 'H2He',
@@ -250,11 +253,11 @@ chem_kwargs = dict(species=[
             #   'FeH', 
             #   'CaH', 'MgH', 
               'Na', 
-            #   'K', 
+              'K', 
               'Fe', 
               'Mg',
               'Ca',
-            #   'Si', 
+              'Si', 
               'Ti',
             #   'AlO',
             #   'SH',
@@ -271,7 +274,7 @@ line_species =list(set([v[1] for _,v in opacity_params.items()]))
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
 species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe',
-                       'K', 'Cs', 'Sc', 'Ni', 'Mn', 
+                       'K', 'Cs', 'Ni', 'Mn', 
                        'HF', 'CN']
 species_to_plot_CCF = []
 
@@ -317,9 +320,11 @@ PT_kwargs = dict(
 ####################################################################################
 
 const_efficiency_mode = True
-sampling_efficiency = 0.05
-evidence_tolerance = 0.5
-n_live_points = 200
+testing = True
+
+sampling_efficiency = 0.05 if not testing else 0.20
+evidence_tolerance = 0.5 if not testing else 2.0
+n_live_points = 200 if not testing else 100
 n_iter_before_update = n_live_points * 3
 # n_iter_before_update = 1
 # generate a .txt version of this file

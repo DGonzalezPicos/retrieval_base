@@ -569,7 +569,7 @@ class Retrieval:
             sp = SPHINX(path=af.get_path()+'SPHINX')
 
             # sp.load_PT_grid(species=conf.chem_kwargs['species'])
-            sp.load_interpolator(species=conf.chem_kwargs['species'])
+            sp.load_interpolator(species=conf.chem_kwargs['species'], cache=getattr(self.conf, 'sphinx_grid_cache', True))
             assert np.allclose(sp.pressure_full, self.pRT_atm[w_set].pressure), 'Pressure grids do not match'
         
             self.conf.PT_kwargs['temp_interpolator'] = sp.temp_interpolator

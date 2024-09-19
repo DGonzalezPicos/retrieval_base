@@ -551,7 +551,7 @@ class SPHINXChemistry(Chemistry):
         self.VMRs = {}
         for s in self.sphinx_species:
             self.VMRs[s] = self.vmr_interpolator[s]([self.Teff, self.logg, self.Z, self.C_O])[0]
-            
+            # print(f' [SPHINXChemistry] sphinx species s = {s}, mean(VMR) = {self.VMRs[s].mean()}')
             # print(f' VMR_{s} = {self.VMRs[s]}')
             # assert len(self.VMRs[s]) == 40, f' VMR_{s} has wrong length: {len(self.VMRs[s])}'
         # VMRs_values = self.vmr_interpolator([self.Teff, self.logg, self.Z, self.C_O]) # shape (n_layers, n_species)
@@ -601,7 +601,6 @@ class SPHINXChemistry(Chemistry):
                 self.VMRs[species_i] = params[species_i] * np.ones(self.n_atm_layers)
             # else:   
             #     self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
-            
             self.mass_fractions[line_species_i] = mass_i * (self.VMRs[species_i] * 10.**alpha_i) # VMRs is already an array
             VMR_wo_H2 += self.VMRs[species_i]
 

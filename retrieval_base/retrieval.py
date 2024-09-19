@@ -342,6 +342,9 @@ def pre_processing_spirou(conf, conf_data):
 
     # --- Set up a pRT model --------------------------------------------
     pRT_file = conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl'
+    if conf.copy_pRT_from is not None:
+        pRT_file = pRT_file.replace(conf.run, conf.copy_pRT_from)
+        
     if os.path.exists(pRT_file):
         print(f' Already exists: {pRT_file}')
         # pRT_atm = af.pickle_load(pRT_file)
@@ -495,7 +498,12 @@ class Retrieval:
 
             # Load the DataSpectrum and pRT_model classes
             self.d_spec[w_set]  = af.pickle_load(self.conf.prefix+f'data/d_spec_{w_set}.pkl')
-            self.pRT_atm[w_set] = af.pickle_load(self.conf.prefix+f'data/pRT_atm_{w_set}.pkl')
+            
+            pRT_file = self.conf.prefix+f'data/pRT_atm_{w_set}.pkl'
+            if self.conf.copy_pRT_from is not None:
+                pRT_file = pRT_file.replace(self.conf.run, self.conf.copy_pRT_from)
+                
+            self.pRT_atm[w_set] = af.pickle_load(pRT_file)
 
             param_wlen_settings[w_set] = [self.d_spec[w_set].n_orders, self.d_spec[w_set].n_dets]
 

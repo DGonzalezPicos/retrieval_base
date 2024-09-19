@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx_7'
+run = 'sphinx_8'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -81,6 +81,8 @@ opacity_params = {
     # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 print(f' --> {len(opacity_params)} opacity parameters')
+copy_pRT_from = 'sphinx_7'
+
 # Define the priors of the parameters
 free_params = {
 
@@ -94,7 +96,7 @@ free_params = {
     # SPHINX
     'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
     # 'gaussian_Teff': [(3720, 60), r'$T_\mathrm{eff}$'],
-    'log_g': [(4.5,5.0), r'$\log\ g$'],
+    # 'log_g': [(4.5,5.0), r'$\log\ g$'],
     # 'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
     'Z': [(0.0, 0.5), 'Z'],
     # 'gaussian_Z': [(0.21, 0.08), 'Z'],
@@ -202,7 +204,7 @@ constant_params = {
     # 'parallax': parallax_mas, 
     'epsilon_limb': 0.20, 
     'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
-    # 'log_g': 4.72, # +- 0.12 (M15)
+    'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 
     # PT profile
@@ -322,8 +324,8 @@ PT_kwargs = dict(
 const_efficiency_mode = True
 testing = True
 
-sampling_efficiency = 0.05 if not testing else 0.20
-evidence_tolerance = 0.5 if not testing else 2.0
+sampling_efficiency = 0.05 if not testing else 0.10
+evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 200 if not testing else 100
 n_iter_before_update = n_live_points * 3
 # n_iter_before_update = 1

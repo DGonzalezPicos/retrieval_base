@@ -17,7 +17,8 @@ target = 'gl880'
 if target not in os.getcwd():
     os.chdir(base_path + target)
 
-run = 'run_7'
+# run = 'sphinx_4'
+run = 'sphinx_8'
 config_file = 'config_freechem.txt'
 conf = Config(path=base_path, target=target, run=run)(config_file)
 
@@ -30,7 +31,7 @@ w_set = list(conf.config_data.keys())
 assert len(w_set) == 1, 'Only one wavelength set is allowed'
 w_set = w_set[0]
 
-free_parameter = 'dlnT_dlnP_RCE'
+free_parameter = 'C_O'
 
 # fixed_parameters = {'log_a': 0.0,
 #  'log_l': -1.4,
@@ -54,10 +55,18 @@ free_parameter = 'dlnT_dlnP_RCE'
 # 'dlnT_dlnP_6': 0.04,
 #  'T_0': 5500.0}
 
-figs.fig_free_parameter(ret, free_parameter, 
+# figs.fig_free_parameter(ret, free_parameter, 
+#                         # fixed_parameters=fixed_parameters,
+#                         fixed_parameters={},
+#                         N_points=3, 
+#                         w_set=w_set,
+#                         cmap='viridis',
+#                         fig_name=conf.prefix+f'plots/spec_{free_parameter}_free.pdf')
+
+figs.fig_free_parameter_residuals(ret, free_parameter, 
                         # fixed_parameters=fixed_parameters,
                         fixed_parameters={},
                         N_points=3, 
                         w_set=w_set,
                         cmap='viridis',
-                        fig_name=conf.prefix+f'plots/spec_{free_parameter}_free.pdf')
+                        fig_name=conf.prefix+f'plots/spec_{free_parameter}_free_residuals.pdf')

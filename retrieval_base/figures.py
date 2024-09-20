@@ -1,5 +1,6 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 import numpy as np
 from scipy.ndimage import generic_filter, gaussian_filter1d
@@ -1465,14 +1466,16 @@ def fig_free_parameter(ret, free_parameter,
             linear_key = key_i.replace('log_', '')
             fixed_parameters[linear_key] = 10**fixed_parameters[key_i]
     # print(f'Fixed parameters: {fixed_parameters}')
-    fig = plt.figure(figsize=(16, 10))
+    fig = plt.figure(figsize=(14, 8))
     # create a gridspec object
-    gs = fig.add_gridspec(n_orders, 2, width_ratios=[3,1], wspace=0.02, hspace=0.25, bottom=0.08, top=0.94, left=0.06, right=0.94)
+    gs = fig.add_gridspec(n_orders, 2, width_ratios=[3,1], wspace=0.02, hspace=0.0, bottom=0.08, top=0.94, left=0.06, right=0.94)
     ax_PT = fig.add_subplot(gs[:,1])
     # move yticks and label from ax_PT to right side
     ax_PT.yaxis.tick_right()
     ax_PT.yaxis.set_label_position('right')
     ax_spec = [fig.add_subplot(gs[order,0]) for order in range(n_orders)]
+    # add three rows with the same size spanning the width up to ax_PT
+    # ax_spec = [fig.add_subplot(gs[i,0]) for i in range(0, n_orders*2, 2)]
     
     # Use central value from priors as default
     ret.Param(0.5 * np.ones(len(ret.Param.param_keys)))
@@ -1490,19 +1493,6 @@ def fig_free_parameter(ret, free_parameter,
     ret.CB.active = True # to compute the emission contribution function
     for i, theta_i in enumerate(free_parameter_range):        
         
-        # ret.Param.params.update(fixed_parameters)
-        # ret.Param.params.update({free_parameter: theta_i})
-        # if free_parameter.startswith('log_'):
-        #     linear_key = free_parameter.replace('log_', '')
-        #     ret.Param.params.update({linear_key: 10**theta_i})
-            
-        # ret.Param.read_PT_params()
-        # ret.Param.read_uncertainty_params()
-        # ret.Param.read_chemistry_params()
-        # ret.Param.read_cloud_params()
-        
-        # new_samples = {k:ret.Param.params[k] for k in ret.Param.param_keys}
-        # print(new_samples)
         params_copy = fixed_parameters.copy()
         params_copy[free_parameter] = theta_i
         ret.evaluate_model(list(params_copy.values()))
@@ -1583,6 +1573,91 @@ def fig_free_parameter(ret, free_parameter,
         print(f'Figure saved as {fig_name}')
         plt.close(fig)
     return fig, ax_PT, ax_spec
+
+def fig_free_parameter_residuals(ret, free_parameter,
+                       fixed_parameters={},
+                       N_points=4, 
+                       w_set='K2166',
+                       cmap='viridis',
+                       fig_name=None):
+    ''' Generate spectra with fixed parameters and varying one parameter
+    Same layout as fig_prior_check, but with spectra and residuals on each page '''
+    
+    assert hasattr(ret, 'd_spec'), 'Retrieval object does not have d_spec attribute.'
+    d_spec = ret.d_spec[w_set]
+    n_orders = d_spec.n_orders
+    
+    if len(fixed_parameters) == 0:
+        bestfit_params, _ = ret.PMN_analyze()
+        fixed_parameters = dict(zip(ret.Param.param_keys, bestfit_params))
+    
+    for key_i in list(fixed_parameters.keys()):
+        if key_i.startswith('log_'):
+            linear_key = key_i.replace('log_', '')
+            fixed_parameters[linear_key] = 10**fixed_parameters[key_i]
+    
+    if fig_name is not None:
+        pdf_pages = PdfPages(fig_name)
+    
+    # Set default parameters
+    ret.Param(0.5 * np.ones(len(ret.Param.param_keys)))
+    sample = {k: ret.Param.params[k] for k in ret.Param.param_keys}
+    
+    assert free_parameter in sample.keys(), f'Parameter {free_parameter} not found in free parameters.'
+    bounds = ret.Param.param_priors[free_parameter]
+    free_parameter_range = np.linspace(bounds[0], bounds[1], N_points)
+    print(f'Varying {free_parameter} from {bounds[0]} to {bounds[1]}')
+    free_parameter_label = ret.Param.param_mathtext[free_parameter]
+
+    colors = getattr(plt.cm, cmap)(np.linspace(0, 1.0, len(free_parameter_range)))
+    
+    for order in range(n_orders):
+        fig, (ax_spec, ax_resid) = plt.subplots(2, 1, figsize=(14, 7), gridspec_kw={'height_ratios': [3, 1]}, 
+                                                sharex=True, tight_layout=True)
+        
+        for i, theta_i in enumerate(free_parameter_range):
+            params_copy = fixed_parameters.copy()
+            params_copy[free_parameter] = theta_i
+            ret.evaluate_model(list(params_copy.values()))
+            ln_L = ret.PMN_lnL_func()
+            print(f'ln(L) = {ln_L:.2e}')
+            
+            for det in range(d_spec.n_dets):
+                mask_ij = d_spec.mask_isfinite[order, det]
+                x = d_spec.wave[order, det]
+                m_flux = ret.LogLike[w_set].m[order, det]
+                
+                ax_spec.plot(x, m_flux, color=colors[i], alpha=0.75, label=f'ln(L)={ln_L:.3e}')
+                
+                if i == 0:
+                    ax_spec.plot(x, d_spec.flux[order, det], color='k', alpha=0.3, label='Data')
+                
+                residuals = d_spec.flux[order, det] - m_flux
+                ax_resid.plot(x, residuals, color=colors[i], alpha=0.75)
+
+        ax_spec.set_ylabel('Flux (erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$)')
+        ax_resid.set_ylabel('Residuals')
+        ax_resid.set_xlabel('Wavelength (nm)')
+        ax_resid.axhline(0, color='k', lw=0.5, alpha=0.5)
+        
+        # Legend for the first plot
+        if order == 0:
+            ax_spec.legend(loc='upper right', framealpha=0.7, fontsize=10)
+        
+        # Add colorbar for parameter variation
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=free_parameter_range.min(), vmax=free_parameter_range.max()))
+        # place cbar on top of the spec     
+        cbar = plt.colorbar(sm, ax=ax_spec, orientation='horizontal', pad=0.02, label=free_parameter_label,
+                            aspect=80, location='top')
+
+        if fig_name is not None:
+            pdf_pages.savefig(fig)
+            plt.close(fig)
+    
+    if fig_name is not None:
+        pdf_pages.close()
+        print(f'Figures saved in {fig_name}')
+    return fig
 
 def fig_veiling_factor(
                 d_spec,

@@ -495,7 +495,12 @@ class Retrieval:
 
             # Load the DataSpectrum and pRT_model classes
             self.d_spec[w_set]  = af.pickle_load(self.conf.prefix+f'data/d_spec_{w_set}.pkl')
-            self.pRT_atm[w_set] = af.pickle_load(self.conf.prefix+f'data/pRT_atm_{w_set}.pkl')
+            
+            pRT_file = self.conf.prefix+f'data/pRT_atm_{w_set}.pkl'
+            if getattr(self.conf, 'copy_pRT_from', None) is not None:
+                pRT_file = pRT_file.replace(self.conf.run, self.conf.copy_pRT_from)
+                
+            self.pRT_atm[w_set] = af.pickle_load(pRT_file)
 
             param_wlen_settings[w_set] = [self.d_spec[w_set].n_orders, self.d_spec[w_set].n_dets]
 
@@ -1138,9 +1143,29 @@ class Retrieval:
         #     print(f' res: {self.Param.params["res"]}')
         # self.Param.read_resolution_params()
         return self
+    
+    def get_bestfit_model(self):
         
-        
+        bestfit_params, _ = self.PMN_analyze()
+        self.evaluate_model(bestfit_params)
+        self.PMN_lnL_func()
+        # bestfit model stored in self.LogLike.m, also accessible via self.bestfit_model
+        return self
+    
+    @property
+    def bestfit_model(self):
+        # assert hasattr(self.LogLike, 'm'), 'No bestfit model available'
+        w_sets = list(self.d_spec.keys())
 
+        if not all([hasattr(self.LogLike[w_set], 'm') for w_set in w_sets]):
+            self.get_bestfit_model()
+                      
+        if len(w_sets) == 1:
+            return (np.squeeze(self.d_spec[w_sets[0]].wave), np.squeeze(self.LogLike[w_sets[0]].m))
+        else:
+            print('Multiple wavelength settings found, returning dictionary')
+        return {w_set: (self.d_spec[w_set].wave, self.LogLike[w_set].m) for w_set in w_sets}
+        
     def PMN_callback_func(self, 
                           n_samples, 
                           n_live, 

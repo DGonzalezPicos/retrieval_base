@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx_4'
+run = 'sphinx_4_v2'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -29,7 +29,7 @@ config_data = {
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, # FIXME: update to 50 at some point... WARNING: 40 for SPHINX
+        'n_atm_layers': 40, # FIXME: WARNING: 40 for SPHINX
         
         'file_target':'data/spec.npy'
         }, 
@@ -88,7 +88,7 @@ free_params = {
 
     # SPHINX
     'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
-    'log_g': [(4.5,5.0), r'$\log\ g$'],
+    # 'log_g': [(4.5,5.0), r'$\log\ g$'],
     'Z': [(0.0, 0.5), 'Z'],
     'C_O': [(0.3, 0.9), 'C/O'],
     
@@ -105,7 +105,7 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
-    'vsini': [(1,30), r'$v\ \sin\ i$'], 
+    'vsini': [(1.0,30.0), r'$v\ \sin\ i$'], 
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
@@ -189,7 +189,7 @@ constant_params = {
     # 'parallax': parallax_mas, 
     'epsilon_limb': 0.20, 
     'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
-    # 'log_g': 4.72, # +- 0.12 (M15)
+    'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 
     # PT profile
@@ -298,10 +298,10 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-
+testing = True
 const_efficiency_mode = True
-sampling_efficiency = 0.05
-evidence_tolerance = 0.5
+sampling_efficiency = 0.05 if not testing else 0.10
+evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 200
 n_iter_before_update = n_live_points * 3
 # n_iter_before_update = 1

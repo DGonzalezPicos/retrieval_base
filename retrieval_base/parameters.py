@@ -350,6 +350,12 @@ class Parameters:
                 if species_i == 'H2O_171' and ('log_17O/16O_ratio' in self.param_keys):
                     self.VMR_species[species_i] = self.params['17O/16O_ratio'] * self.params['H2O']
                     
+                # if it ends with _high, add same key without _high
+                if species_i.endswith('_high'):
+                    print(f' [Parameters.read_chemistry_params]: species_i = {species_i}')
+                    species_i_low = species_i.replace('_high', '')
+                    self.VMR_species[species_i_low] = self.VMR_species[species_i]
+                    
         # elif self.chem_mode == 'SPHINX':
             
         #     isotopologues = {'12CO': ['13CO', 'C18O', 'C17O'], 

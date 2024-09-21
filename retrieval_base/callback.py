@@ -186,9 +186,6 @@ class CallBack:
             xlim=(1000, 8000), # fix view
         )
 
-        # Make a summary figure
-        if self.plot_summary:
-            self.fig_summary()
             
         # for i, w_set in enumerate(list(self.d_spec.keys())):
             # Plot the best-fitting spectrum
@@ -292,7 +289,11 @@ class CallBack:
                                     fig_name=self.prefix+f'plots/chemistry.pdf'
             )
                             
-
+        # Make a summary figure
+        if self.plot_summary:
+            self.fig_summary()
+            
+            
         # Remove attributes from memory
         del self.Param, self.LogLike, self.PT, self.Chem, self.m_spec, self.pRT_atm, self.posterior
 

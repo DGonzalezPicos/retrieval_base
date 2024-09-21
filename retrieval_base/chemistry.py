@@ -162,6 +162,11 @@ class Chemistry:
             
         if "13CO" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
             self.VMRs_posterior["12_13CO"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["13CO"]
+        if "C18O" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
+            # check it is detected i.e. uncertainty of C18O is smaller than 1.0
+            q16, q50, q84 = quantiles(self.VMRs_posterior["C18O"], q=[0.16, 0.5, 0.84])
+            if abs(q84 - q16) < 1.0 and abs(q50 - q16) < 1.0 and abs(q84 - q50) < 1.0:
+                self.VMRs_posterior["C16_18O"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["C18O"]
         
         if "H2O_181" in list(self.VMRs_posterior.keys()) and "H2O" in list(self.VMRs_posterior.keys()):
             self.VMRs_posterior["H2_16_18O"] = self.VMRs_posterior["H2O"] / self.VMRs_posterior["H2O_181"]
@@ -604,12 +609,12 @@ class SPHINXChemistry(Chemistry):
                 self.VMRs[species_i] = (self.VMRs[main] * 10.**alpha_main) / ratio
                 # self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i]
             # elif species_i in params.keys():
-            if species_i in params.keys():
+            elif species_i in params.keys():
                 # self.mass_fractions[line_species_i] = mass_i * params[species_i] * np.ones(self.n_atm_layers)
                 self.VMRs[species_i] = params[species_i] * np.ones(self.n_atm_layers)
             # else:   
             #     self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
-            if species_i not in self.VMRs.keys():
+            elif species_i not in self.VMRs.keys():
                 print(f' WARNING: {species_i} not in VMRs, setting to 0')
                 self.VMRs[species_i] = 0.0 * np.ones(self.n_atm_layers)
                 

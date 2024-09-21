@@ -598,9 +598,10 @@ class SPHINXChemistry(Chemistry):
             # print(f' self.isotopologues = {self.isotopologues}')
             if species_i in self.isotopologues:
                 main = self.isotopologues_dict_rev[species_i]
+                alpha_main = params.get(f'alpha_{main}', 0.0)
                 ratio = params.get(f'{main}/{species_i}') # in VMR
                 assert ratio is not None, f'No ratio {main}/{species_i} given'
-                self.VMRs[species_i] = self.VMRs[main] / ratio
+                self.VMRs[species_i] = (self.VMRs[main] * 10.**alpha_main) / ratio
                 # self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i]
             # elif species_i in params.keys():
             if species_i in params.keys():

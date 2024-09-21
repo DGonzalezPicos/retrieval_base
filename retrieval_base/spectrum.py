@@ -6,6 +6,7 @@ from scipy.sparse import triu
 import pickle
 import os
 import warnings
+import matplotlib.pyplot as plt
 
 from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
@@ -415,7 +416,10 @@ class DataSpectrum(Spectrum):
             wave, flux, err = self.load_spectrum_excalibuhr(file_target, file_wave)
             
         elif w_set == 'spirou':
-            wave, flux, err = self.load_spectrum_spirou(file_target)
+            # wave, flux, err = self.load_spectrum_spirou(file_target)
+            wave, flux, err, transm = self.load_spectrum_spirou(file_target)
+            self.transm = transm
+                
             assert np.sum(np.isnan(flux)) < flux.size, '[load_spectrum_spirou] All flux values are NaNs!'
         
         super().__init__(wave, flux, err, w_set)
@@ -426,7 +430,10 @@ class DataSpectrum(Spectrum):
         self.ra, self.dec, self.mjd, self.pwv = ra, dec, mjd, pwv
 
         # Set to None initially
-        self.transm, self.transm_err = None, None
+        if not hasattr(self, 'transm'):
+            self.transm = None
+            
+        self.transm_err = None, None
 
         # Get the spectral resolution
         self.slit = slit
@@ -435,7 +442,7 @@ class DataSpectrum(Spectrum):
         elif self.slit == 'w_0.4':
             self.resolution = 5e4
         elif self.slit == 'spirou':
-            self.resolution = 7e4
+            self.resolution = 69e3 # 69,000, see Section 3 of Cristofari+2022
 
         self.wave_range = wave_range
 
@@ -490,11 +497,25 @@ class DataSpectrum(Spectrum):
         return wave, flux, err
     
     def load_spectrum_spirou(self, file_target):
-        wave, flux, err = np.load(file_target).T
+        # wave, flux, err = np.load(file_target).T
+        data = np.load(file_target)
+        print(f' [load_spectrum_spirou] shape data: {data.shape}')
+        
+        if data.shape[-1] < data.shape[0]:
+            data = data.T
+        wave, flux, err = data[:3]
         print(f' [load_spectrum_spirou] shape wave: {wave.shape}, flux: {flux.shape}, err: {err.shape}')
         print(f' [load_spectrum_spirou] Wavelength (min, mean, max): {wave.min()}, {wave.mean()}, {wave.max()}')
+        
+        if len(data) == 3:
+            transm = None
+        else:
+            print(f' [load_spectrum_spirou] Transmission data found!')
+            transm = data[3]
+            
+        
         # print(f' [load_spectrum_spirou] Number of orders: {flux.shape[0]}')
-        return wave, flux, err
+        return wave, flux, err, transm
 
     def crop_spectrum(self):
 
@@ -857,6 +878,60 @@ class DataSpectrum(Spectrum):
             self.err  = tell_corr_err
             
         return self
+    
+    def mask_tellurics(self, tell_threshold=0.2, tell_grow=0, 
+                       emission_line_threshold=1.5,
+                       fig_name=None):
+        
+        assert len(self.flux.shape) == 2, 'The spectrum must be 2D! (order, pixel)'
+        n_orders = self.flux.shape[0]
+        print(f' ** Masking tellurics with threshold {tell_threshold} and growing by {tell_grow} pixels...')
+        if fig_name is not None:
+            fig, ax = plt.subplots(n_orders, 1, figsize=(12, 2*n_orders))
+            # flux_copy = np.copy(self.flux)
+            
+        for i in range(n_orders):
+            transm_i = self.transm[i]
+            # replace nans with zeros
+            transm_i = np.where(np.isnan(transm_i), 0.0, transm_i)
+            mask_wave = transm_i <= tell_threshold
+            if tell_grow > 0:
+                mask_wave = np.convolve(mask_wave, np.ones(tell_grow), mode='same') > 0
+                
+            if emission_line_threshold > 1.0:
+                mask_emission = self.flux[i] > emission_line_threshold * np.nanmedian(self.flux[i])
+                mask_wave = mask_wave | mask_emission
+            
+            # self.err[i][mask_wave] = np.nan
+            print(f' [mask_tellurics] Order {i}: masked {mask_wave.sum()} pixels')
+            if fig_name is not None:
+                # ax[i].plot(self.wave[i], np.where(~mask_wave, np.nan, flux_copy[i]), label='Original', color='k', alpha=0.5)
+                # ax[i].plot(self.wave[i], np.where(mask_wave, np.nan, flux_copy[i]), label='Masked', color='magenta', alpha=0.9)
+                ax[i].plot(self.wave[i], self.flux[i], label='Original', color='magenta', alpha=0.7)
+                ax[i].set(ylabel='Flux', xlim=(self.wave[i].min(), self.wave[i].max()))
+                
+                ax[i].plot(self.wave[i], transm_i, label='Transm', color='blue', alpha=0.5)
+                ax[i].axhline(tell_threshold, color='red', linestyle='--', alpha=0.5)
+                ax[i].axhline(emission_line_threshold, color='deepskyblue', linestyle='--', alpha=0.8)
+                if i == n_orders-1:
+                    ax[i].set(xlabel='Wavelength / nm')
+                    ax[i].legend()
+                    
+            self.flux[i,mask_wave] = np.nan
+            ax[i].plot(self.wave[i], self.flux[i], label='Masked', color='k', alpha=0.9)
+
+        
+        self.update_isfinite_mask()
+        
+        if fig_name is not None:
+            fig.savefig(fig_name, bbox_inches='tight')
+            plt.close(fig)
+            print(f' [mask_tellurics] Saved figure {fig_name}')
+        # TODO: implement figure?
+        return self
+        
+        
+        
 
     def flux_calib_2MASS(
             self, 

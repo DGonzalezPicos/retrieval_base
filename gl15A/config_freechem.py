@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx11'
+run = 'sphinx1'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -17,7 +17,8 @@ config_data = {
         # 'wave_range': (1650, 3200), # g235h-f170lp
         
         # 'orders': (30,31,32,45,46,47,48), # J+K band
-        'orders': (46,47,48), # K band
+        # 'orders': (46,47,48), # K band
+        'orders': (0,1,2), # file only contains 3 orders
         # 'wave_range': (2295, 2440), # 2 orders
         # 'wave_range': (1630, 3250), 
         
@@ -27,11 +28,14 @@ config_data = {
         'sigma_clip': 5,
         'sigma_clip_width': 11, 
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
+        'tell_threshold': 0.55,
+        'tell_n_grow': 10,
+        'emission_line_threshold': 1.3,
     
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # FIXME: WARNING: 40 for SPHINX
         
-        'file_target':'data/spec.npy'
+        'file_target':'data/spec_orders_46_47_48.npy'
         }, 
     }
 
@@ -55,7 +59,7 @@ opacity_params = {
     # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'), 
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'), 
-    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'), # TODO: check this
+    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
     # 'log_Ni': ([(-14,-2), r'$\log\ \mathrm{Ni}$'], 'Ni_high'),
@@ -93,9 +97,9 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # SPHINX
-    'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
-    'log_g': [(4.5,5.0), r'$\log\ g$'],
-    'Z': [(0.0, 0.5), 'Z'],
+    'Teff': [(3300, 3900), r'$T_\mathrm{eff}$'],
+    'log_g': [(4.5,5.5), r'$\log\ g$'],
+    'Z': [(-0.5, 0.0), 'Z'],
     # 'C_O': [(0.3, 0.9), 'C/O'],
     'alpha_12CO': [(-4., 2.), r'$\alpha(^{12}$CO)'],
     'alpha_H2O': [(-4., 2.), r'$\alpha$(H2O)'],
@@ -116,7 +120,7 @@ free_params = {
     
     # Velocities
     'vsini': [(1.0,30.0), r'$v\ \sin\ i$'], 
-    'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
+    'rv': [(-40., 40.), r'$v_\mathrm{rad}$'],
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],

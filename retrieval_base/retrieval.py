@@ -303,7 +303,18 @@ def pre_processing_spirou(conf, conf_data):
                     d_spec.flux[order, mask] = np.nan
                     
         # d_spec.update_isfinite_mask(d_spec.flux, check_err=True)
-    
+    print(f' d_spec.transm.shape = {d_spec.transm.shape}')
+    print(f' conf_data.tell_threshold = {conf_data.get("tell_threshold", None)}')
+    if getattr(d_spec, 'transm', None) is not None and conf_data.get('tell_threshold', None) is not None:
+        # Replace deep telluric lines with nans
+        n_grow = conf_data.get('tell_grow', 0)
+        d_spec.mask_tellurics(tell_threshold=conf_data['tell_threshold'], 
+                              tell_grow=n_grow,
+                              emission_line_threshold=conf_data.get('emission_line_threshold', 1.5),
+                              fig_name=conf.prefix + 'plots/telluric_masking.pdf')
+        
+        
+        
     d_spec.reshape_spirou()
     d_spec.sigma_clip(sigma=conf_data.get('sigma_clip', 3),
                       filter_width=conf_data.get('sigma_clip_width', 21),

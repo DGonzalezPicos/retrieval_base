@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx_4_v2'
+run = 'sphinx9'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -52,12 +52,18 @@ opacity_params = {
     # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K'),
-    'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca'),
-    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti'),
-    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg'),
+    'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K_high'),
+    'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'), 
+    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'), 
+    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'), # TODO: check this
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    # 'log_Ni': ([(-14,-2), r'$\log\ \mathrm{Ni}$'], 'Ni_high'),
+    'log_Si': ([(-14,-2), r'$\log\ \mathrm{Si}$'], 'Si_high'),
+    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
+    'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
+    'log_Co': ([(-14,-2), r'$\log\ \mathrm{Co}$'], 'Co_high'), # has 1 line at 2319 nm and that's it
+    
     # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al'),
     
     # 'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
@@ -88,16 +94,19 @@ free_params = {
 
     # SPHINX
     'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
-    # 'log_g': [(4.5,5.0), r'$\log\ g$'],
+    'log_g': [(4.5,5.0), r'$\log\ g$'],
     'Z': [(0.0, 0.5), 'Z'],
-    'C_O': [(0.3, 0.9), 'C/O'],
-    
+    # 'C_O': [(0.3, 0.9), 'C/O'],
+    'alpha_12CO': [(-4., 2.), r'$\alpha(^{12}$CO)'],
+    'alpha_H2O': [(-4., 2.), r'$\alpha$(H2O)'],
     'alpha_Na': [(-4., 2.), r'$\alpha(Na)$'],
     'alpha_Ca': [(-4., 2.), r'$\alpha(Ca)$'],
     'alpha_Ti': [(-4., 2.), r'$\alpha(Ti)$'],
     'alpha_Mg': [(-4., 2.), r'$\alpha(Mg)$'],
     'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'],
     'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
+    'alpha_K': [(-4., 2.), r'$\alpha(K)$'],
+    'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], 
     
     # General properties
     # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
@@ -108,7 +117,7 @@ free_params = {
     'vsini': [(1.0,30.0), r'$v\ \sin\ i$'], 
     'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
     
-    # 'resolution': [(60e3, 80e3), r'$R$'], # 
+    'resolution': [(60e3, 80e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
 #    'T_0': [(4e3,16e3), r'$T_0$'], 
@@ -188,8 +197,9 @@ constant_params = {
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
     'epsilon_limb': 0.20, 
-    'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
-    'log_g': 4.72, # +- 0.12 (M15)
+    'C_O': 0.59,
+    # 'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
+    # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
 
     # PT profile
@@ -223,6 +233,14 @@ chem_mode  = 'SPHINX'
 if chem_mode == 'SPHINX':
     assert PT_mode == 'SPHINX', 'SPHINX mode requires SPHINX PT mode'
     assert config_data['spirou']['n_atm_layers'] == 40, 'SPHINX mode requires 40 atm layers'
+    sphinx_grid_cache = True
+    
+# Rayleigh scattering and continuum opacities
+rayleigh_species=['H2','He']
+continuum_opacities=['H2-H2', 'H2-He', 'H-']
+line_species =list(set([v[1] for _,v in opacity_params.items()]))
+line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}
+print(f' --> line_species_dict = {line_species_dict}')
 
 chem_kwargs = dict(species=[
             # 'H2H2',
@@ -235,20 +253,20 @@ chem_kwargs = dict(species=[
             #   'FeH', 
             #   'CaH', 'MgH', 
               'Na', 
-            #   'K', 
+              'K', 
               'Fe', 
               'Mg',
               'Ca',
-            #   'Si', 
+              'Si', 
               'Ti',
             #   'AlO',
             #   'SH',
-              'OH'])
+              'OH'],
+            line_species_dict=line_species_dict,
+)
 
-# Rayleigh scattering and continuum opacities
-rayleigh_species=['H2','He']
-continuum_opacities=['H2-H2', 'H2-He', 'H-']
-line_species =list(set([v[1] for _,v in opacity_params.items()]))
+
+
 # add H2 as line species, not a free parameter
 # abundance of H2 calculated to sum(VMR) = 1
 # line_species.append('H2_main_iso') # TODO: this?

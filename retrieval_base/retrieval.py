@@ -574,7 +574,7 @@ class Retrieval:
             sp = SPHINX(path=af.get_path()+'SPHINX')
 
             # sp.load_PT_grid(species=conf.chem_kwargs['species'])
-            sp.load_interpolator(species=conf.chem_kwargs['species'])
+            sp.load_interpolator(species=conf.chem_kwargs['species'], cache=getattr(self.conf, 'sphinx_grid_cache', True))
             assert np.allclose(sp.pressure_full, self.pRT_atm[w_set].pressure), 'Pressure grids do not match'
         
             self.conf.PT_kwargs['temp_interpolator'] = sp.temp_interpolator
@@ -1099,7 +1099,7 @@ class Retrieval:
 
             return flux_envelope
         
-    def PMN_analyze(self):
+    def PMN_analyze(self, map=True, return_dict=False):
         
         # Set-up analyzer object
         analyzer = pymultinest.Analyzer(
@@ -1114,10 +1114,24 @@ class Retrieval:
         posterior = posterior[:,:-1]
 
         # Read the parameters of the best-fitting model
-        bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+        if map:
+            bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+        else:
+            # quantile 50 % is the median
+            bestfit_params = np.quantile(posterior, 0.5, axis=0)
+            
+        if return_dict:
+            bestfit_params = dict(zip(self.Param.param_keys, bestfit_params))
+            
         return bestfit_params, posterior
     
     def evaluate_model(self, bestfit_params):
+        # if it's a dictionary of parameters, convert to list and sort by self.Param.param_keys
+        if isinstance(bestfit_params, dict):
+            print(f' [evaluate_model] Parsing dictionary of parameters...')
+            bestfit_params = [bestfit_params[key] for key in self.Param.param_keys]
+            assert len(bestfit_params) == len(self.Param.param_keys), 'Number of parameters do not match'
+        
         # Evaluate the model with best-fitting parameters
         for i, key_i in enumerate(self.Param.param_keys):
             # Update the Parameters instance
@@ -1144,9 +1158,9 @@ class Retrieval:
         # self.Param.read_resolution_params()
         return self
     
-    def get_bestfit_model(self):
-        
-        bestfit_params, _ = self.PMN_analyze()
+    def get_bestfit_model(self, bestfit_params=None, map=True):
+        if bestfit_params is None:
+            bestfit_params, _ = self.PMN_analyze(map=map)
         self.evaluate_model(bestfit_params)
         self.PMN_lnL_func()
         # bestfit model stored in self.LogLike.m, also accessible via self.bestfit_model

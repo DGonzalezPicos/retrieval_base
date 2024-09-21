@@ -26,6 +26,7 @@ class Chemistry:
     # create alias column 'mathtext_name' to 'label'
     species_info['label'] = species_info['mathtext_name']
     pRT_name_dict = {v['pRT_name']: v['name'] for i, v in species_info.iterrows()}
+    pRT_name_dict_r = {v['name']: v['pRT_name'] for i, v in species_info.iterrows()}
     
     # Neglect certain species to find respective contribution
     neglect_species = {
@@ -531,6 +532,12 @@ class SPHINXChemistry(Chemistry):
                                 }
         # TODO: review H- and e- mixing ratios... take them from HMFF and H2H2?
         
+        if "line_species_dict" in kwargs.keys():
+            # update the pRT_name_dict
+            self.pRT_name_dict_r.update(kwargs.get('line_species_dict'))
+            self.pRT_name_dict = {v: k for k, v in self.pRT_name_dict_r.items()}
+            # print(f' pRT_name_dict = {self.pRT_name_dict}')
+        
     @property
     def CO(self): # alias for C/O ratio
         return self.C_O
@@ -601,7 +608,10 @@ class SPHINXChemistry(Chemistry):
                 self.VMRs[species_i] = params[species_i] * np.ones(self.n_atm_layers)
             # else:   
             #     self.mass_fractions[line_species_i] = mass_i * self.VMRs[species_i] # VMRs is already an array
-            
+            if species_i not in self.VMRs.keys():
+                print(f' WARNING: {species_i} not in VMRs, setting to 0')
+                self.VMRs[species_i] = 0.0 * np.ones(self.n_atm_layers)
+                
             self.mass_fractions[line_species_i] = mass_i * (self.VMRs[species_i] * 10.**alpha_i) # VMRs is already an array
             VMR_wo_H2 += self.VMRs[species_i]
 

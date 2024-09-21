@@ -506,7 +506,7 @@ class DataSpectrum(Spectrum):
         
     def select_orders(self, orders=[0,1,2]):
         
-        assert len(orders) < self.n_orders, 'All orders are selected!'
+        assert len(orders) <= self.n_orders, 'Number of orders to select exceeds the total number of orders!'
         assert isinstance(orders, (list, np.ndarray)), 'Orders must be a list or array!'
         assert len(self.flux.shape) > 1, 'The spectrum has not been reshaped yet!'
         shape_in = tuple(self.flux.shape)

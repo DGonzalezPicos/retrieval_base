@@ -233,7 +233,7 @@ chem_mode  = 'SPHINX'
 if chem_mode == 'SPHINX':
     assert PT_mode == 'SPHINX', 'SPHINX mode requires SPHINX PT mode'
     assert config_data['spirou']['n_atm_layers'] == 40, 'SPHINX mode requires 40 atm layers'
-    sphinx_grid_cache = True
+sphinx_grid_cache = True
     
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']

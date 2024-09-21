@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx10'
+run = 'sphinx11'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 config_data = {
@@ -79,7 +79,7 @@ opacity_params = {
     # 'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
     # 'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
@@ -96,10 +96,10 @@ free_params = {
     'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
     'log_g': [(4.5,5.0), r'$\log\ g$'],
     'Z': [(0.0, 0.5), 'Z'],
-    'C_O': [(0.3, 0.9), 'C/O'],
-    # 'alpha_12CO': [(-4., 2.), r'$\alpha(^{12}$CO)'],
-    # 'alpha_H2O': [(-4., 2.), r'$\alpha$(H2O)'],
-    'alpha_H2S': [(-4., 2.), r'$\alpha(H2S)$'],
+    # 'C_O': [(0.3, 0.9), 'C/O'],
+    'alpha_12CO': [(-4., 2.), r'$\alpha(^{12}$CO)'],
+    'alpha_H2O': [(-4., 2.), r'$\alpha$(H2O)'],
+    # 'alpha_H2S': [(-4., 2.), r'$\alpha(H2S)$'],
     'alpha_Na': [(-4., 2.), r'$\alpha(Na)$'],
     'alpha_Ca': [(-4., 2.), r'$\alpha(Ca)$'],
     'alpha_Ti': [(-4., 2.), r'$\alpha(Ti)$'],
@@ -144,7 +144,7 @@ SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3',
 isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1., 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
                       'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
                         'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
-                        'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.), r'$\log\ \mathrm{H_2$^{16}O/H_2$^{18}O}$']],
+                        'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.), r'$\log\ \mathrm{H_2^{16}O/H_2^{18}O}$']],
 }
 
 
@@ -199,7 +199,7 @@ constant_params = {
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
     'epsilon_limb': 0.20, 
-    # 'C_O': 0.59,
+    'C_O': 0.59,
     'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
     # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
@@ -254,7 +254,7 @@ chem_kwargs = dict(species=[
             #   'SiO', 
             #   'FeH', 
             #   'CaH', 'MgH', 
-            'H2S',
+            # 'H2S',
               'Na', 
             #   'K', 
               'Fe', 
@@ -276,7 +276,7 @@ chem_kwargs = dict(species=[
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'Si', 'H2S']
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'Si']
 species_to_plot_CCF = []
 
 ####################################################################################

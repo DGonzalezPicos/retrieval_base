@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx12_GP'
+run = 'sphinx13_GP'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 copy_pRT_from = None
@@ -91,7 +91,7 @@ print(f' --> {len(opacity_params)} opacity parameters')
 free_params = {
 
     # Gaussian processes (correlated noise)
-    'log_a': [(-2.0, 0.6), r'$\log\ a$'],
+    'log_a': [(-2.0, 1.0), r'$\log\ a$'],
     'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
 
     # SPHINX
@@ -122,6 +122,8 @@ free_params = {
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
+    'gamma': [(0.0, 3.0), r'$\Gamma$'], # lorentzian broadening, half width at half maximum [km/s]
+    'fwhm': [(1.0, 6.0), r'$\mathrm{FWHM}$'], # gaussian broadening, full width at half maximum [km/s]
 
 #    'T_0': [(4e3,16e3), r'$T_0$'], 
 #     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],

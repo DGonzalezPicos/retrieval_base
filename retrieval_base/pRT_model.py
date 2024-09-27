@@ -318,6 +318,8 @@ class pRT_model:
                 out_res=self.params.get('resolution', self.d_resolution), 
                 in_res=m_spec_i.resolution, 
                 rebin=False, 
+                gamma=self.params.get('gamma', None),
+                fwhm=self.params.get('fwhm', None),
                 )
             
             # print(f' get_full_spectrum: {get_full_spectrum}')

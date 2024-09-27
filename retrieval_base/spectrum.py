@@ -17,6 +17,12 @@ import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
 from retrieval_base.spline_model import SplineModel
 
+try:
+    from broadpy import InstrumentalBroadening
+except ImportError:
+    pass
+
+
 class Spectrum:
 
     # The wavelength ranges of each detector and order
@@ -316,6 +322,14 @@ class Spectrum:
                                    mode='nearest'
                                    )
         return flux_LSF
+    
+    @classmethod
+    def instr_broadening_voigt(cls, wave, flux, fwhm, gamma=0.0):
+        """ Apply a Voigt profile to the spectrum to simulate instrumental broadening """
+        
+        return InstrumentalBroadening(wave, flux)(fwhm=fwhm, gamma=gamma)
+        
+        
     
     @classmethod
     def spectrally_weighted_integration(cls, wave, flux, array):
@@ -1154,13 +1168,20 @@ class ModelSpectrum(Spectrum):
                             in_res=1e6, 
                             d_wave=None, 
                             rebin=True, 
+                            gamma=None,
+                            fwhm=None,
                             ):
 
         # Apply Doppler shift, rotational/instrumental broadening, 
         # and rebin onto a new wavelength grid
         self.rv_shift(rv, replace_wave=True)
         self.rot_broadening(vsini, epsilon_limb, replace_wave_flux=True)
-        self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
+        
+        if gamma is not None: # Voigt profile
+            assert fwhm is not None, 'FWHM must be provided if gamma is set!'
+            self.flux = self.instr_broadening_voigt(self.wave, self.flux, gamma, fwhm)
+        else:
+            self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
         if rebin:
             self.rebin(d_wave, replace_wave_flux=True)
             

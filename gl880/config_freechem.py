@@ -91,11 +91,11 @@ print(f' --> {len(opacity_params)} opacity parameters')
 free_params = {
 
     # Gaussian processes (correlated noise)
-    'beta_spirou_1': [(1.0, 30.0), r'$\beta_0$'], # global noise scaling factor
-    'beta_spirou_2': [(1.0, 30.0), r'$\beta_1$'], # global noise scaling factor
-    'beta_spirou_3': [(1.0, 30.0), r'$\beta_2$'], # global noise scaling factor
+    # 'beta_spirou_1': [(1.0, 30.0), r'$\beta_0$'], # global noise scaling factor
+    # 'beta_spirou_2': [(1.0, 30.0), r'$\beta_1$'], # global noise scaling factor
+    # 'beta_spirou_3': [(1.0, 30.0), r'$\beta_2$'], # global noise scaling factor
     
-    'log_a': [(-2.0, 0.4), r'$\log\ a$'],
+    'log_a': [(-2.0, 2.0), r'$\log\ a$'],
     'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
 
     # SPHINX
@@ -224,7 +224,7 @@ constant_params = {
 ####################################################################################
 scale_flux = True
 scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
-scale_err  = False
+scale_err  = True
 apply_high_pass_filter = False
 
 # cloud_mode = 'gray'

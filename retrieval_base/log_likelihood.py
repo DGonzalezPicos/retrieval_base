@@ -95,6 +95,8 @@ class LogLikelihood:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky()
                     Cov[i,j].get_logdet()
+                    # print(f' logdet {Cov[i,j].logdet}')
+                    # print(f' Cov[i,j].cov_cholesky.shape {Cov[i,j].cov_cholesky.shape}')
 
                     LHS = np.dot(M_ij, Cov[i,j].solve(M_ij.T))
                     RHS = np.dot(M_ij, Cov[i,j].solve(d_flux_ij))

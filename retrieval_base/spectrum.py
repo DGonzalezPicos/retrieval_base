@@ -686,7 +686,7 @@ class DataSpectrum(Spectrum):
         self.n_orders, self.n_dets, self.n_pixels = self.flux.shape
 
     def prepare_for_covariance(self, prepare_err_eff=False):
-
+        print(f' [prepare_for_covariance] Preparing for covariance calculation with prepare_err_eff={prepare_err_eff}')
         # Make a nested array of ndarray objects with different shapes
         self.separation = np.empty((self.n_orders, self.n_dets), dtype=object)
 

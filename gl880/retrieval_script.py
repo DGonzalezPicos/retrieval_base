@@ -12,7 +12,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 target = 'gl880'
-run = 'sphinx11' # important to set this to the correct run
+run = 'sphinx12_GP' # important to set this to the correct run
 
 if __name__ == '__main__':
 

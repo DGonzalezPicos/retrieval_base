@@ -251,41 +251,33 @@ class GaussianProcesses(Covariance):
         # Gaussian radial-basis function kernel
         self.cov[w_ij] += GP_amp * np.exp(-(self.separation[w_ij])**2/(2*l**2))
 
-    def get_cholesky(self):
+    def get_cholesky(self, max_attempts=10, epsilon=1e-2):
         '''
         Get the Cholesky decomposition. Employs a banded 
         decomposition with scipy. 
-        '''
-        '''
-        cov_full = np.zeros(self.cov_shape, dtype=np.float64)
-        cov_full[self.max_separation_mask] = self.cov
-
-        # Make banded covariance matrix
-        self.cov_banded = []
-
-        for i in range(len(cov_full)):
-            # Retrieve the i-th diagonal
-            diag_i = np.diag(cov_full, k=i)
-
-            if (diag_i != 0).any():
-                # Only store the non-zero diagonals
-                # Pad the diagonals to the same sizes
-                self.cov_banded.append(
-                    np.concatenate((diag_i, np.zeros(i)))
-                    )
-            else:
-                # There are no more non-zero diagonals coming
-                break
-        
-        # Convert to array for scipy
-        self.cov_banded = np.asarray(self.cov_banded)
-        '''
+        '''        
         self.cov = self.cov[(self.cov!=0).any(axis=1),:]
 
         # Compute banded Cholesky decomposition
+        for i in range(max_attempts):
+            try:
+                self.cov_cholesky = cholesky_banded(
+                    self.cov, lower=True
+                    )
+                return self
+            except np.linalg.LinAlgError:
+                # Add a small number to the diagonal
+                # print(f'Cholesky decomposition failed, retrying with epsilon={epsilon}')
+                # print(f' self.cov.shape {self.cov.shape}')
+                # print(f' Min: {np.min(self.cov)} Max: {np.max(self.cov)} Median: {np.median(self.cov)}')
+                self.cov[0] *= (1 + epsilon)
+                epsilon *= 10
+                
         self.cov_cholesky = cholesky_banded(
             self.cov, lower=True
             )
+        delattr(self, 'cov')
+        return self
 
     def get_logdet(self):
         '''

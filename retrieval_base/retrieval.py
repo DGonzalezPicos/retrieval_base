@@ -348,11 +348,20 @@ def pre_processing_spirou(conf, conf_data):
         d_spec, prefix=conf.prefix, w_set=d_spec.w_set
         )
 
+    # calculate pixel width in wavelength units
+    pixel_size = np.nanmean(np.diff(d_spec.wave[0]))
+    print(f' Pixel size = {pixel_size:.4f} nm')
+    print(f' log pixel size = {np.log10(pixel_size):.4f}')
+    
+    
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/d_spec_{d_spec.w_set}.pkl', d_spec)
 
     # --- Set up a pRT model --------------------------------------------
     pRT_file = conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl'
+    if getattr(conf, 'copy_pRT_from', None) is not None:
+        pRT_file = pRT_file.replace(conf.run, conf.copy_pRT_from)
+    
     if os.path.exists(pRT_file):
         print(f' Already exists: {pRT_file}')
         # pRT_atm = af.pickle_load(pRT_file)
@@ -409,6 +418,9 @@ def prior_check(conf, n=3,
         print(sample)
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
+        print(f' ret.Cov[w_set][0,0].cov_cholesky.shape {ret.Cov[w_set][0,0].cov_cholesky.shape}')
+        print(f' ret.Cov[w_set][-1,-1].cov_cholesky.shape {ret.Cov[w_set][-1,-1].cov_cholesky.shape}')
+
         if ln_L == -np.inf:
             print(f'ln_L = -inf\n')
             continue
@@ -565,7 +577,8 @@ class Retrieval:
                         # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
                         **self.conf.cov_kwargs
                         )
-                    self.Cov[w_set][i,j].get_logdet()
+                    if self.conf.cov_mode is None:
+                        self.Cov[w_set][i,j].get_logdet()
 
             delattrs = ['err', 'err_eff', 'flux_eff', 'separation']
             for attr in delattrs:

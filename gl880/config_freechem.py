@@ -7,8 +7,10 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx11'
+run = 'sphinx12_GP'
 prefix = f'./retrieval_outputs/{run}/test_'
+
+copy_pRT_from = None
 
 config_data = {
     'spirou': {
@@ -17,7 +19,7 @@ config_data = {
         # 'wave_range': (1650, 3200), # g235h-f170lp
         
         # 'orders': (30,31,32,45,46,47,48), # J+K band
-        'orders': (46,47,48), # K band
+        'orders': (0,1,2), # file only contains 3 orders
         # 'wave_range': (2295, 2440), # 2 orders
         # 'wave_range': (1630, 3250), 
         
@@ -27,11 +29,14 @@ config_data = {
         'sigma_clip': 5,
         'sigma_clip_width': 11, 
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
-    
+        'tell_threshold': 0.55,
+        'tell_n_grow': 10,
+        'emission_line_threshold': 1.3,
+        
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # FIXME: WARNING: 40 for SPHINX
         
-        'file_target':'data/spec.npy'
+        'file_target':'data/spec_orders_46_47_48.npy'
         }, 
     }
 
@@ -85,12 +90,9 @@ print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
 free_params = {
 
-    # Uncertainty scaling
-    # 'log_a_G': [(-2,0.6), r'$\log\ a$'], 
-    # 'log_a_G235': [(-2,0.6), r'$\log\ a_{G235}$'],
-    # 'log_a_G395': [(-2,0.6), r'$\log\ a_{G395}$'],
-    # 'log_l': [(-2,0.3), r'$\log\ l$'], 
-    # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
+    # Gaussian processes (correlated noise)
+    'log_a': [(-2.0, 0.6), r'$\log\ a$'],
+    'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
 
     # SPHINX
     'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
@@ -283,7 +285,7 @@ species_to_plot_CCF = []
 # Covariance parameters
 ####################################################################################
 
-cov_mode = None
+cov_mode = 'GP'
 
 cov_kwargs = dict(
     trunc_dist   = 1, # set to 3 for accuracy, 2 for speed

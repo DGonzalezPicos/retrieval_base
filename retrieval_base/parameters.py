@@ -265,7 +265,7 @@ class Parameters:
                     if f'{key_i}_{w_set}_{i+1}' in self.param_keys:
                         self.params[f'{key_i}_{w_set}'][i,:] = \
                             self.params[f'{key_i}_{w_set}_{i+1}']
-
+                    # print(f' [Parameters.read_uncertainty_params]: {key_i}_{w_set} = {self.params[f"{key_i}_{w_set}"][i,:]}')
         '''
         for key_i in cov_keys:
 

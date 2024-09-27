@@ -44,7 +44,11 @@ class Covariance:
         if not self.is_matrix:
             self.cov *= beta**2
         else:
-            self.cov[np.diag_indices_from(self.cov)] *= beta**2
+            # print(f' beta.shape {beta.shape}')
+            # print(f' self.cov.shape {self.cov.shape}')
+            # print(f' np.diag_indices_from(self.cov).shape {np.diag_indices_from(self.cov).shape}')
+            # self.cov[np.diag_indices_from(self.cov)] *= beta**2
+            self.cov[0,:] *= beta**2 # first element of banded matrix is the diagonal
             
         return self
 
@@ -162,10 +166,10 @@ class GaussianProcesses(Covariance):
         # Reset the covariance matrix
         self.cov_reset()
 
-        # if params[f'beta_{w_set}'][order,det] != 1:
-        #     self.add_data_err_scaling(
-        #         params[f'beta_{w_set}'][order,det]
-        #         )
+        if params[f'beta_{w_set}'][order,det] != 1:
+            self.add_data_err_scaling(
+                params[f'beta_{w_set}'][order,det]
+                )
 
         if params[f'a_{w_set}'][order,det] != 0:
             self.add_RBF_kernel(

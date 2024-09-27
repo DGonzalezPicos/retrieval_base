@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx13_GP'
+run = 'sphinx14_GP'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 copy_pRT_from = None
@@ -91,7 +91,8 @@ print(f' --> {len(opacity_params)} opacity parameters')
 free_params = {
 
     # Gaussian processes (correlated noise)
-    'log_a': [(-2.0, 1.0), r'$\log\ a$'],
+    'beta': [(1.0, 20.0), r'$\beta_G$'], # global noise scaling factor
+    'log_a': [(-2.0, 0.4), r'$\log\ a$'],
     'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
 
     # SPHINX
@@ -122,8 +123,8 @@ free_params = {
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
-    'gamma': [(0.0, 3.0), r'$\Gamma$'], # lorentzian broadening, half width at half maximum [km/s]
-    'fwhm': [(1.0, 6.0), r'$\mathrm{FWHM}$'], # gaussian broadening, full width at half maximum [km/s]
+    'gamma': [(0.0, 5.0), r'$\Gamma$'], # lorentzian broadening, half width at half maximum [km/s]
+    # 'fwhm': [(1.0, 6.0), r'$\mathrm{FWHM}$'], # gaussian broadening, full width at half maximum [km/s]
 
 #    'T_0': [(4e3,16e3), r'$T_0$'], 
 #     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
@@ -196,7 +197,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'SPHINX'
 
-N_knots = 21 # spline knots (continuum fitting)
+N_knots = 30 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
@@ -204,9 +205,10 @@ constant_params = {
     # 'parallax': parallax_mas, 
     'epsilon_limb': 0.20, 
     'C_O': 0.59,
-    'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
+    # 'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
     # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
+    'fwhm': 4.35, # 4.35 km/s
 
     # PT profile
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 

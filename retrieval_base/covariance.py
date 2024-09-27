@@ -167,6 +167,7 @@ class GaussianProcesses(Covariance):
         self.cov_reset()
 
         if params[f'beta_{w_set}'][order,det] != 1:
+            print(f' beta_{w_set} {params[f"beta_{w_set}"][order,det]}')
             self.add_data_err_scaling(
                 params[f'beta_{w_set}'][order,det]
                 )

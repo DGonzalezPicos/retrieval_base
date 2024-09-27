@@ -126,9 +126,9 @@ class LogLikelihood:
                 inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
                 chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
                 
-                s2_ij = chi_squared_ij_scaled / N_ij
-                if (i==self.reference_order) and (j==self.reference_det):
-                    s2_ij = 1.0 # set reference order/detector to 1.0
+                s2_ij = chi_squared_ij_scaled / N_ij if self.scale_err else 1.0
+                # if (i==self.reference_order) and (j==self.reference_det):
+                #     s2_ij = 1.0 # set reference order/detector to 1.0
                 
 
                 # Chi-squared for optimal linear scaling and uncertainty scaling

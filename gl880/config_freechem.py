@@ -91,7 +91,7 @@ print(f' --> {len(opacity_params)} opacity parameters')
 free_params = {
 
     # Gaussian processes (correlated noise)
-    'beta': [(1.0, 20.0), r'$\beta_G$'], # global noise scaling factor
+    'beta': [(1.0, 60.0), r'$\beta_G$'], # global noise scaling factor
     'log_a': [(-2.0, 0.4), r'$\log\ a$'],
     'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
 

@@ -23,6 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--retrieval', '-r', action='store_true')
     parser.add_argument('--evaluation', '-e', action='store_true')
     parser.add_argument('--ccf', '-ccf', action='store_true', help='Cross-correlation function', default=False)
+    parser.add_argument('--resume', '-res', action='store_true')
     # parser.add_argument('--synthetic', action='store_true')
     args = parser.parse_args()
 
@@ -54,6 +55,8 @@ if __name__ == '__main__':
             conf=conf, 
             evaluation=args.evaluation
             )
+        
+        ret.PMN_resume = args.resume
         ret.PMN_run()
 
     if args.evaluation:

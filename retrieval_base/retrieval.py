@@ -504,6 +504,8 @@ def prior_check(conf, n=3,
 class Retrieval:
 
     plot_ccf = False
+    PMN_resume = False
+    
     def __init__(self, conf, evaluation):
 
         self.conf = conf
@@ -1283,7 +1285,7 @@ class Retrieval:
             Prior=self.Param, 
             n_dims=self.Param.n_params, 
             outputfiles_basename=self.conf_output, 
-            resume=True, 
+            resume=self.PMN_resume,
             verbose=True, 
             const_efficiency_mode=self.conf.const_efficiency_mode, 
             sampling_efficiency=self.conf.sampling_efficiency, 

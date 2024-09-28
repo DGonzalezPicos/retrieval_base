@@ -419,8 +419,9 @@ def prior_check(conf, n=3,
         print(sample)
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
-        print(f' ret.Cov[w_set][0,0].cov_cholesky.shape {ret.Cov[w_set][0,0].cov_cholesky.shape}')
-        print(f' ret.Cov[w_set][-1,-1].cov_cholesky.shape {ret.Cov[w_set][-1,-1].cov_cholesky.shape}')
+        if ret.conf.cov_mode == 'GP':
+            print(f' ret.Cov[w_set][0,0].cov_cholesky.shape {ret.Cov[w_set][0,0].cov_cholesky.shape}')
+            print(f' ret.Cov[w_set][-1,-1].cov_cholesky.shape {ret.Cov[w_set][-1,-1].cov_cholesky.shape}')
 
         if ln_L == -np.inf:
             print(f'ln_L = -inf\n')

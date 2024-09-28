@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx15_GP'
+run = 'sphinx15'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 copy_pRT_from = None
@@ -95,8 +95,8 @@ free_params = {
     # 'beta_spirou_2': [(1.0, 30.0), r'$\beta_1$'], # global noise scaling factor
     # 'beta_spirou_3': [(1.0, 30.0), r'$\beta_2$'], # global noise scaling factor
     
-    'log_a': [(-2.0, 0.6), r'$\log\ a$'],
-    'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
+    # 'log_a': [(-2.0, 0.6), r'$\log\ a$'],
+    # 'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
 
     # SPHINX
     'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
@@ -291,8 +291,11 @@ species_to_plot_CCF = []
 ####################################################################################
 # Covariance parameters
 ####################################################################################
+# if log_a and log_l in free_params.keys():
 
-cov_mode = 'GP'
+cov_mode = None
+if 'log_a' in free_params.keys():
+    cov_mode = 'GP'
 
 cov_kwargs = dict(
     trunc_dist   = 1, # set to 3 for accuracy, 2 for speed
@@ -302,7 +305,7 @@ cov_kwargs = dict(
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
     # in memory
-    prepare_for_covariance = True
+    prepare_for_covariance = (cov_mode == 'GP'),
 )
 if free_params.get('log_l') is not None:
     cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']

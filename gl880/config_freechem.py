@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx14_GP'
+run = 'sphinx15_GP'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 copy_pRT_from = None
@@ -36,7 +36,7 @@ config_data = {
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # FIXME: WARNING: 40 for SPHINX
         
-        'file_target':'data/spec_orders_46_47_48.npy'
+        'file_target':'data/spec_orders_46_47_48_mad.npy'
         }, 
     }
 
@@ -95,7 +95,7 @@ free_params = {
     # 'beta_spirou_2': [(1.0, 30.0), r'$\beta_1$'], # global noise scaling factor
     # 'beta_spirou_3': [(1.0, 30.0), r'$\beta_2$'], # global noise scaling factor
     
-    'log_a': [(-2.0, 2.0), r'$\log\ a$'],
+    'log_a': [(-2.0, 0.6), r'$\log\ a$'],
     'log_l': [(-1.80, -0.60), r'$\log\ l$'], # 1 pixel ~ 10**(-1.75) nm
 
     # SPHINX

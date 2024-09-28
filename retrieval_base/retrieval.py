@@ -401,7 +401,8 @@ def prior_check(conf, n=3,
     else:
         theta = np.linspace(0, 1, n) * np.ones(len(ret.Param.param_keys))
     m_spec_list = []
-    logL_list = [] 
+    logL_list = []
+    s_list = []
     # plot PT
     fig, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
     
@@ -425,9 +426,10 @@ def prior_check(conf, n=3,
             print(f'ln_L = -inf\n')
             continue
         # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
-        print(f'ln_L = {ln_L:.4e}\n')
+        print(f'ln_L = {ln_L:.4e}')
+        print(f' Error scaling factor:', ret.LogLike[w_set].s)
         end = time.time()
-        print(f'Elapsed time: {end-start:.2f} s')
+        print(f'Elapsed time: {end-start:.2f} s\n')
         time_list.append(end-start)
         
         if i == 0:
@@ -440,6 +442,7 @@ def prior_check(conf, n=3,
         # m_spec_list.append(ret.m_spec[w_set])
         m_spec_list.append(ret.LogLike[w_set].m)
         logL_list.append(ln_L)
+        s_list.append(ret.LogLike[w_set].s)
         
         if get_contr:
             ret.copy_integrated_contribution_emission()
@@ -460,7 +463,7 @@ def prior_check(conf, n=3,
                         xlim=[1e-12, 1e0],
                         fig_name=str(fig_name).replace('.pdf', f'_VMR.pdf') if i==(len(theta)-1) else None)
 
-    
+    s_array = np.array(s_list)
     print(f' --> Time per evaluation: {np.mean(time_list):.2f} +- {np.std(time_list):.2f} s')
     # use PDF pages to save multiple plots for each order into one PDF
     with PdfPages(fig_name) as pdf:
@@ -479,12 +482,12 @@ def prior_check(conf, n=3,
                 if N_ij == 0:
                     print(f'No data points in order {i}, detector {j}')
                     continue
-
                 wave_ij = ret.d_spec[w_set].wave[i,j,:]
                 flux_ij = ret.d_spec[w_set].flux[i,j,:]
                 ax[0].plot(wave_ij, flux_ij, lw=1, label='data', color='k')
                 ax[-1].axhline(0, color='k', ls='-', alpha=0.9)
                 for k in range(n):
+                    # print(f' Error scaling factor s[{i},{j}] = {s_array[k][i,j]:.2f}\n')
                     m_flux_ij = m_spec_list[k][i,j,:]
                     logL = logL_list[k]
                     ax[0].plot(wave_ij, m_flux_ij, lw=1, ls='--', label=f'logL = {logL:.3e}')

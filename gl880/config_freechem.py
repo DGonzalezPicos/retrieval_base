@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx15'
+run = 'sphinx16'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 copy_pRT_from = None
@@ -36,7 +36,7 @@ config_data = {
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # FIXME: WARNING: 40 for SPHINX
         
-        'file_target':'data/spec_orders_46_47_48_mad.npy'
+        'file_target':'data/spec_orders_46_47_48_mad.npy' # sep 28, new data with proper normalization and MAD error estimate
         }, 
     }
 
@@ -121,12 +121,12 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
-    'vsini': [(1.0,30.0), r'$v\ \sin\ i$'], 
-    'rv': [(-45.,-20.), r'$v_\mathrm{rad}$'],
+    'vsini': [(1.0,5.0), r'$v\ \sin\ i$'], 
+    'rv': [(-30.,-25.), r'$v_\mathrm{rad}$'],
     
-    # 'resolution': [(60e3, 80e3), r'$R$'], # 
+    'resolution': [(65e3, 75e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
-    'gamma': [(0.0, 5.0), r'$\Gamma$'], # lorentzian broadening, half width at half maximum [km/s]
+    # 'gamma': [(0.0, 5.0), r'$\Gamma$'], # lorentzian broadening, half width at half maximum [km/s]
     # 'fwhm': [(1.0, 6.0), r'$\mathrm{FWHM}$'], # gaussian broadening, full width at half maximum [km/s]
 
 #    'T_0': [(4e3,16e3), r'$T_0$'], 
@@ -200,7 +200,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'SPHINX'
 
-N_knots = 30 # spline knots (continuum fitting)
+N_knots = 25 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
@@ -211,7 +211,7 @@ constant_params = {
     # 'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
     # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
-    'fwhm': 4.35, # 4.35 km/s
+    # 'fwhm': 4.35, # 4.35 km/s
 
     # PT profile
     # 'log_P_knots': [-6., -3., -1., 1., 2.], 
@@ -331,7 +331,7 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = True
+testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 evidence_tolerance = 0.5 if not testing else 1.0

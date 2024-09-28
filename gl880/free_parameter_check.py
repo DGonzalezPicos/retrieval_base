@@ -18,7 +18,8 @@ if target not in os.getcwd():
     os.chdir(base_path + target)
 
 # run = 'sphinx_4'
-run = 'sphinx_8'
+# run = 'sphinx_8'
+run = 'sphinx11'
 config_file = 'config_freechem.txt'
 conf = Config(path=base_path, target=target, run=run)(config_file)
 
@@ -31,42 +32,27 @@ w_set = list(conf.config_data.keys())
 assert len(w_set) == 1, 'Only one wavelength set is allowed'
 w_set = w_set[0]
 
-free_parameter = 'C_O'
+# free_parameter = 'C_O'
+free_parameter = 'log_12CO/13CO'
 
-# fixed_parameters = {'log_a': 0.0,
-#  'log_l': -1.4,
-#  'log_g': 3.5, 
-# 'epsilon_limb': 0.54, 
-# 'vsini': 5.0, 
-# 'rv': 14.8,
-# 'log_12CO': -4.0,
-# 'log_13CO': -6.0,
-#  'log_H2O': -4.0,
-#  'log_HF': -8.0, 
-# 'log_Na': -6.0,
-#  'log_Ca': -6.0, 
-# 'log_Ti': -7.0,
-#  'dlnT_dlnP_0': 0.31, 
-#  'dlnT_dlnP_1': 0.11, 
-#  'dlnT_dlnP_2': 0.08, 
-#  'dlnT_dlnP_3': 0.08, 
-#  'dlnT_dlnP_4': 0.04,
-# 'dlnT_dlnP_5': 0.04,
-# 'dlnT_dlnP_6': 0.04,
-#  'T_0': 5500.0}
+run_all = True
+if run_all:
+    for free_param in ret.Param.param_keys:
+        free_param_label = free_param.replace('/', '-')
 
-# figs.fig_free_parameter(ret, free_parameter, 
-#                         # fixed_parameters=fixed_parameters,
-#                         fixed_parameters={},
-#                         N_points=3, 
-#                         w_set=w_set,
-#                         cmap='viridis',
-#                         fig_name=conf.prefix+f'plots/spec_{free_parameter}_free.pdf')
-
-figs.fig_free_parameter_residuals(ret, free_parameter, 
+        figs.fig_free_parameter_residuals(ret, free_param, 
+                                fixed_parameters={},
+                                N_points=3, 
+                                w_set=w_set,
+                                cmap='viridis',
+                                fig_name=conf.prefix+f'plots/spec_{free_param_label}_free.pdf')
+        
+else:
+    free_parameter_label = free_parameter.replace('/', '-')
+    figs.fig_free_parameter_residuals(ret, free_parameter, 
                         # fixed_parameters=fixed_parameters,
                         fixed_parameters={},
                         N_points=3, 
                         w_set=w_set,
                         cmap='viridis',
-                        fig_name=conf.prefix+f'plots/spec_{free_parameter}_free_residuals.pdf')
+                        fig_name=conf.prefix+f'plots/spec_{free_parameter_label}_free_residuals.pdf')

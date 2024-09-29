@@ -7,8 +7,9 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx1'
+run = 'sphinx2'
 prefix = f'./retrieval_outputs/{run}/test_'
+copy_pRT_from = None
 
 config_data = {
     'spirou': {
@@ -28,13 +29,17 @@ config_data = {
         'sigma_clip': 5,
         'sigma_clip_width': 11, 
         'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
-    
-        'log_P_range': (-5,2),
-        'n_atm_layers': 40, # FIXME: WARNING: 40 for SPHINX
+        'tell_threshold': 0.55,
+        'tell_n_grow': 10,
+        'emission_line_threshold': 1.3,
         
-        'file_target':'data/spec_orders_46_47_48.npy'
+        'log_P_range': (-5,2),
+        'n_atm_layers': 40, # WARNING: 40 for SPHINX
+        
+        'file_target':'data/spec_orders_46_47_48_mad.npy' # sep 28, new data with proper normalization and MAD error estimate
         }, 
     }
+
 
 
 ####################################################################################
@@ -105,10 +110,10 @@ free_params = {
     'alpha_Ca': [(-4., 2.), r'$\alpha(Ca)$'],
     'alpha_Ti': [(-4., 2.), r'$\alpha(Ti)$'],
     'alpha_Mg': [(-4., 2.), r'$\alpha(Mg)$'],
-    'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'],
+    # 'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'], not expected at < 3000 K
     'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
     # 'alpha_K': [(-4., 2.), r'$\alpha(K)$'],
-    'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], 
+    # 'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], not expected at < 3000 K
     
     # General properties
     # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
@@ -116,8 +121,8 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # Velocities
-    'vsini': [(1.0,30.0), r'$v\ \sin\ i$'], 
-    'rv': [(-50., 50.), r'$v_\mathrm{rad}$'],
+    'vsini': [(1.0,11.0), r'$v\ \sin\ i$'], 
+    'rv': [(8.0, 14.0), r'$v_\mathrm{rad}$'],
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
@@ -142,10 +147,10 @@ SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3',
                   'Ca', 'C', 'Si', 'Ti', 'O', 'FeII', 'MgII', 'TiII', 'CaII', 'CII', 
                   'N2', 'AlO', 'SH', 'OH', 'NO', 'SO2']
 
-isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1., 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
-                      'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
-                        'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
-                        'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.), r'$\log\ \mathrm{H_2^{16}O/H_2^{18}O}$']],
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.2, 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
+                      'C18O': ['log_12CO/C18O', [(2.0, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
+                        'C17O': ['log_12CO/C17O', [(2.0, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
+                        'H2O_181': ['log_H2O/H2O_181', [(2.0, 4.), r'$\log\ \mathrm{H_2^{16}O/H_2^{18}O}$']],
 }
 
 
@@ -193,13 +198,13 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'SPHINX'
 
-N_knots = 21 # spline knots (continuum fitting)
+N_knots = 25 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
-    'epsilon_limb': 0.20, 
+    'epsilon_limb': 0.23, # from exoTic (NEW 2024-09-29), all epsilon of the sample have ~0.20-0.23
     'C_O': 0.59,
     'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
     # 'log_g': 4.72, # +- 0.12 (M15)
@@ -277,7 +282,7 @@ chem_kwargs = dict(species=[
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'Si']
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg']
 species_to_plot_CCF = []
 
 ####################################################################################
@@ -285,7 +290,9 @@ species_to_plot_CCF = []
 ####################################################################################
 
 cov_mode = None
-
+if 'log_a' in free_params.keys():
+    cov_mode = 'GP'
+    
 cov_kwargs = dict(
     trunc_dist   = 1, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 

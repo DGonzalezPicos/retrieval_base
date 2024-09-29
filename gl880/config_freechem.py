@@ -124,7 +124,7 @@ free_params = {
     'vsini': [(1.0,5.0), r'$v\ \sin\ i$'], 
     'rv': [(-30.,-25.), r'$v_\mathrm{rad}$'],
     
-    'resolution': [(65e3, 75e3), r'$R$'], # 
+    # 'resolution': [(65e3, 75e3), r'$R$'], # WARNING: fix this...
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
     # 'gamma': [(0.0, 5.0), r'$\Gamma$'], # lorentzian broadening, half width at half maximum [km/s]
     # 'fwhm': [(1.0, 6.0), r'$\mathrm{FWHM}$'], # gaussian broadening, full width at half maximum [km/s]
@@ -149,7 +149,7 @@ SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3',
                   'Ca', 'C', 'Si', 'Ti', 'O', 'FeII', 'MgII', 'TiII', 'CaII', 'CII', 
                   'N2', 'AlO', 'SH', 'OH', 'NO', 'SO2']
 
-isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1., 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.2, 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
                       'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
                         'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
                         'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.), r'$\log\ \mathrm{H_2^{16}O/H_2^{18}O}$']],
@@ -208,7 +208,7 @@ constant_params = {
     # 'parallax': parallax_mas, 
     'epsilon_limb': 0.20, 
     'C_O': 0.59,
-    # 'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
+    'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
     # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
     # 'fwhm': 4.35, # 4.35 km/s

@@ -7,8 +7,9 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx1'
+run = 'sphinx2'
 prefix = f'./retrieval_outputs/{run}/test_'
+copy_pRT_from = None
 
 config_data = {
     'spirou': {
@@ -31,11 +32,11 @@ config_data = {
         'tell_threshold': 0.55,
         'tell_n_grow': 10,
         'emission_line_threshold': 1.3,
-    
-        'log_P_range': (-5,2),
-        'n_atm_layers': 40, # FIXME: WARNING: 40 for SPHINX
         
-        'file_target':'data/spec_orders_46_47_48.npy'
+        'log_P_range': (-5,2),
+        'n_atm_layers': 40, # WARNING: 40 for SPHINX
+        
+        'file_target':'data/spec_orders_46_47_48_mad.npy' # sep 28, new data with proper normalization and MAD error estimate
         }, 
     }
 
@@ -112,31 +113,12 @@ free_params = {
     'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
     # 'alpha_K': [(-4., 2.), r'$\alpha(K)$'],
     'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], 
-    
-    # General properties
-    # 'log_g': [(3.0,6.0), r'$\log\ g$'], 
-    # 'gaussian_log_g': [(4.72, 0.12), r'$\log\ g$'],
-    # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
-    
+
     # Velocities
-    'vsini': [(1.0,30.0), r'$v\ \sin\ i$'], 
-    'rv': [(-40., 40.), r'$v_\mathrm{rad}$'],
+    'vsini': [(1.0,11.0), r'$v\ \sin\ i$'], 
+    'rv': [(16., 24.), r'$v_\mathrm{rad}$'],
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
-    # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
-
-#    'T_0': [(4e3,16e3), r'$T_0$'], 
-#     'log_P_RCE': [(-3,1), r'$\log\ P_\mathrm{RCE}$'],
-#     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
-#     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
-#     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-#     'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
-#     'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
-#     'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
-#     'dlnT_dlnP_2':   [(0.04, 0.42), r'$\nabla_{T,2}$'],
-#     'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
-#     'dlnT_dlnP_4':   [(-0.04, 0.32), r'$\nabla_{T,4}$'],
-#     'dlnT_dlnP_5':   [(-0.04, 0.32), r'$\nabla_{T,5}$'], # new points
 }
 # free_params.update({k:v[0] for k,v in opacity_params.items()})
 SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3', 
@@ -165,24 +147,6 @@ for log_k, v in opacity_params.items():
         
 
 print(f' --> {free_params} free parameters')
-# replace keys with 3-knot profile
-# opacity_profiles = ['H2O', 'OH']
-# WARNING: implemented only for n_knots = (2, 3)
-opacity_profiles = {
-                    # '12CO': 2,
-                    # 'H2O': 3,
-                    # 'OH': 3,
-                }
-# replace log_H2O with 3-knot profile
-for op in opacity_profiles.keys():
-    free_params.pop(f'log_{op}')
-    
-    for i in range(opacity_profiles[op]):
-        free_params[f'log_{op}_{i}'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}[{i}]$']
-        
-    # free_params[f'log_{op}_1'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_1$']
-    # free_params[f'log_{op}_2'] = [(-14,-2), f'$\log\ \mathrm{{{op}}}_2$']
-    free_params[f'log_P_{op}'] = [(-4.5,1.5), f'$\log\ P_\mathrm{{{op}}}$']
 
 # Constants to use if prior is not given
 # distance in pc to parallax
@@ -196,7 +160,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 PT_interp_mode = 'linear'
 PT_mode = 'SPHINX'
 
-N_knots = 21 # spline knots (continuum fitting)
+N_knots = 25 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
@@ -288,7 +252,9 @@ species_to_plot_CCF = []
 ####################################################################################
 
 cov_mode = None
-
+if 'log_a' in free_params.keys():
+    cov_mode = 'GP'
+    
 cov_kwargs = dict(
     trunc_dist   = 1, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
@@ -323,12 +289,12 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = True
+testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 200
-n_iter_before_update = n_live_points * 3
+n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

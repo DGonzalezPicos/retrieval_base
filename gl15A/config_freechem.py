@@ -116,7 +116,7 @@ free_params = {
 
     # Velocities
     'vsini': [(1.0,11.0), r'$v\ \sin\ i$'], 
-    'rv': [(16., 24.), r'$v_\mathrm{rad}$'],
+    'rv': [(-60., 60.), r'$v_\mathrm{rad}$'],
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
 }

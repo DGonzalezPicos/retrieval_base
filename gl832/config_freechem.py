@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx2'
+run = 'sphinx1'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -64,7 +64,7 @@ opacity_params = {
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn'),
     'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
     # 'log_Ni': ([(-14,-2), r'$\log\ \mathrm{Ni}$'], 'Ni_high'),
-    'log_Si': ([(-14,-2), r'$\log\ \mathrm{Si}$'], 'Si_high'),
+    # 'log_Si': ([(-14,-2), r'$\log\ \mathrm{Si}$'], 'Si_high'),
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
     'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
     # 'log_Co': ([(-14,-2), r'$\log\ \mathrm{Co}$'], 'Co_high'), # has 1 line at 2319 nm and that's it
@@ -112,7 +112,7 @@ free_params = {
     'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'],
     'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
     # 'alpha_K': [(-4., 2.), r'$\alpha(K)$'],
-    'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], 
+    # 'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], 
 
     # Velocities
     'vsini': [(1.0,11.0), r'$v\ \sin\ i$'], 
@@ -244,7 +244,7 @@ chem_kwargs = dict(species=[
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'Si']
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe']
 species_to_plot_CCF = []
 
 ####################################################################################

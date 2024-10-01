@@ -17,15 +17,17 @@ def main(target, label='', ax=None, run=None):
 
     outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
     # find dirs in outputs
-    print(f' outputs = {outputs}')
+    # print(f' outputs = {outputs}')
     dirs = [d for d in outputs.iterdir() if d.is_dir() and 'sphinx' in d.name and '_' not in d.name]
     runs = [int(d.name.split('sphinx')[-1]) for d in dirs]
+    print(f' {target}: Found {len(runs)} runs: {runs}')
+    assert len(runs) > 0, f'No runs found in {outputs}'
     if run is None:
         run = 'sphinx'+str(max(runs))
     else:
         run = 'sphinx'+str(run)
         assert run in [d.name for d in dirs], f'Run {run} not found in {dirs}'
-    print('Run:', run)
+    # print('Run:', run)
 
     config_file = 'config_freechem.txt'
     conf = Config(path=base_path, target=target, run=run)(config_file)
@@ -39,9 +41,9 @@ def main(target, label='', ax=None, run=None):
 
     param_keys = list(ret.Param.param_keys)
     Teff_id = param_keys.index('Teff')
-    print(f' T_eff = {bestfit_params[Teff_id]}')
+    # print(f' T_eff = {bestfit_params[Teff_id]}')
     log_carbon_ratio_id = param_keys.index('log_12CO/13CO')
-    print(f' log(12CO/13CO) = {bestfit_params[log_carbon_ratio_id]}')
+    # print(f' log(12CO/13CO) = {bestfit_params[log_carbon_ratio_id]}')
 
     # make scatter plot with one point corresponding to Teff vs log(12CO/13CO)
     # take uncertainties from posterior quantiles 
@@ -55,6 +57,8 @@ def main(target, label='', ax=None, run=None):
     ax_new = ax is None
     ax = ax or plt.gca()
 # fig, ax = plt.subplots(1,1, figsize=(6,6))
+    print(f' {target}: Teff = {Teff_quantiles[1]:.0f} +{Teff_quantiles[2]-Teff_quantiles[1]:.0f} -{Teff_quantiles[1]-Teff_quantiles[0]:.0f} K')
+    print(f' {target}: log 12C/13C = {carbon_isotope_quantiles[1]:.2f} +{carbon_isotope_quantiles[2]-carbon_isotope_quantiles[1]:.2f} -{carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]:.2f}\n')
     ax.errorbar(Teff_quantiles[1], carbon_isotope_quantiles[1], 
                 xerr=[[Teff_quantiles[1]-Teff_quantiles[0]], [Teff_quantiles[2]-Teff_quantiles[1]]],
                 yerr=[[carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]], [carbon_isotope_quantiles[2]-carbon_isotope_quantiles[1]]],
@@ -71,7 +75,7 @@ spirou_sample = {'880': [(3720, 4.72, 0.21), '17'],
                 # '411': (3563, 4.84, 0.12), # TODO: double check this target
                 '832': [(3590, 4.70, 0.06),None],  # Tilipman+2021
                 '752A': [(3558, 4.76, 0.10),None], # Cristofari+2022
-                '849':  [(3530, 4.78, 0.37),None], # Cristofari+2022
+                # '849':  [(3530, 4.78, 0.37),None], # Cristofari+2022
                 '725A': [(3441, 4.87, -0.23),None],# Cristofari+2022
                 '687': [(3413, 4.80, 0.10),None], # Cristofari+2022
                 '876' : [(3366, 4.80, 0.10),None], # Moutou+2023, no measurement for logg, Z
@@ -79,33 +83,52 @@ spirou_sample = {'880': [(3720, 4.72, 0.21), '17'],
                 '725B': [(3345, 4.96, -0.30),None],
                 '699': [(3228.0, 5.09, -0.40),None],
                 '15B': [(3218, 5.07, -0.30),None],
-                '1151': [(3178, 4.71, -0.04),None], # Lehmann+2024
+                '1151': [(3178, 4.71, -0.04),None], # Lehmann+2024, I call it `gl` but it's `gj`
                 '905': [(2930, 5.04, 0.23),None],
 }
 
 
 targets = ['gl'+t for t in spirou_sample.keys()]
 # replace gl1151 for gj1151
-targets = ['gj1151' if t == 'gl1151' else t for t in targets]
+# targets = ['gj1151' if t == 'gl1151' else t for t in targets]
 
 fig, ax = plt.subplots(1,1, figsize=(5,4), tight_layout=True)
 
-Teff_list, C_ratio_list = [], []
+
+Teff_dict = {}
+C_ratio_dict = {}
+
 for target in targets:
+    
     Teff_t, C_ratio_t = main(target, ax=ax, label=target, run=spirou_sample[target[2:]][1])
-    Teff_list.append(Teff_t)
-    C_ratio_list.append(C_ratio_t)
+    if Teff_t is None:
+        print(f'---> WARNING: Error with {target}, skipping...\n')
+        continue
+        
+    # catch error and print it
+    # except:
+    #     # pr
+    #     print(f'---> WARNING: Error with {target}, skipping...\n')
+    #     continue
+    Teff_dict[target] = Teff_t
+    C_ratio_dict[target] = C_ratio_t
     
     # check for binary companion, if so, plot a line connecting the two points
     if target.endswith('B'):
         target_A = target[:-1]+'A'
+        print(f'Looking for binary companion {target_A} from {target}...')
         if target_A not in targets:
             continue
-        idx_A = targets.index(target_A)
-        idx_B = targets.index(target)
+        print(f'Found {target_A} from {target}...')
+        # idx_A = targets.index(target_A)
+        # idx_B = targets.index(target)
+        Teff_A = Teff_dict[target_A][1]
+        Teff_B = Teff_dict[target][1]
         
-        ax.plot([Teff_list[idx_A][1], Teff_list[idx_B][1]],
-                [C_ratio_list[idx_A][1], C_ratio_list[idx_B][1]], 'k--')
+        C_ratio_A = C_ratio_dict[target_A][1]
+        C_ratio_B = C_ratio_dict[target][1]
+        
+        ax.plot([Teff_A, Teff_B], [C_ratio_A, C_ratio_B], 'k--', lw=0.5)
         
         
     

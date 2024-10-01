@@ -5,7 +5,7 @@ import subprocess
 import shutil
 
 targets = [
-            # 'gj338B', 
+            'gj338B', 
            'gl687', 
            'gl699', 
            'gl752A', 
@@ -35,4 +35,6 @@ for target in targets:
     except subprocess.CalledProcessError as e:
         print(f' -> Error downloading {snellius_dir} to {local_dir}:\n{e}')
         print(f' -> VPN must be disabled or set to NL!!')
+        
+    print(f' Succesful download for {target}!\n')
     

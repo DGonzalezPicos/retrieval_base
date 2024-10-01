@@ -11,8 +11,8 @@ import config_freechem as conf
 
 
 config_file = 'config_freechem.txt'
-target = 'gl15A'
-run = 'sphinx2' # important to set this to the correct run
+target = 'gl849'
+run = 'sphinx1' # important to set this to the correct run
 
 if __name__ == '__main__':
 

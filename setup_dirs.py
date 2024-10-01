@@ -3,14 +3,17 @@ import os
 import numpy as np
 import subprocess
 
-targets = ['gj338B', 'gl687', 'gl699', 'gl752A', 'gl832', 'gl849', 'gl876', 'gl1151']
+targets = [
+            # 'gj338B', 
+        #    'gl687', 
+           'gl699', 'gl752A', 'gl832', 'gl849', 'gl876', 'gl1151']
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
 
 new_dir = 'retrieval_outputs'
 
-ref_target = 'gl15A'
+ref_target = 'gl687'
 copy_files = ['config_freechem.py', 'retrieval_script.py']
-
+cache = False
 for t, target in enumerate(targets):
     
     target_path = base_path / target
@@ -18,7 +21,7 @@ for t, target in enumerate(targets):
     
     # check if copy_files in 
     for file in copy_files:
-        if not (target_path / file).exists():
+        if not (target_path / file).exists() and cache:
             # pass
             subprocess.run(f'cp {base_path / ref_target / file} {target_path / file}', shell=True)
             # copy file

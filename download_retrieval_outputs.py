@@ -5,14 +5,14 @@ import subprocess
 import shutil
 
 targets = [
-            'gj338B', 
-           'gl687', 
-           'gl699', 
-           'gl752A', 
-           'gl832', 
+            # 'gj338B', 
+        #    'gl687', 
+        #    'gl699', 
+        #    'gl752A', 
+        #    'gl832', 
            'gl849', 
-           'gl876',
-           'gl1151',
+        #    'gl876',
+        #    'gl1151',
            ]
 
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')

@@ -3,10 +3,24 @@ import os
 import numpy as np
 import subprocess
 
-targets = [
-            # 'gj338B', 
-        #    'gl687', 
-           'gl699', 'gl752A', 'gl832', 'gl849', 'gl876', 'gl1151']
+import argparse
+
+# add arguments from argparse: target -t, default to None
+parser = argparse.ArgumentParser()
+parser.add_argument('--target', '-t', default=None)
+
+target = parser.parse_args().target
+
+if target is None:
+    targets = [
+                # 'gj338B', 
+            #    'gl687', 
+            'gl699', 'gl752A', 'gl832', 'gl849', 'gl876', 'gl1151']
+    
+else:
+    targets = [target]
+    
+    
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
 
 new_dir = 'retrieval_outputs'

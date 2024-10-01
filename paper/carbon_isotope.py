@@ -59,10 +59,17 @@ def main(target, label='', ax=None, run=None):
 # fig, ax = plt.subplots(1,1, figsize=(6,6))
     print(f' {target}: Teff = {Teff_quantiles[1]:.0f} +{Teff_quantiles[2]-Teff_quantiles[1]:.0f} -{Teff_quantiles[1]-Teff_quantiles[0]:.0f} K')
     print(f' {target}: log 12C/13C = {carbon_isotope_quantiles[1]:.2f} +{carbon_isotope_quantiles[2]-carbon_isotope_quantiles[1]:.2f} -{carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]:.2f}\n')
+    # add black edge to points
     ax.errorbar(Teff_quantiles[1], carbon_isotope_quantiles[1], 
                 xerr=[[Teff_quantiles[1]-Teff_quantiles[0]], [Teff_quantiles[2]-Teff_quantiles[1]]],
                 yerr=[[carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]], [carbon_isotope_quantiles[2]-carbon_isotope_quantiles[1]]],
-                fmt='o', label=label)
+                fmt='o', label=label, alpha=0.9,
+                    # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+                 markeredgecolor='black', # Black edge color
+                markeredgewidth=0.8      # Thickness of the edge
+    )
+    
+
     if ax_new:
         ax.set_xlabel(r'$T_{\rm eff}$ (K)')
         ax.set_ylabel(r'$^{12}$C/$^{13}$C')
@@ -92,7 +99,7 @@ targets = ['gl'+t for t in spirou_sample.keys()]
 # replace gl1151 for gj1151
 # targets = ['gj1151' if t == 'gl1151' else t for t in targets]
 
-fig, ax = plt.subplots(1,1, figsize=(5,4), tight_layout=True)
+fig, ax = plt.subplots(1,1, figsize=(5,5), tight_layout=True)
 
 
 Teff_dict = {}
@@ -140,14 +147,13 @@ ism = [69.0, 15.0]
 ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2, label='ISM',lw=0)
 
 ylim_min = 30.0
-ylim_max = 180.0
+ylim_max = 200.0
 
 ax.set_ylim(ylim_min, ylim_max)
 
-ax.legend()
+ax.legend(ncol=4, frameon=False, fontsize=8, loc=(0.0, 1.01))
 ax.set_xlabel(r'$T_{\rm eff}$ (K)')
 ax.set_ylabel(r'$^{12}$C/$^{13}$C')
-ax.legend(fontsize=8)
 # plt.show()
 fig_name = base_path + 'paper/figures/carbon_isotope.pdf'
 fig.savefig(fig_name)

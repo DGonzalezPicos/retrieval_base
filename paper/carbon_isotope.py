@@ -69,15 +69,24 @@ def main(target, label='', ax=None, run=None):
 spirou_sample = {'880': [(3720, 4.72, 0.21), '17'],
                  '15A': [(3603, 4.86, -0.30), None],
                 # '411': (3563, 4.84, 0.12), # TODO: double check this target
-                # '752A': [(3558, 4.76, 0.10),None],
-                '725A': [(3441, 4.87, -0.23),None],
+                '832': [(3590, 4.70, 0.06),None],  # Tilipman+2021
+                '752A': [(3558, 4.76, 0.10),None], # Cristofari+2022
+                '849':  [(3530, 4.78, 0.37),None], # Cristofari+2022
+                '725A': [(3441, 4.87, -0.23),None],# Cristofari+2022
+                '687': [(3413, 4.80, 0.10),None], # Cristofari+2022
+                '876' : [(3366, 4.80, 0.10),None], # Moutou+2023, no measurement for logg, Z
+
                 '725B': [(3345, 4.96, -0.30),None],
+                '699': [(3228.0, 5.09, -0.40),None],
                 '15B': [(3218, 5.07, -0.30),None],
+                '1151': [(3178, 4.71, -0.04),None], # Lehmann+2024
                 '905': [(2930, 5.04, 0.23),None],
 }
 
 
 targets = ['gl'+t for t in spirou_sample.keys()]
+# replace gl1151 for gj1151
+targets = ['gj1151' if t == 'gl1151' else t for t in targets]
 
 fig, ax = plt.subplots(1,1, figsize=(5,4), tight_layout=True)
 

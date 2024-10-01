@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx17' # fix logg and Z
+run = 'sphinx18' # fix logg and Z
 prefix = f'./retrieval_outputs/{run}/test_'
 
 copy_pRT_from = None
@@ -100,8 +100,8 @@ free_params = {
 
     # SPHINX
     'Teff': [(3400, 3900), r'$T_\mathrm{eff}$'],
-    # 'log_g': [(4.5,5.0), r'$\log\ g$'],
-    # 'Z': [(0.0, 0.5), 'Z'],
+    'log_g': [(4.5,5.5), r'$\log\ g$'],
+    'Z': [(0.0, 0.5), 'Z'],
     # 'C_O': [(0.3, 0.9), 'C/O'],
     'alpha_12CO': [(-4., 2.), r'$\alpha(^{12}$CO)'],
     'alpha_H2O': [(-4., 2.), r'$\alpha$(H2O)'],
@@ -209,8 +209,8 @@ constant_params = {
     'epsilon_limb': 0.20, 
     'C_O': 0.59,
     'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
-    'log_g': 4.72, # +- 0.12 (M15)
-    'Z': 0.21, # +- 0.08 (M15)
+    # 'log_g': 4.72, # +- 0.12 (M15)
+    # 'Z': 0.21, # +- 0.08 (M15)
     # 'vsini':1.,
     # 'fwhm': 4.35, # 4.35 km/s
 

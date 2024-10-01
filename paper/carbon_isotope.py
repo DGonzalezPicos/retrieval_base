@@ -66,10 +66,11 @@ def main(target, label='', ax=None, run=None):
     return (Teff_quantiles, carbon_isotope_quantiles)
         
 
-spirou_sample = {'880': [(3720, 4.72, 0.21), '16'],
+spirou_sample = {'880': [(3720, 4.72, 0.21), '17'],
                  '15A': [(3603, 4.86, -0.30), None],
                 # '411': (3563, 4.84, 0.12), # TODO: double check this target
-                # '752A': (3558, 4.76, 0.10),
+                # '752A': [(3558, 4.76, 0.10),None],
+                '725A': [(3441, 4.87, -0.23),None],
                 '725B': [(3345, 4.96, -0.30),None],
                 '15B': [(3218, 5.07, -0.30),None],
                 '905': [(2930, 5.04, 0.23),None],

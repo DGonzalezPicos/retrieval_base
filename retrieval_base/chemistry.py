@@ -134,14 +134,14 @@ class Chemistry:
             
         return cls.species_info.loc[cls.species_info['name'] == species, info_key].values[0]
         
-    def get_VMRs_posterior(self):
+    def get_VMRs_posterior(self, save_to=None):
         
         assert hasattr(self, 'mass_fractions_posterior')
         self.VMRs_posterior = {}
         self.VMRs_envelopes = {}
         # info = self.species_info
         MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
-
+        print(f'[Chemistry.get_VMRs_posterior] Calculating VMRs posterior and envelopes for {self.line_species}')
         for line_species_i in self.line_species:
             # key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]
             key_i = self.pRT_name_dict.get(line_species_i, None)
@@ -157,7 +157,7 @@ class Chemistry:
             # WARNING: equilibrium chemistry should use the mean value or something else
             vmr_i = self.mass_fractions_posterior[line_species_i] * (MMW/ mu)
             self.VMRs_posterior[key_i] = vmr_i[:,0]
-            print(f' vmr_i.shape = {vmr_i.shape}')
+            # print(f' vmr_i.shape = {vmr_i.shape}')
             self.VMRs_envelopes[key_i] = quantiles(vmr_i, q=[0.16, 0.5, 0.84], axis=0)
             
         if "13CO" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
@@ -176,6 +176,16 @@ class Chemistry:
         if hasattr(self, 'FeH_posterior'):
             self.VMRs_posterior["Fe/H"] = self.FeH_posterior
         del self.mass_fractions_posterior
+        
+        if save_to is not None:
+            # save the VMRs to a file
+            file_posterior = save_to + 'posterior.npy'
+            file_envelopes = save_to + 'envelopes.npy'
+            file_labels    = save_to + 'labels.npy'
+            np.save(file_posterior, np.array(list(self.VMRs_posterior.values())))
+            np.save(file_envelopes, np.array(list(self.VMRs_envelopes.values())))
+            np.save(file_labels, np.array(list(self.VMRs_posterior.keys())))
+            print(f'[Chemistry.get_VMRs_posterior] Saved VMRs posterior and envelopes to {file_posterior}, {file_envelopes}, {file_labels}')
         return self
 
 class FreeChemistry(Chemistry):

@@ -884,7 +884,7 @@ class Retrieval:
         self.Chem.FeH_posterior = []
 
         self.PT.temperature_envelopes = []
-                    
+                            
         def func(params_i):
 
             for j, key_j in enumerate(self.Param.param_keys):
@@ -1003,6 +1003,7 @@ class Retrieval:
                     )
 
         self.CB.return_PT_mf = False
+        # save in file
 
     def get_species_contribution(self):
 
@@ -1152,6 +1153,7 @@ class Retrieval:
             
         if return_dict:
             bestfit_params = dict(zip(self.Param.param_keys, bestfit_params))
+            posterior = dict(zip(self.Param.param_keys, posterior.T))
             
         return bestfit_params, posterior
     
@@ -1166,7 +1168,7 @@ class Retrieval:
         for i, key_i in enumerate(self.Param.param_keys):
             # Update the Parameters instance
             self.Param.params[key_i] = bestfit_params[i]
-            print(f' {key_i}: {bestfit_params[i]}')
+            # print(f' {key_i}: {bestfit_params[i]}')
             if key_i.startswith('log_'):
                 self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)
 

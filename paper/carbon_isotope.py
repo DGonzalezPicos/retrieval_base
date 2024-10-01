@@ -108,14 +108,14 @@ ism = [69.0, 15.0]
 ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2, label='ISM',lw=0)
 
 ylim_min = 30.0
-ylim_max = 190.0
+ylim_max = 180.0
 
 ax.set_ylim(ylim_min, ylim_max)
 
 ax.legend()
 ax.set_xlabel(r'$T_{\rm eff}$ (K)')
 ax.set_ylabel(r'$^{12}$C/$^{13}$C')
-ax.legend()
+ax.legend(fontsize=8)
 # plt.show()
 fig_name = base_path + 'paper/figures/carbon_isotope.pdf'
 fig.savefig(fig_name)

@@ -20,10 +20,11 @@ config_file = 'config_freechem.txt'
 # print(FIXMEEEE)
 # run 16 was fitting for `resolution`, `log_g`, `Z` --> not useful for comparison with run 17
 # run 18 is now running identical to run 17 but with fixed resolution=69k
-runs_id = [16,17]
+runs_id = [17,18]
 runs = [f'sphinx{r}' for r in runs_id]
 fs= 14
-colors = {'sphinx16': 'r', 'sphinx17': 'b'}
+# colors = {'sphinx16': 'r', 'sphinx17': 'b'}
+colors = ['indianred', 'royalblue']
 
 ignore_params = ['log_g', 'Z', 'resolution']
 for r, run in enumerate(runs):
@@ -47,8 +48,8 @@ for r, run in enumerate(runs):
     print(samples.shape)
     print(labels)
     
-    pad_factor = 0.05
-    p = 0.05
+    pad_factor = 0.1
+    p = 0.001
     lims = [(np.percentile(samples[:,i], p), np.percentile(samples[:,i], 100-p)) for i in range(samples.shape[-1])]
     pad = [(lims[i][1] - lims[i][0]) * pad_factor for i in range(samples.shape[-1])]
     lims = [(lims[i][0] - pad[i], lims[i][1] + pad[i]) for i in range(samples.shape[-1])]
@@ -59,7 +60,7 @@ for r, run in enumerate(runs):
         shape_0 = samples.shape[-1]
     assert shape_0 == samples.shape[-1], f'{shape_0} != {samples.shape[-1]}'
     
-    fig = corner.corner(samples, labels=labels, color=colors[run],
+    fig = corner.corner(samples, labels=labels, color=colors[r],
                         range=lims if r == 0 else None,
                         quantiles=[0.16, 0.5, 0.84],
                         show_titles=True, title_kwargs={"fontsize": fs},
@@ -115,16 +116,17 @@ for r, run in enumerate(runs):
         # first only the name of the parameter
         s = title.split('=')
         # fig.axes[j].text(0.5, 1.30, title, fontsize=22,
+        y0 = 1.35
         if r == 0:
-            fig.axes[j].text(0.5, 1.55, s[0], fontsize=fs,
+            fig.axes[j].text(0.5, y0, s[0], fontsize=fs,
                             ha='center', va='bottom',
                             transform=fig.axes[j].transAxes,
                             color='k',
                             weight='normal')
-        fig.axes[j].text(0.5, 1.45-(0.15*(r+1)), s[1], fontsize=fs,
+        fig.axes[j].text(0.5, y0-(0.15*(r+1)), s[1], fontsize=fs,
                         ha='center', va='bottom',
                         transform=fig.axes[j].transAxes,
-                        color=colors[run],
+                        color=colors[r],
                         weight='normal')
         
         

@@ -98,9 +98,9 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # SPHINX
-    'Teff': [(2800, 4000.0), r'$T_\mathrm{eff}$'],
+    'Teff':  [(2800, 4000.0), r'$T_\mathrm{eff}$'],
     'log_g': [(4.5,5.5), r'$\log\ g$'],
-    'Z': [(-0.5, 0.0), 'Z'],
+    'Z':     [(-0.5, 0.0), 'Z'],
     # 'C_O': [(0.3, 0.9), 'C/O'],
     'alpha_12CO': [(-4., 2.), r'$\alpha(^{12}$CO)'],
     'alpha_H2O': [(-4., 2.), r'$\alpha$(H2O)'],
@@ -115,8 +115,8 @@ free_params = {
     # 'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], 
 
     # Velocities
-    'vsini': [(1.0,11.0), r'$v\ \sin\ i$'], 
-    'rv': [(-120., 120.), r'$v_\mathrm{rad}$'],
+    'vsini': [(0.5, 11.0), r'$v\ \sin\ i$'], 
+    'rv': [(-120.0, -100.0), r'$v_\mathrm{rad}$'],
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
 }
@@ -293,8 +293,8 @@ testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 200
-n_iter_before_update = n_live_points * 2
+n_live_points = 400
+n_iter_before_update = n_live_points * 3
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

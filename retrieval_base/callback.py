@@ -169,10 +169,11 @@ class CallBack:
                                    figsize=(10,6), 
                                    tight_layout=True,
                                    sharey=True,)
+        
         figs.fig_PT(
             PT=self.PT, 
             ax=ax[0], 
-            ax_grad=ax[1],
+            ax_grad=ax[1] if hasattr(self.PT, 'dlnT_dlnP_array') else None,
             fig=fig,
             bestfit_color='C0',
             envelopes_color='C0',
@@ -206,8 +207,10 @@ class CallBack:
             fig_name_chem = self.prefix+f'plots/bestfit_VMRs.pdf'
             # Chem.get_VMRs_envelopes() # deprecated, VMRs_envelopes already computed with posterior
             figs.fig_VMR(Chem,
-                    ax=ax_chem,
-                    fig=fig_chem,
+                    # ax=ax_chem,
+                    # fig=fig_chem,
+                    ax=ax[1],
+                    fig=fig,
                     species_to_plot=species_to_plot_VMR,
                     pressure=PT.pressure,
                     showlegend=True,

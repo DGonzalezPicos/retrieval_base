@@ -631,7 +631,7 @@ class PT_profile_RCE(PT_profile):
         return ax
     
 class PT_profile_SPHINX(PT_profile):
-
+    
     def __init__(self, pressure, **kwargs):
 
         # Give arguments to the parent class

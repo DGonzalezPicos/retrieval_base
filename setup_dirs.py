@@ -15,7 +15,9 @@ if target is None:
     targets = [
                 # 'gj338B', 
             #    'gl687', 
-            'gl699', 'gl752A', 'gl832', 'gl849', 'gl876', 'gl1151']
+            # 'gl699', 'gl752A', 'gl832', 'gl849', 'gl876', 'gl1151']
+            'gl436'
+    ]
     
 else:
     targets = [target]
@@ -25,7 +27,7 @@ base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
 
 new_dir = 'retrieval_outputs'
 
-ref_target = 'gl687'
+ref_target = 'gl699'
 copy_files = ['config_freechem.py', 'retrieval_script.py', 'genoa.sh']
 cache = False
 for t, target in enumerate(targets):

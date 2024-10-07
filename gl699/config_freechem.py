@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx1'
+run = 'sphinx2'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -28,7 +28,7 @@ config_data = {
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 5,
         'sigma_clip_width': 11, 
-        'Nedge': 50, # DGP (2024-07-16): update from 30 --> 50
+        'Nedge': 30, # DGP (2024-10-07): 50 --> 30 for SPIRou
         'tell_threshold': 0.55,
         'tell_n_grow': 10,
         'emission_line_threshold': 1.3,
@@ -293,8 +293,8 @@ testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 400
-n_iter_before_update = n_live_points * 3
+n_live_points = 200
+n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

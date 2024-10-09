@@ -8,8 +8,34 @@ from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter1d, generic_filter
 
 from astropy.io import fits
+import pandas as pd
 
 import petitRADTRANS.nat_cst as nc
+
+spirou_sample = {
+                '338B': [(3952, 4.71, -0.08, 4.14), None],
+                '880': [(3720, 4.72, 0.21, 6.868), '17'],
+                 '15A': [(3603, 4.86, -0.30, 3.563), None],
+                '411':  [(3563, 4.84, 0.12, 2.547),None], # TODO: double check this target
+                '832':  [(3590, 4.70, 0.06, 4.670),None],  # Tilipman+2021
+                '752A': [(3558, 4.76, 0.10, 3.522),None], # Cristofari+2022
+                '849':  [(3530, 4.78, 0.37, 8.803),None], # Cristofari+2022
+                '436':  [(3479, 4.78, 0.01, 9.756),None], # Cristofari+2022
+                '725A': [(3441, 4.87, -0.23, 3.522),None],# Cristofari+2022
+                '687':  [(3413, 4.80, 0.10, 4.550),None], # Cristofari+2022
+                '876' : [(3366, 4.80, 0.10, 4.672),None], # Moutou+2023, no measurement for logg, Z
+
+                '725B': [(3345, 4.96, -0.30, 3.523),None],
+                '699':  [(3228.0, 5.09, -0.40, 1.827),'1'], # SPHINX2 seems noisier? changed RV aligment to 0.5 km/s and decreased n_edge
+                '15B':  [(3218, 5.07, -0.30, 3.561),None],
+                '1151': [(3178, 4.71, -0.04, 8.043),None], # Lehmann+2024, I call it `gl` but it's `gj`
+                '905':  [(2930, 5.04, 0.23, 3.155),None],
+}
+
+def read_spirou_sample_csv():
+    return pd.read_csv('/home/dario/phd/retrieval_base/paper/data/fundamental_parameters.csv')
+    
+
 
 def get_path():
     

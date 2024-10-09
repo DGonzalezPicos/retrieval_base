@@ -150,7 +150,7 @@ ax_pt.set_xlabel('Temperature / K', fontsize=14)
 
 ax_pt.axhspan(10, 0.1, color='k', alpha=0.1, lw=0)
 # plt.show()
-fig_name = base_path + 'paper/figures/CO_H2O_OH.pdf'
+fig_name = base_path + 'paper/latex/figures/CO_H2O_OH.pdf'
 fig.savefig(fig_name)
 print(f' Saved {fig_name}')
 plt.close(fig)

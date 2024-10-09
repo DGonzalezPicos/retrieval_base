@@ -612,7 +612,7 @@ class Retrieval:
             self.conf.chem_kwargs['vmr_interpolator'] = sp.vmr_interpolator
             # self.conf.chem_kwargs['sphinx_species'] = sp.species
             
-        del sp
+            del sp
             
         self.PT = get_PT_profile_class(
             self.pRT_atm[w_set].pressure, 
@@ -684,14 +684,17 @@ class Retrieval:
             except:
                 # Something went wrong with interpolating
                 temperature = self.PT(self.Param.params)
+                print(f'Error in PT interpolation, returning -np.inf...')
                 return -np.inf
 
-        if (temperature.min() < 150) and (self.Param.chem_mode=='fastchem'):
-            # Temperatures too low for reasonable FastChem convergence
-            return -np.inf
+        # if (temperature.min() < 150) and (self.Param.chem_mode=='fastchem'):
+        #     # Temperatures too low for reasonable FastChem convergence
+        #     print(f'Temperatures too low for FastChem, returning -np.inf...')
+        #     return -np.inf
         
         if temperature.min() < 0:
             # Negative temperatures are rejected
+            print(f'Negative temperatures, returning -np.inf...')
             return -np.inf
 
         # Retrieve the ln L penalty (=0 by default)
@@ -710,6 +713,7 @@ class Retrieval:
 
         if not isinstance(mass_fractions, dict):
             # Non-H2 abundances added up to > 1
+            print(f'Non-H2 abundances added up to > 1, returning -np.inf...')
             return -np.inf
 
         if self.CB.return_PT_mf:

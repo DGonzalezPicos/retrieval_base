@@ -1,6 +1,7 @@
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
+from retrieval_base.auxiliary_functions import spirou_sample
 # import config_freechem as conf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -63,7 +64,9 @@ def main(target, label='', ax=None, run=None, **kwargs):
     ax.errorbar(Teff_quantiles[1], carbon_isotope_quantiles[1], 
                 xerr=[[Teff_quantiles[1]-Teff_quantiles[0]], [Teff_quantiles[2]-Teff_quantiles[1]]],
                 yerr=[[carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]], [carbon_isotope_quantiles[2]-carbon_isotope_quantiles[1]]],
-                fmt='o', label=label, alpha=0.9,
+                fmt='o', 
+                label=label.replace('gl', 'Gl '),
+                alpha=0.9,
                     # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
                  markeredgecolor='black', # Black edge color
                 markeredgewidth=0.8,     # Thickness of the edge
@@ -77,23 +80,6 @@ def main(target, label='', ax=None, run=None, **kwargs):
         
     return (Teff_quantiles, carbon_isotope_quantiles)
         
-
-spirou_sample = {'880': [(3720, 4.72, 0.21, 6.868), '17'],
-                 '15A': [(3603, 4.86, -0.30, 3.563), None],
-                # '411': (3563, 4.84, 0.12), # TODO: double check this target
-                '832': [(3590, 4.70, 0.06, 4.670),None],  # Tilipman+2021
-                '752A': [(3558, 4.76, 0.10, 3.522),None], # Cristofari+2022
-                '849':  [(3530, 4.78, 0.37, 8.803),None], # Cristofari+2022
-                '725A': [(3441, 4.87, -0.23, 3.522),None],# Cristofari+2022
-                '687': [(3413, 4.80, 0.10, 4.550),None], # Cristofari+2022
-                '876' : [(3366, 4.80, 0.10, 4.672),None], # Moutou+2023, no measurement for logg, Z
-
-                '725B': [(3345, 4.96, -0.30, 3.523),None],
-                '699': [(3228.0, 5.09, -0.40, 1.827),None],
-                '15B': [(3218, 5.07, -0.30, 3.561),None],
-                '1151': [(3178, 4.71, -0.04, 8.043),None], # Lehmann+2024, I call it `gl` but it's `gj`
-                '905': [(2930, 5.04, 0.23, 3.155),None],
-}
 
 
 targets = ['gl'+t for t in spirou_sample.keys()]
@@ -174,7 +160,7 @@ ax.legend(ncol=4, frameon=False, fontsize=8, loc=(0.0, 1.01))
 ax.set_xlabel(r'$T_{\rm eff}$ (K)')
 ax.set_ylabel(r'$^{12}$C/$^{13}$C')
 # plt.show()
-fig_name = base_path + 'paper/figures/carbon_isotope.pdf'
+fig_name = base_path + 'paper/latex/figures/carbon_isotope.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

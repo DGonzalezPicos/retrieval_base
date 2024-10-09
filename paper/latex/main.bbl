@@ -1,0 +1,278 @@
+\begin{thebibliography}{46}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Allard {et~al.}(2019)Allard, Spiegelman, Leininger, \&
+  Molliere}]{allardNewStudyLine2019a}
+Allard, N.~F., Spiegelman, F., Leininger, T., \& Molliere, P. 2019, Astronomy
+  and Astrophysics, 628, A120
+
+\bibitem[{Asplund {et~al.}(2021)Asplund, Amarsi, \&
+  Grevesse}]{asplundChemicalMakeupSun2021}
+Asplund, M., Amarsi, A.~M., \& Grevesse, N. 2021, Astronomy \& Astrophysics,
+  653, A141
+
+\bibitem[{Bernath(2020)}]{bernathMoLLISTMolecularLine2020a}
+Bernath, P.~F. 2020, Journal of Quantitative Spectroscopy and Radiative
+  Transfer, 240, 106687
+
+\bibitem[{Bonfils {et~al.}(2013)Bonfils, Lo~Curto, Correia, Laskar, Udry,
+  Delfosse, Forveille, {Astudillo-Defru}, Benz, Bouchy, Gillon, H{\'e}brard,
+  Lovis, Mayor, Moutou, Naef, Neves, Pepe, Perrier, Queloz, Santos, \&
+  S{\'e}gransan}]{bonfilsHARPSSearchSouthern2013}
+Bonfils, X., Lo~Curto, G., Correia, A. C.~M., {et~al.} 2013, Astronomy and
+  Astrophysics, 556, A110
+
+\bibitem[{Castelli \& Kurucz(2003)}]{castelliNewGridsATLAS92003}
+Castelli, F. \& Kurucz, R.~L. 2003, 210, A20
+
+\bibitem[{Collaboration {et~al.}(2022)Collaboration, {Price-Whelan}, Lim, Earl,
+  Starkman, Bradley, Shupe, Patil, Corrales, Brasseur, N{\"o}the, Donath,
+  Tollerud, Morris, Ginsburg, Vaher, Weaver, Tocknell, Jamieson, van Kerkwijk,
+  Robitaille, Merry, Bachetti, G{\"u}nther, Authors, Aldcroft,
+  {Alvarado-Montes}, Archibald, B{\'o}di, Bapat, Barentsen, Baz{\'a}n, Biswas,
+  Boquien, Burke, Cara, Cara, Conroy, Conseil, Craig, Cross, Cruz, D'Eugenio,
+  Dencheva, Devillepoix, Dietrich, Eigenbrot, Erben, Ferreira,
+  {Foreman-Mackey}, Fox, Freij, Garg, Geda, Glattly, Gondhalekar, Gordon,
+  Grant, Greenfield, Groener, Guest, Gurovich, Handberg, Hart,
+  {Hatfield-Dodds}, Homeier, Hosseinzadeh, Jenness, Jones, Joseph, Kalmbach,
+  Karamehmetoglu, Ka{\l}uszy{\'n}ski, Kelley, Kern, Kerzendorf, Koch, Kulumani,
+  Lee, Ly, Ma, MacBride, Maljaars, Muna, Murphy, Norman, O'Steen, Oman,
+  Pacifici, Pascual, {Pascual-Granado}, Patil, Perren, Pickering, Rastogi,
+  Roulston, Ryan, Rykoff, Sabater, Sakurikar, Salgado, Sanghi, Saunders,
+  Savchenko, Schwardt, {Seifert-Eckert}, Shih, Jain, Shukla, Sick, Simpson,
+  Singanamalla, Singer, Singhal, Sinha, Sip{\H o}cz, Spitler, Stansby,
+  Streicher, {\v S}umak, Swinbank, Taranu, Tewary, Tremblay, de~{Val-Borro},
+  Kooten, Vasovi{\'c}, Verma, Cardoso, Williams, Wilson, Winkel, {Wood-Vasey},
+  Xue, Yoachim, Zhang, Zonca, \&
+  Contributors}]{collaborationAstropyProjectSustaining2022}
+Collaboration, T.~A., {Price-Whelan}, A.~M., Lim, P.~L., {et~al.} 2022, The
+  Astrophysical Journal, 935, 167
+
+\bibitem[{Cook {et~al.}(2022)Cook, Artigau, Doyon, Hobson, Martioli, Bouchy,
+  Moutou, Carmona, Usher, Fouqu{\'e}, Arnold, Delfosse, Boisse, Cadieux,
+  Vandal, Donati, \& Desli{\`e}res}]{cookAPEROPipelinEReduce2022}
+Cook, N.~J., Artigau, {\'E}., Doyon, R., {et~al.} 2022, Publications of the
+  Astronomical Society of the Pacific, 134, 114509
+
+\bibitem[{Cristofari {et~al.}(2022{\natexlab{a}})Cristofari, Donati, Masseron,
+  Fouqu{\'e}, Moutou, Carmona, Artigau, Martioli, H{\'e}brard, Gaidos,
+  Delfosse, \& {SLS
+  consortium}}]{cristofariEstimatingAtmosphericProperties2022}
+Cristofari, P.~I., Donati, J.-F., Masseron, T., {et~al.} 2022{\natexlab{a}},
+  Monthly Notices of the Royal Astronomical Society, 516, 3802
+
+\bibitem[{Cristofari {et~al.}(2022{\natexlab{b}})Cristofari, Donati, Masseron,
+  Fouqu{\'e}, Moutou, Delfosse, Artigau, Folsom, Carmona, Gaidos,
+  {do~Nascimento}, Jahandar, \&
+  H{\'e}brard}]{cristofariEstimatingFundamentalParameters2022}
+Cristofari, P.~I., Donati, J.-F., Masseron, T., {et~al.} 2022{\natexlab{b}},
+  Monthly Notices of the Royal Astronomical Society, 511, 1893
+
+\bibitem[{Czesla {et~al.}(2019)Czesla, Schr{\"o}ter, Schneider, Huber, Pfeifer,
+  Andreasen, \& Zechmeister}]{czeslaPyAPythonAstronomyrelated2019}
+Czesla, S., Schr{\"o}ter, S., Schneider, C.~P., {et~al.} 2019, Astrophysics
+  Source Code Library, ascl:1906.010
+
+\bibitem[{Delorme {et~al.}(2020)Delorme, Jovanovic, Echeverri, Mawet, Wallace,
+  Bartos, Cetre, Wizinowich, Ragland, Wang, Ruffio, Lilley, Wethrell, Doppmann,
+  Fitzgerald, Ruane, Shofield, Calvin, Morris, Pezzato, Llop~Sayson, Magnone,
+  Johnson, Shohn, Bond, Chun, Suominen, \&
+  Skemer}]{delormeKeckPlanetImager2020}
+Delorme, J.-R., Jovanovic, N., Echeverri, D., {et~al.} 2020, in Ground-Based
+  and {{Airborne Instrumentation}} for {{Astronomy VIII}}, ed. C.~J. Evans,
+  J.~J. Bryant, \& K.~Motohara (Online Only, United States: SPIE)
+
+\bibitem[{Donati {et~al.}(2020)Donati, Kouach, Moutou, Doyon, Delfosse,
+  Artigau, Baratchart, Lacombe, Barrick, H{\'e}brard, Bouchy, Saddlemyer,
+  Par{\`e}s, Rabou, Micheau, Dolon, Reshetov, Challita, Carmona, Striebig,
+  Thibault, Martioli, Cook, Fouqu{\'e}, Vermeulen, Wang, Arnold, Pepe, Boisse,
+  Figueira, Bouvier, Ray, Feugeade, Morin, Alencar, Hobson, Castilho, Udry,
+  Santos, Hernandez, Benedict, Vall{\'e}e, Gallou, Dupieux, Larrieu, Perruchot,
+  Sottile, Moreau, Usher, Baril, Wildi, Chazelas, Malo, Bonfils, Loop, Kerley,
+  Wevers, Dunn, Pazder, Macdonald, Dubois, Carri{\'e}, Valentin, Henault, Yan,
+  \& Steinmetz}]{donatiSPIRouNIRVelocimetry2020}
+Donati, J.-F., Kouach, D., Moutou, C., {et~al.} 2020, Monthly Notices of the
+  Royal Astronomical Society, 498, 5684
+
+\bibitem[{Dorn {et~al.}(2023)Dorn, Bristow, Smoker, Rodler, Lavail, Accardo,
+  Van Den~Ancker, Baade, Baruffolo, {Courtney-Barrer}, Blanco, Brucalassi,
+  Cumani, Follert, Haimerl, Hatzes, Haug, Heiter, Hinterschuster, Hubin, Ives,
+  Jung, Jones, Kaeufl, Kirchbauer, Klein, Kochukhov, Korhonen, K{\"o}hler,
+  Lizon, Moins, {Molina-Conde}, Marquart, Neeser, Oliva, Pallanca, Pasquini,
+  Paufique, Piskunov, Reiners, Schneller, Schmutzer, Seemann, Slumstrup,
+  Smette, Stegmeier, Stempels, Tordo, Valenti, Valenzuela, Vernet, Vinther, \&
+  Wehrhahn}]{dornCRIRESSkyESO2023}
+Dorn, R.~J., Bristow, P., Smoker, J.~V., {et~al.} 2023, Astronomy \&
+  Astrophysics, 671, A24
+
+\bibitem[{Feroz {et~al.}(2009)Feroz, Hobson, \&
+  Bridges}]{ferozMultiNestEfficientRobust2009}
+Feroz, F., Hobson, M.~P., \& Bridges, M. 2009, Monthly Notices of the Royal
+  Astronomical Society, 398, 1601
+
+\bibitem[{{Foreman-Mackey}(2016)}]{foreman-mackeyCornerPyScatterplot2016}
+{Foreman-Mackey}, D. 2016, The Journal of Open Source Software, 1, 24
+
+\bibitem[{Fouqu{\'e} {et~al.}(2023)Fouqu{\'e}, Martioli, Donati, Lehmann,
+  Zaire, Bellotti, Gaidos, Morin, Moutou, Petit, Alencar, Arnold, Artigau,
+  Cang, Carmona, Cook, {Cort{\'e}s-Zuleta}, Cristofari, Delfosse, Doyon,
+  H{\'e}brard, Malo, Reyl{\'e}, \& Usher}]{fouqueSPIRouLegacySurvey2023}
+Fouqu{\'e}, P., Martioli, E., Donati, J.~F., {et~al.} 2023, Astronomy and
+  Astrophysics, 672, A52
+
+\bibitem[{Grant \& Wakeford(2024)}]{grantExoTiCLDThirtySeconds2024}
+Grant, D. \& Wakeford, H. 2024, The Journal of Open Source Software, 9, 6816
+
+\bibitem[{Harris {et~al.}(2020)Harris, Millman, {van der Walt}, Gommers,
+  Virtanen, Cournapeau, Wieser, Taylor, Berg, Smith, Kern, Picus, Hoyer, {van
+  Kerkwijk}, Brett, Haldane, {del R{\'i}o}, Wiebe, Peterson,
+  {G{\'e}rard-Marchant}, Sheppard, Reddy, Weckesser, Abbasi, Gohlke, \&
+  Oliphant}]{harrisArrayProgrammingNumPy2020}
+Harris, C.~R., Millman, K.~J., {van der Walt}, S.~J., {et~al.} 2020, Nature,
+  585, 357
+
+\bibitem[{Henry {et~al.}(1994)Henry, Kirkpatrick, \&
+  Simons}]{henrySolarNeighborhoodStandard1994}
+Henry, T.~J., Kirkpatrick, J.~D., \& Simons, D.~A. 1994, The Astronomical
+  Journal, 108, 1437
+
+\bibitem[{Hunter(2007)}]{hunterMatplotlib2DGraphics2007}
+Hunter, J.~D. 2007, Computing in Science \& Engineering, 9, 90
+
+\bibitem[{Iben \& Renzini(1983)}]{ibenAsymptoticGiantBranch1983}
+Iben, Jr., I. \& Renzini, A. 1983, Annual Review of Astronomy and Astrophysics,
+  21, 271
+
+\bibitem[{Iyer {et~al.}(2023)Iyer, Line, Muirhead, Fortney, \&
+  {Gharib-Nezhad}}]{iyerSPHINXMdwarfSpectral2023}
+Iyer, A.~R., Line, M.~R., Muirhead, P.~S., Fortney, J.~J., \& {Gharib-Nezhad},
+  E. 2023, The Astrophysical Journal, 944, 41
+
+\bibitem[{Kurucz(1991)}]{kuruczNewOpacityCalculations1991}
+Kurucz, R.~L. 1991, 341, 441
+
+\bibitem[{Lawson \& Hanson(1995)}]{lawsonSolvingLeastSquares1995}
+Lawson, C.~L. \& Hanson, R.~J. 1995, Solving {{Least Squares Problems}} (SIAM)
+
+\bibitem[{Lehmann {et~al.}(2024)Lehmann, Donati, Fouqu{\'e}, Moutou, Bellotti,
+  Delfosse, Petit, Carmona, Morin, Vidotto, \& {the SLS
+  consortium}}]{lehmannSPIRouRevealsUnusually2024}
+Lehmann, L.~T., Donati, J.~F., Fouqu{\'e}, P., {et~al.} 2024, Monthly Notices
+  of the Royal Astronomical Society, 527, 4330
+
+\bibitem[{Li {et~al.}(2015)Li, Gordon, Rothman, Tan, Hu, Kassi, Campargue, \&
+  Medvedev}]{liROVIBRATIONALLINELISTS2015}
+Li, G., Gordon, I.~E., Rothman, L.~S., {et~al.} 2015, The Astrophysical Journal
+  Supplement Series, 216, 15
+
+\bibitem[{Lyons {et~al.}(2018)Lyons, {Gharib-Nezhad}, \&
+  Ayres}]{lyonsLightCarbonIsotope2018}
+Lyons, J.~R., {Gharib-Nezhad}, E., \& Ayres, T.~R. 2018, Nature Communications,
+  9, 908
+
+\bibitem[{Meija {et~al.}(2016)Meija, Coplen, Berglund, Brand, Bi{\`e}vre,
+  Gr{\"o}ning, Holden, Irrgeher, Loss, Walczyk, \&
+  Prohaska}]{meijaIsotopicCompositionsElements2016}
+Meija, J., Coplen, T.~B., Berglund, M., {et~al.} 2016, Pure and Applied
+  Chemistry, 88, 293
+
+\bibitem[{Ment \& Charbonneau(2023)}]{mentOccurrenceRateTerrestrial2023}
+Ment, K. \& Charbonneau, D. 2023, The Astronomical Journal, 165, 265
+
+\bibitem[{Milam {et~al.}(2005)Milam, Savage, Brewster, Ziurys, \&
+  Wyckoff}]{milam1213Isotope2005}
+Milam, S.~N., Savage, C., Brewster, M.~A., Ziurys, L.~M., \& Wyckoff, S. 2005,
+  The Astrophysical Journal, 634, 1126
+
+\bibitem[{Molli{\`e}re {et~al.}(2019)Molli{\`e}re, Wardenier, Van~Boekel,
+  Henning, Molaverdikhani, \&
+  Snellen}]{mollierePetitRADTRANSPythonRadiative2019}
+Molli{\`e}re, P., Wardenier, J.~P., Van~Boekel, R., {et~al.} 2019, Astronomy \&
+  Astrophysics, 627, A67
+
+\bibitem[{Moutou {et~al.}(2023)Moutou, Delfosse, Petit, Donati, Artigau,
+  Fouqu{\'e}, Carmona, {Ould-Elhkim}, Arnold, Cook, Cadieux, Bellotti, Boisse,
+  Bouchy, Charpentier, {Cort{\'e}s-Zuleta}, Doyon, H{\'e}brard, Martioli,
+  Morin, \& Vandal}]{moutouCharacterizingPlanetarySystems2023}
+Moutou, C., Delfosse, X., Petit, A.~C., {et~al.} 2023, Astronomy \&amp;
+  Astrophysics, Volume 678, id.A207, {$<$}NUMPAGES{$>$}23{$<$}/NUMPAGES{$>$}
+  pp., 678, A207
+
+\bibitem[{Piskunov {et~al.}(1995)Piskunov, Kupka, Ryabchikova, Weiss, \&
+  Jeffery}]{piskunovVALDViennaAtomic1995}
+Piskunov, N.~E., Kupka, F., Ryabchikova, T.~A., Weiss, W.~W., \& Jeffery, C.~S.
+  1995, Astronomy and Astrophysics Supplement Series, 112, 525
+
+\bibitem[{Polyansky {et~al.}(2017)Polyansky, Kyuberis, Lodi, Tennyson,
+  Yurchenko, Ovsyannikov, \& Zobov}]{polyanskyExoMolMolecularLine2017}
+Polyansky, O.~L., Kyuberis, A.~A., Lodi, L., {et~al.} 2017, Monthly Notices of
+  the Royal Astronomical Society, 466, 1363
+
+\bibitem[{Polyansky {et~al.}(2018)Polyansky, Kyuberis, Zobov, Tennyson,
+  Yurchenko, \& Lodi}]{polyanskyExoMolMolecularLine2018}
+Polyansky, O.~L., Kyuberis, A.~A., Zobov, N.~F., {et~al.} 2018, Monthly Notices
+  of the Royal Astronomical Society, 480, 2597
+
+\bibitem[{Reyl{\'e} {et~al.}(2021)Reyl{\'e}, Jardine, Fouqu{\'e}, Caballero,
+  Smart, \& Sozzetti}]{reyle10ParsecSample2021}
+Reyl{\'e}, C., Jardine, K., Fouqu{\'e}, P., {et~al.} 2021, Astronomy and
+  Astrophysics, 650, A201
+
+\bibitem[{Rothman {et~al.}(2010)Rothman, Gordon, Barber, Dothe, Gamache,
+  Goldman, Perevalov, Tashkun, \&
+  Tennyson}]{rothmanHITEMPHightemperatureMolecular2010}
+Rothman, L.~S., Gordon, I.~E., Barber, R.~J., {et~al.} 2010, Journal of
+  Quantitative Spectroscopy and Radiative Transfer, 111, 2139
+
+\bibitem[{Ruffio {et~al.}(2023)Ruffio, Horstman, Mawet, Rosenthal, Batygin,
+  Wang, {Millar-Blanchaer}, Wang, Fulton, Konopacky, Agrawal, Hirsch, Howard,
+  Blunt, Nielsen, Baker, Bartos, Bond, Calvin, Cetre, Delorme, Doppmann,
+  Echeverri, Finnerty, Fitzgerald, Jovanovic, L{\'o}pez, Martin, Morris,
+  Pezzato, Ruane, Sappey, Schofield, Skemer, Venenciano, Wallace, Wallack,
+  Wizinowich, \& Xuan}]{ruffioDetectingExomoonsRadial2023}
+Ruffio, J.-B., Horstman, K., Mawet, D., {et~al.} 2023, The Astronomical
+  Journal, 165, 113
+
+\bibitem[{Ruffio {et~al.}(2019)Ruffio, Macintosh, Konopacky, Barman, De~Rosa,
+  Wang, Hoch, Czekala, \& Marois}]{ruffioRadialVelocityMeasurements2019a}
+Ruffio, J.-B., Macintosh, B., Konopacky, Q.~M., {et~al.} 2019, The Astronomical
+  Journal, 158, 200
+
+\bibitem[{Skilling(2004)}]{skillingNestedSampling2004}
+Skilling, J. 2004, AIP Conference Proceedings, 735, 395
+
+\bibitem[{Syme \& McKemmish(2021)}]{symeFullSpectroscopicModel2021}
+Syme, A.-M. \& McKemmish, L.~K. 2021, Monthly Notices of the Royal Astronomical
+  Society, 505, 4383
+
+\bibitem[{Tennyson {et~al.}(2024)Tennyson, Yurchenko, Zhang, Bowesman, Brady,
+  Buldyreva, Chubb, Gamache, Gorman, Guest, Hill, Kefala, {Lynas-Gray}, Mellor,
+  McKemmish, Mitev, Mizus, Owens, Peng, Perri, Pezzella, Polyansky, Qu,
+  Semenov, Smola, Solokov, Somogyi, Upadhyay, Wright, \&
+  Zobov}]{tennyson2024ReleaseExoMol2024}
+Tennyson, J., Yurchenko, S.~N., Zhang, J., {et~al.} 2024, Journal of
+  Quantitative Spectroscopy and Radiative Transfer, 326, 109083
+
+\bibitem[{Virtanen {et~al.}(2020)Virtanen, Gommers, Oliphant, Haberland, Reddy,
+  Cournapeau, Burovski, Peterson, Weckesser, Bright, {van der Walt}, Brett,
+  Wilson, Millman, Mayorov, Nelson, Jones, Kern, Larson, Carey, Polat, Feng,
+  Moore, VanderPlas, Laxalde, Perktold, Cimrman, Henriksen, Quintero, Harris,
+  Archibald, Ribeiro, Pedregosa, {van Mulbregt}, \& {SciPy 1. 0
+  Contributors}}]{virtanenSciPyFundamentalAlgorithms2020}
+Virtanen, P., Gommers, R., Oliphant, T.~E., {et~al.} 2020, Nature Methods, 17,
+  261
+
+\bibitem[{Wilson(1999)}]{wilsonIsotopesInterstellarMedium1999}
+Wilson, T.~L. 1999, Reports on Progress in Physics, 62, 143
+
+\bibitem[{Wilzewski {et~al.}(2016)Wilzewski, Gordon, Kochanov, Hill, \&
+  Rothman}]{wilzewskiH2HeCO22016}
+Wilzewski, J.~S., Gordon, I.~E., Kochanov, R.~V., Hill, C., \& Rothman, L.~S.
+  2016, Journal of Quantitative Spectroscopy and Radiative Transfer, 168, 193
+
+\bibitem[{Zhang {et~al.}(2021)Zhang, Snellen, Bohn, Molli{\`e}re, Ginski,
+  Hoeijmakers, Kenworthy, Mamajek, Meshkat, Reggiani, \&
+  Snik}]{zhang13COrichAtmosphereYoung2021}
+Zhang, Y., Snellen, I. A.~G., Bohn, A.~J., {et~al.} 2021, Nature, 595, 370
+
+\end{thebibliography}

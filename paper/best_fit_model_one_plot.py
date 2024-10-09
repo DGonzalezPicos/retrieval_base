@@ -12,10 +12,6 @@ plt.style.use('/home/dario/phd/retrieval_base/HBDs/my_science.mplstyle')
 base_path = '/home/dario/phd/retrieval_base/'
 
 def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, **kwargs):
-    
-    # assert len(ax) ==3 if ax is not None else True, f'Lenght of ax must be 3, not {len(ax)}'
-    ax = np.atleast_1d(ax)
-    assert len(ax) == len(orders), f'Lenght of ax must be {len(orders)}, not {len(ax)}'
 
     if target not in os.getcwd():
         os.chdir(base_path + target)
@@ -85,17 +81,17 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, **kwargs):
         print(f'Residuals saved as {file_name}')
         
         
-        ax[i].plot(wave[order], flux[order], color='k',lw=lw)
-        ax[i].fill_between(wave[order], flux[order]-err_i, flux[order]+err_i, alpha=0.2, color='k', lw=0)
-        ax[i].plot(wave[order], m[order], label=target,lw=lw, color=color)
+        ax.plot(wave[order], flux[order], color='k',lw=lw)
+        ax.fill_between(wave[order], flux[order]-err_i, flux[order]+err_i, alpha=0.2, color='k', lw=0)
+        ax.plot(wave[order], m[order], label=target,lw=lw, color=color)
         
         # add text above spectra in units of data
-
-        text_pos = [np.nanmin(wave[order, mask_i])-4.5, np.nanquantile(flux[order, :len(flux[order]//6)], 0.95)]
-        if text_x is not None:
-            text_pos[0] = text_x[0]
-        # add white box around text
-        ax[i].text(*text_pos, target.replace('gl','Gl'), color='k', fontsize=12, weight='bold', transform=ax[i].transData)
+        if order == 1:
+            text_pos = [np.nanmin(wave[order, mask_i])-4.5, np.nanquantile(flux[order, :len(flux[order]//6)], 0.90)]
+            if text_x is not None:
+                text_pos[0] = text_x
+            # add white box around text
+            ax.text(*text_pos, target.replace('gl','Gl'), color='k', fontsize=12, weight='bold', transform=ax.transData)
         
     
     return ret
@@ -106,7 +102,7 @@ temperature_dict = {t: spirou_sample[t[2:]][0][0] for t in targets}
 norm = plt.Normalize(min(temperature_dict.values()), 4000.0)
 cmap = plt.cm.plasma
 
-def plot(orders, text_x=None):
+def plot(text_x=None):
     fig, ax = plt.subplots(1,1, figsize=(12,6), tight_layout=True)
 
     # orders = [0]
@@ -117,8 +113,8 @@ def plot(orders, text_x=None):
         temperature = temperature_dict[target]
         color = cmap(norm(temperature))
         
-        ret = main(target, ax=ax, offset=0.42*(len(targets)-t), orders=orders,
-                run=spirou_sample[target[2:]][1], lw=1.0, color=color,
+        ret = main(target, ax=ax, offset=0.46*(len(targets)-1-t), orders=orders,
+                run=spirou_sample[target[2:]][1], lw=0.4, color=color,
                 text_x=text_x, divide_spline=False)
     
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -127,7 +123,7 @@ def plot(orders, text_x=None):
     cbar.set_label('Temperature (K)')
 
     xlim = ax.get_xlim()
-    ax.set_xlim((xlim[0]-5, xlim[1]-3))
+    ax.set_xlim((xlim[0]-12, xlim[1]-6))
 
     ax.set_xlabel('Wavelength (nm)')
     ax.set_ylabel('Flux + offset')
@@ -141,10 +137,6 @@ def plot(orders, text_x=None):
     else:
         plt.close(fig)
     
-text_x = [(2285.5, 2364.),
-          (2358.0, 2438.),
-          (2435.0, 2510.0),
-]
-  
-for order in range(1):
-    plot([order], text_x=text_x[order])
+text_x = 2273.5
+orders = [0,1,2]
+plot(text_x=text_x)

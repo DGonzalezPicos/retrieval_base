@@ -151,7 +151,7 @@ ax.set(xlabel='$V$' + f' / {kms}', ylabel=r'$\sqrt{U^2 + W^2}$' + f' / {kms}')
 ax.set_xlim(-200.0, 150.0)
 ax.set_ylim(0.0, 150.0)
 # ax.legend()
-fig_name = '/home/dario/phd/retrieval_base/paper/figures/toomre_diagram.pdf'
+fig_name = '/home/dario/phd/retrieval_base/paper/latex/figures/toomre_diagram.pdf'
 fig.savefig(fig_name)
 print(f' Saved {fig_name}')
 plt.show()

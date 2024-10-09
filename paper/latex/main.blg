@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: aa.bst
+Database file #1: AutoLibrary.bib
+Warning--I didn't find a database entry for "meadowsHabitableZonesM2021"
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Warning--empty journal in castelliNewGridsATLAS92003
+Warning--empty journal in kuruczNewOpacityCalculations1991
+You've used 46 entries,
+            3039 wiz_defined-function locations,
+            992 strings with 26174 characters,
+and the built_in function-call counts, 45681 in all, are:
+= -- 3356
+> -- 6153
+< -- 12
++ -- 2083
+- -- 2010
+* -- 4383
+:= -- 8594
+add.period$ -- 46
+call.type$ -- 46
+change.case$ -- 853
+chr.to.int$ -- 45
+cite$ -- 48
+duplicate$ -- 839
+empty$ -- 1249
+format.name$ -- 2124
+if$ -- 8874
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 45
+newline$ -- 142
+num.names$ -- 185
+pop$ -- 846
+preamble$ -- 1
+purify$ -- 853
+quote$ -- 0
+skip$ -- 765
+stack$ -- 0
+substring$ -- 1068
+swap$ -- 2
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 411
+warning$ -- 2
+while$ -- 183
+width$ -- 0
+write$ -- 460
+(There were 3 warnings)

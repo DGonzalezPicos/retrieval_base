@@ -1,13 +1,13 @@
 import numpy as np
 import os
-
+from retrieval_base.auxiliary_functions import get_path
 file_params = 'config_freechem.py'
 
 ####################################################################################
 # Files and physical parameters
 ####################################################################################
 
-run = 'sphinx1'
+run = 'fc1'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -98,9 +98,9 @@ free_params = {
     # 'beta_G' : [(1., 20.), r'$\beta$'], # (NEW 2024-06-11): manage underestimated errors without inflating the GP kernel
 
     # SPHINX
-    'Teff':  [(2800, 4000.0), r'$T_\mathrm{eff}$'],
+    # 'Teff':  [(2800, 4000.0), r'$T_\mathrm{eff}$'],
     'log_g': [(4.5,5.5), r'$\log\ g$'],
-    'Z':     [(-0.25, 0.25), 'Z'],
+    # 'Z':     [(-0.25, 0.25), 'Z'],
     # 'C_O': [(0.3, 0.9), 'C/O'],
     'alpha_12CO': [(-4., 2.), r'$\alpha(^{12}$CO)'],
     'alpha_H2O': [(-4., 2.), r'$\alpha$(H2O)'],
@@ -111,21 +111,53 @@ free_params = {
     'alpha_Mg': [(-4., 2.), r'$\alpha(Mg)$'],
     'alpha_Fe': [(-4., 2.), r'$\alpha(Fe)$'],
     'alpha_OH': [(-4., 2.), r'$\alpha(OH)$'],
+    'alpha_HF': [(-4., 2.), r'$\alpha(HF)$'],
+    'alpha_CN': [(-4., 2.), r'$\alpha(CN)$'],
     # 'alpha_K': [(-4., 2.), r'$\alpha(K)$'],
     # 'alpha_Si': [(-4., 2.), r'$\alpha(Si)$'], 
+    
+    
 
     # Velocities
     'vsini': [(0.5, 11.0), r'$v\ \sin\ i$'], 
     'rv': [(-40.0, 40.0), r'$v_\mathrm{rad}$'],
     
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
+    
+    'T_0': [(4e3,16e3), r'$T_0$'], 
+    'log_P_RCE': [(-2,1.0), r'$\log\ P_\mathrm{RCE}$'],
+    # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
+    'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
+    'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
+    'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_2':   [(0.06, 0.42), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
+    'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
 }
 # free_params.update({k:v[0] for k,v in opacity_params.items()})
-SPHINX_species = ['H2O', '12CO', 'CO2', 'CH4', 'NH3', 'H2S', 'PH3', 
-                  'HCN', 'C2H2', 'TiO', 'VO', 'SiO', 'FeH', 'CaH',
-                  'MgH', 'CrH', 'AlH', 'TiH', 'Na', 'K', 'Fe', 'Mg',
-                  'Ca', 'C', 'Si', 'Ti', 'O', 'FeII', 'MgII', 'TiII', 'CaII', 'CII', 
-                  'N2', 'AlO', 'SH', 'OH', 'NO', 'SO2']
+fc_species_dict = species_to_formula = {
+    'H2': 'H2',
+    'He': 'He',
+    'e-': 'e-',
+    'H2O': 'H2O1',
+    '12CO': 'C1O1',
+    'Na': 'Na',
+    'K': 'K',
+    'Fe': 'Fe',
+    'Mg': 'Mg',
+    'Ca': 'Ca',
+    'Si': 'Si',
+    'Ti': 'Ti',
+    # 'O': 'O1',
+    'OH': 'H1O1',
+    'CN': 'C1N1',
+    'HF': 'F1H1',
+    # 'Sc': 'Sc1'  # Assuming 'Sc' follows the same pattern, though it's not explicitly listed
+}
+fc_species = list(fc_species_dict.keys()) # available species in chemistry table
 
 isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1., 3.), r'$\log\ \mathrm{^{12}CO/^{13}CO}$']],
                       'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
@@ -137,7 +169,7 @@ isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1., 3.), r'$\log\ \mathrm{^{12
                       
 for log_k, v in opacity_params.items():
     k = log_k[4:]
-    if k in SPHINX_species:
+    if k in fc_species:
         pass
     elif k in isotopologues_dict.keys():
         # add isotope ratio as free parameter
@@ -158,7 +190,7 @@ d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 # N_PT_knots = len(log_P_knots) # PT knots = 8 (NEW 2024-05-08)
 # assert len(dlnT_dlnP) == N_PT_knots, 'Number of knots does not match number of dlnT_dlnP parameters'
 PT_interp_mode = 'linear'
-PT_mode = 'SPHINX'
+PT_mode = 'RCE'
 
 N_knots = 25 # spline knots (continuum fitting)
 
@@ -167,7 +199,7 @@ constant_params = {
     # 'R_p' : 1.0, 
     # 'parallax': parallax_mas, 
     'epsilon_limb': 0.20, 
-    'C_O': 0.59,
+    # 'C_O': 0.59,
     'resolution': 69e3, # R=69,000, equivalent to 4.35 km/s
     # 'log_g': 4.72, # +- 0.12 (M15)
     # 'vsini':1.,
@@ -199,11 +231,13 @@ mask_lines = {'telluric_red': (2493.0, 2500.0)}
 ####################################################################################
 
 #chem_mode  = 'free'
-chem_mode  = 'SPHINX'
+# chem_mode  = 'SPHINX'
+chem_mode = 'fastchem'
+
 if chem_mode == 'SPHINX':
     assert PT_mode == 'SPHINX', 'SPHINX mode requires SPHINX PT mode'
     assert config_data['spirou']['n_atm_layers'] == 40, 'SPHINX mode requires 40 atm layers'
-sphinx_grid_cache = True
+    sphinx_grid_cache = True
     
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
@@ -212,27 +246,8 @@ line_species =list(set([v[1] for _,v in opacity_params.items()]))
 line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}
 print(f' --> line_species_dict = {line_species_dict}')
 
-chem_kwargs = dict(species=[
-            # 'H2H2',
-            # 'H2He',
-            # 'HMFF',
-            'H2O', 
-              'CO', 
-            #   'TiO', 'VO',
-            #   'SiO', 
-            #   'FeH', 
-            #   'CaH', 'MgH', 
-            # 'H2S',
-              'Na', 
-            #   'K', 
-              'Fe', 
-              'Mg',
-              'Ca',
-              'Si', 
-              'Ti',
-            #   'AlO',
-            #   'SH',
-              'OH'],
+chem_kwargs = dict(
+            fastchem_grid_file = get_path() + 'data/fastchem_grid.h5',
             line_species_dict=line_species_dict,
 )
 
@@ -244,7 +259,7 @@ chem_kwargs = dict(species=[
 
 # species_to_plot_VMR , species_to_plot_CCF = [], []
 # species_to_plot_VMR = [k.split('_')[1] for k in opacity_params.keys() if 'log_' in k]
-species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe']
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
 species_to_plot_CCF = []
 
 ####################################################################################
@@ -289,12 +304,12 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = False
+testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 200
-n_iter_before_update = n_live_points * 2
+n_iter_before_update = n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

@@ -12,7 +12,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 target = 'gl436'
-run = 'sphinx1' # important to set this to the correct run
+run = 'fc1' # important to set this to the correct run
 
 if __name__ == '__main__':
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.pre_processing:
-        assert conf.run == run, f'Run {run} does not match run in config file {conf.run}'
+        # assert conf.run == run, f'Run {run} does not match run in config file {conf.run}'
         subprocess.run(['python', 'config_freechem.py'])
         
         # for conf_data_i in conf.config_data.values():
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         # ret.prior_check()
         prior_check(conf,
                     n=3,
-                    random=True,
+                    random=False,
                     w_set='spirou',
                     fig_name=conf.prefix + 'plots/prior_check.pdf',
         )

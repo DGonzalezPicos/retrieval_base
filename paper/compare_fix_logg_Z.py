@@ -131,7 +131,7 @@ for r, run in enumerate(runs):
         
         
 runs_label = '_'.join(runs)
-fig_name = base_path + 'paper/figures/corner_' + target + '_' + runs_label + '.pdf'
+fig_name = base_path + 'paper/latex/figures/corner_' + target + '_' + runs_label + '.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

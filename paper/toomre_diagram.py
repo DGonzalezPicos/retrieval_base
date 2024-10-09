@@ -73,7 +73,7 @@ if plot:
     # plt.show()
 
     base_path = '/home/dario/phd/retrieval_base/'
-    fig_name = base_path + 'paper/figures/toomre_diagram.pdf'
+    fig_name = base_path + 'paper/latex/figures/toomre_diagram.pdf'
 
     fig.savefig(fig_name)
     print(f'Figure saved as {fig_name}')

@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
-from scipy.interpolate import make_interp_spline
+from scipy.interpolate import make_interp_spline, RegularGridInterpolator
 import petitRADTRANS.nat_cst as nc
 
 from retrieval_base.auxiliary_functions import quantiles, get_path
+import os
+import h5py
 path = get_path()
 
 def get_Chemistry_class(line_species, pressure, mode, **kwargs):
@@ -665,17 +667,142 @@ class SPHINXChemistry(Chemistry):
         self.mass_fractions['MMW'] = MMW
         return self.mass_fractions
     
+class FastChemistry(Chemistry):
+    isotopologues_dict = {'12CO': ['13CO', 'C18O', 'C17O'], 
+                    'H2O': ['H2O_181', 'H2O_171']}
+    # reverse dictionary so every value is a key
+    isotopologues_dict_rev = {value: key for key, values in isotopologues_dict.items() for value in values}
+    isotopologues = list(isotopologues_dict_rev.keys())
+    
+    
+    def __init__(self, line_species, pressure, **kwargs):
+
+        # Give arguments to the parent class
+        super().__init__(line_species, pressure)
+        self.species = [self.pRT_name_dict.get(line_species_i, None) for line_species_i in self.line_species]
+        
+        assert kwargs.get('fastchem_grid_file') is not None, 'No fastchem grid file given'
+        fc_grid_file = kwargs.get('fastchem_grid_file')
+        # check if file exists
+        assert os.path.exists(fc_grid_file), f'File {fc_grid_file} not found'
+        self.load_grid(fc_grid_file)
+    
+    def load_grid(self, file):
+        with h5py.File(file, 'r') as f:
+            data = f['data'][:]
+            self.t_grid = f.attrs['temperature']
+            self.p_grid = f.attrs['pressure']
+            # Retrieve the metadata (column headers and description)
+            columns = [col.decode() if isinstance(col, bytes) else col for col in f.attrs['columns']]  # handle bytes or str
+            description = f.attrs['description'] if isinstance(f.attrs['description'], str) else f.attrs['description'].decode()
+            species = f.attrs['species'].tolist()
+            # labels  = [str(l) for l in f.attrs['labels']]
+            labels = f.attrs['labels'].tolist()
+        
+        self.data = np.moveaxis(data, 0, 1) # shape (n_pressure, n_temperature, n_species) -> (n_temperature, n_pressure, n_species)
+        self.fc_species_dict = dict(zip(species, labels))
+        
+        # create interpolator for each species
+        self.interpolator = {}
+        for i, (species_i, label_i) in enumerate(self.fc_species_dict.items()):
+            if (species_i in self.species) or (species_i in ['H2', 'He', 'e-']):
+                
+                if label_i in columns:
+                    idx = columns.index(label_i)
+                    print(f' Loading interpolator for {label_i} ({species_i}) from column {idx}')
+                    self.interpolator[species_i] = RegularGridInterpolator((self.t_grid, self.p_grid), self.data[:,:,idx], bounds_error=False, fill_value=None)
+                # else:
+                    # print(f' WARNING: {label_i} not in columns')
+            # else:
+            #     print(f' WARNING: {species_i} not in line_species')
+        
+        return self
+    
+    
+    def __call__(self, params, temperature):
+        
+        assert len(temperature) == len(self.pressure), f' Len(temperature) = {len(temperature)} != len(pressure) = {len(self.pressure)}'
+        self.VMRs = {k: self.interpolator[k]((temperature, self.pressure)) for k in self.interpolator.keys()}
+        self.mass_fractions = {}
+        
+        for line_species_i, species_i in zip(self.line_species, self.species):
+            
+            alpha_i = params.get(f'alpha_{species_i}', 0.0)
+            
+            if species_i is None:
+                continue
+            
+            mass_i = self.read_species_info(species_i, 'mass')
+            # print(f' species_i = {species_i}, line_species_i = {line_species_i}, alpha_i = {alpha_i}')
+            if species_i in self.isotopologues:
+                main = self.isotopologues_dict_rev[species_i]
+                alpha_main = params.get(f'alpha_{main}', 0.0)
+                ratio = params.get(f'{main}/{species_i}') # in VMR
+                assert ratio is not None, f'No ratio {main}/{species_i} given'
+                self.VMRs[species_i] = (self.VMRs[main] * 10.**alpha_main) / ratio
+                
+            elif species_i in params.keys():
+                self.VMRs[species_i] = params[species_i] * np.ones(self.n_atm_layers)
+                
+            elif species_i not in self.VMRs.keys():
+                # print(f' WARNING: {species_i} not in VMRs, setting to 0')
+                self.VMRs[species_i] = 0.0 * np.ones(self.n_atm_layers)
+                
+            self.mass_fractions[line_species_i] = mass_i * (self.VMRs[species_i] * 10.**alpha_i) # VMRs is already an array
+                
+        self.mass_fractions['He'] = self.read_species_info('He', 'mass') * self.VMRs['He']
+        self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * self.VMRs['H2']
+        self.mass_fractions['H']  = self.VMRs['H2']
+        
+        # mass of electron in amu
+        mass_e = 5.48579909070e-4
+        self.mass_fractions['e-'] = mass_e * self.VMRs['e-']
+        self.mass_fractions['H-'] = self.VMRs['e-'] # amu of H is 1.0
+        # self.mass_fractions['H-'] = 6e-9 * (self.VMRs['e-'] / 6e-9) # scale with respect to solar using e-
+        # self.mass_fractions['e-'] = self.VMRs['e-']
+        MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
+        # Turn the molecular masses into mass fractions
+        for line_species_i in self.mass_fractions.keys():
+            self.mass_fractions[line_species_i] /= MMW
+        # pRT requires MMW in mass fractions dictionary
+        self.mass_fractions['MMW'] = MMW
+        return self.mass_fractions
     
 if __name__ == '__main__':
     
     # chem = Chemistry()
     
     # amu = {k:np.round(v[-2],3) for k,v in Chemistry.species_info.items()}
-    amu = {v[0]:np.round(v[-2],3) for k,v in Chemistry.species_info.items()}
-    # save as .txt file with two columns
-    with open('data/lbl_masses.txt', 'w') as f:
-        for key in amu.keys():
-            f.write(f"{key:28} {amu[key]:6.3f}")
-            if key != list(amu.keys())[-1]:
-                f.write('\n')
-    print(f' data/lbl_masses.txt saved!')
+    # amu = {v[0]:np.round(v[-2],3) for k,v in Chemistry.species_info.items()}
+    # # save as .txt file with two columns
+    # with open('data/lbl_masses.txt', 'w') as f:
+    #     for key in amu.keys():
+    #         f.write(f"{key:28} {amu[key]:6.3f}")
+    #         if key != list(amu.keys())[-1]:
+    #             f.write('\n')
+    # print(f' data/lbl_masses.txt saved!')
+    
+    kwargs = dict(fastchem_grid_file='/home/dario/phd/fastchem/output/output_grid.h5')
+    
+    pressure = np.logspace(-5, 2, 40)
+    temperature = np.linspace(1000.0, 3000.0, len(pressure))
+    
+    chem = FastChemistry(['CO_high_Sam', 'H2O_pokazatel_main_iso', 'OH_MoLLIST_main_iso', 'Sc_high'], pressure, **kwargs)
+
+    params = {'alpha_12CO':-1.0,
+              'alpha_H2O':-0.2,
+              'Sc': 1e-7,
+    }
+    mf = chem(params, temperature)
+    
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(1,2, figsize=(12,6), sharey=True, tight_layout=True)
+    ax[0].plot(temperature, pressure, 'k-')
+    ax[0].set(yscale='log', xscale='linear', ylim=(pressure.max(), pressure.min()), xlabel='Temperature [K]', ylabel='Pressure [bar]')
+    
+    for i, (k,v) in enumerate(chem.VMRs.items()):
+        ax[1].plot(v, pressure, label=k)
+        
+    ax[1].set(yscale='log', xscale='log', ylim=(pressure.max(), pressure.min()), xlabel='Mass fraction', ylabel='Pressure [bar]')
+    ax[1].legend()
+    plt.show()

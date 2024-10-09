@@ -247,7 +247,7 @@ line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}
 print(f' --> line_species_dict = {line_species_dict}')
 
 chem_kwargs = dict(
-            fastchem_grid_file = get_path() + 'data/fastchem_grid.h5',
+            fastchem_grid_file = '../data/fastchem_grid.h5',
             line_species_dict=line_species_dict,
 )
 

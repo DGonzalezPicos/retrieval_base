@@ -313,7 +313,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 200
-n_iter_before_update = n_live_points * 1
+n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

@@ -11,8 +11,8 @@ import config_freechem as conf
 
 
 config_file = 'config_freechem.txt'
-target = 'gl15A'
-run = 'sphinx2' # important to set this to the correct run
+# target = 'gl436'
+# run = 'fc3' # important to set this to the correct run
 
 if __name__ == '__main__':
 
@@ -23,11 +23,15 @@ if __name__ == '__main__':
     parser.add_argument('--retrieval', '-r', action='store_true')
     parser.add_argument('--evaluation', '-e', action='store_true')
     parser.add_argument('--ccf', '-ccf', action='store_true', help='Cross-correlation function', default=False)
+    parser.add_argument('--target', '-t', type=str, help='Target name', default='gl436')
+    parser.add_argument('--run', '-run', type=str, help='Run name', default='fc1')
     # parser.add_argument('--synthetic', action='store_true')
     args = parser.parse_args()
+    target = args.target
+    run = args.run
 
     if args.pre_processing:
-        assert conf.run == run, f'Run {run} does not match run in config file {conf.run}'
+        # assert conf.run == run, f'Run {run} does not match run in config file {conf.run}'
         subprocess.run(['python', 'config_freechem.py'])
         
         # for conf_data_i in conf.config_data.values():
@@ -41,7 +45,7 @@ if __name__ == '__main__':
         # ret.prior_check()
         prior_check(conf,
                     n=3,
-                    random=True,
+                    random=False,
                     w_set='spirou',
                     fig_name=conf.prefix + 'plots/prior_check.pdf',
         )

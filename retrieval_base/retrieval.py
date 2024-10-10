@@ -914,6 +914,7 @@ class Retrieval:
             returned = self.PMN_lnL_func()
             
             if isinstance(returned, float):
+                print(f' PT profile or mass fractions failed')
                 # PT profile or mass fractions failed
                 return None, None, None, None, None
 
@@ -922,9 +923,12 @@ class Retrieval:
             unquenched_mass_fractions_i = None
             if hasattr(self.Chem, 'unquenched_mass_fractions'):
                 unquenched_mass_fractions_i = self.Chem.unquenched_mass_fractions
+            
+            dlnT_dlnP_array_i = self.PT.dlnT_dlnP_array if hasattr(self.PT, 'dlnT_dlnP_array') else None
 
             # Return the temperature, mass fractions, unquenched, C/O ratio and Fe/H
-            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, self.Chem.CO, self.Chem.FeH
+            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, \
+            self.Chem.CO, self.Chem.FeH, dlnT_dlnP_array_i
         
         # Compute the mass fractions posterior in parallel
         returned = self.parallel_for_loop(func, posterior)
@@ -936,7 +940,8 @@ class Retrieval:
         mass_fractions_posterior, \
         unquenched_mass_fractions_posterior, \
         self.Chem.CO_posterior, \
-        self.Chem.FeH_posterior \
+        self.Chem.FeH_posterior, \
+        self.PT.dlnT_dlnP_posterior \
             = returned
         
         self.PT.temperature_posterior = np.array(self.PT.temperature_posterior)
@@ -969,7 +974,6 @@ class Retrieval:
                     unquenched_mf_i[line_species_i]
                     )
 
-
         # Convert profiles to 1, 2, 3-sigma equivalent and median
         q = [0.5-0.997/2, 0.5-0.95/2, 0.5-0.68/2, 0.5, 
              0.5+0.68/2, 0.5+0.95/2, 0.5+0.997/2
@@ -979,6 +983,11 @@ class Retrieval:
         self.PT.temperature_envelopes = af.quantiles(
             self.PT.temperature_posterior, q=q, axis=0
             )
+        
+        if self.conf.PT_mode in ['RCE', 'free_gradient']:
+            self.PT.dlnT_dlnP_envelopes = af.quantiles(np.array(self.PT.dlnT_dlnP_posterior),
+                                                       q=q, axis=0)
+            
 
         self.Chem.mass_fractions_envelopes = {}
         self.Chem.unquenched_mass_fractions_envelopes = {}

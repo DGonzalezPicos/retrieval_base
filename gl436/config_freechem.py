@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc1'
+run = 'fc2'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -34,7 +34,7 @@ config_data = {
         'emission_line_threshold': 1.3,
         
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, # WARNING: 40 for SPHINX
+        'n_atm_layers': 60, # WARNING: 40 for SPHINX
         
         'file_target':'data/spec_orders_46_47_48_mad.npy' # sep 28, new data with proper normalization and MAD error estimate
         }, 
@@ -125,14 +125,14 @@ free_params = {
     # 'resolution': [(60e3, 80e3), r'$R$'], # 
     
     'T_0': [(4e3,16e3), r'$T_0$'], 
-    'log_P_RCE': [(-2,1.0), r'$\log\ P_\mathrm{RCE}$'],
+    'log_P_RCE': [(-2.0,1.2), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.42), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_0':   [(0.06, 0.42), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_1':   [(0.06, 0.42), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_2':   [(0.06, 0.42), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_0':   [(0.06, 0.44), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_1':   [(0.06, 0.44), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_RCE': [(0.04, 0.44), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_2':   [(0.06, 0.44), r'$\nabla_{T,2}$'],
     'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
     'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
     'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points

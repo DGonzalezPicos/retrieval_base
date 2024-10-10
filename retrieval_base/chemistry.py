@@ -719,6 +719,8 @@ class FastChemistry(Chemistry):
         return self
     
     
+    
+    
     def __call__(self, params, temperature):
         
         assert len(temperature) == len(self.pressure), f' Len(temperature) = {len(temperature)} != len(pressure) = {len(self.pressure)}'
@@ -767,6 +769,21 @@ class FastChemistry(Chemistry):
         # pRT requires MMW in mass fractions dictionary
         self.mass_fractions['MMW'] = MMW
         return self.mass_fractions
+    
+    @property
+    def CO(self): # alias for C/O ratio
+        if hasattr(self, 'C_O'):
+            return self.C_O
+        else:
+            return np.nan
+    
+    @property
+    def FeH(self): # alias for Fe/H ratio
+        # return self.Z
+        if hasattr(self, 'Z'):
+            return self.Z
+        else:
+            return np.nan
     
 if __name__ == '__main__':
     

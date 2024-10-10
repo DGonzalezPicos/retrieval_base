@@ -283,14 +283,17 @@ class CallBack:
 
             # Plot the abundances in a corner-plot
             # self.fig_abundances_corner()
-            figs.fig_chemistry(Chem=self.Chem,
-                                    fig=None,
-                                    species_to_plot=None,
-                                    color=self.bestfit_color,
-                                    smooth=None,
-                                    fontsize=14,
-                                    fig_name=self.prefix+f'plots/chemistry.pdf'
-            )
+            try: # FIXME: plotting C/O, Fe/H runs into issues...
+                figs.fig_chemistry(Chem=self.Chem,
+                                        fig=None,
+                                        species_to_plot=None,
+                                        color=self.bestfit_color,
+                                        smooth=None,
+                                        fontsize=14,
+                                        fig_name=self.prefix+f'plots/chemistry.pdf'
+                )
+            except Exception as e:
+                print(f'Error in fig_chemistry: {e}')
                             
         # Make a summary figure
         if self.plot_summary:

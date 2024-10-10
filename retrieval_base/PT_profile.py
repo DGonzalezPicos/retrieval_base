@@ -590,6 +590,8 @@ class PT_profile_RCE(PT_profile):
         self.temperature = np.array(self.temperature)[::-1]
         self.dlnT_dlnP_array = dlnT_dlnP_array[::-1]
         
+        # print(f'[PT_profile_RCE] RCE profile... with {len(self.temperature)} points at {len(self.pressure)} pressure levels')
+
         return self.temperature
     
     def plot(self, ax=None, **kwargs):

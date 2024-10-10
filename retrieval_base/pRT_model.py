@@ -17,6 +17,7 @@ class pRT_model:
                  continuum_opacities=['H2-H2', 'H2-He'], 
                  log_P_range=(-6,2), 
                  n_atm_layers=40, 
+                 pressure=None,
                  cloud_mode=None, 
                  chem_mode='free', 
                  rv_range=(-50,50), 
@@ -82,7 +83,11 @@ class pRT_model:
             log_P_range = (-5,2)
         if n_atm_layers is None:
             n_atm_layers = 40
-        self.pressure = np.logspace(log_P_range[0], log_P_range[1], n_atm_layers)
+            
+        if pressure is None:
+            self.pressure = np.logspace(log_P_range[0], log_P_range[1], n_atm_layers)
+        else:
+            self.pressure = np.array(pressure)
 
         # Make the pRT.Radtrans objects
         self.get_atmospheres(CB_active=False)

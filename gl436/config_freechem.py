@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc2'
+run = 'fc3'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -193,6 +193,10 @@ PT_interp_mode = 'linear'
 PT_mode = 'RCE'
 
 N_knots = 25 # spline knots (continuum fitting)
+
+# pressure = np.concatenate([np.arange(-5.0, -3.0, 0.50), np.arange(-3.0, 1.0, 0.05), np.arange(1.0, 2.00+0.25, 0.25)]) # size 89
+pressure = list(10.0**np.concatenate([np.arange(-5.0, -3.0, 0.50), np.arange(-3.0, 1.0, 0.25/4), np.arange(1.0, 2.00+0.25, 0.25)])) # size 73
+
 
 constant_params = {
     # General properties

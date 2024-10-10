@@ -380,6 +380,7 @@ def pre_processing_spirou(conf, conf_data):
             continuum_opacities=conf.continuum_opacities,
             log_P_range=conf_data.get('log_P_range'), 
             n_atm_layers=conf_data.get('n_atm_layers'), 
+            pressure=getattr(conf, 'pressure', None),
             rv_range=conf.free_params['rv'][0], 
             )
 

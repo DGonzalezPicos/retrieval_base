@@ -5,7 +5,7 @@ import subprocess
 import shutil
 
 targets_dict = {
-                'gl436': 'fc1',
+                'gl436': 'fc2',
                 # 'gl699': 'sphinx2',
                 }
 targets = list(targets_dict.keys())

@@ -18,7 +18,7 @@ for target in targets:
     # copy genoa_template to target
     shutil.copy(genoa_file, str(path / target / genoa_file.replace('_template', '')))
     # enable permissions
-    subprocess.run(f'chmod +x {genoa_file.replace('_template', '')}', shell=True, check=True, cwd=str(path / target))
+    subprocess.run(f"chmod +x {genoa_file.replace('_template', '')}", shell=True, check=True, cwd=str(path / target))
 
     # schedule job with sbatch
     try:

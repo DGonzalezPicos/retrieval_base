@@ -4,11 +4,23 @@ import numpy as np
 import subprocess
 import shutil
 
-targets_dict = {
-                'gl436': 'fc',
-                # 'gl699': 'sphinx2',
-                }
-targets = list(targets_dict.keys())
+# targets_dict = {
+#                 'gl436': 'fc',
+#                 # 'gl699': 'sphinx2',
+#                 }
+# targets = list(targets_dict.keys())
+targets = [
+    # 'gl411', 
+    'gl436', 'gl15A', 'gl876', 'gl832', 'gl752A', 
+        #    'gl338B', 
+        #    'gl905',
+           'gl849', 'gl725A', 'gl15B',
+           'gl687', 'gl880', 'gl725B', 
+        #    'gl699',
+           'gl1151',
+           ]
+targets_dict = dict(zip(targets, ['fc1']*len(targets)))
+
 
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
 for target in targets:
@@ -39,3 +51,11 @@ for target in targets:
         
     print(f' Succesful download for {target}!\n')
     
+    
+# run scripts to generate paper figures
+try:
+    subprocess.run(f'python paper/carbon_isotope_period.py', shell=True, check=True, cwd=str(base_path))
+except subprocess.CalledProcessError as e:
+    print(f' -> Error running paper/carbon_isotope_period.py:\n{e}')
+    
+print(f' Done.\n')

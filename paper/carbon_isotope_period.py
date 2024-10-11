@@ -19,16 +19,24 @@ def main(target, x, xerr=None, label='', ax=None, run=None, **kwargs):
     outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
     # find dirs in outputs
     # print(f' outputs = {outputs}')
-    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'sphinx' in d.name and '_' not in d.name]
-    runs = [int(d.name.split('sphinx')[-1]) for d in dirs]
+    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and '_' not in d.name]
+    print(f' dirs = {dirs}')
+    runs = [int(d.name.split('fc')[-1]) for d in dirs]
+    print(f' runs = {runs}')
     print(f' {target}: Found {len(runs)} runs: {runs}')
     assert len(runs) > 0, f'No runs found in {outputs}'
     if run is None:
-        run = 'sphinx'+str(max(runs))
+        run = 'fc'+str(max(runs))
     else:
-        run = 'sphinx'+str(run)
+        run = 'fc'+str(run)
         assert run in [d.name for d in dirs], f'Run {run} not found in {dirs}'
     # print('Run:', run)
+    # check that the folder 'test_output' is not empty
+    test_output = outputs / run / 'test_output'
+    assert test_output.exists(), f'No test_output folder found in {test_output}'
+    if len(list(test_output.iterdir())) == 0:
+        print(f' {target}: No files found in {test_output}')
+        return None
     
     carbon_isotope_posterior_file = base_path + target + '/retrieval_outputs/' + run + '/carbon_isotope_posterior.npy'
     if not os.path.exists(carbon_isotope_posterior_file):
@@ -107,7 +115,7 @@ cmap = plt.cm.plasma
 
 fig, ax = plt.subplots(1,1, figsize=(5,5), tight_layout=True)
 
-zoom_in = False
+zoom_in = True
 xlim = [0.0, 500.0]
 if zoom_in:
     xlim[1] = 150.0
@@ -116,7 +124,9 @@ for name in names:
     target = name.replace('Gl ', 'gl')
     color = cmap(norm(teff[name]))
 
-    C_ratio_t = main(target, prot[name], xerr=prot_err[name],ax=ax, label=name, run=runs[target[2:]], color=color)
+    C_ratio_t = main(target, prot[name], xerr=prot_err[name],ax=ax, label=name, 
+                     run=None,
+                     color=color)
     
     
 
@@ -125,8 +135,15 @@ sm.set_array([])  # Only needed for color bar
 cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.03, aspect=20, location='right')
 cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
-solar = [89.0, 3.0] # review this value...
-ax.axhspan(solar[0]-solar[1], solar[0]+solar[1], color='deepskyblue', alpha=0.3, label='Solar',lw=0)
+# solar = [89.0, 3.0] # review this value...
+# ax.axhspan(solar[0]-solar[1], solar[0]+solar[1], color='deepskyblue', alpha=0.3, label='Solar',lw=0)
+sun = ([27.5, 0.0], [93.5, 3.0])
+# scatter point with errorbars
+ax.errorbar(sun[0][0], sun[1][0], fmt='*', 
+            # xerr=[[sun[0][0]-sun[0][1]],[sun[0][1]-sun[0][0]]], 
+            yerr=sun[1][1],
+            ms=15,
+            label='Sun', color='gold', alpha=0.9, markeredgecolor='black', markeredgewidth=0.8)
 
 ism = [69.0, 15.0]
 ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2, label='ISM',lw=0)

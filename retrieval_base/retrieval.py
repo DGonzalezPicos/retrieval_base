@@ -253,7 +253,7 @@ def pre_processing(conf, conf_data):
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
     
     
-def pre_processing_spirou(conf, conf_data):
+def pre_processing_spirou(conf, conf_data, cache_pRT=True):
     
      # Set up the output directories
     af.create_output_dir(conf.prefix, conf.file_params)
@@ -362,7 +362,7 @@ def pre_processing_spirou(conf, conf_data):
     if getattr(conf, 'copy_pRT_from', None) is not None:
         pRT_file = pRT_file.replace(conf.run, conf.copy_pRT_from)
     
-    if os.path.exists(pRT_file):
+    if os.path.exists(pRT_file) and cache_pRT:
         print(f' Already exists: {pRT_file}')
         # pRT_atm = af.pickle_load(pRT_file)
     else:

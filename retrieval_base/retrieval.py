@@ -440,6 +440,7 @@ def prior_check(conf, n=3,
             # print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m.shape}')
             
             print(f' shape LogLike.f = {ret.LogLike[w_set].f.shape}')
+            print(f' prior rv  = {ret.Param.param_priors["rv"]}')
             
         # m_spec_list.append(ret.m_spec[w_set])
         m_spec_list.append(ret.LogLike[w_set].m)
@@ -730,7 +731,10 @@ class Retrieval:
             # ax.set(yscale='log', ylabel='Pressure / bar', xlabel='Temperature / K', ylim=(self.PT.pressure.max(), self.PT.pressure.min()))
             # plt.show()
             
-            
+        # print rv params
+        # print(f'[Retrieval.PMN_lnL_func] rv = {self.Param.params.get("rv", 0.0):.2f} km/s')
+        # print(f'[Retrieval.PMN_lnL_func] rv prior = {self.Param.param_priors["rv"]}')
+        # print(f'[Retrieval.PMN_lnL_func] rv = {self.Param.params.get("rv", 0.0):.2f} km/s')
             
         for key, value in mass_fractions.items():
             assert np.sum(np.isnan(value)) == 0, f'NaNs in mass fractions ({key})'
@@ -778,7 +782,8 @@ class Retrieval:
             if self.d_spec[w_set].normalized:
                 self.m_spec[w_set].normalize_flux_per_order(fun='median')
                 
-            
+            # print(f' prior rv  = {self.Param.param_priors["rv"]}')
+
             # Spline decomposition
             # self.N_knots = self.Param.params.get('N_knots', 1)
             self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]

@@ -23,12 +23,13 @@ if __name__ == '__main__':
     parser.add_argument('--retrieval', '-r', action='store_true')
     parser.add_argument('--evaluation', '-e', action='store_true')
     parser.add_argument('--ccf', '-ccf', action='store_true', help='Cross-correlation function', default=False)
-    parser.add_argument('--target', '-t', type=str, help='Target name', default='gl436')
+    parser.add_argument('--target', '-t', type=str, help='Target name', default='None')
     parser.add_argument('--run', '-run', type=str, help='Run name', default='None')
     parser.add_argument('--cache_pRT', '-cache_pRT', type=str, help='Cache pRT', default='False')
     # parser.add_argument('--synthetic', action='store_true')
     args = parser.parse_args()
     target = args.target
+    assert target != 'None', 'Please provide a target name as `-t gl436`'
     run = args.run if args.run != 'None' else run
 
     if args.pre_processing:

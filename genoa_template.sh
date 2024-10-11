@@ -4,7 +4,7 @@
 #SBATCH --error=logs/%x_%j.err
 #SBATCH -t 02:59:30
 #SBATCH -p genoa
-#SBATCH --ntasks=134
+#SBATCH --ntasks=138
 #SBATCH --mem=336G
 
 
@@ -28,5 +28,8 @@ export pRT_input_data_path=/projects/0/prjs1096/pRT/input_data
 echo "Number of tasks $SLURM_NTASKS"
 echo "Starting Python script"
 
-mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r
+# define variable target
+target=gl436
+
+mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target
 echo "Done"

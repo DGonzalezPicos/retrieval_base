@@ -45,7 +45,7 @@ for target in targets:
         
     try:
         # change working directory to target
-        subprocess.run(f'python retrieval_script.py -e', shell=True, check=True, cwd=str(base_path / target))
+        subprocess.run(f'python retrieval_script.py -e -t {target}', shell=True, check=True, cwd=str(base_path / target))
     except subprocess.CalledProcessError as e:
         print(f' -> Error evaluating {target}:\n{e}')
         

@@ -3,8 +3,9 @@ import os
 import subprocess
 import shutil
 
-
-path = pathlib.Path('/home/dgonzalezpi/retrieval_base/')
+testing = True
+user = 'dario/phd' if testing else 'dgonzalezpi'
+path = pathlib.Path(f'/home/{user}/retrieval_base/')
 # folders = [f for f in path.iterdir() if f.is_dir()]
 # targets = [f.name for f in folders if str(f.name).startswith('gl')]
 ignore_targets = ['gl436']
@@ -20,6 +21,17 @@ targets_rv = {
 }
 targets = list(targets_rv.keys())
 
+
+def update_file(file, old_str, new_str):
+    
+    with open(file, 'r') as f:
+        filedata = f.read()
+    
+    filedata = filedata.replace(old_str, new_str)
+    
+    with open(file, 'w') as f:
+        f.write(filedata)
+    print(f' Updated {file} with new {new_str}!')
 # copy genoa.sh file to all targets
 
 genoa_template = 'genoa_template.sh'
@@ -31,7 +43,8 @@ for target in targets:
     shutil.copy(genoa_template, str(path / target / genoa_file))
     # enable permissions
     subprocess.run(f"chmod +x {genoa_file}", shell=True, check=True, cwd=str(path / target)) # is this necessary?
-
+    update_file(str(path / target / genoa_file), 'target=gl436', f'target={target}')
+    
     # schedule job with sbatch
     try:
         print(f' Running genoa for {target}...')

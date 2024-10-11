@@ -4,11 +4,11 @@
 #SBATCH --error=logs/%x_%j.err
 #SBATCH -t 02:59:30
 #SBATCH -p genoa
-#SBATCH --ntasks=130
+#SBATCH --ntasks=134
 #SBATCH --mem=336G
 
 
-#SBATCH --job-name=sphinx1
+#SBATCH --job-name=fc2
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
@@ -28,15 +28,8 @@ export pRT_input_data_path=/projects/0/prjs1096/pRT/input_data
 echo "Number of tasks $SLURM_NTASKS"
 echo "Starting Python script"
 
-# Replace the config file and run pre-processing
-# sed -i 's/import config as conf/import config_freechem as conf/g' retrieval_script.py
-# python retrieval_script.py -p
+# define variable target
+target=gl699
 
-# Run the retrieval and evaluation
-# mpiexec -n $SLURM_NTASKS python retrieval_script.py -r
-mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r
-
-# Revert to original config file
-# sed -i 's/import config_freechem as conf/import config as conf/g' retrieval_script.py
-
+mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target
 echo "Done"

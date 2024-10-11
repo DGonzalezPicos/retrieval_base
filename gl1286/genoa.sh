@@ -29,7 +29,7 @@ echo "Number of tasks $SLURM_NTASKS"
 echo "Starting Python script"
 
 # define variable target
-target=gl338B
+target=gl1286
 
 mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target
 echo "Done"

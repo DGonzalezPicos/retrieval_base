@@ -11,14 +11,15 @@ ignore_targets = ['gl436']
 
 # copy genoa.sh file to all targets
 
-genoa_file = 'genoa_template.sh'
+genoa_template = 'genoa_template.sh'
+genoa_file = 'genoa.sh'
 for target in targets:
     if target in ignore_targets:
         continue
     # copy genoa_template to target
-    shutil.copy(genoa_file, str(path / target / genoa_file.replace('_template', '')))
+    shutil.copy(genoa_template, str(path / target / genoa_file))
     # enable permissions
-    subprocess.run(f"chmod +x {genoa_file.replace('_template', '')}", shell=True, check=True, cwd=str(path / target))
+    subprocess.run(f"chmod +x {genoa_file}", shell=True, check=True, cwd=str(path / target))
 
     # schedule job with sbatch
     try:

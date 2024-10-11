@@ -30,7 +30,7 @@ for target in targets:
     # copy genoa_template to target
     shutil.copy(genoa_template, str(path / target / genoa_file))
     # enable permissions
-    subprocess.run(f"chmod +x {genoa_file}", shell=True, check=True, cwd=str(path / target))
+    subprocess.run(f"chmod +x {genoa_file}", shell=True, check=True, cwd=str(path / target)) # is this necessary?
 
     # schedule job with sbatch
     try:
@@ -40,4 +40,3 @@ for target in targets:
         print(f' -> Error running genoa for {target}:\n{e}')
         
 print(f' Succesful scheduling for {len(targets)} targets!\n')
-subprocess.run('watch -n 10 squeue')

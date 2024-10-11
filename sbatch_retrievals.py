@@ -5,9 +5,20 @@ import shutil
 
 
 path = pathlib.Path('/home/dgonzalezpi/retrieval_base/')
-folders = [f for f in path.iterdir() if f.is_dir()]
-targets = [f.name for f in folders if str(f.name).startswith('gl')]
+# folders = [f for f in path.iterdir() if f.is_dir()]
+# targets = [f.name for f in folders if str(f.name).startswith('gl')]
 ignore_targets = ['gl436']
+
+targets_rv = {
+                'gl338B': 12.0,
+                'gl382' : 8.0,
+                'gl408' : 3.0,
+                'gl411' :-85.0,
+                'gl699' : -111.0,
+                'gl905' : -78.0,
+                'gl1286': 8.0,
+}
+targets = list(targets_rv.keys())
 
 # copy genoa.sh file to all targets
 
@@ -29,3 +40,4 @@ for target in targets:
         print(f' -> Error running genoa for {target}:\n{e}')
         
 print(f' Succesful scheduling for {len(targets)} targets!\n')
+subprocess.run('watch -n 10 squeue')

@@ -145,7 +145,7 @@ line_species = [
 
     'H2O_pokazatel_main_iso', 
     # 'H2O_181',
-    'HF_main_iso', 
+    'HF_high', 
 
 
     'Na_allard',

@@ -253,7 +253,7 @@ def pre_processing(conf, conf_data):
     # Save as pickle
     af.pickle_save(conf.prefix+f'data/pRT_atm_{d_spec.w_set}.pkl', pRT_atm)
     
-def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
+def prior_check(conf, n=3, random=False, get_contr=False, remove_disk=False, fig_name=None):
     
     ret = Retrieval(conf=conf, evaluation=False)
     w_set = 'NIRSpec'
@@ -278,6 +278,10 @@ def prior_check(conf, n=3, random=False, get_contr=False, fig_name=None):
 
         ret.Param(theta_i * np.ones(len(ret.Param.param_keys)))
         sample = {k:ret.Param.params[k] for k in ret.Param.param_keys}
+        if remove_disk and sample.get('R_d', None) is not None:
+            print(f' Setting R_d = 0.0 (no disk)')
+            sample['R_d'] = 0.0
+            
         print(sample)
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()

@@ -174,7 +174,7 @@ line_species = [
     # 'Ti',
     
     'CN_main_iso',
-    'HF_main_iso', 
+    'HF_high', 
     
     ]
 species_to_plot_VMR = [

@@ -154,7 +154,7 @@ line_species = [
     # 'NH3_coles_main_iso', 
 
     # 'H2S_ExoMol_main_iso', 
-    # 'HF_main_iso', 
+    # 'HF_high', 
     # 'HCl_main_iso', 
 
     # 'HCN_main_iso', 

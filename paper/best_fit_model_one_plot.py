@@ -1,7 +1,8 @@
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
-from retrieval_base.auxiliary_functions import spirou_sample
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv
+
 # import config_freechem as conf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -95,6 +96,9 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, **kwargs):
         
     
     return ret
+
+df = read_spirou_sample_csv()
+names = df['Star'].to_list()
 
 targets = ['gl'+t for t in spirou_sample.keys()]
 temperature_dict = {t: spirou_sample[t[2:]][0][0] for t in targets}

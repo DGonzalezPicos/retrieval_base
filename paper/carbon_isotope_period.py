@@ -12,7 +12,7 @@ base_path = '/home/dario/phd/retrieval_base/'
 
 target = 'gl880'
 
-def main(target, x, xerr=None, label='', ax=None, run=None, **kwargs):
+def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,**kwargs):
     if target not in os.getcwd():
         os.chdir(base_path + target)
 
@@ -77,20 +77,36 @@ def main(target, x, xerr=None, label='', ax=None, run=None, **kwargs):
     if isinstance(xerr, list):
         xerr = [[x-xerr[0]], [xerr[1]-x]]
         
-    ax.errorbar(x, carbon_isotope_quantiles[1], 
+        
+    y = carbon_isotope_quantiles[1]
+    lolims=False
+    fmt = 'o'
+    if target=='gl699' and plot_lower_limit_gl699:
+        y -= carbon_isotope_quantiles[0]
+        lolims = carbon_isotope_quantiles[2]-carbon_isotope_quantiles[1]
+        fmt = 's'
+    ax.errorbar(x, y, 
                 xerr=xerr,
                 yerr=[[carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]], [carbon_isotope_quantiles[2]-carbon_isotope_quantiles[1]]],
-                fmt='o', 
+                fmt=fmt, 
                 label=label.replace('gl', 'Gl '),
                 alpha=0.9,
                     # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                 markeredgecolor='black', # Black edge color
+                markeredgecolor='black', # Black edge color
                 markeredgewidth=0.8,     # Thickness of the edge
                 color=kwargs.get('color', 'k'),
+                lolims=lolims,
     )
-    if x<xlim[1]:
+        
+        # # Optionally, add an arrow to highlight the lower limit
+        # ax.annotate('', xy=(x, carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]), 
+        #             xytext=(x, (carbon_isotope_quantiles[1]-carbon_isotope_quantiles[0]) - 0.1),
+        #             arrowprops=dict(facecolor='black', shrink=0.05, width=1.5, headwidth=8)
+        # )
+    # if x<xlim[1]:
+    if xytext is not None:
         # add text with target name next to point, offset text from point
-        ax.annotate(label.replace('gl', 'Gl '), (x, carbon_isotope_quantiles[1]), textcoords="offset points", xytext=(3,3), ha='left',
+        ax.annotate(label.replace('gl', 'Gl '), (x, carbon_isotope_quantiles[1]), textcoords="offset points", xytext=xytext, ha='left',
                     fontsize=8, color=kwargs.get('color', 'k'), alpha=0.9)
         
     
@@ -113,12 +129,31 @@ runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sampl
 norm = plt.Normalize(min(teff.values()), 4000.0)
 cmap = plt.cm.plasma
 
+
+plot_lower_limit_gl699 = False # TODO: check this...
+
 fig, ax = plt.subplots(1,1, figsize=(5,5), tight_layout=True)
 
-zoom_in = True
+zoom_in = False
 xlim = [0.0, 500.0]
 if zoom_in:
-    xlim[1] = 150.0
+    xlim[1] = 200.0
+    
+xytext = {'Gl 699' : (3,3),
+          'Gl 411' : (3,3),
+          'Gl 382': (-20,-12),
+          'Gl 1286': (2,-12),
+          
+}
+
+sun = ([27.5, 0.0], [93.5, 3.0])
+# scatter point with errorbars
+ax.errorbar(sun[0][0], sun[1][0], fmt='*', 
+            # xerr=[[sun[0][0]-sun[0][1]],[sun[0][1]-sun[0][0]]], 
+            yerr=sun[1][1],
+            ms=15,
+            label='Sun', color='gold', alpha=0.9, markeredgecolor='black', markeredgewidth=0.8)
+
 
 for name in names:
     target = name.replace('Gl ', 'gl')
@@ -126,7 +161,8 @@ for name in names:
 
     C_ratio_t = main(target, prot[name], xerr=prot_err[name],ax=ax, label=name, 
                      run=None,
-                     color=color)
+                     color=color,
+                     xytext=xytext.get(name, None))
     
     
 
@@ -137,30 +173,38 @@ cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
 # solar = [89.0, 3.0] # review this value...
 # ax.axhspan(solar[0]-solar[1], solar[0]+solar[1], color='deepskyblue', alpha=0.3, label='Solar',lw=0)
-sun = ([27.5, 0.0], [93.5, 3.0])
-# scatter point with errorbars
-ax.errorbar(sun[0][0], sun[1][0], fmt='*', 
-            # xerr=[[sun[0][0]-sun[0][1]],[sun[0][1]-sun[0][0]]], 
-            yerr=sun[1][1],
-            ms=15,
-            label='Sun', color='gold', alpha=0.9, markeredgecolor='black', markeredgewidth=0.8)
 
 ism = [69.0, 15.0]
-ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2, label='ISM',lw=0)
+ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1)
+ax.text(0.95, 0.3, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
 ylim_min = 30.0
-ylim_max = 200.0
+ylim_max = 350.0
 
-ax.set_ylim(ylim_min, ylim_max)
-
-ax.set_xlim(xlim)
-
-ax.legend(ncol=4, frameon=False, fontsize=8, loc=(0.0, 1.01))
+ax.legend(ncol=4, frameon=False, fontsize=8, loc=(-0.03, 1.01))
 ax.set_xlabel(r'P$_{\mathrm{rot}}$ (days)')
 ax.set_ylabel(r'$^{12}$C/$^{13}$C')
 # plt.show()
 
 zoom_in_label = '_zoom' if zoom_in else ''
-fig_name = base_path + f'paper/latex/figures/carbon_isotope_period{zoom_in_label}.pdf'
+
+loglog = True
+loglog_label = '_loglog' if loglog else ''
+if loglog:
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    
+    yticks = [30, 60, 90, 120, 200, 300, 500]
+    ax.set_yticks(yticks)
+    ax.set_yticklabels([str(t) for t in yticks])
+    
+    xticks = [10, 20, 50, 100, 200, 400,800]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(t) for t in xticks])
+else:
+    ax.set_ylim(ylim_min, ylim_max)
+    ax.set_xlim(xlim)
+
+fig_name = base_path + f'paper/latex/figures/carbon_isotope_period{loglog_label}{zoom_in_label}.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

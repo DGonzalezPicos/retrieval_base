@@ -1,7 +1,7 @@
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
-from retrieval_base.auxiliary_functions import spirou_sample
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv
 # import config_freechem as conf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,16 +22,25 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, **kwargs):
 
     outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
     # find dirs in outputs
-    print(f' outputs = {outputs}')
-    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'sphinx' in d.name and '_' not in d.name]
-    runs = [int(d.name.split('sphinx')[-1]) for d in dirs]
-    # run = 'sphinx'+str(max(runs))
+    # print(f' outputs = {outputs}')
+    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and '_' not in d.name]
+    print(f' dirs = {dirs}')
+    runs = [int(d.name.split('fc')[-1]) for d in dirs]
+    print(f' runs = {runs}')
+    print(f' {target}: Found {len(runs)} runs: {runs}')
+    assert len(runs) > 0, f'No runs found in {outputs}'
     if run is None:
-        run = 'sphinx'+str(max(runs))
+        run = 'fc'+str(max(runs))
     else:
-        run = 'sphinx'+str(run)
+        run = 'fc'+str(run)
         assert run in [d.name for d in dirs], f'Run {run} not found in {dirs}'
-    print('Run with largest number:', run)
+    # print('Run:', run)
+    # check that the folder 'test_output' is not empty
+    test_output = outputs / run / 'test_output'
+    assert test_output.exists(), f'No test_output folder found in {test_output}'
+    if len(list(test_output.iterdir())) == 0:
+        print(f' {target}: No files found in {test_output}')
+        return None
 
     config_file = 'config_freechem.txt'
     conf = Config(path=base_path, target=target, run=run)(config_file)
@@ -100,10 +109,16 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, **kwargs):
     
     return ret
 
-targets = ['gl'+t for t in spirou_sample.keys()]
-temperature_dict = {t: spirou_sample[t[2:]][0][0] for t in targets}
+
+df = read_spirou_sample_csv()
+names = df['Star'].to_list()
+teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
+prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
+prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
+runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
+
 # norm = plt.Normalize(min(temperature_dict.values()), max(temperature_dict.values()))
-norm = plt.Normalize(min(temperature_dict.values()), 4000.0)
+norm = plt.Normalize(min(teff.values()), 4000.0)
 cmap = plt.cm.plasma
 
 def plot(orders, text_x=None):
@@ -113,12 +128,15 @@ def plot(orders, text_x=None):
     orders_str = [str(o) for o in orders]
     # colors = plt.cm.
    
-    for t, target in enumerate(targets):
-        temperature = temperature_dict[target]
+    for t, name in enumerate(names):
+        target = name.replace('Gl ', 'gl')
+
+        temperature = teff[name]
         color = cmap(norm(temperature))
         
-        ret = main(target, ax=ax, offset=0.42*(len(targets)-t), orders=orders,
-                run=spirou_sample[target[2:]][1], lw=1.0, color=color,
+        ret = main(target, ax=ax, offset=0.42*(len(names)-t), orders=orders,
+                run=None, 
+                lw=1.0, color=color,
                 text_x=text_x, divide_spline=False)
     
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)

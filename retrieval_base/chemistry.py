@@ -804,7 +804,7 @@ if __name__ == '__main__':
     pressure = np.logspace(-5, 2, 40)
     temperature = np.linspace(1000.0, 3000.0, len(pressure))
     
-    chem = FastChemistry(['CO_high_Sam', 'H2O_pokazatel_main_iso', 'OH_MoLLIST_main_iso', 'Sc_high'], pressure, **kwargs)
+    chem = FastChemistry(['CO_high_Sam', 'H2O_pokazatel_main_iso', 'OH_MYTHOS_main_iso', 'Sc_high'], pressure, **kwargs)
 
     params = {'alpha_12CO':-1.0,
               'alpha_H2O':-0.2,

@@ -28,7 +28,7 @@ HF_main_iso                  20.006
 HCl_main_iso                 36.461
 C2H2_main_iso                26.038
 H2_main_iso                   2.016
-OH_MoLLIST_main_iso          17.007
+OH_MYTHOS_main_iso          17.007
 K                            39.098
 Na_allard                    22.990
 Ti                           47.867

@@ -248,6 +248,7 @@ def pre_processing(conf, conf_data):
         n_atm_layers=conf_data.get('n_atm_layers'), 
         rv_range=conf.free_params['rv'][0], 
         disk_species=conf.disk_species,
+        T_cutoff=conf_data.get('T_cutoff', None),
         )
 
     # Save as pickle

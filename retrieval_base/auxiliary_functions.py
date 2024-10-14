@@ -660,3 +660,40 @@ def geom_thin_disk_emission(wave_nm, T_star, R_p, R_cav, R_out, i=0.785, d_pc=1.
     flux = np.trapz(integrand, r_values, axis=1) / (d_pc * 3.086e18)**2
     # print(f' mean flux: {np.mean(flux)}')
     return flux
+
+def apply_PT_cutoff(atm, T_min, T_max, P_min=1e-4, P_max=1e2):
+    """ Apply a cutoff to the PT grid of the custom line opacities to reduce memory usage and speed up the retrieval.
+    
+    `atm` is a petitRADTRANS.Radtrans object
+    Pressure in bars.
+    """
+   
+    # convert P from bar to cgs
+    P_min_cgs = P_min * 1e6
+    P_max_cgs = P_max * 1e6
+    
+    for i, species in enumerate(atm.line_species):
+        if atm.custom_grid[species]:
+            new_custom_line_TP_grid = [] # old has shape (152, 2) for each PT pair
+            new_custom_line_paths = []
+            new_line_grid_kappas_custom_PT = []
+            for j, (T_j, P_j) in enumerate(atm.custom_line_TP_grid[species]):
+                # print(f' T_j = {T_j}, P_j = {P_j}')
+                if T_j >= T_min and T_j <= T_max and P_j >= P_min_cgs and P_j <= P_max_cgs:
+                    new_custom_line_TP_grid.append([T_j, P_j])
+                    new_custom_line_paths.append(atm.custom_line_paths[species][j])
+                    new_line_grid_kappas_custom_PT.append(atm.line_grid_kappas_custom_PT[species][:,:,j])
+                
+            print(f' Number of PT pairs {species}:\n -> before = {len(atm.custom_line_TP_grid[species])} \n -> after = {len(new_custom_line_TP_grid)}')
+            # save new values
+            atm.custom_line_TP_grid[species] = np.array(new_custom_line_TP_grid)
+            atm.custom_line_paths[species] = np.array(new_custom_line_paths)
+            atm.line_grid_kappas_custom_PT[species] = np.moveaxis(np.array(new_line_grid_kappas_custom_PT), 0, 2)
+            
+            
+            Ts = np.unique(np.array(new_custom_line_TP_grid)[:,0])
+            atm.custom_diffTs[species] = len(Ts)
+            
+            Ps = np.unique(np.array(new_custom_line_TP_grid)[:,1])
+            atm.custom_diffPs[species] = len(Ps)
+    return atm

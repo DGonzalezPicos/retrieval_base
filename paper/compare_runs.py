@@ -9,7 +9,7 @@ import pathlib
 import corner
 
 base_path = '/home/dario/phd/retrieval_base/'
-target = 'gl1151'
+target = 'gl15A'
 
 if target not in os.getcwd():
     os.chdir(base_path + target)

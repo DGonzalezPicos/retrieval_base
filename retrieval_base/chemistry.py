@@ -84,7 +84,7 @@ class Chemistry:
             # update pRT_name with line_species_dict
             line_species_dict_default = dict(zip(self.species_info['name'].tolist(), self.species_info['pRT_name'].tolist()))
             line_species_dict_new = line_species_dict_default.copy()
-            line_species_dict_new.update(line_species_dict)
+            line_species_dict_new.update(line_species)
             
             # update pRT_name with line_species_dict
             self.species_info['pRT_name'] = self.species_info['name'].map(line_species_dict_new)

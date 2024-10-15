@@ -375,7 +375,7 @@ def pre_processing_spirou(conf, conf_data, cache_pRT=True):
             lbl_opacity_sampling=conf_data['lbl_opacity_sampling'], 
             cloud_species=None, 
             # rayleigh_species=['H2', 'He'], 
-            # continuum_opacities=['H2-H2', 'H2-He'], 
+            # continuum_opacities=['H2-H2', 'H2-He'],
             rayleigh_species=conf.rayleigh_species,
             continuum_opacities=conf.continuum_opacities,
             log_P_range=conf_data.get('log_P_range'), 
@@ -627,7 +627,8 @@ class Retrieval:
         #     self.PT.sonora = self.conf.PT_kwargs['sonora']
                 
         self.Chem = get_Chemistry_class(
-            self.pRT_atm[w_set].line_species, 
+            # self.pRT_atm[w_set].line_species_dict,
+            self.conf.line_species_dict, 
             self.pRT_atm[w_set].pressure, 
             self.Param.chem_mode, 
             **self.conf.chem_kwargs, 

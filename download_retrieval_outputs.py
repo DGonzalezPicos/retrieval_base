@@ -36,7 +36,7 @@ targets_rv = {
 }
 targets = list(targets_rv.keys())
 
-targets_dict = dict(zip(targets, ['fc2']*len(targets)))
+targets_dict = dict(zip(targets, ['fc3']*len(targets)))
 
 
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
@@ -97,5 +97,11 @@ try:
     subprocess.run(f'python paper/carbon_isotope_period.py', shell=True, check=True, cwd=str(base_path))
 except subprocess.CalledProcessError as e:
     print(f' -> Error running paper/carbon_isotope_period.py:\n{e}')
+    
+try:
+    subprocess.run(f'python paper/best_fit_model.py', shell=True, check=True, cwd=str(base_path))
+except subprocess.CalledProcessError as e:
+    print(f' -> Error running paper/best_fit_model.py:\n{e}')
+    
     
 print(f' Done.\n')

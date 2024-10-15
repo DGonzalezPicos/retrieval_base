@@ -78,7 +78,20 @@ class Chemistry:
 
     def __init__(self, line_species, pressure):
 
-        self.line_species = line_species
+
+        if isinstance(line_species, dict):
+            self.line_species = list(line_species.keys())
+            # update pRT_name with line_species_dict
+            line_species_dict_default = dict(zip(self.species_info['name'].tolist(), self.species_info['pRT_name'].tolist()))
+            line_species_dict_new = line_species_dict_default.copy()
+            line_species_dict_new.update(line_species_dict)
+            
+            # update pRT_name with line_species_dict
+            self.species_info['pRT_name'] = self.species_info['name'].map(line_species_dict_new)
+            
+            
+        else:
+            self.line_species = line_species
 
         self.pressure     = pressure
         self.n_atm_layers = len(self.pressure)
@@ -808,9 +821,39 @@ if __name__ == '__main__':
     
     pressure = np.logspace(-5, 2, 40)
     temperature = np.linspace(1000.0, 3000.0, len(pressure))
+    opacity_params = {
+    'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
+    'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
+    'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
+        
+    'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     
+    'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'),
+    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
+    'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'), 
+    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'), 
+    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
+    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
+    'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MMMYTHOS_main_iso'),
+    'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
+    }
+    
+    keys = [k.split('log_')[-1] for k in opacity_params.keys()]
+    values = [v[1] for v in opacity_params.values()]
+    line_species_dict = dict(zip(keys, values))
     chem = FastChemistry(['CO_high_Sam', 'H2O_pokazatel_main_iso', 'OH_MYTHOS_main_iso', 'Sc_high'], pressure, **kwargs)
 
+    # update pRT_name with line_species_dict
+    line_species_dict_default = dict(zip(chem.species_info['name'].tolist(), chem.species_info['pRT_name'].tolist()))
+    line_species_dict_new = line_species_dict_default.copy()
+    line_species_dict_new.update(line_species_dict)
+    
+    # update pRT_name with line_species_dict
+    chem.species_info['pRT_name'] = chem.species_info['name'].map(line_species_dict_new)
+    
+    
     params = {'alpha_12CO':-1.0,
               'alpha_H2O':-0.2,
               'Sc': 1e-7,

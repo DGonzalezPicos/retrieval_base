@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc1'
+run = 'fc2'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -27,11 +27,16 @@ config_data = {
         
         'log_P_range': (-5,2),
         'n_atm_layers': 60, # DGP (2024-10-10): 40 --> 60 for SPIRou
+        'T_cutoff': (1800.0, 5000.0),
+        'P_cutoff': (1e-3, 1e2),
         
         'file_target':'data/spec_orders_46_47_48_mad.npy' # sep 28, new data with proper normalization and MAD error estimate
         }, 
     }
 
+# priors for the radial velocity parameter, adjust to the expected RV of the target to avoid weird results
+rv_min = -45.0
+rv_max= -25.0
 
 ####################################################################################
 # Model parameters
@@ -74,7 +79,7 @@ free_params = {
 
     # Velocities
     'vsini': [(0.5, 11.0), r'$v\ \sin\ i$'], 
-    'rv': [(-130.0, 130.0), r'$v_\mathrm{rad}$'],
+    'rv': [(float(rv_min), float(rv_max)), r'$v_\mathrm{rad}$'],
         
     'T_0': [(4e3,16e3), r'$T_0$'], 
     'log_P_RCE': [(-2.0,1.2), r'$\log\ P_\mathrm{RCE}$'],

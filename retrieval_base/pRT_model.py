@@ -82,7 +82,7 @@ class pRT_model:
         self.cloud_mode = cloud_mode
         self.chem_mode  = chem_mode
 
-        self.rv_max = max(np.abs(list(rv_range)))
+        self.rv_max = max(40.0, max(np.abs(list(rv_range))))
 
         # Define the atmospheric layers
         if log_P_range is None:

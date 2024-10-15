@@ -10,16 +10,25 @@ path = pathlib.Path('/home/dario/phd/retrieval_base/')
 ignore_targets = ['gl436']
 
 targets_rv = {
-                'gl338B': 12.0,
-                'gl382' : 8.0,
-                'gl408' : 3.0,
-                'gl411' :-85.0,
-                'gl699' : -111.0,
-                'gl905' : -78.0,
-                'gl1286': 8.0,
+                # 'gl338B': 12.0,
+                # 'gl382' : 8.0,
+                # 'gl408' : 3.0,
+                # 'gl411' :-85.0,
+                # 'gl699' : -111.0,
+                # 'gl905' : -78.0,
+                # 'gl1286': 8.0,
+                'gl15A': 12.0,
+                'gl15B': 11.0,
+                'gl687': -29.0,
+                'gl725A': -1.0,
+                'gl725B': 1.0,
+                'gl849': -15.0,
+                'gl876': -2.0,
+                'gl880': -27.0,
+                'gl1151': -35.0,
 }
 targets = list(targets_rv.keys())
-delta_rv = 20.0
+delta_rv = 10.0
 
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
 run = 'fc2'

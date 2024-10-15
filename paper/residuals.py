@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import pathlib
-from retrieval_base.auxiliary_functions import spirou_sample
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv
 
 base_path = '/home/dario/phd/retrieval_base/'
 
@@ -18,12 +18,6 @@ def mas_to_pc(mas):
 
 print(mas_to_pc(201.3252))
 
-targets = ['gl'+t for t in spirou_sample.keys()]
-temperature_dict = {t: spirou_sample[t[2:]][0][0] for t in targets}
-# norm = plt.Normalize(min(temperature_dict.values()), max(temperature_dict.values()))
-norm = plt.Normalize(min(temperature_dict.values()), 4000.0)
-cmap = plt.cm.plasma
-
 def main(target, ax=None, fig=None, offset=0, order=0, run=None, lw=1.0, color=None, text_x=0.05):
     
     if target not in os.getcwd():
@@ -32,13 +26,13 @@ def main(target, ax=None, fig=None, offset=0, order=0, run=None, lw=1.0, color=N
     outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
     # find dirs in outputs
     print(f' outputs = {outputs}')
-    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'sphinx' in d.name and '_' not in d.name]
-    runs = [int(d.name.split('sphinx')[-1]) for d in dirs]
-    # run = 'sphinx'+str(max(runs))
+    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and '_' not in d.name]
+    runs = [int(d.name.split('fc')[-1]) for d in dirs]
+    # run = 'fc'+str(max(runs))
     if run is None:
-        run = 'sphinx'+str(max(runs))
+        run = 'fc'+str(max(runs))
     else:
-        run = 'sphinx'+str(run)
+        run = 'fc'+str(run)
         assert run in [d.name for d in dirs], f'Run {run} not found in {dirs}'
     print('Run with largest number:', run)
 
@@ -68,7 +62,18 @@ def main(target, ax=None, fig=None, offset=0, order=0, run=None, lw=1.0, color=N
     ax.text(text_x[1], offset+0.01, f'MAD = {mad*100:.1f} %', color='k', fontsize=12, transform=ax.transData)
     
     
-        
+
+df = read_spirou_sample_csv()
+names = df['Star'].to_list()
+teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
+prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
+prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
+runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
+
+# create colormap with teff in K
+norm = plt.Normalize(min(teff.values()), 4000.0)
+cmap = plt.cm.plasma
+
 fig, ax = plt.subplots(1,1, figsize=(14,8), tight_layout=True)
 
 text_x = [(2287.0, 2364.),
@@ -76,11 +81,15 @@ text_x = [(2287.0, 2364.),
           (2435.0, 2510.0),
 ]
           
-order = 2
-for i, target in enumerate(targets):
-    temperature = temperature_dict[target]
-    color = cmap(norm(temperature))
-    main(target, ax=ax, fig=fig, offset=0.42*(len(targets)-i), order=order, run=spirou_sample[target[2:]][1], lw=1.0, color=color, text_x=text_x[order])
+order = 1
+for i, name in enumerate(names):
+    target = name.replace('Gl ', 'gl')
+    color = cmap(norm(teff[name]))
+    main(target, ax=ax, fig=fig, offset=0.42*(len(names)-i), 
+         order=order, 
+        #  run=runs[name.replace('Gl ', '')],
+        run=None,
+         lw=1.0, color=color, text_x=text_x[order])
     
 
 ax.set(xlabel='Wavelength [nm]', ylabel='Residuals', xlim=(text_x[order][0]-1, text_x[order][1]+8))

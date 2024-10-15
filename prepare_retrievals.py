@@ -28,7 +28,7 @@ targets_rv = {
                 'gl1151': -35.0,
 }
 targets = list(targets_rv.keys())
-delta_rv = 10.0
+delta_rv = 20.0
 
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
 run = 'fc2'
@@ -77,7 +77,9 @@ for target in targets:
         print(f' Copying {local_dir} to {snellius_dir}...')
         
         # if parent directory does not exist, create it on remote
-        subprocess.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
+        # subprocess.run(f'scp -rf {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
+        subprocess.run(f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+
         print(f' Succesful copy for {target}!\n')
         
         

@@ -81,11 +81,11 @@ text_x = [(2287.0, 2364.),
           (2435.0, 2510.0),
 ]
           
-order = 1
+order = 2
 for i, name in enumerate(names):
     target = name.replace('Gl ', 'gl')
     color = cmap(norm(teff[name]))
-    main(target, ax=ax, fig=fig, offset=0.42*(len(names)-i), 
+    main(target, ax=ax, fig=fig, offset=0.26*(len(names)-i), 
          order=order, 
         #  run=runs[name.replace('Gl ', '')],
         run=None,

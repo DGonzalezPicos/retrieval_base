@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2024.3.15)  15 OCT 2024 14:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2024.3.15)  15 OCT 2024 16:01
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -946,39 +946,39 @@ Package hyperref Info: Option `colorlinks' set `true' on input line 71.
  (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 127.
-LaTeX Font Info:    Trying to load font information for OML+txmi on input line 127.
+LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 128.
+LaTeX Font Info:    Trying to load font information for OML+txmi on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/omltxmi.fd
 File: omltxmi.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 127.
-LaTeX Font Info:    Trying to load font information for OMS+txsy on input line 127.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 128.
+LaTeX Font Info:    Trying to load font information for OMS+txsy on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/omstxsy.fd
 File: omstxsy.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 127.
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 127.
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 127.
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 127.
-LaTeX Font Info:    Trying to load font information for OMX+txex on input line 127.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 128.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 128.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 128.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 128.
+LaTeX Font Info:    Trying to load font information for OMX+txex on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/omxtxex.fd
 File: omxtxex.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 127.
-LaTeX Font Info:    Trying to load font information for U+txexa on input line 127.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 128.
+LaTeX Font Info:    Trying to load font information for U+txexa on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/utxexa.fd
 File: utxexa.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 127.
-LaTeX Font Info:    ... okay on input line 127.
-LaTeX Font Info:    Trying to load font information for T1+txr on input line 127.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 128.
+LaTeX Font Info:    ... okay on input line 128.
+LaTeX Font Info:    Trying to load font information for T1+txr on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/t1txr.fd
 File: t1txr.fd 2000/12/15 v3.1
 )
@@ -1035,10 +1035,10 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
 \AtBeginShipoutBox=\box83
-Package hyperref Info: Link coloring ON on input line 127.
-LaTeX Info: Redefining \ref on input line 127.
-LaTeX Info: Redefining \pageref on input line 127.
-LaTeX Info: Redefining \nameref on input line 127.
+Package hyperref Info: Link coloring ON on input line 128.
+LaTeX Info: Redefining \ref on input line 128.
+LaTeX Info: Redefining \pageref on input line 128.
+LaTeX Info: Redefining \nameref on input line 128.
  (./main.out) (./main.out)
 \@outlinefile=\write4
 \openout4 = `main.out'.
@@ -1051,90 +1051,90 @@ Dictionary: translator-basic-dictionary, Language: English
 ) (/usr/share/texlive/texmf-dist/tex/latex/siunitx/siunitx-abbreviations.cfg
 File: siunitx-abbreviations.cfg 2017/11/26 v2.7k siunitx: Abbreviated units
 ) ABD: EveryShipout initializing macros
-LaTeX Font Info:    Trying to load font information for OT1+txr on input line 127.
+LaTeX Font Info:    Trying to load font information for OT1+txr on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/ot1txr.fd
 File: ot1txr.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txsya on input line 127.
+LaTeX Font Info:    Trying to load font information for U+txsya on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/utxsya.fd
 File: utxsya.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txsyb on input line 127.
+LaTeX Font Info:    Trying to load font information for U+txsyb on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/utxsyb.fd
 File: utxsyb.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txmia on input line 127.
+LaTeX Font Info:    Trying to load font information for U+txmia on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/utxmia.fd
 File: utxmia.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txsyc on input line 127.
+LaTeX Font Info:    Trying to load font information for U+txsyc on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/utxsyc.fd
 File: utxsyc.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for OT1+txss on input line 127.
+LaTeX Font Info:    Trying to load font information for OT1+txss on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/ot1txss.fd
 File: ot1txss.fd 2000/12/15 v3.1
 )
 LaTeX Font Info:    Font shape `OT1/txss/m/n' will be
-(Font)              scaled to size 9.49997pt on input line 127.
+(Font)              scaled to size 9.49997pt on input line 128.
 LaTeX Font Info:    Font shape `OT1/txss/m/n' will be
-(Font)              scaled to size 6.64998pt on input line 127.
+(Font)              scaled to size 6.64998pt on input line 128.
 LaTeX Font Info:    Font shape `OT1/txss/m/n' will be
-(Font)              scaled to size 4.74998pt on input line 127.
-LaTeX Font Info:    Trying to load font information for OT1+txtt on input line 127.
+(Font)              scaled to size 4.74998pt on input line 128.
+LaTeX Font Info:    Trying to load font information for OT1+txtt on input line 128.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/ot1txtt.fd
 File: ot1txtt.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for TS1+txr on input line 177.
+LaTeX Font Info:    Trying to load font information for TS1+txr on input line 178.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/ts1txr.fd
 File: ts1txr.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for T1+txss on input line 177.
+LaTeX Font Info:    Trying to load font information for T1+txss on input line 178.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/t1txss.fd
 File: t1txss.fd 2000/12/15 v3.1
 )
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 16.41594pt on input line 177.
+(Font)              scaled to size 16.41594pt on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/b/n' in size <17.28> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 177.
+(Font)              Font shape `T1/txss/bx/n' tried instead on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 16.41594pt on input line 177.
+(Font)              scaled to size 16.41594pt on input line 178.
 LaTeX Font Info:    Font shape `OT1/txss/m/n' will be
-(Font)              scaled to size 10.40245pt on input line 177.
+(Font)              scaled to size 10.40245pt on input line 178.
 LaTeX Font Info:    Font shape `OT1/txss/m/n' will be
-(Font)              scaled to size 7.59998pt on input line 177.
+(Font)              scaled to size 7.59998pt on input line 178.
 LaTeX Font Info:    Font shape `OT1/txss/m/n' will be
-(Font)              scaled to size 5.69998pt on input line 177.
-LaTeX Font Info:    Trying to load font information for T1+txtt on input line 177.
+(Font)              scaled to size 5.69998pt on input line 178.
+LaTeX Font Info:    Trying to load font information for T1+txtt on input line 178.
  (/usr/share/texlive/texmf-dist/tex/latex/txfonts/t1txtt.fd
 File: t1txtt.fd 2000/12/15 v3.1
 )
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 8.54997pt on input line 177.
+(Font)              scaled to size 8.54997pt on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/b/n' in size <9> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 177.
+(Font)              Font shape `T1/txss/bx/n' tried instead on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 8.54997pt on input line 177.
+(Font)              scaled to size 8.54997pt on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/m/it' in size <9> not available
-(Font)              Font shape `T1/txss/m/sl' tried instead on input line 177.
+(Font)              Font shape `T1/txss/m/sl' tried instead on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/m/sl' will be
-(Font)              scaled to size 8.54997pt on input line 177.
+(Font)              scaled to size 8.54997pt on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 10.40245pt on input line 177.
+(Font)              scaled to size 10.40245pt on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/b/n' in size <10.95> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 177.
+(Font)              Font shape `T1/txss/bx/n' tried instead on input line 178.
 LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 10.40245pt on input line 177.
+(Font)              scaled to size 10.40245pt on input line 178.
 LaTeX Font Info:    Font shape `T1/txr/b/n' in size <10> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 178.
+(Font)              Font shape `T1/txr/bx/n' tried instead on input line 179.
 
 
-Package natbib Warning: Citation `meadowsHabitableZonesM2021' on page 1 undefined on input line 178.
+Package natbib Warning: Citation `meadowsHabitableZonesM2021' on page 1 undefined on input line 179.
 
 LaTeX Font Info:    Font shape `OT1/txss/m/n' will be
-(Font)              scaled to size 8.54997pt on input line 188.
+(Font)              scaled to size 8.54997pt on input line 189.
 
-Underfull \hbox (badness 3679) in paragraph at lines 188--188
+Underfull \hbox (badness 3679) in paragraph at lines 189--189
 [][][]\T1/txr/m/n/9 Canadian As-tron-omy Data Cen-tre; [][]www.cadc-ccda.hia-iha.nrc-
  []
 
@@ -1145,53 +1145,62 @@ Underfull \hbox (badness 3679) in paragraph at lines 188--188
 <figures/best_fit_model0-1-2.pdf, id=161, 801.57347pt x 406.15741pt>
 File: figures/best_fit_model0-1-2.pdf Graphic file (type pdf)
 <use figures/best_fit_model0-1-2.pdf>
-Package pdftex.def Info: figures/best_fit_model0-1-2.pdf  used on input line 199.
+Package pdftex.def Info: figures/best_fit_model0-1-2.pdf  used on input line 200.
 (pdftex.def)             Requested size: 523.5307pt x 265.27586pt.
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 9.49997pt on input line 205.
+(Font)              scaled to size 9.49997pt on input line 206.
 LaTeX Font Info:    Font shape `T1/txss/m/it' in size <10> not available
-(Font)              Font shape `T1/txss/m/sl' tried instead on input line 205.
+(Font)              Font shape `T1/txss/m/sl' tried instead on input line 206.
 LaTeX Font Info:    Font shape `T1/txss/m/sl' will be
-(Font)              scaled to size 9.49997pt on input line 205.
+(Font)              scaled to size 9.49997pt on input line 206.
 
-Underfull \hbox (badness 1072) in paragraph at lines 215--216
+
+Package natbib Warning: Citation `zhangELementalAbundancesPlanets2023a' on page 2 undefined on input line 212.
+
+
+Underfull \hbox (badness 1248) in paragraph at lines 212--213
+\T1/txr/m/n/10 We use the ra-dia-tive trans-fer code \T1/txtt/m/n/10 petitRADTRANS \T1/txr/m/n/10 ([][]Mol-
+ []
+
+
+Underfull \hbox (badness 1755) in paragraph at lines 224--227
+\T1/txr/m/n/10 where $\OML/txmi/m/it/10 P[]$ \T1/txr/m/n/10 is the radiative-convective bound-ary pres-sure,
+ []
+
+
+Package natbib Warning: Citation `kitzmannFastchemCondEquilibrium2023' on page 2 undefined on input line 228.
+
+
+Underfull \hbox (badness 1072) in paragraph at lines 233--234
 []\T1/txr/m/n/10 To ac-count for low-frequency noise in the spec-tra, we
  []
 
 
-Underfull \hbox (badness 1112) in paragraph at lines 228--229
+Underfull \hbox (badness 1112) in paragraph at lines 246--247
 []\T1/txr/m/n/10 The op-ti-mal lin-ear co-ef-fi-cients $\OML/txmi/m/it/10 ^^^$ \T1/txr/m/n/10 and the er-ror scal-ing
- []
-
-
-Underfull \hbox (badness 1360) in paragraph at lines 244--245
-[]\T1/txr/m/n/10 Abundances in the \T1/txtt/m/n/10 SPHINX \T1/txr/m/n/10 grid are in-ter-po-lated us-ing
  []
 
 [2]
 
-LaTeX Warning: Reference `sec:carbon_ratio' on page 1 undefined on input line 250.
+LaTeX Warning: Reference `sec:carbon_ratio' on page 1 undefined on input line 269.
 
-
-Underfull \vbox (badness 1596) has occurred while \output is active []
-
- [3 <./figures/best_fit_model0-1-2.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 272--276
+[3 <./figures/best_fit_model0-1-2.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 291--295
 \T1/txr/m/it/8 Acknowledgements. \T1/txr/m/n/8 D.G.P and I.S. ac-knowl-edge NWO grant
  []
 
 
-Underfull \hbox (badness 1292) in paragraph at lines 272--276
+Underfull \hbox (badness 1292) in paragraph at lines 291--295
 \T1/txr/m/n/8 OCENW.M.21.010. Based on ob-ser-va-tions col-lected at the Eu-ro-pean Or-
  []
 
 
-Underfull \hbox (badness 1418) in paragraph at lines 272--276
+Underfull \hbox (badness 1418) in paragraph at lines 291--295
 \T1/txr/m/n/8 gan-i-sa-tion for As-tro-nom-i-cal Re-search in the South-ern Hemi-sphere un-der
  []
 
 
-Underfull \hbox (badness 1874) in paragraph at lines 272--276
+Underfull \hbox (badness 1874) in paragraph at lines 291--295
 \T1/txr/m/n/8 ESO pro-gramme(s) 1110.C-4264(F). This work used the Dutch na-tional
  []
 
@@ -1200,11 +1209,11 @@ Underfull \hbox (badness 1874) in paragraph at lines 272--276
 Package natbib Warning: There were undefined citations.
 
 [4]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 280.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 280.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 299.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 299.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 280.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 280.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 299.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 299.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: EB756FD10762C702CFCF3B702DF489E8;907.
 
@@ -1213,18 +1222,18 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 28287 strings out of 483107
- 542284 string characters out of 5964630
- 791567 words of memory out of 5000000
- 42623 multiletter control sequences out of 15000+600000
+ 28291 strings out of 483107
+ 542349 string characters out of 5964630
+ 793650 words of memory out of 5000000
+ 42626 multiletter control sequences out of 15000+600000
  636330 words of font info for 199 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  60i,15n,79p,1960b,899s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/rtcxr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/rtxmi.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/rtxr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/rtxr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/t1xtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/txex.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/txsy.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (4 pages, 4123818 bytes).
+Output written on main.pdf (4 pages, 4124885 bytes).
 PDF statistics:
- 406 PDF objects out of 1000 (max. 8388607)
- 334 compressed objects within 4 object streams
- 76 named destinations out of 1000 (max. 500000)
+ 405 PDF objects out of 1000 (max. 8388607)
+ 333 compressed objects within 4 object streams
+ 77 named destinations out of 1000 (max. 500000)
  146 words of extra memory for PDF output out of 10000 (max. 10000000)
 

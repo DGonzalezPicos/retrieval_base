@@ -20,15 +20,13 @@ def get_Chemistry_class(line_species, pressure, mode, **kwargs):
         return SONORAChemistry(line_species, pressure, **kwargs)
     if mode == 'SPHINX':
         return SPHINXChemistry(line_species, pressure, **kwargs)
+    
+    
 
 class Chemistry:
 
     # Dictionary with info per molecular/atomic species
-    species_info = pd.read_csv(f'{path}data/species_info.csv')
-    # create alias column 'mathtext_name' to 'label'
-    species_info['label'] = species_info['mathtext_name']
-    pRT_name_dict = {v['pRT_name']: v['name'] for i, v in species_info.iterrows()}
-    pRT_name_dict_r = {v['name']: v['pRT_name'] for i, v in species_info.iterrows()}
+    species_info_default_file = f'{path}data/species_info.csv'    
     
     # Neglect certain species to find respective contribution
     neglect_species = {
@@ -78,20 +76,8 @@ class Chemistry:
 
     def __init__(self, line_species, pressure):
 
-
-        if isinstance(line_species, dict):
-            self.line_species = list(line_species.keys())
-            # update pRT_name with line_species_dict
-            line_species_dict_default = dict(zip(self.species_info['name'].tolist(), self.species_info['pRT_name'].tolist()))
-            line_species_dict_new = line_species_dict_default.copy()
-            line_species_dict_new.update(line_species)
-            
-            # update pRT_name with line_species_dict
-            self.species_info['pRT_name'] = self.species_info['name'].map(line_species_dict_new)
-            
-            
-        else:
-            self.line_species = line_species
+        
+        self.line_species = line_species
 
         self.pressure     = pressure
         self.n_atm_layers = len(self.pressure)
@@ -103,6 +89,27 @@ class Chemistry:
         self.unquenched_mass_fractions_envelopes = None
 
 
+    def set_species_info(self, line_species_dict=None, file=None):
+    
+        if file is not None:
+            self.species_info = pd.read_csv(file)
+            self.species_info['label'] = self.species_info['mathtext_name']
+            
+        assert hasattr(self, 'species_info'), 'species_info not yet loaded'
+        if line_species_dict is not None:
+            line_species_dict_default = dict(zip(self.species_info['name'].tolist(), self.species_info['pRT_name'].tolist()))
+            line_species_dict_new = line_species_dict_default.copy()
+            line_species_dict_new.update(line_species_dict)
+            
+            # update pRT_name with line_species_dict
+            self.species_info['pRT_name'] = self.species_info['name'].map(line_species_dict_new)
+        
+        
+        self.pRT_name_dict = {v['pRT_name']: v['name'] for i, v in self.species_info.iterrows()}
+        self.pRT_name_dict_r = {v['name']: v['pRT_name'] for i, v in self.species_info.iterrows()}
+        
+        return self.species_info
+    
     def remove_species(self):
 
         # Remove the contribution of the specified species
@@ -142,12 +149,12 @@ class Chemistry:
     #         return cls.species_plot_info[species][0]
     #     if info_key == 'label':
     #         return cls.species_plot_info[species][1]
-    @classmethod
-    def read_species_info(cls, species, info_key):
-        assert species in cls.species_info['name'].values, f'species = {species} not in species_info'
-        assert info_key in cls.species_info.columns, f'info_key = {info_key} not in species_info.columns'
+    # @classmethod
+    def read_species_info(self, species, info_key):
+        assert species in self.species_info['name'].values, f'species = {species} not in species_info'
+        assert info_key in self.species_info.columns, f'info_key = {info_key} not in species_info.columns'
             
-        return cls.species_info.loc[cls.species_info['name'] == species, info_key].values[0]
+        return self.species_info.loc[self.species_info['name'] == species, info_key].values[0]
         
     def get_VMRs_posterior(self, save_to=None):
         
@@ -691,6 +698,13 @@ class FastChemistry(Chemistry):
     def __init__(self, line_species, pressure, **kwargs):
 
         # Give arguments to the parent class
+        self.species_info = self.set_species_info(file=self.species_info_default_file)
+        if isinstance(line_species, dict):
+            self.species_info = self.set_species_info(line_species_dict=line_species)
+
+            line_species = list(line_species.values())
+            
+            
         super().__init__(line_species, pressure)
         self.species = [self.pRT_name_dict.get(line_species_i, None) for line_species_i in self.line_species]
         
@@ -843,15 +857,17 @@ if __name__ == '__main__':
     keys = [k.split('log_')[-1] for k in opacity_params.keys()]
     values = [v[1] for v in opacity_params.values()]
     line_species_dict = dict(zip(keys, values))
-    chem = FastChemistry(['CO_high_Sam', 'H2O_pokazatel_main_iso', 'OH_MYTHOS_main_iso', 'Sc_high'], pressure, **kwargs)
+    # chem = FastChemistry(['CO_high_Sam', 'H2O_pokazatel_main_iso', 'OH_MYTHOS_main_iso', 'Sc_high'], pressure, **kwargs)
 
-    # update pRT_name with line_species_dict
-    line_species_dict_default = dict(zip(chem.species_info['name'].tolist(), chem.species_info['pRT_name'].tolist()))
-    line_species_dict_new = line_species_dict_default.copy()
-    line_species_dict_new.update(line_species_dict)
+    # # update pRT_name with line_species_dict
+    # line_species_dict_default = dict(zip(chem.species_info['name'].tolist(), chem.species_info['pRT_name'].tolist()))
+    # line_species_dict_new = line_species_dict_default.copy()
+    # line_species_dict_new.update(line_species_dict)
     
-    # update pRT_name with line_species_dict
-    chem.species_info['pRT_name'] = chem.species_info['name'].map(line_species_dict_new)
+    # # update pRT_name with line_species_dict
+    # chem.species_info['pRT_name'] = chem.species_info['name'].map(line_species_dict_new)
+    chem = FastChemistry(line_species={'12CO':'CO_high_Sam', 'OH':'OH_main_iso'}, pressure=pressure, **kwargs)
+    
     
     
     params = {'alpha_12CO':-1.0,

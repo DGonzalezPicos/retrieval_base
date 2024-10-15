@@ -164,5 +164,5 @@ text_x = [(2285.5, 2364.),
           (2435.0, 2510.0),
 ]
   
-for order in range(1):
+for order in range(3):
     plot([order], text_x=text_x[order])

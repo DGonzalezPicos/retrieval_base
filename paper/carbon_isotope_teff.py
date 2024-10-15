@@ -119,26 +119,35 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,**kwargs
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-teff_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Teff (K)'].to_list()]))
-prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
-prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
+
+# x_param = 'Teff (K)'
+x_param = '[M/H]'
+assert x_param in df.columns, f'Column {x_param} not found in {df.columns}'
+x =  dict(zip(names, [float(t.split('+-')[0]) for t in df[x_param].to_list()]))
+x_err = dict(zip(names, [float(t.split('+-')[1]) for t in df[x_param].to_list()]))
+
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
 # create colormap with teff in K
 norm = plt.Normalize(min(teff.values()), 4000.0)
 cmap = plt.cm.plasma
 
+# add Crossfield+2019 values for Gl 745 AB: isotope ratio, teff and metallicity, with errors
+crossfield = {'Gl 745 A': [(296, 45), (3454, 31), (-0.43, 0.05)],
+              'Gl 745 B': [(224, 26), (3440, 31), (-0.39, 0.05)],
+}
+
 
 plot_lower_limit_gl699 = False # TODO: check this...
 
 fig, ax = plt.subplots(1,1, figsize=(5,5), tight_layout=True)
 
-zoom_in = False
-xlim = [2800.0, 4100.0]
-if zoom_in:
-    xlim[1] = 200.0
+# zoom_in = False
+# xlim = [2800.0, 4100.0]
+# if zoom_in:
+#     xlim[1] = 200.0
     
-xytext = {'Gl 699' : (3,3),
+xytext = {'Gl 699' : (-28,5),
           'Gl 411' : (3,3),
           'Gl 382': (-20,-12),
           'Gl 1286': (2,-12),
@@ -146,6 +155,7 @@ xytext = {'Gl 699' : (3,3),
 }
 
 sun = (93.5, 3.0)
+# sun = {'Teff (K)': ()
 ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='deepskyblue', alpha=0.3, label='Solar',lw=0)
 
 
@@ -153,7 +163,8 @@ for name in names:
     target = name.replace('Gl ', 'gl')
     color = cmap(norm(teff[name]))
 
-    C_ratio_t = main(target, teff[name], xerr=teff_err[name],ax=ax, label=name, 
+    C_ratio_t = main(target, x[name], xerr=x_err[name],
+                     ax=ax, label=name, 
                      run=None,
                      color=color,
                      xytext=xytext.get(name, None))
@@ -170,19 +181,38 @@ cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
 ism = [69.0, 15.0]
 ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1)
-ax.text(0.95, 0.3, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
+ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
 ylim_min = 30.0
 ylim_max = 350.0
 
+# plot crossfield values
+for k, v in crossfield.items():
+    teff = v[1][0]
+    color = cmap(norm(teff))
+    x = v[1][0] if x_param == 'Teff (K)' else v[2][0]
+    x_err = v[1][1] if x_param == 'Teff (K)' else v[2][1]
+    ax.errorbar(x, v[0][0], xerr=x_err, yerr=v[0][1], fmt='s', label=k+' (C19)', color=color, markeredgecolor='black', markeredgewidth=0.8)
+
+    # add thin arrow pointing to the marker with the name of the target
+    ax.annotate(k, (x, v[0][0]), textcoords="offset points", 
+                xytext=(60,5), ha='center', va='center',
+                arrowprops=dict(facecolor='black', shrink=1, headwidth=1, width=0.5, headlength=0.1),
+                fontsize=8,
+                horizontalalignment='right', verticalalignment='top')
+                
+    
+if x_param == '[M/H]':
+    ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-1)
+
 ax.legend(ncol=4, frameon=False, fontsize=8, loc=(-0.03, 1.01))
 # ax.set_xlabel(r'P$_{\mathrm{rot}}$ (days)')
-ax.set_xlabel(r'T$_{\mathrm{eff}}$ (K)')
+ax.set_xlabel(x_param)
 ax.set_ylabel(r'$^{12}$C/$^{13}$C')
 # plt.show()
 
-zoom_in_label = '_zoom' if zoom_in else ''
+# zoom_in_label = '_zoom' if zoom_in else ''
 
-loglog = True
+loglog = False
 loglog_label = '_loglog' if loglog else ''
 if loglog:
     ax.set_xscale('log')
@@ -197,9 +227,13 @@ if loglog:
     ax.set_xticklabels([str(t) for t in xticks])
 else:
     ax.set_ylim(ylim_min, ylim_max)
-    ax.set_xlim(xlim)
-
-fig_name = base_path + f'paper/latex/figures/carbon_isotope_teff{loglog_label}{zoom_in_label}.pdf'
+    # ax.set_xlim(xlim)
+# x_param_label = x_param.split('(')[0].strip()
+x_param_label = {
+    'Teff (K)': 'Teff',
+    '[M/H]': 'metallicity',
+}[x_param]
+fig_name = base_path + f'paper/latex/figures/carbon_isotope_{x_param_label}{loglog_label}.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

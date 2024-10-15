@@ -9,7 +9,7 @@ import pathlib
 import corner
 
 base_path = '/home/dario/phd/retrieval_base/'
-target = 'gl436'
+target = 'gl1151'
 
 if target not in os.getcwd():
     os.chdir(base_path + target)
@@ -23,8 +23,8 @@ config_file = 'config_freechem.txt'
 runs_dict = {
     # 'sphinx1':('SPHINX nl=40', 'darkorange'),
         # 'fc1':('FastChem nl=40', 'indianred'),
-        'fc2':('FastChem nl=60', 'royalblue'),
-        'fc3':('FastChem nl=73 (custom)', 'forestgreen'),
+        'fc1':('FastChem 1', 'royalblue'),
+        'fc2':('FastChem 2', 'forestgreen'),
 }
 runs = list(runs_dict.keys())
 legend_labels = [v[0] for v in runs_dict.values()]

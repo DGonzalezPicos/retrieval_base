@@ -10,18 +10,33 @@ import shutil
 #                 }
 # targets = list(targets_dict.keys())
 
+
+ignore_targets = []
+
 targets_rv = {
                 'gl338B': 12.0,
                 'gl382' : 8.0,
                 'gl408' : 3.0,
                 'gl411' :-85.0,
+                'gl436' : 9.0,
                 'gl699' : -111.0,
+                'gl752A': 36.0,
+                'gl832': 36.0,
                 'gl905' : -78.0,
                 'gl1286': 8.0,
+                # 'gl15A': 12.0,
+                # 'gl15B': 11.0,
+                # 'gl687': -29.0,
+                # 'gl725A': -1.0,
+                # 'gl725B': 1.0,
+                # 'gl849': -15.0,
+                # 'gl876': -2.0,
+                # 'gl880': -27.0,
+                # 'gl1151': -35.0,
 }
 targets = list(targets_rv.keys())
 
-targets_dict = dict(zip(targets, ['fc1']*len(targets)))
+targets_dict = dict(zip(targets, ['fc2']*len(targets)))
 
 
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
@@ -36,7 +51,8 @@ def download_run(target, run, cache=False):
     download_ok=False
     if not cache:
         try:
-            subprocess.run(f'scp -r dgonzalezpi@snellius.surf.nl:{snellius_dir} {local_dir}', shell=True, check=True)
+            # subprocess.run(f'scp -r dgonzalezpi@snellius.surf.nl:{snellius_dir} {local_dir}', shell=True, check=True)
+            subprocess.run(f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/', shell=True, check=True)
             print(f' Succesful download for {target} {run}!\n')
             download_ok = True
         # catch error and print message
@@ -58,7 +74,7 @@ def download_run(target, run, cache=False):
     return download_ok
 
 cache = False
-try_runs = [f'fc{i}' for i in range(1,3)][::-1] # fc1, fc2
+try_runs = [f'fc{i}' for i in [2]][::-1] # fc1, fc2
 
 for target in targets:
     

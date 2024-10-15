@@ -12,7 +12,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 # target = 'gl436'
-run = 'fc2' # important to set this to the correct run
+run = 'fc3' # important to set this to the correct run
 
 if __name__ == '__main__':
 

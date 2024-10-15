@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc2'
+run = 'fc3'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -27,6 +27,8 @@ config_data = {
         
         'log_P_range': (-5,2),
         'n_atm_layers': 60, # DGP (2024-10-10): 40 --> 60 for SPIRou
+        'T_cutoff': (1800.0, 5000.0),
+        'P_cutoff': (1e-3, 1e2),
         
         'file_target':'data/spec_orders_46_47_48_mad.npy' # sep 28, new data with proper normalization and MAD error estimate
         }, 

@@ -763,6 +763,11 @@ class FastChemistry(Chemistry):
         # self.mass_fractions['H-'] = 6e-9 * (self.VMRs['e-'] / 6e-9) # scale with respect to solar using e-
         # self.mass_fractions['e-'] = self.VMRs['e-']
         MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
+        # hot fix for OH linelist 
+        # print(f' [FastChemistry] self.mass_fractions.keys() = {self.mass_fractions.keys()}')
+        # if 'OH_MYTHOS_main_iso' in self.mass_fractions.keys():
+            # self.mass_fractions['OH_MoLLIST_main_iso'] = self.mass_fractions['OH_MYTHOS_main_iso']
+        
         # Turn the molecular masses into mass fractions
         for line_species_i in self.mass_fractions.keys():
             self.mass_fractions[line_species_i] /= MMW

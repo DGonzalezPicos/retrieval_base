@@ -3,7 +3,7 @@ import os
 import subprocess
 import shutil
 
-testing = True
+testing = False
 user = 'dario/phd' if testing else 'dgonzalezpi'
 path = pathlib.Path(f'/home/{user}/retrieval_base/')
 # folders = [f for f in path.iterdir() if f.is_dir()]
@@ -32,7 +32,7 @@ targets_rv = {
                 # 'gl1151': -35.0,
 }
 targets = list(targets_rv.keys())
-
+run = 'fc3'
 
 def update_file(file, old_str, new_str):
     
@@ -56,6 +56,7 @@ for target in targets:
     # enable permissions
     subprocess.run(f"chmod +x {genoa_file}", shell=True, check=True, cwd=str(path / target)) # is this necessary?
     update_file(str(path / target / genoa_file), 'target=gl436', f'target={target}')
+    update_file(str(path / target / genoa_file), '#SBATCH --job-name=fc2', f'#SBATCH --job-name={run}')
     
     # schedule job with sbatch
     try:

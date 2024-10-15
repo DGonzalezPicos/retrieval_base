@@ -382,6 +382,8 @@ def pre_processing_spirou(conf, conf_data, cache_pRT=True):
             n_atm_layers=conf_data.get('n_atm_layers'), 
             pressure=getattr(conf, 'pressure', None),
             rv_range=conf.free_params['rv'][0], 
+            T_cutoff=conf_data.get('T_cutoff', None),
+            P_cutoff=conf_data.get('P_cutoff', None),
             )
 
         # Save as pickle

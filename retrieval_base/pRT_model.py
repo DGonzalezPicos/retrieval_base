@@ -4,6 +4,7 @@ from petitRADTRANS import Radtrans
 import petitRADTRANS.nat_cst as nc
 
 from .spectrum import Spectrum, ModelSpectrum
+from retrieval_base.auxiliary_functions import apply_PT_cutoff
 
 class pRT_model:
 
@@ -20,7 +21,9 @@ class pRT_model:
                  pressure=None,
                  cloud_mode=None, 
                  chem_mode='free', 
-                 rv_range=(-50,50), 
+                 rv_range=(-50,50),
+                 T_cutoff=None,
+                 P_cutoff=None,
                  ):
         '''
         Create instance of the pRT_model class.
@@ -66,6 +69,9 @@ class pRT_model:
         self.cloud_species     = cloud_species
         self.rayleigh_species  = rayleigh_species
         self.continuum_species = continuum_opacities
+        
+        self.T_cutoff = T_cutoff # temperature cutoff for custom line opacities
+        self.P_cutoff = P_cutoff # pressure cutoff for custom line opacities
 
         # Clouds
         if self.cloud_species is None:
@@ -122,6 +128,9 @@ class pRT_model:
 
             # Set up the atmospheric layers
             atm_i.setup_opa_structure(self.pressure)
+            if self.T_cutoff is not None:
+                self.P_cutoff = getattr(self, 'P_cutoff', (np.min(self.pressure), np.max(self.pressure)))
+                atm_i = apply_PT_cutoff(atm_i, *self.T_cutoff, *self.P_cutoff)
             self.atm.append(atm_i)
 
     def __call__(self, 

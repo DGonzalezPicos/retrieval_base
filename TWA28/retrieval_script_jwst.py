@@ -127,7 +127,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     random_label = '_random' if random else ''
     disk = False
     disk_label = '_disk' if disk else ''
@@ -156,7 +156,10 @@ if args.copy_to_snellius:
     print(f' Copying {local_dir} to {snellius_dir}...')
     
     # if parent directory does not exist, create it on remote
-    sp.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
+    # sp.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
+    # use rync -av --delete instead of scp -r
+    sp.run(f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+
     print(f' Succesful copy for {target}!\n')
     
 if args.retrieval:

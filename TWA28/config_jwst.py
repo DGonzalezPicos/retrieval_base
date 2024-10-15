@@ -30,7 +30,7 @@ config_data = {
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, # (2024-10-12): update 35 --> 50
-        'T_cutoff': (1400.0, 3600.0), # DGP (2024-10-14): new parameter
+        'T_cutoff': (1200.0, 3600.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e2), # DGP (2024-10-14): new parameter
         }, 
     }

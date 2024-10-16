@@ -256,7 +256,7 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = False
+testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.20
 # evidence_tolerance = 0.5

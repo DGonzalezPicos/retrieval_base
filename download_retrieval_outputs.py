@@ -14,16 +14,16 @@ import shutil
 ignore_targets = []
 
 targets_rv = {
-                'gl338B': 12.0,
-                'gl382' : 8.0,
-                'gl408' : 3.0,
-                'gl411' :-85.0,
-                'gl436' : 9.0,
-                'gl699' : -111.0,
-                'gl752A': 36.0,
-                'gl832': 36.0,
-                'gl905' : -78.0,
-                'gl1286': 8.0,
+                # 'gl338B': 12.0,
+                # 'gl382' : 8.0,
+                # 'gl408' : 3.0,
+                # 'gl411' :-85.0,
+                # 'gl436' : 9.0,
+                # 'gl699' : -111.0,
+                # 'gl752A': 36.0,
+                # 'gl832': 36.0,
+                # 'gl905' : -78.0,
+                # 'gl1286': 8.0,
                 # 'gl15A': 12.0,
                 # 'gl15B': 11.0,
                 # 'gl687': -29.0,
@@ -33,6 +33,11 @@ targets_rv = {
                 # 'gl876': -2.0,
                 # 'gl880': -27.0,
                 # 'gl1151': -35.0,
+                'gl205': -40.0,
+                'gl412A': 9.0,
+                'gl445': -112.0,
+                'gl1002': -31.0,
+                
 }
 targets = list(targets_rv.keys())
 
@@ -75,7 +80,7 @@ def download_run(target, run, cache=False):
 
 cache = False
 try_runs = [f'fc{i}' for i in [3]][::-1] # fc1, fc2
-
+ok = False
 for target in targets:
     
         

@@ -41,7 +41,7 @@ delta_rv = 20.0
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
 run = 'fc3'
 testing = False
-cache = "False"
+cache = "True"
 
 def update_file(file, old_str, new_str):
     
@@ -86,14 +86,19 @@ for target in targets:
         
         # if parent directory does not exist, create it on remote
         try:
+            # subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+
             subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+
         except subprocess.CalledProcessError as e:
             print(f' -> Error copying {local_dir} to {snellius_dir} with rsync:\n{e}')
-            print(f' -> Trying with scp...')
+            print(f' -> Try to create parent directory on remote...')
+            subprocess.run(f'ssh dgonzalezpi@snellius.surf.nl "mkdir -p {snellius_dir}"', shell=True, check=True)
+
             try:
-                subprocess.run(f'scp -rf {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
+                subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
             except:
-                print(f' -> Error copying {local_dir} to {snellius_dir} with scp:\n{e}')
+                print(f' -> Error copying {local_dir} to {snellius_dir} again...')
                 # print(f' -> VPN must be disabled or set to NL!!')
 
         print(f' Succesful copy for {target}!\n')

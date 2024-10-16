@@ -10,16 +10,16 @@ path = pathlib.Path('/home/dario/phd/retrieval_base/')
 ignore_targets = []
 
 targets_rv = {
-                'gl338B': 12.0,
-                'gl382' : 8.0,
-                'gl408' : 3.0,
-                'gl411' :-85.0,
-                'gl436' : 9.0,
-                'gl699' : -111.0,
-                'gl752A': 36.0,
-                'gl832': 36.0,
-                'gl905' : -78.0,
-                'gl1286': 8.0,
+                # 'gl338B': 12.0,
+                # 'gl382' : 8.0,
+                # 'gl408' : 3.0,
+                # 'gl411' :-85.0,
+                # 'gl436' : 9.0,
+                # 'gl699' : -111.0,
+                # 'gl752A': 36.0,
+                # 'gl832': 36.0,
+                # 'gl905' : -78.0,
+                # 'gl1286': 8.0,
                 # 'gl15A': 12.0,
                 # 'gl15B': 11.0,
                 # 'gl687': -29.0,
@@ -29,6 +29,11 @@ targets_rv = {
                 # 'gl876': -2.0,
                 # 'gl880': -27.0,
                 # 'gl1151': -35.0,
+                'gl205': -40.0,
+                'gl412A': 9.0,
+                'gl445': -112.0,
+                'gl1002': -31.0,
+                
 }
 targets = list(targets_rv.keys())
 delta_rv = 20.0
@@ -80,8 +85,16 @@ for target in targets:
         print(f' Copying {local_dir} to {snellius_dir}...')
         
         # if parent directory does not exist, create it on remote
-        # subprocess.run(f'scp -rf {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
-        subprocess.run(f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+        try:
+            subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f' -> Error copying {local_dir} to {snellius_dir} with rsync:\n{e}')
+            print(f' -> Trying with scp...')
+            try:
+                subprocess.run(f'scp -rf {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
+            except:
+                print(f' -> Error copying {local_dir} to {snellius_dir} with scp:\n{e}')
+                # print(f' -> VPN must be disabled or set to NL!!')
 
         print(f' Succesful copy for {target}!\n')
         

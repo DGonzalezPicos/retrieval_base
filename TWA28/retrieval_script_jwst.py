@@ -99,6 +99,14 @@ if args.pre_processing:
 
     ## Create pRT_atm object
     pRT_file =pathlib.Path(f'{conf.prefix}data/pRT_atm_{spec.w_set}.pkl')
+    if 'rv' in conf.free_params:
+        rv_range = conf.free_params['rv'][0]
+    elif 'rv' in conf.constant_params:
+        rv = conf.constant_params['rv']
+        rv_range = (rv-10.0, rv+10.0)
+    else:
+        raise ValueError('No rv_range defined in conf.free_params or conf.constant_params')
+        
     if not pRT_file.exists():
         print(f'--> Creating {pRT_file}')
         lbl = conf_data['lbl_opacity_sampling']
@@ -114,7 +122,7 @@ if args.pre_processing:
             continuum_opacities=conf.continuum_opacities,
             log_P_range=conf_data.get('log_P_range'), 
             n_atm_layers=conf_data.get('n_atm_layers'), 
-            rv_range=conf.free_params['rv'][0], 
+            rv_range=rv_range,
             disk_species=conf.disk_species,
             )
         # check parent directory
@@ -127,7 +135,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = False
+    random = True
     random_label = '_random' if random else ''
     disk = False
     disk_label = '_disk' if disk else ''

@@ -10,9 +10,9 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 lbl = 15
-run = f'lbl{lbl}_K2'
+run = f'lbl{lbl}_G2G3'
 prefix = f'./retrieval_outputs/{run}/test_'
-grating = 'g235h'
+grating = 'g235h+g395h'
 
 config_data = {
     'NIRSpec': {
@@ -57,16 +57,16 @@ opacity_params = {
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'), # DGP (2024-07-16): accidentally removed 
-    # 'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
+    'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
-    # 'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
+    'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     # 'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     # 'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
-    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
-    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
+    # 'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
+    # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
     # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
     # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al_high'),
@@ -85,7 +85,7 @@ opacity_params = {
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
-    # 'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
+    'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
@@ -96,7 +96,7 @@ free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(1.5, 4.0), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(1.6, 3.4), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     'log_g': [(2.0,5.0), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
@@ -117,8 +117,9 @@ free_params = {
     # 'R_out': [(1.0, 200.0), r'$R_\mathrm{out}$'], # disk radius in R_jup
     # 'q': [(0.4, 1.2), r'$q$'], # disk temperature exponent
     # 'i_deg': [(0, 90), r'$i$'], # disk inclination in degrees
+        
     
-    'Av': [(0.0, 10.0), r'$A_v$'], # extinction in magnitudes
+    'Av': [(0.0, 5.0), r'$A_v$'], # extinction in magnitudes
     
     'rv': [(-40.,40.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
@@ -136,13 +137,7 @@ free_params = {
     'dlnT_dlnP_4':   [(0.00, 0.34), r'$\nabla_{T,4}$'],
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 }
-free_params.update({k:v[0] for k,v in opacity_params.items()})
 
-# disk_species = ['H2O', '12CO', '13CO']
-disk_species = []
-if len(disk_species) > 0:
-    free_params.update({f'log_A_au_{sp}': [(-4, 0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
-# Constants to use if prior is not given
 # distance in pc to parallax
 parallax_mas = 16.87 # Gaia DR3
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
@@ -163,8 +158,24 @@ constant_params = {
 
     # PT profile
     'N_knots': N_knots, # avoid using spline to fit the continuum
-
+    
+    # fix 12CO and H2O to the best-fit G235 values
+    'log_12CO': -3.52,
+    'log_H2O': -3.63,
+    'rv': 12.16,
 }
+
+free_params.update({k:v[0] for k,v in opacity_params.items()})
+# remove constant params from free_params dictionary
+free_params = {k:v for k,v in free_params.items() if k not in list(constant_params.keys())}
+
+# disk_species = ['H2O', '12CO', '13CO']
+disk_species = ['12CO']
+if len(disk_species) > 0:
+    free_params.update({f'log_A_au_{sp}': [(-4, 0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
+
+
+
 if grating == 'g235h+g395h':
     constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
 else:
@@ -191,7 +202,6 @@ mask_lines = {}
 
 #chem_mode  = 'free'
 chem_mode  = 'free'
-
 chem_kwargs = dict()
 
 # Rayleigh scattering and continuum opacities
@@ -246,13 +256,13 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-
+testing = False
 const_efficiency_mode = True
-sampling_efficiency = 0.05
+sampling_efficiency = 0.05 if not testing else 0.20
 # evidence_tolerance = 0.5
-evidence_tolerance = 1.0
-n_live_points = 100
-n_iter_before_update = n_live_points * 2
+evidence_tolerance = 0.5 if not testing else 2.0
+n_live_points = 200 if not testing else 100
+n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file
 

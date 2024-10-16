@@ -19,7 +19,7 @@ from retrieval_base.config import Config
 
 path = af.get_path()
 config_file = 'config_jwst.txt'
-target = 'TWA27A'
+target = 'TWA28'
 w_set='NIRSpec'
 
 cwd = os.getcwd()
@@ -43,7 +43,7 @@ def get_bestfit_params(run):
 
 bestfit_params_dict_G235 = get_bestfit_params('lbl15_K2')
 # run with both gratings
-run = 'lbl15_KM_6'
+run = 'lbl15_G2G3'
 
 
 conf = Config(path=path, target=target, run=run)(config_file)        
@@ -73,7 +73,7 @@ wave = np.squeeze(ret.d_spec[w_set].wave)
 
 n_orders = m_flux_full.shape[0]
 
-fig_name = f'{conf.prefix}plots/compare_gratings_fit.pdf'
+fig_name = f'{target}/retrieval_outputs/{conf.prefix}plots/compare_gratings_fit.pdf'
 kwargs = {'lw': 0.7, 'color': 'orange'}
 
 with PdfPages(fig_name) as pdf:

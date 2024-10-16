@@ -362,11 +362,11 @@ class Parameters:
             
                 # print(f'[Parameters.read_chemistry_params]: {species_i}')
                 # If multiple VMRs are given
-                for j in range(3):
-                    if f'log_{species_i}_{j}' in self.param_keys:
-                        self.VMR_species[f'{species_i}_{j}'] = self.params[f'{species_i}_{j}']
+                # for j in range(3):
+                #     if f'log_{species_i}_{j}' in self.param_keys:
+                #         self.VMR_species[f'{species_i}_{j}'] = self.params[f'{species_i}_{j}']
 
-                if f'log_{species_i}' in self.param_keys:
+                if f'log_{species_i}' in list(self.params.keys()):
                     self.VMR_species[f'{species_i}'] = self.params[f'{species_i}']
                     continue
 

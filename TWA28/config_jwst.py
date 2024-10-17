@@ -26,7 +26,7 @@ config_data = {
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
-        'Nedge': 20,
+        'Nedge': 40, # (2024-10-16): 20 --> 40
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, # (2024-10-12): update 35 --> 50

@@ -39,7 +39,8 @@ def download_run(target, run, cache=False):
 
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
 target = 'TWA28'
-run = 'lbl15_K2'
+# run = 'lbl15_K2'
+run = 'lbl15_G2G3'
 cache = False
 
 # check if test_output dir exists

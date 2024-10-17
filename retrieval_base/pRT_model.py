@@ -390,6 +390,7 @@ class pRT_model:
         self.CCF, self.m_ACF = [], []
         self.wave_pRT_grid, self.flux_pRT_grid = [], []
 
+        self.m_slab = []
         for i, atm_i in enumerate(self.atm):
             
             # Compute the emission spectrum
@@ -488,27 +489,25 @@ class pRT_model:
 
             # Rebin onto the data's wavelength grid
             # m_spec_i.rebin(d_wave=self.d_wave[i,:], replace_wave_flux=True)
-            
+            m_slab_i = []
             if len(self.disk_species) > 0:
                 for ds_i in self.disk_species:
                     grating = self.params['gratings'][i]
                     # units are correct because input model already multiplied by A_au**2 / d_pc**2 with correct units
                     factor = self.params[f'A_au_{ds_i}'] / np.pi / self.params['d_pc']**2
-                    # print(f' self.params[f"A_au_{ds_i}"] = {self.params[f"A_au_{ds_i}"]}')
-                    # print(f' self.params["d_pc"] = {self.params["d_pc"]}')
-                    # print(f' factor = {factor}')
-                    # print(f' mean flux before scaling = {np.mean(self.slab[ds_i][grating][1,:])}')
                     
-                    f_slab_i = self.slab[ds_i][grating][1,:] * (self.params[f'A_au_{ds_i}'] / np.pi) / self.params['d_pc']**2
+                    f_slab_i = self.slab[ds_i][grating][1,:] * factor # [erg s^-1 cm^-2 um^-1]
                     w_slab_i = self.slab[ds_i][grating][0,:] * 1e3 # [um] -> [nm]
-                    # print(f' [pRT_model] mean wave {ds_i} = {np.mean(w_slab_i)}')
-                    # print(f' [pRT_model] f_slab_i.shape = {f_slab_i.shape}')
-                    # print(f' [pRT_model] mean flux {ds_i} = {np.mean(f_slab_i)}')
+                    
                     # skip if all values of flux are below 1e-18
                     if np.nanmax(f_slab_i) < 1e-20:
                         continue
-                    
-                    m_spec_i.flux += np.interp(m_spec_i.wave, w_slab_i, f_slab_i)
+                    m_flux_slab_i = np.interp(m_spec_i.wave, w_slab_i, f_slab_i)
+                    m_spec_i.flux += m_flux_slab_i
+                    self.m_slab.append(m_flux_slab_i)
+                    m_slab_i.append(m_flux_slab_i)
+            
+            self.m_slab.append(m_slab_i)
                 
             m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True)
             # end_sbr = time.time()   

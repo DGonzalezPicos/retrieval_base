@@ -594,11 +594,11 @@ class Retrieval:
             
             # Add veiling to the model spectrum (NEW, 2024-05-27)
             # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum before adding veiling'
-            if "r_0" in self.Param.params.keys():
-                self.m_spec[w_set].add_veiling_power_law(self.Param.params["r_0"],
-                                                        self.Param.params.get("alpha", 0.0), # 0.0 = constant
-                                                        self.d_spec[w_set].wave,
-                                                        np.nanmin(self.d_spec[w_set].wave))
+            # if "r_0" in self.Param.params.keys():
+            #     self.m_spec[w_set].add_veiling_power_law(self.Param.params["r_0"],
+            #                                             self.Param.params.get("alpha", 0.0), # 0.0 = constant
+            #                                             self.d_spec[w_set].wave,
+            #                                             np.nanmin(self.d_spec[w_set].wave))
             # assert np.sum(np.isnan(self.m_spec[w_set].flux)) == 0, 'NaNs in model spectrum after adding veiling'
             # Add blackbody flux from disk with radius R_d and temperature T_d (inner disk)
             if "R_d" in self.Param.params.keys():

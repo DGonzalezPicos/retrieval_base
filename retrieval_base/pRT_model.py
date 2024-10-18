@@ -443,7 +443,7 @@ class pRT_model:
                 wave=m_wave_i, flux=opa_cloud_ij, 
                 lbl_opacity_sampling=self.lbl_opacity_sampling
                 )
-            # Shift, broaden, rebin the cloud opacity
+            # Shift, broaden, rebin the cloud opacpity
             opa_cloud_ij.shift_broaden_rebin(
                 d_wave=d_wave_i, 
                 rv=self.params['rv'], 

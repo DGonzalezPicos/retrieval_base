@@ -18,7 +18,7 @@ targets_rv = {
                 # 'gl382' : 8.0,
                 # 'gl408' : 3.0,
                 # 'gl411' :-85.0,
-                # 'gl436' : 9.0,
+                'gl436' : -40.0,
                 # 'gl699' : -111.0,
                 # 'gl752A': 36.0,
                 # 'gl832': 36.0,
@@ -27,16 +27,17 @@ targets_rv = {
                 # 'gl15A': 12.0,
                 # 'gl15B': 11.0,
                 # 'gl687': -29.0,
-                # 'gl725A': -1.0,
+                # 'gl725A': -31.0,
                 # 'gl725B': 1.0,
                 # 'gl849': -15.0,
                 # 'gl876': -2.0,
                 # 'gl880': -27.0,
                 # 'gl1151': -35.0,
-                'gl205': -40.0,
-                'gl412A': 9.0,
-                'gl445': -112.0,
-                'gl1002': -31.0,
+                # 'gl205': -40.0,
+                # 'gl412A': 9.0,
+                # 'gl445': 9.0,
+                # 'gl447': -112.0,
+                # 'gl1002': -1.0, # running with 156 CPUs
                 
 }
 targets = list(targets_rv.keys())
@@ -57,6 +58,8 @@ def download_run(target, run, cache=False):
     if not cache:
         try:
             # subprocess.run(f'scp -r dgonzalezpi@snellius.surf.nl:{snellius_dir} {local_dir}', shell=True, check=True)
+            if os.path.exists(local_dir):
+                shutil.rmtree(local_dir)
             subprocess.run(f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/', shell=True, check=True)
             print(f' Succesful download for {target} {run}!\n')
             download_ok = True
@@ -82,14 +85,19 @@ cache = False
 try_runs = [f'fc{i}' for i in [3]][::-1] # fc1, fc2
 ok = False
 for target in targets:
-    
+    print(f' Downloading retrieval outputs for {target}...')
         
     for run in try_runs:
         
         # check if test_output dir exists
         test_output = base_path / target / f'retrieval_outputs/{run}/test_output'
+        test_plots  = base_path / target / f'retrieval_outputs/{run}/plots'
         if test_output.exists() and not cache:
+            print(f' Removing {test_output}...')
             shutil.rmtree(test_output)
+            # if test_plots.exists():
+            #     shutil.rmtree(test_plots)
+        if not cache:
             ok = download_run(target, run)
         if ok:
             break
@@ -98,15 +106,17 @@ for target in targets:
     
     
 # run scripts to generate paper figures
-try:
-    subprocess.run(f'python paper/carbon_isotope_period.py', shell=True, check=True, cwd=str(base_path))
-except subprocess.CalledProcessError as e:
-    print(f' -> Error running paper/carbon_isotope_period.py:\n{e}')
-    
-try:
-    subprocess.run(f'python paper/best_fit_model.py', shell=True, check=True, cwd=str(base_path))
-except subprocess.CalledProcessError as e:
-    print(f' -> Error running paper/best_fit_model.py:\n{e}')
-    
-    
+generate_figs = False
+if generate_figs:
+    try:
+        subprocess.run(f'python paper/carbon_isotope_teff.py', shell=True, check=True, cwd=str(base_path))
+    except subprocess.CalledProcessError as e:
+        print(f' -> Error running paper/carbon_isotope_teff.py:\n{e}')
+        
+    try:
+        subprocess.run(f'python paper/best_fit_model.py', shell=True, check=True, cwd=str(base_path))
+    except subprocess.CalledProcessError as e:
+        print(f' -> Error running paper/best_fit_model.py:\n{e}')
+        
+        
 print(f' Done.\n')

@@ -10,7 +10,7 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 lbl = 15
-run = f'lbl{lbl}_G2G3'
+run = f'lbl{lbl}_G2G3_2'
 prefix = f'./retrieval_outputs/{run}/test_'
 grating = 'g235h+g395h'
 
@@ -26,7 +26,7 @@ config_data = {
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
-        'Nedge': 40, # (2024-10-16): 20 --> 40
+        'Nedge': 34, # (2024-10-18): 20 --> 34
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, # (2024-10-12): update 35 --> 50
@@ -51,7 +51,7 @@ opacity_params = {
     'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
     'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
-    # 'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
+    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
     
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
@@ -98,7 +98,7 @@ free_params = {
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
      'R_p': [(1.6, 3.4), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-    'log_g': [(2.0,5.0), r'$\log\ g$'], 
+    'log_g': [(2.5,4.5), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     # veiling parameters
@@ -121,7 +121,7 @@ free_params = {
     
     'Av': [(0.0, 5.0), r'$A_v$'], # extinction in magnitudes
     
-    'rv': [(-40.,40.), r'$v_\mathrm{rad}$'],
+    'rv': [(4.,20.), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 
@@ -160,9 +160,9 @@ constant_params = {
     'N_knots': N_knots, # avoid using spline to fit the continuum
     
     # fix 12CO and H2O to the best-fit G235 values
-    'log_12CO': -3.52,
-    'log_H2O': -3.63,
-    'rv': 12.16,
+    # 'log_12CO': -3.52,
+    # 'log_H2O': -3.63,
+    # 'rv': 12.16,
 }
 
 free_params.update({k:v[0] for k,v in opacity_params.items()})
@@ -170,9 +170,14 @@ free_params.update({k:v[0] for k,v in opacity_params.items()})
 free_params = {k:v for k,v in free_params.items() if k not in list(constant_params.keys())}
 
 # disk_species = ['H2O', '12CO', '13CO']
-disk_species = ['12CO']
+disk_species = ['12CO', '13CO']
+T_ex_range = list(np.arange(300.0, 600.0+100.0, 100.0))
+N_mol_range = list(np.logspace(15, 20, 6))
+ 
 if len(disk_species) > 0:
-    free_params.update({f'log_A_au_{sp}': [(-4, 0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
+    free_params.update({f'log_A_au_{sp}': [(-4, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
+    free_params.update({f'log_N_mol_{sp}': [(15, 20), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
+    free_params.update({f'T_ex_{sp}': [(300.0, 600.0), f'$\log\ T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
 
 
 
@@ -260,7 +265,7 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.20
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 2.0
+evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 200 if not testing else 100
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1

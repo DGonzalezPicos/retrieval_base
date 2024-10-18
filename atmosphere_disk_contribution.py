@@ -75,7 +75,7 @@ fig, ax = plt.subplots(2, 1, figsize=(14, 5*n_orders), sharex=True, tight_layout
 colors = dict(bb='brown', full='limegreen', slab='b', atmosphere='magenta', atmosphere_bb='orange')
 # for i in range(n_orders):
 n_edge = 10
-for i in [6]:
+for i in [7]:
     # ax[i].plot(wave[i], m_full[i], label='Total flux')
     ax[0].plot(wave[i, n_edge:], flux[i, n_edge:], label='Data', color='k')
     ax[0].plot(wave[i, n_edge:], m_full[i, n_edge:], label='Atm. + BB + Slab', color=colors['full'])

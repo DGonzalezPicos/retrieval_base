@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc3'
+run = 'fc4'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -35,8 +35,8 @@ config_data = {
     }
 
 # priors for the radial velocity parameter, adjust to the expected RV of the target to avoid weird results
-rv_min = -11.0
-rv_max= 29.0
+rv_min = 49.0
+rv_max= 89.0
 
 ####################################################################################
 # Model parameters

@@ -4,21 +4,12 @@ import numpy as np
 import subprocess
 import shutil
 
-# targets_dict = {
-#                 'gl436': 'fc',
-#                 # 'gl699': 'sphinx2',
-#                 }
-# targets = list(targets_dict.keys())
-
-
-ignore_targets = []
-
 targets_rv = {
                 # 'gl338B': 12.0,
                 # 'gl382' : 8.0,
                 # 'gl408' : 3.0,
                 # 'gl411' :-85.0,
-                'gl436' : -40.0,
+                # 'gl436' : -40.0,
                 # 'gl699' : -111.0,
                 # 'gl752A': 36.0,
                 # 'gl832': 36.0,
@@ -37,12 +28,16 @@ targets_rv = {
                 # 'gl412A': 9.0,
                 # 'gl445': 9.0,
                 # 'gl447': -112.0,
-                # 'gl1002': -1.0, # running with 156 CPUs
+                'gl1002': -40.0,
+                'gl412A': 69.0,
+                'gl1286': -41.0,
+                'gl3622': 2.0,
+                'gl4063': 12.0,
                 
 }
 targets = list(targets_rv.keys())
 
-targets_dict = dict(zip(targets, ['fc3']*len(targets)))
+targets_dict = dict(zip(targets, ['fc4']*len(targets)))
 
 
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')

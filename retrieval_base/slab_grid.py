@@ -144,17 +144,17 @@ class SlabGrid:
         del self.flux_grid # save memory
         return self
     
-    def interpolate(self, T_ex_new: float, N_mol_new: float, A_au: float = 1.0, d_pc: float = 1.0):
+    def interpolate(self, T_ex: float, N_mol: float, A_au: float = 1.0, d_pc: float = 1.0):
         """ Interpolate to new values of T_ex and N_mol"""
         
         assert hasattr(self, 'interpolator'), f'interpolator not found, run load_interpolator() first'
         
-        T_ex_new = np.clip(T_ex_new, self.T_ex_range.min(), self.T_ex_range.max())
-        N_mol_new = np.clip(N_mol_new, self.N_mol_range.min(), self.N_mol_range.max())
-        print(f' Interpolating to T_ex={T_ex_new:.0f} K, N_mol={N_mol_new:.0e} cm^-2')
+        T_ex = np.clip(T_ex, self.T_ex_range.min(), self.T_ex_range.max())
+        N_mol = np.clip(N_mol, self.N_mol_range.min(), self.N_mol_range.max())
+        # print(f' Interpolating to T_ex={T_ex:.0f} K, N_mol={N_mol:.0e} cm^-2')
         
-        flux_new = self.scale_flux(self.interpolator((T_ex_new, N_mol_new)), A_au, d_pc)
-        return flux_new
+        flux = self.scale_flux(self.interpolator((T_ex, N_mol)), A_au, d_pc)
+        return flux
     
     @classmethod
     def scale_flux(self, flux: np.ndarray, A_au: float = 1.0, d_pc: float = 1.0):
@@ -177,6 +177,12 @@ class SlabGrid:
         
         interpolator_dict = {self.species: self.interpolator, other.species: other.interpolator}
         # return interpolator_dict, 
+        
+    def wavelength_to_nm(self):
+        """ Convert wavelength from um to nm"""
+        
+        self.wave_grid *= 1e3
+        return self
         
         
     

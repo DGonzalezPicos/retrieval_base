@@ -124,6 +124,10 @@ if args.pre_processing:
             n_atm_layers=conf_data.get('n_atm_layers'), 
             rv_range=rv_range,
             disk_species=conf.disk_species,
+            T_ex_range=getattr(conf, 'T_ex_range', None),
+            N_mol_range=getattr(conf, 'N_mol_range', None),
+            T_cutoff=conf_data.get('T_cutoff', None),
+            P_cutoff=conf_data.get('P_cutoff', None),
             )
         # check parent directory
         # pRT_file.parent.mkdir(parents=True, exist_ok=True)

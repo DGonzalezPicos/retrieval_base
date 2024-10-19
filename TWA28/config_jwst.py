@@ -26,7 +26,7 @@ config_data = {
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
-        'Nedge': 34, # (2024-10-18): 20 --> 34
+        'Nedge': 36, # (2024-10-18): 20 --> 36
     
         'log_P_range': (-5,2),
         'n_atm_layers': 35, # (2024-10-12): update 35 --> 50
@@ -121,7 +121,7 @@ free_params = {
     
     'Av': [(0.0, 5.0), r'$A_v$'], # extinction in magnitudes
     
-    'rv': [(4.,20.), r'$v_\mathrm{rad}$'],
+    'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 

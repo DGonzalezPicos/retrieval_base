@@ -542,6 +542,7 @@ class pRT_model:
                     f_slab_i = self.slab[ds_i].interpolate(**disk_params)
                     # fill with zeros values beyond the range of the slab model
                     m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid, f_slab_i, right=0.0, left=0.0)
+                    # print(f' [pRT_model] ds_i = {ds_i}  mean(f_slab_i) = {np.mean(f_slab_i)}')
 
                     m_slab_i += m_flux_slab_i # store for plotting purposes
                     m_spec_i.flux += m_flux_slab_i # add to model flux (already shifted and broadened)

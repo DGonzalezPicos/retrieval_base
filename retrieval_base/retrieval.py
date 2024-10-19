@@ -70,6 +70,11 @@ def prior_check(conf, n=3, random=False, get_contr=False, remove_disk=False, fig
             print(f' shape LogLike.f = {ret.LogLike[w_set].f.shape}')
             # print(f' shape.ret.Cov.cov_cholesky = {ret.Cov[w_set].cov_cholesky.shape}')
             
+        # if i == len(theta)-1:
+        #     if 'T_ex_12CO' in ret.Param.param_keys:
+        #         print(f' T_ex_12CO = {ret.Param.params["T_ex_12CO"]}')
+                # 
+            
         # m_spec_list.append(ret.m_spec[w_set])
         m_spec_list.append(ret.LogLike[w_set].m_flux)
         logL_list.append(ln_L)

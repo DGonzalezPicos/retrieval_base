@@ -134,14 +134,16 @@ class SlabGrid:
         return self
 
     
-    def load_interpolator(self):
+    def load_interpolator(self, del_flux_grid: bool = True):
         
         assert hasattr(self, 'wave_grid'), f'wave_grid not found, run get_grid() first' 
         assert hasattr(self, 'flux_grid'), f'flux_grid not found, run get_grid() first'
         
         self.interpolator = RegularGridInterpolator((self.T_ex_range, self.N_mol_range), self.flux_grid, method='linear',
                                                     bounds_error=False, fill_value=None)
-        del self.flux_grid # save memory
+        
+        if del_flux_grid:
+            del self.flux_grid # save memory
         return self
     
     def interpolate(self, T_ex: float, N_mol: float, A_au: float = 1.0, d_pc: float = 1.0):
@@ -183,6 +185,39 @@ class SlabGrid:
         
         self.wave_grid *= 1e3
         return self
+    
+    
+    def plot_grid(self, fig_name=None, **kwargs):
+        """ Plot the grid"""
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
+        import seaborn as sns
+        colors = sns.color_palette('husl', len(self.T_ex_range) * len(self.N_mol_range))
+
+        fig_name = self.folder / 'slab_grid.pdf' if fig_name is None else fig_name
+        with PdfPages(fig_name) as pdf:
+            for i, T_ex in enumerate(self.T_ex_range):
+                for j, N_mol in enumerate(self.N_mol_range):
+                    fig, ax = plt.subplots(1,1, figsize=(12,4), tight_layout=True)
+
+                    label = f'T_ex={T_ex:.0f} K, N_mol={N_mol:.0e} cm^-2'
+                    ax.plot(self.wave_grid, self.flux_grid[i][j], label=label, color=colors[i*len(self.N_mol_range) + j],
+                                 **kwargs)
+                    
+                    ax.legend()
+                    if i == 0 and j == 0:
+                        ax.set_title(f'{self.species} slab model grid (at 1pc, 1 AU$^2$)')
+                    if (i == len(self.T_ex_range) - 1) and (j == len(self.N_mol_range) - 1):
+                        ax.set_xlabel('Wavelength / $\mu$m')
+                        ax.set_ylabel('Flux / erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$')
+                    pdf.savefig(fig)
+                    plt.close(fig)
+        print(f'--> Saved {fig_name}')
+        return self
+        
+        
+    
+    
         
         
     
@@ -190,18 +225,20 @@ class SlabGrid:
 if __name__ =='__main__':
     
     path = pathlib.Path(get_path())
-    species = '13CO'
     grating = 'g395h'
+    T_ex_range = np.arange(300.0, 800.0+50.0, 50.0)
+    N_mol_range = np.logspace(15, 20, 6*2)
+    for species in ['12CO', '13CO', 'H2O']:            
     
-    slab = SlabGrid(species=species, grating=grating, path=path)
-    # m = slab.get_flux(T_ex, N_mol)
-    T_ex_range = np.arange(300.0, 600.0+100.0, 100.0)
-    N_mol_range = np.logspace(15, 20, 6)
-    slab.get_grid(T_ex_range, N_mol_range, cache=True)
-    
-    slab.load_interpolator()
-    flux_new = slab.interpolate(611.0, 1.5e18)
-    print(f'--> Done')
+        slab = SlabGrid(species=species, grating=grating, path=path)
+        # m = slab.get_flux(T_ex, N_mol)
+        
+        slab.get_grid(T_ex_range, N_mol_range, cache=True)
+        
+        slab.load_interpolator(del_flux_grid=False) # False to plot the grid
+        slab.plot_grid(fig_name=path / f'data/slab_models/slab_{species}_model_grid.pdf')
+        flux_new = slab.interpolate(611.0, 1.5e18)
+        print(f'--> Done')
         
         
         

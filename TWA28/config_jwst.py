@@ -10,7 +10,7 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 lbl = 15
-run = f'lbl{lbl}_G2G3_2'
+run = f'lbl{lbl}_G2G3_3'
 prefix = f'./retrieval_outputs/{run}/test_'
 grating = 'g235h+g395h'
 
@@ -26,10 +26,10 @@ config_data = {
         # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
-        'Nedge': 36, # (2024-10-18): 20 --> 36
+        'Nedge': 40, # (2024-10-18): 20 --> 40
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 35, # (2024-10-12): update 35 --> 50
+        'n_atm_layers': 40, # (2024-10-20): update 35 --> 40
         'T_cutoff': (1200.0, 3600.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e2), # DGP (2024-10-14): new parameter
         }, 
@@ -107,7 +107,7 @@ free_params = {
     'R_d': [(0.0, 50.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
     # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(300.0, 1400.0), r'$T_d$'], # disk temperature in K
+    'T_d': [(300.0, 1000.0), r'$T_d$'], # disk temperature in K
     # disk emission parameters
     # 'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
     # 'T_ex_12CO': [(400.0, 900.0), r'$T_\mathrm{ex}$'], # disk temperature in K
@@ -119,7 +119,7 @@ free_params = {
     # 'i_deg': [(0, 90), r'$i$'], # disk inclination in degrees
         
     
-    'Av': [(0.0, 5.0), r'$A_v$'], # extinction in magnitudes
+    # 'Av': [(0.0, 5.0), r'$A_v$'], # extinction in magnitudes
     
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
@@ -160,8 +160,8 @@ constant_params = {
     'N_knots': N_knots, # avoid using spline to fit the continuum
     
     # fix 12CO and H2O to the best-fit G235 values
-    # 'log_12CO': -3.52,
-    # 'log_H2O': -3.63,
+    'log_12CO': -3.52,
+    'log_H2O': -3.63,
     # 'rv': 12.16,
 }
 
@@ -170,14 +170,14 @@ free_params.update({k:v[0] for k,v in opacity_params.items()})
 free_params = {k:v for k,v in free_params.items() if k not in list(constant_params.keys())}
 
 # disk_species = ['H2O', '12CO', '13CO']
-disk_species = ['12CO', '13CO']
-T_ex_range = list(np.arange(300.0, 600.0+100.0, 100.0))
-N_mol_range = list(np.logspace(15, 20, 6))
- 
+disk_species = ['12CO', '13CO', 'H2O']
+T_ex_range = np.arange(300.0, 800.0+50.0, 50.0).tolist()
+N_mol_range = np.logspace(15, 20, 6*2).tolist()
+
 if len(disk_species) > 0:
-    free_params.update({f'log_A_au_{sp}': [(-4, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
-    free_params.update({f'log_N_mol_{sp}': [(15, 20), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
-    free_params.update({f'T_ex_{sp}': [(300.0, 600.0), f'$\log\ T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
+    free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
+    free_params.update({f'log_N_mol_{sp}': [(15.0, 20.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
+    free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
 
 
 
@@ -265,8 +265,8 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.20
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 200 if not testing else 100
+evidence_tolerance = 0.5 if not testing else 0.5
+n_live_points = 200 if not testing else 120
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file
@@ -277,3 +277,4 @@ if __name__ == '__main__':
     
     conf = Config(path=pathlib.Path(__file__).parent.absolute(), target=None, run=run)
     conf.save_json(file_params, globals())
+    print(f' Number of dimensions: {len(free_params)}')

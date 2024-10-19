@@ -20,7 +20,7 @@ path = af.get_path()
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 w_set='NIRSpec'
-run = 'lbl15_G2G3'
+run = 'lbl15_G2G3_2'
 
 cwd = os.getcwd()
 if target not in cwd:

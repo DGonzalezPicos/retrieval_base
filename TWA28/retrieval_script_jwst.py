@@ -2,6 +2,8 @@ import argparse
 import pathlib
 import subprocess as sp
 import numpy as np
+import shutil
+import subprocess
 
 from retrieval_base.retrieval import prior_check, Retrieval
 from retrieval_base.spectrum_jwst import SpectrumJWST
@@ -44,6 +46,7 @@ parser.add_argument('--evaluation', '-e', action='store_true', default=False)
 # parser.add_argument('--time_profiler', '-t', action='store_true', default=False)
 parser.add_argument('--memory_profiler', '-m', action='store_true', default=False)
 parser.add_argument('--copy_to_snellius', '-copy_to_snellius', action='store_true', default=False)
+parser.add_argument('--download', '-d', action='store_true', default=False)
 args = parser.parse_args()
 
 if args.pre_processing:
@@ -173,6 +176,27 @@ if args.copy_to_snellius:
     sp.run(f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
 
     print(f' Succesful copy for {target}!\n')
+    
+if args.download:
+    # download from snellius using scp -r
+    run = conf.run
+    snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}/test_output'
+    local_dir = str(path / target / f'retrieval_outputs/{run}/test_output')
+    print(f' Downloading {snellius_dir} to {local_dir}...')
+    
+    cache = False
+    test_output = path / target / f'retrieval_outputs/{run}/test_output'
+    if test_output.exists() and not cache:
+        shutil.rmtree(test_output)
+    
+    try:
+        # subprocess.run(f'scp -r dgonzalezpi@snellius.surf.nl:{snellius_dir} {local_dir}', shell=True, check=True)
+        subprocess.run(f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/', shell=True, check=True)
+        print(f' Succesful download for {target} {run}!\n')
+        # catch error and print message
+    except subprocess.CalledProcessError as e:
+        print(f' -> Error downloading {snellius_dir} to {local_dir}:\n{e}')
+        print(f' -> VPN must be disabled or set to NL!!')
     
 if args.retrieval:
     ret = Retrieval(

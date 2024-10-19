@@ -11,7 +11,7 @@ from retrieval_base.slab_model import Disk
 from retrieval_base.spectrum import ModelSpectrum
 
 path = pathlib.Path(get_path())
-disk_species = '13CO'
+disk_species = 'H2O'
     
 def load_slab(species: str = '12CO', grating: str = 'g395h', disk_params: dict = None, path: pathlib.Path = path):
     """ Load slab model for a given species and grating"""

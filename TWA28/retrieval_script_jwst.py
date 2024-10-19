@@ -3,7 +3,7 @@ import pathlib
 import subprocess as sp
 import numpy as np
 
-from retrieval_base.retrieval import pre_processing, prior_check, Retrieval
+from retrieval_base.retrieval import prior_check, Retrieval
 from retrieval_base.spectrum_jwst import SpectrumJWST
 from retrieval_base.pRT_model import pRT_model
 import retrieval_base.auxiliary_functions as af

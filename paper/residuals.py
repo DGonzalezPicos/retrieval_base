@@ -66,8 +66,8 @@ def main(target, ax=None, fig=None, offset=0, order=0, run=None, lw=1.0, color=N
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
-prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
+# prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
+# prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
 # create colormap with teff in K
@@ -81,7 +81,7 @@ text_x = [(2287.0, 2364.),
           (2435.0, 2510.0),
 ]
           
-order = 2
+order = 0
 for i, name in enumerate(names):
     target = name.replace('Gl ', 'gl')
     color = cmap(norm(teff[name]))

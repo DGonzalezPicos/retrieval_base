@@ -10,7 +10,7 @@ import pathlib
 
 base_path = '/home/dario/phd/retrieval_base/'
 
-water = False # take isotope ratio from H2O
+water = True # take isotope ratio from H2O
 main_label = 'H2O' if water else 'CO'
 
 def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,**kwargs):

@@ -140,7 +140,7 @@ crossfield = {'Gl 745 A': [(296, 45), (3454, 31), (-0.43, 0.05)],
 
 plot_lower_limit_gl699 = False # TODO: check this...
 
-fig, ax = plt.subplots(1,1, figsize=(5,5), tight_layout=True)
+fig, ax = plt.subplots(1,1, figsize=(6,7), tight_layout=True)
 
 # zoom_in = False
 # xlim = [2800.0, 4100.0]
@@ -156,11 +156,18 @@ xytext = {'Gl 699' : (-28,5),
 
 sun = (93.5, 3.0)
 # sun = {'Teff (K)': ()
-ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='deepskyblue', alpha=0.3, label='Solar',lw=0)
+ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='deepskyblue', alpha=0.3, label=f'Solar ({sun[0]} $\pm$ {sun[1]})',lw=0)
 
+ignore_targets = ['gl3622']
 
+x_list = []
+y_list = []
+y_err_list = []
 for name in names:
     target = name.replace('Gl ', 'gl')
+    if target in ignore_targets:
+        print(f'---> Skipping {target}...')
+        continue
     color = cmap(norm(teff[name]))
 
     C_ratio_t = main(target, x[name], xerr=x_err[name],
@@ -169,6 +176,9 @@ for name in names:
                      color=color,
                      xytext=xytext.get(name, None))
     
+    x_list.append(x[name])
+    y_list.append(C_ratio_t[1])
+    y_err_list.append([C_ratio_t[1]-C_ratio_t[0], C_ratio_t[2]-C_ratio_t[1]])
     
 
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -176,12 +186,34 @@ sm.set_array([])  # Only needed for color bar
 cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.03, aspect=20, location='right')
 cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
+# overplot exponential fit
+x_exp = np.linspace(min(x_list), max(x_list), 1000)
+# ax.plot(x_exp, 60.0 + 60.0 * np.exp(-2.5*x_exp), color='limegreen', lw=2., ls='--', label='Exponential fit')
+# fit a function with curve_fit
+def fun(x, A, B, C):
+    return A + B * np.exp(-C*x)
+
+from scipy.optimize import curve_fit
+y_err = np.mean(np.array(y_err_list), axis=1)
+# replace zeros with 1.0
+y_err[y_err<1e-3] = 1.0
+# min_err = 90.0
+# y_err[y_err<min_err] = min_err
+
+# set bounds for the parameters
+bounds = ([10.0, -100.0, 1.0], [500.0, 100.0, 100.0])
+popt, pcov = curve_fit(fun, x_list, y_list, sigma=y_err, absolute_sigma=True, bounds=bounds)
+y_exp = fun(x_exp, *popt)
+ax.plot(x_exp, y_exp, color='limegreen', lw=2., ls='--', label=r'$^{12}$C/$^{13}$C $\rightarrow$'+f'{popt[0]:.1f}'+'\n as '+r't $\rightarrow \infty$')
+print(f'Exponential fit: A = {popt[0]:.2f}, B = {popt[1]:.2f}, C = {popt[2]:.2f}')
+
+
 # solar = [89.0, 3.0] # review this value...
 # ax.axhspan(solar[0]-solar[1], solar[0]+solar[1], color='deepskyblue', alpha=0.3, label='Solar',lw=0)
 
-ism = [69.0, 15.0]
-ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1)
-ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
+ism = [68.0, 15.0]
+ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label=f'ISM ({ism[0]} $\pm$ {ism[1]})')
+# ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
 ylim_min = 30.0
 ylim_max = 350.0
 
@@ -191,14 +223,14 @@ for k, v in crossfield.items():
     color = cmap(norm(teff))
     x = v[1][0] if x_param == 'Teff (K)' else v[2][0]
     x_err = v[1][1] if x_param == 'Teff (K)' else v[2][1]
-    ax.errorbar(x, v[0][0], xerr=x_err, yerr=v[0][1], fmt='s', label=k+' (C19)', color=color, markeredgecolor='black', markeredgewidth=0.8)
+    ax.errorbar(x, v[0][0], xerr=x_err, yerr=v[0][1], fmt='s', label=k+' (C19)', color=color, markeredgecolor='pink', markeredgewidth=0.8)
 
     # add thin arrow pointing to the marker with the name of the target
-    ax.annotate(k, (x, v[0][0]), textcoords="offset points", 
-                xytext=(60,5), ha='center', va='center',
-                arrowprops=dict(facecolor='black', shrink=1, headwidth=1, width=0.5, headlength=0.1),
-                fontsize=8,
-                horizontalalignment='right', verticalalignment='top')
+    # ax.annotate(k, (x, v[0][0]), textcoords="offset points", 
+    #             xytext=(60,5), ha='center', va='center',
+    #             arrowprops=dict(facecolor='black', shrink=1, headwidth=1, width=0.5, headlength=0.1),
+    #             fontsize=8,
+    #             horizontalalignment='right', verticalalignment='top')
                 
     
 if x_param == '[M/H]':

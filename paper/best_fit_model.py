@@ -113,8 +113,8 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, **kwargs):
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
-prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
+# prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
+# prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
 # norm = plt.Normalize(min(temperature_dict.values()), max(temperature_dict.values()))

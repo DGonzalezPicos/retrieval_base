@@ -105,7 +105,12 @@ fig, ax = plt.subplots(1,1, figsize=(5,5), tight_layout=True)
 Teff_dict = {}
 C_ratio_dict = {}
 
+ignore_targets = ['gl3362']
+
 for target in targets:
+    if target in ignore_targets:
+        print(f'---> Skipping {target}...')
+        continue
     
     color = cmap(norm(d_pc[target[2:]]))
 

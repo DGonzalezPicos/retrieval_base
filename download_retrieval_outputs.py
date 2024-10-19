@@ -36,8 +36,8 @@ targets_rv = {
                 
 }
 targets = list(targets_rv.keys())
-
-targets_dict = dict(zip(targets, ['fc4']*len(targets)))
+run = 'fc4'
+targets_dict = dict(zip(targets, [run]*len(targets)))
 
 
 base_path = pathlib.Path('/home/dario/phd/retrieval_base/')
@@ -77,7 +77,8 @@ def download_run(target, run, cache=False):
     return download_ok
 
 cache = False
-try_runs = [f'fc{i}' for i in [3]][::-1] # fc1, fc2
+# try_runs = [f'fc{i}' for i in [4]][::-1] # fc1, fc2
+try_runs = [run]
 ok = False
 for target in targets:
     print(f' Downloading retrieval outputs for {target}...')

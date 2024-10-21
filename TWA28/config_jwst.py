@@ -99,7 +99,7 @@ if grating == 'g235h':
     opacity_params = {k:v for k,v in opacity_params.items() if k[4:] not in exclude_opacity_params}
     print(f' --> {len(opacity_params)} opacity parameters ({len_opacity_params - len(opacity_params)} excluded)')
 
-print(f' --> {len_opacity_params} opacity parameters')
+print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
 free_params = {
 

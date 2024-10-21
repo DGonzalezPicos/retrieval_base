@@ -108,7 +108,7 @@ class pRT_model:
         self.pressure = np.logspace(log_P_range[0], log_P_range[1], n_atm_layers)
         
         print(f' disk_species = {disk_species}')
-        self.disk_species = disk_species
+        self.disk_species = disk_species if disk_species is not None else []
         
         print(f' [pRT_model] T_ex_range = {T_ex_range}')
         print(f' [pRT_model] N_mol_range = {N_mol_range}')

@@ -9,10 +9,11 @@ file_params = 'config_jwst.py'
 
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
-lbl = 15
-run = f'lbl{lbl}_G2G3_3'
+lbl = 10
+run = f'lbl{lbl}_G2_3'
 prefix = f'./retrieval_outputs/{run}/test_'
-grating = 'g235h+g395h'
+# grating = 'g235h+g395h'
+grating = 'g235h'
 
 config_data = {
     'NIRSpec': {
@@ -65,7 +66,8 @@ opacity_params = {
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     # 'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
-    # 'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
+    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
+    'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
     # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
     # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
@@ -90,7 +92,14 @@ opacity_params = {
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
-print(f' --> {len(opacity_params)} opacity parameters')
+exclude_opacity_params = ['C18O', 'C17O', 'CO2', 'SiO','HCl']
+
+len_opacity_params = len(opacity_params)
+if grating == 'g235h':
+    opacity_params = {k:v for k,v in opacity_params.items() if k[4:] not in exclude_opacity_params}
+    print(f' --> {len(opacity_params)} opacity parameters ({len_opacity_params - len(opacity_params)} excluded)')
+
+print(f' --> {len_opacity_params} opacity parameters')
 # Define the priors of the parameters
 free_params = {
 
@@ -160,8 +169,8 @@ constant_params = {
     'N_knots': N_knots, # avoid using spline to fit the continuum
     
     # fix 12CO and H2O to the best-fit G235 values
-    'log_12CO': -3.52,
-    'log_H2O': -3.63,
+    # 'log_12CO': -3.52,
+    # 'log_H2O': -3.63,
     # 'rv': 12.16,
 }
 
@@ -170,19 +179,21 @@ free_params.update({k:v[0] for k,v in opacity_params.items()})
 free_params = {k:v for k,v in free_params.items() if k not in list(constant_params.keys())}
 
 # disk_species = ['H2O', '12CO', '13CO']
-disk_species = ['12CO', '13CO', 'H2O']
-T_ex_range = np.arange(300.0, 800.0+50.0, 50.0).tolist()
-N_mol_range = np.logspace(15, 20, 6*2).tolist()
-
-if len(disk_species) > 0:
-    free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
-    free_params.update({f'log_N_mol_{sp}': [(15.0, 20.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
-    free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
-
-
-
 if grating == 'g235h+g395h':
     constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
+    
+    disk_species = ['12CO', '13CO', 'H2O']
+    T_ex_range = np.arange(300.0, 800.0+50.0, 50.0).tolist()
+    N_mol_range = np.logspace(15, 20, 6*2).tolist()
+
+    if len(disk_species) > 0:
+        free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
+        free_params.update({f'log_N_mol_{sp}': [(15.0, 20.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
+        free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
+
+
+
+    
 else:
     constant_params['gratings'] = [grating] * 4
 
@@ -261,7 +272,7 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = True
+testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.20
 # evidence_tolerance = 0.5

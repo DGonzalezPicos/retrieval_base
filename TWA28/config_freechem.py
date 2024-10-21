@@ -131,7 +131,8 @@ mask_lines = {}
 #chem_mode  = 'free'
 chem_mode  = 'free'
 
-chem_kwargs = dict()
+line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}
+chem_kwargs = dict(line_species_dict=line_species_dict)
 
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']

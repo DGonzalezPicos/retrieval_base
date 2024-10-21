@@ -489,7 +489,7 @@ class Retrieval:
             self.Param.read_PT_params(cube=None)
             self.Param.read_uncertainty_params()
             self.Param.read_chemistry_params()
-            self.Param.read_cloud_params()
+            # self.Param.read_cloud_params()
 
             # Class instances with best-fitting parameters
             returned = self.PMN_lnL_func()

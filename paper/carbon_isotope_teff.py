@@ -119,6 +119,11 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,**kwargs
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
+valid = dict(zip(names, df['Valid'].to_list()))
+
+ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
+ignore_more_targets = ['gl3622']
+ignore_targets += ignore_more_targets
 
 # x_param = 'Teff (K)'
 x_param = '[M/H]'
@@ -140,7 +145,7 @@ crossfield = {'Gl 745 A': [(296, 45), (3454, 31), (-0.43, 0.05)],
 
 plot_lower_limit_gl699 = False # TODO: check this...
 
-fig, ax = plt.subplots(1,1, figsize=(6,7), tight_layout=True)
+fig, ax = plt.subplots(1,1, figsize=(6,6), tight_layout=True)
 
 # zoom_in = False
 # xlim = [2800.0, 4100.0]
@@ -157,8 +162,6 @@ xytext = {'Gl 699' : (-28,5),
 sun = (93.5, 3.0)
 # sun = {'Teff (K)': ()
 ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='deepskyblue', alpha=0.3, label=f'Solar ({sun[0]} $\pm$ {sun[1]})',lw=0)
-
-ignore_targets = ['gl3622']
 
 x_list = []
 y_list = []

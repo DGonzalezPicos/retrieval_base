@@ -15,7 +15,7 @@ import config_jwst as conf
 
 config_file = 'config_jwst.txt'
 target = 'TWA28'
-run = None
+# run = None
 # run = 'jwst_KLM_N10_veiling3'
 
 conf_data = conf.config_data['NIRSpec']
@@ -47,8 +47,9 @@ parser.add_argument('--evaluation', '-e', action='store_true', default=False)
 parser.add_argument('--memory_profiler', '-m', action='store_true', default=False)
 parser.add_argument('--copy_to_snellius', '-copy_to_snellius', action='store_true', default=False)
 parser.add_argument('--download', '-d', action='store_true', default=False)
+parser.add_argument('--run', '-run', type=str, default=None)
 args = parser.parse_args()
-
+run = args.run
 if args.pre_processing:
     sp.call(['python', f'{path}/{target}/config_jwst.py'])
     ## Pre-processing data
@@ -126,7 +127,7 @@ if args.pre_processing:
             log_P_range=conf_data.get('log_P_range'), 
             n_atm_layers=conf_data.get('n_atm_layers'), 
             rv_range=rv_range,
-            disk_species=conf.disk_species,
+            disk_species=getattr(conf, 'disk_species', []),
             T_ex_range=getattr(conf, 'T_ex_range', None),
             N_mol_range=getattr(conf, 'N_mol_range', None),
             T_cutoff=conf_data.get('T_cutoff', None),

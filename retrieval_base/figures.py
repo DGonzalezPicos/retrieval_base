@@ -1236,9 +1236,7 @@ def fig_corner_VMRs_posterior(Chem,
             
         else:
             labels.append(label_i)
-    
-    print(f'[fig_corner_VMRs_posterior] P.shape = {P.shape}')
-    
+        
     assert len(labels) == P.shape[1], f'len(labels) = {len(labels)}, P.shape[1] = {P.shape[1]}'
     
     # compute quantiles
@@ -1262,12 +1260,17 @@ def fig_corner_VMRs_posterior(Chem,
     # Q = np.delete(Q, delete_idx, axis=0)
     # R = np.delete(R, delete_idx, axis=0)
             
+    print(f'[fig_corner_VMRs_posterior] P.shape = {P.shape}')
     print(f'[fig_corner_VMRs_posterior] Q.shape = {Q.shape}')
     print(f'[fig_corner_VMRs_posterior] R.shape = {R.shape}')
     
     color = kwargs.get('color', 'brown')
     
-    figsize = kwargs.get('figsize', (P.shape[1] * 0.95, P.shape[1]*1.1))
+    ns = max(24, P.shape[1])
+    figsize = kwargs.get('figsize', (ns * 0.95, ns*1.1))
+    
+    # check for overflow values 
+    
     
     # increase margin on top and left
     fig = plt.figure(figsize=figsize)

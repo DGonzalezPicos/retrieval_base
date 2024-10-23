@@ -21,11 +21,15 @@ class Chemistry:
 
     # Dictionary with info per molecular/atomic species
     # Dictionary with info per molecular/atomic species
-    species_info = pd.read_csv(f'{path}data/species_info.csv')
-    # create alias column 'mathtext_name' to 'label'
-    species_info['label'] = species_info['mathtext_name']
-    pRT_name_dict = {v['pRT_name']: v['name'] for i, v in species_info.iterrows()}
-
+    # species_info = pd.read_csv(f'{path}data/species_info.csv')
+    # # create alias column 'mathtext_name' to 'label'
+    # species_info['label'] = species_info['mathtext_name']
+    # pRT_name_dict = {v['pRT_name']: v['name'] for i, v in species_info.iterrows()}
+    
+    # Dictionary with info per molecular/atomic species
+    species_info_default_file = f'{path}data/species_info.csv'
+    # species_info = pd.read_csv(species_info_default_file)
+    
     # Neglect certain species to find respective contribution
     neglect_species = {
         '12CO': False, 
@@ -74,19 +78,8 @@ class Chemistry:
 
     def __init__(self, line_species, pressure):
 
+        
         self.line_species = line_species
-        # self.species = [self.pRT_name_dict[line_species_i] for line_species_i in self.line_species]
-        # DGP sep. 17: hot fix for updating species_info while computing high-temp. opacities
-        self.species = []
-        for line_species_i in self.line_species:
-            species_i = self.pRT_name_dict.get(line_species_i, None)
-            if species_i is None:
-                species_i = self.pRT_name_dict.get(line_species_i+'_high', None)
-                
-            assert species_i is not None, f'line_species_i = {line_species_i} not in species_info'
-            self.species.append(species_i)
-
-        self.line_species_labels = [self.read_species_info(species_i, 'label') for species_i in self.species]
 
         self.pressure     = pressure
         self.n_atm_layers = len(self.pressure)
@@ -96,6 +89,28 @@ class Chemistry:
         self.mass_fractions_posterior = None
         self.unquenched_mass_fractions_posterior = None
         self.unquenched_mass_fractions_envelopes = None
+
+
+    def set_species_info(self, line_species_dict=None, file=None):
+    
+        if file is not None:
+            self.species_info = pd.read_csv(file)
+            self.species_info['label'] = self.species_info['mathtext_name']
+            
+        assert hasattr(self, 'species_info'), 'species_info not yet loaded'
+        if line_species_dict is not None:
+            line_species_dict_default = dict(zip(self.species_info['name'].tolist(), self.species_info['pRT_name'].tolist()))
+            line_species_dict_new = line_species_dict_default.copy()
+            line_species_dict_new.update(line_species_dict)
+            
+            # update pRT_name with line_species_dict
+            self.species_info['pRT_name'] = self.species_info['name'].map(line_species_dict_new)
+        
+        
+        self.pRT_name_dict = {v['pRT_name']: v['name'] for i, v in self.species_info.iterrows()}
+        self.pRT_name_dict_r = {v['name']: v['pRT_name'] for i, v in self.species_info.iterrows()}
+        
+        return self.species_info
 
     def remove_species(self):
 
@@ -111,78 +126,65 @@ class Chemistry:
             # Set abundance to 0 to evaluate species' contribution
             if line_species_i in self.line_species:
                 self.mass_fractions[line_species_i] *= 0
-
-    # @classmethod
-    # def read_species_info(cls, species, info_key):
-        
-    #     if info_key == 'pRT_name':
-    #         return cls.species_info[species][0]
-    #     if info_key == 'pyfc_name':
-    #         return cls.species_info[species][1]
-        
-    #     if info_key == 'mass':
-    #         return cls.species_info[species][2]
-        
-    #     if info_key == 'COH':
-    #         return cls.species_info[species][3]
-    #     if info_key == 'C':
-    #         return cls.species_info[species][3][0]
-    #     if info_key == 'O':
-    #         return cls.species_info[species][3][1]
-    #     if info_key == 'H':
-    #         return cls.species_info[species][3][2]
-
-    #     if info_key == 'c' or info_key == 'color':
-    #         return cls.species_plot_info[species][0]
-    #     if info_key == 'label':
-    #         return cls.species_plot_info[species][1]
     
-    @classmethod
-    def read_species_info(cls, species, info_key):
-        assert species in cls.species_info['name'].values, f'species = {species} not in species_info'
-        assert info_key in cls.species_info.columns, f'info_key = {info_key} not in species_info.columns'
+    def read_species_info(self, species, info_key):
+        assert species in self.species_info['name'].values, f'species = {species} not in species_info'
+        assert info_key in self.species_info.columns, f'info_key = {info_key} not in species_info.columns'
             
-        return cls.species_info.loc[cls.species_info['name'] == species, info_key].values[0]
+        return self.species_info.loc[self.species_info['name'] == species, info_key].values[0]
     
-    def get_VMRs_posterior(self):
+    def get_VMRs_posterior(self, save_to=None):
         
         assert hasattr(self, 'mass_fractions_posterior')
         self.VMRs_posterior = {}
-        info = self.species_info
+        self.VMRs_envelopes = {}
+        # info = self.species_info
         MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
-
+        print(f'[Chemistry.get_VMRs_posterior] Calculating VMRs posterior and envelopes for {self.line_species}')
         for line_species_i in self.line_species:
             # key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]
             key_i = self.pRT_name_dict.get(line_species_i, None)
-
+            # key_i = 
             # check key_i is not empty
             # print(f' {line_species_i} ({key_i}) -> {info[key_i][2]}')
             if len(key_i) == 0:
                 continue
             # mu = info[key_i][2] # atomic mass
             mu = self.read_species_info(key_i, 'mass')
-
+            # print(f' mu_{key_i} = {mu}')
             # free-chemistry = constant VMR
             # WARNING: equilibrium chemistry should use the mean value or something else
-            self.VMRs_posterior[key_i] = self.mass_fractions_posterior[line_species_i][:,0] * (MMW/ mu)
+            vmr_i = self.mass_fractions_posterior[line_species_i] * (MMW/ mu)
+            self.VMRs_posterior[key_i] = vmr_i[:,0]
+            # print(f' vmr_i.shape = {vmr_i.shape}')
+            self.VMRs_envelopes[key_i] = quantiles(vmr_i, q=[0.16, 0.5, 0.84], axis=0)
             
         if "13CO" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
-            self.VMRs_posterior["12CO/13CO"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["13CO"]
+            self.VMRs_posterior["12_13CO"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["13CO"]
         if "C18O" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
-            self.VMRs_posterior["C16O/C18O"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["C18O"]
-        if "C17O" in list(self.VMRs_posterior.keys()) and "12CO" in list(self.VMRs_posterior.keys()):
-            self.VMRs_posterior["C16O/C17O"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["C17O"]
-        if "C18O" in list(self.VMRs_posterior.keys()) and "C17O" in list(self.VMRs_posterior.keys()):
-            self.VMRs_posterior["C18O/C17O"] = self.VMRs_posterior["C18O"] / self.VMRs_posterior["C17O"]
+            # check it is detected i.e. uncertainty of C18O is smaller than 1.0
+            q16, q50, q84 = quantiles(self.VMRs_posterior["C18O"], q=[0.16, 0.5, 0.84])
+            if abs(q84 - q16) < 1.0 and abs(q50 - q16) < 1.0 and abs(q84 - q50) < 1.0:
+                self.VMRs_posterior["C16_18O"] = self.VMRs_posterior["12CO"] / self.VMRs_posterior["C18O"]
         
         if "H2O_181" in list(self.VMRs_posterior.keys()) and "H2O" in list(self.VMRs_posterior.keys()):
-            self.VMRs_posterior["H216O/H218O"] = self.VMRs_posterior["H2O"] / self.VMRs_posterior["H2O_181"]
+            self.VMRs_posterior["H2_16_18O"] = self.VMRs_posterior["H2O"] / self.VMRs_posterior["H2O_181"]
             
         if hasattr(self, 'CO_posterior'):
             self.VMRs_posterior["C/O"] = self.CO_posterior
         if hasattr(self, 'FeH_posterior'):
             self.VMRs_posterior["Fe/H"] = self.FeH_posterior
         del self.mass_fractions_posterior
+        
+        if save_to is not None:
+            # save the VMRs to a file
+            file_posterior = save_to + 'posterior.npy'
+            file_envelopes = save_to + 'envelopes.npy'
+            file_labels    = save_to + 'labels.npy'
+            np.save(file_posterior, np.array(list(self.VMRs_posterior.values())))
+            np.save(file_envelopes, np.array(list(self.VMRs_envelopes.values())))
+            np.save(file_labels, np.array(list(self.VMRs_posterior.keys())))
+            print(f'[Chemistry.get_VMRs_posterior] Saved VMRs posterior and envelopes to {file_posterior}, {file_envelopes}, {file_labels}')
         return self
 
 
@@ -191,78 +193,65 @@ class FreeChemistry(Chemistry):
     def __init__(self, line_species, pressure, spline_order=0, **kwargs):
 
         # Give arguments to the parent class
+        # super().__init__(line_species, pressure)
+
+        # self.spline_order = spline_order
+        
+        # Give arguments to the parent class
+        self.species_info = self.set_species_info(file=self.species_info_default_file)
+        if isinstance(line_species, dict):
+            print(f' Updating species_info with {line_species}')
+            self.species_info = self.set_species_info(line_species_dict=line_species)
+
+            line_species = list(line_species.values())
+            
+            
         super().__init__(line_species, pressure)
+        self.species = [self.pRT_name_dict.get(line_species_i, None) for line_species_i in self.line_species]
 
-        self.spline_order = spline_order
+    def __call__(self, params):
 
-    def __call__(self, VMRs, params):
-
-        self.VMRs = VMRs
+        # self.VMRs = VMRs
 
         # Total VMR without H2, starting with He
         VMR_He = 0.15
         VMR_wo_H2 = 0 + VMR_He
 
         # Create a dictionary for all used species
+        self.VMRs = {}
         self.mass_fractions = {}
 
         C, O, H = 0, 0, 0
 
         # for species_i in self.species_info.keys():
-        # print(f'self.species_info = {self.species_info}')
-        # print(f"self.species_info[name] = {self.species_info['name']}")
-        # for species_i in self.species_info['name'].values:
-    #    for species_i in self.species_info.name.tolist():
-    #         line_species_i = self.read_species_info(species_i, 'pRT_name')
-    #         mass_i = self.read_species_info(species_i, 'mass')
-    #         COH_i  = self.read_species_info(species_i, 'COH')
-    
-        for line_species_i in self.line_species:
-            species_i = self.pRT_name_dict.get(line_species_i, None)
+        for line_species_i, species_i in zip(self.line_species, self.species):
+            # print(f'line_species_i = {line_species_i}, species_i = {species_i}')
             
-            # print(f' {line_species_i} -> {species_i}')
-            # check alpha enhancement
-            if species_i is None:
-                continue
-            
-            mass_i = self.read_species_info(species_i, 'mass')
-            COH_i  = [self.read_species_info(species_i, 'C'), 
-                    self.read_species_info(species_i, 'O'), 
-                    self.read_species_info(species_i, 'H')]
                 
             if species_i in ['H2', 'He']:
                 continue
+            
+            # if line_species_i not in self.line_species:
+            #     continue
+            
+            mass_i = self.read_species_info(species_i, 'mass')
+            # COH_i  = self.read_species_info(species_i, 'COH')
+            COH_i  = [self.read_species_info(species_i, 'C'), 
+                      self.read_species_info(species_i, 'O'), 
+                      self.read_species_info(species_i, 'H')]
 
             # if line_species_i in self.line_species:
             # print(f' self.VMRs.keys() = {self.VMRs.keys()}')
                 
-            if self.VMRs.get(species_i) is not None:
-                # Single value given: constant, vertical profile
-                VMR_i = self.VMRs[species_i] * np.ones(self.n_atm_layers)
+            # if self.VMRs.get(species_i) is not None:
+            if params.get(species_i, None) is None:
+                print(f' params[{species_i}] = {params[species_i]}')
+                continue
+            
+            # Single value given: constant, vertical profile
+            VMR_i = params[species_i] * np.ones(self.n_atm_layers)
 
-            if self.VMRs.get(f'{species_i}_0') is not None:
-                # Multiple values given, use spline interpolation
-
-                # Define the spline knots in pressure-space
-                if params.get(f'log_P_{species_i}') is not None:
-                    log_P_knots = np.array([
-                        np.log10(self.pressure).min(), params[f'log_P_{species_i}'], 
-                        np.log10(self.pressure).max()
-                        ])
-                else:
-                    log_P_knots = np.linspace(
-                        np.log10(self.pressure).min(), 
-                        np.log10(self.pressure).max(), num=3
-                        )
-                
-                # Define the abundances at the knots
-                VMR_knots = np.array([self.VMRs[f'{species_i}_{j}'] for j in range(3)])[::-1]
-                
-                # Use a k-th order spline to vary the abundance profile
-                spl = make_interp_spline(log_P_knots, np.log10(VMR_knots), k=self.spline_order)
-                VMR_i = 10**spl(np.log10(self.pressure))
-
-            self.VMRs[species_i] = VMR_i
+            # self.VMRs[species_i] = VMR_i
 
             # Convert VMR to mass fraction using molecular mass number
             self.mass_fractions[line_species_i] = mass_i * VMR_i
@@ -274,25 +263,26 @@ class FreeChemistry(Chemistry):
             H += COH_i[2] * VMR_i
 
         # Add the H2 and He abundances
-        self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He
+        self.mass_fractions['He'] = self.read_species_info('He', 'mass') * VMR_He * np.ones(self.n_atm_layers)
         # if 'H2' in self.VMRs.keys():
         #     self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * 
             
-        self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2)
+        self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2) * np.ones(self.n_atm_layers)
         if self.read_species_info('H2', 'pRT_name') in self.line_species:
             self.mass_fractions[self.read_species_info('H2', 'pRT_name')] = self.mass_fractions['H2']
         
     
         # self.mass_fractions['H-'] = 6e-9 # solar
-        self.mass_fractions['H-'] = self.VMRs.get('H-', 6e-9)
+        self.mass_fractions['H-'] = params.get('H-', 6e-9) * np.ones(self.n_atm_layers)
         # self.mass_fractions['e-'] = 1e-10# solar
-        self.mass_fractions['e-'] = 1e-10 * (self.mass_fractions['H-'] / 6e-9)
+        self.mass_fractions['e-'] = 1e-10 * (self.mass_fractions['H-'] / 6e-9) * np.ones(self.n_atm_layers)
         
     
         # Add to the H-bearing species
         H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
-        self.mass_fractions['H'] = H
+        self.mass_fractions['H'] = H * self.mass_fractions['H2'] / self.read_species_info('H2', 'mass')
 
+        # print('[FreeChemistry.__call__] VMR_wo_H2 =', VMR_wo_H2)
         if VMR_wo_H2.any() > 1:
             # Other species are too abundant
             self.mass_fractions = -np.inf
@@ -332,7 +322,10 @@ class FreeChemistry(Chemistry):
         
         # assert hasattr(self, 'mass_fractions_envelopes'), 'Mass fractions not yet evaluated.'
         assert hasattr(self, 'VMRs_posterior'), 'Mass fractions not yet evaluated.'
-        self.VMRs_envelopes = {quantiles(self.VMRs_posterior[key]) for key in self.VMRs_posterior.keys()}
+        q = [0.5-0.997/2, 0.5-0.95/2, 0.5-0.68/2, 0.5, 
+             0.5+0.68/2, 0.5+0.95/2, 0.5+0.997/2
+             ]   
+        self.VMRs_envelopes = {key:quantiles(self.VMRs_posterior[key], q) for key in self.VMRs_posterior.keys()}
         return self
     
     

@@ -1,8 +1,6 @@
 import numpy as np
 from scipy.stats import invgamma, norm
 
-from petitRADTRANS.retrieval import cloud_cond as fc
-
 from .chemistry import Chemistry
 
 class Parameters:
@@ -349,60 +347,45 @@ class Parameters:
             # Use chemical equilibrium
             self.VMR_species = None
 
-        elif self.chem_mode == 'free':
-            # print(f'[Parameters.read_chemistry_params]: Using free chemistry')
-            # print(f'[Parameters.read_chemistry_params]: self.Param.param_keys = {self.param_keys}')
-            # Use free chemistry
-            self.params['C/O'], self.params['Fe/H'] = None, None
+        # elif self.chem_mode == 'free': # deprecated?
+        #     # print(f'[Parameters.read_chemistry_params]: Using free chemistry')
+        #     # print(f'[Parameters.read_chemistry_params]: self.Param.param_keys = {self.param_keys}')
+        #     # Use free chemistry
+        #     self.params['C/O'], self.params['Fe/H'] = None, None
 
-            # Loop over all possible species
-            self.VMR_species = {}
-            # for species_i in Chemistry.species_info.keys():
-            for species_i in Chemistry.species_info.name.tolist():
+        #     # Loop over all possible species
+        #     print(f' Chemistry.species_info.keys() = {Chemistry.species_info.keys()}')
+        #     self.VMR_species = {}
+        #     for species_i in Chemistry.species_info.keys():
+        #     # for species_i in Chemistry.species_info.name.tolist():
             
-                # print(f'[Parameters.read_chemistry_params]: {species_i}')
-                # If multiple VMRs are given
-                # for j in range(3):
-                #     if f'log_{species_i}_{j}' in self.param_keys:
-                #         self.VMR_species[f'{species_i}_{j}'] = self.params[f'{species_i}_{j}']
+        #         # print(f'[Parameters.read_chemistry_params]: {species_i}')
+        #         # If multiple VMRs are given
+        #         # for j in range(3):
+        #         #     if f'log_{species_i}_{j}' in self.param_keys:
+        #         #         self.VMR_species[f'{species_i}_{j}'] = self.params[f'{species_i}_{j}']
 
-                if f'log_{species_i}' in list(self.params.keys()):
-                    self.VMR_species[f'{species_i}'] = self.params[f'{species_i}']
-                    continue
+        #         if f'log_{species_i}' in list(self.params.keys()):
+        #             self.VMR_species[f'{species_i}'] = self.params[f'{species_i}']
+        #             continue
 
-                if species_i == '13CO' and ('log_13C/12C_ratio' in self.param_keys):
-                    # Use isotope ratio to retrieve the VMR
-                    self.VMR_species[species_i] = self.params['13C/12C_ratio'] * self.params['12CO']
+        #         if species_i == '13CO' and ('log_13C/12C_ratio' in self.param_keys):
+        #             # Use isotope ratio to retrieve the VMR
+        #             self.VMR_species[species_i] = self.params['13C/12C_ratio'] * self.params['12CO']
 
-                if species_i == '13CH4' and ('log_13C/12C_ratio' in self.param_keys):
-                    # Use isotope ratio to retrieve the VMR
-                    self.VMR_species[species_i] = self.params['13C/12C_ratio'] * self.params['CH4']
+        #         if species_i == '13CH4' and ('log_13C/12C_ratio' in self.param_keys):
+        #             # Use isotope ratio to retrieve the VMR
+        #             self.VMR_species[species_i] = self.params['13C/12C_ratio'] * self.params['CH4']
 
-                if species_i == 'C18O' and ('log_18O/16O_ratio' in self.param_keys):
-                    self.VMR_species[species_i] = self.params['18O/16O_ratio'] * self.params['12CO']
-                if species_i == 'C17O' and ('log_17O/16O_ratio' in self.param_keys):
-                    self.VMR_species[species_i] = self.params['17O/16O_ratio'] * self.params['12CO']
+        #         if species_i == 'C18O' and ('log_18O/16O_ratio' in self.param_keys):
+        #             self.VMR_species[species_i] = self.params['18O/16O_ratio'] * self.params['12CO']
+        #         if species_i == 'C17O' and ('log_17O/16O_ratio' in self.param_keys):
+        #             self.VMR_species[species_i] = self.params['17O/16O_ratio'] * self.params['12CO']
 
-                if species_i == 'H2O_181' and ('log_18O/16O_ratio' in self.param_keys):
-                    self.VMR_species[species_i] = self.params['18O/16O_ratio'] * self.params['H2O']
-                if species_i == 'H2O_171' and ('log_17O/16O_ratio' in self.param_keys):
-                    self.VMR_species[species_i] = self.params['17O/16O_ratio'] * self.params['H2O']
-        
-    def read_cloud_params(self, pressure=None, temperature=None):
-
-        if (self.cloud_mode == 'MgSiO3') and (self.chem_mode == 'eqchem'):
-            # Return the eq.-chem. mass fraction of MgSiO3
-            X_eq_MgSiO3 = fc.return_XMgSiO3(self.params['Fe/H'], self.params['C/O'])
-            # Pressure at the cloud base
-            # TODO: this doesn't work, temperature is not yet given
-            self.params['P_base_MgSiO3'] = fc.simple_cdf_MgSiO3(pressure, temperature, 
-                                                                self.params['Fe/H'], 
-                                                                self.params['C/O']
-                                                                )
-
-            # Log mass fraction at the cloud base
-            self.params['log_X_cloud_base_MgSiO3'] = np.log10(self.params['X_MgSiO3'] * X_eq_MgSiO3)
-            self.params['X_cloud_base_MgSiO3'] = 10**self.params['log_X_cloud_base_MgSiO3']
+        #         if species_i == 'H2O_181' and ('log_18O/16O_ratio' in self.param_keys):
+        #             self.VMR_species[species_i] = self.params['18O/16O_ratio'] * self.params['H2O']
+        #         if species_i == 'H2O_171' and ('log_17O/16O_ratio' in self.param_keys):
+        #             self.VMR_species[species_i] = self.params['17O/16O_ratio'] * self.params['H2O']
 
     def read_resolution_params(self):
          # check for resolution parameters and place them in a list `res`
@@ -516,7 +499,7 @@ class Parameters:
         self.read_PT_params()
         self.read_uncertainty_params()
         self.read_chemistry_params()
-        self.read_cloud_params()
+        # self.read_cloud_params()
         self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grating
         self.read_disk_params()
         return self

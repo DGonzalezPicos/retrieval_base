@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import make_interp_spline
 import petitRADTRANS.nat_cst as nc
+import pathlib
 
 from retrieval_base.auxiliary_functions import quantiles, get_path
 path = get_path()
@@ -178,13 +179,14 @@ class Chemistry:
         
         if save_to is not None:
             # save the VMRs to a file
-            file_posterior = save_to + 'posterior.npy'
-            file_envelopes = save_to + 'envelopes.npy'
-            file_labels    = save_to + 'labels.npy'
+        
+            file_posterior = pathlib.Path(save_to) / 'VMR_posteriors.npy'
+            file_envelopes = pathlib.Path(save_to) / 'VMR_envelopes.npy'
+            file_labels    = pathlib.Path(save_to) / 'VMR_labels.npy'
             np.save(file_posterior, np.array(list(self.VMRs_posterior.values())))
             np.save(file_envelopes, np.array(list(self.VMRs_envelopes.values())))
             np.save(file_labels, np.array(list(self.VMRs_posterior.keys())))
-            print(f'[Chemistry.get_VMRs_posterior] Saved VMRs posterior and envelopes to {file_posterior}, {file_envelopes}, {file_labels}')
+            print(f'[Chemistry.get_VMRs_posterior] Saved VMRs posterior and envelopes to:\n {file_posterior}\n {file_envelopes}\n {file_labels}')
         return self
 
 

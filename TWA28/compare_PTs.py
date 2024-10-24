@@ -122,17 +122,19 @@ def plot_envelopes(p, t_env, ax=None, cf=None, **kwargs):
         
     return ax
 
+colors = {'CRIRES': 'green', 'G235': 'navy', 'G235+G395': 'brown'}
+
 fig, ax = plt.subplots(1,1,figsize=(5,5), tight_layout=True)
 run_full = 'final_full'
 p, t, cf = get_PT(path, target, run=run_full)
-ax = plot_envelopes(p, t, ax=ax, cf=cf, color='green', alpha=0.3, label=r'CRIRES$^{+}$', fill_cf=True)
+ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors['CRIRES'] , alpha=0.3, label=r'CRIRES$^{+}$', fill_cf=True)
 
 
 p, t, cf = get_PT(path, target, run='lbl10_G2_3')
-ax = plot_envelopes(p, t, ax=ax, cf=cf, color='navy', alpha=0.3, label='G235', fill_cf=True)
+ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors['G235'], alpha=0.3, label='G235', fill_cf=True)
 
 p, t, cf = get_PT(path, target, run)
-ax = plot_envelopes(p, t, ax=ax, cf=cf, color='brown', alpha=0.3, label='G235+G395', fill_cf=True)
+ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors['G235+G395'], alpha=0.3, label='G235+G395', fill_cf=True)
 
 Teff = (2382, 42) # Cooper+2024
 label_teff = r'T$_{\rm eff}$' + f' = {Teff[0]} K'
@@ -151,5 +153,7 @@ ax.legend(prop={'size': 14, 'weight': 'bold'}, loc='upper right')
 # plt.show()
 fig_name = path_figures / f'{target}_PT_envelopes.pdf'
 fig.savefig(fig_name, dpi=300)
+# also save as transparent png
+fig.savefig(fig_name.with_suffix('.png'), dpi=300, transparent=True)
 print(f' --> Saved {fig_name}')
 plt.close(fig)

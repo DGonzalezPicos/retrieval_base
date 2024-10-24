@@ -1220,7 +1220,10 @@ def fig_corner_VMRs_posterior(Chem,
     
     if not hasattr(Chem, 'VMRs_posterior'):
         print(' - No VMRs posterior found')
-        Chem.get_VMRs_posterior()
+        
+        save_posterior = kwargs.get('save_posterior', False)
+        save_to = self.prefix+'data/VMRs_posterior.npy' if save_posterior else None
+        Chem.get_VMRs_posterior(save_to=save_to)
         
     assert len(Chem.VMRs_posterior) > 0, 'No VMRs posterior found'
     # log of posterior 

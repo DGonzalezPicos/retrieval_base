@@ -243,7 +243,9 @@ class CallBack:
             
             del self.LogLike, self.m_spec, self.pRT_atm
             # self.fig_abundances_corner()
-            figs.fig_corner_VMRs_posterior(self.Chem, fig_name=self.prefix+'plots/VMRs_posterior.pdf')
+            figs.fig_corner_VMRs_posterior(self.Chem, 
+                                           fig_name=self.prefix+'plots/VMRs_posterior.pdf',
+                                           save_posterior=self.evaluation)
 
 
         # Remove attributes from memory
@@ -331,14 +333,16 @@ class CallBack:
             # #     self.pRT_atm[w_set].int_opa_cloud
             # #     )
 
-    def fig_abundances_corner(self):
+    def fig_abundances_corner(self,**kwargs):
         # TODO: this function is way more complicated than it needs to be
 
         included_params = []
         
         if len(getattr(self, 'VMRs_posterior', {}))==0:
             print(f' - Computing VMRs posterior')
-            self.Chem.get_VMRs_posterior()
+            save_posterior = kwargs.get('save_posterior', False)
+            save_to = self.prefix+'data/VMRs_posterior.npy' if save_posterior else None
+            self.Chem.get_VMRs_posterior(save_to=save_to)
 
         # Plot the abundances
         if self.Param.chem_mode == 'free':
@@ -368,79 +372,6 @@ class CallBack:
             if 'log_C_ratio' in self.Param.param_keys:
                 included_params.append('log_C_ratio')
 
-            # Add C/O and Fe/H to the parameters to be plotted
-            # if self.evaluation:
-                
-                # Add to the posterior
-                # self.posterior = np.concatenate(
-                #     (self.posterior, self.Chem.CO_posterior[:,None], 
-                #      self.Chem.FeH_posterior[:,None]), axis=1
-                #     )
-                # # Add to the parameter keys
-                # self.Param.param_keys = np.concatenate(
-                #     (self.Param.param_keys, ['C/O', 'C/H'])
-                # )
-                # self.param_labels = np.concatenate(
-                #     (self.param_labels, ['C/O', '[C/H]'])
-                #     )
-                
-                # self.bestfit_params = np.concatenate(
-                #     (self.bestfit_params, [self.Chem.CO, self.Chem.CH])
-                # )
-                # included_params.extend(['C/O', 'C/H'])
-                
-        #         if 'log_13CO' in self.Param.param_keys:
-        #             posterior_12CO = self.Chem.mass_fractions_posterior['CO_high'].mean(axis=-1) / 28.0
-        #             posterior_13CO = self.Chem.mass_fractions_posterior['CO_36_high'].mean(axis=-1) / 29.0
-                    
-        #             # chem.C12C13_posterior = np.median(chem.mass_fractions_posterior['CO_high'] / chem.mass_fractions_posterior['CO_36_high'],axis=-1)
-        #             self.Chem.C12C13_posterior = posterior_12CO / posterior_13CO
-        #             self.posterior = np.concatenate(
-        #                 (self.posterior, self.Chem.C12C13_posterior[:,None]), axis=1
-        #                 )
-        #             self.Param.param_keys = np.concatenate(
-        #                 (self.Param.param_keys, ['C12C13'])
-        #             )
-                    
-        #             self.param_labels = np.concatenate(
-        #                 (self.param_labels, [r'$^{12}$C/$^{13}$C'])
-        #                 )
-        #             self.bestfit_params = np.concatenate(
-        #                 (self.bestfit_params, [np.median(self.Chem.C12C13_posterior)])
-        #             )
-        #             included_params.append('C12C13')
-                    
-                    
-            
-
-        # elif self.Param.chem_mode in ['eqchem', 'fastchem', 'SONORAchem']:
-            
-        #     for key in self.Param.param_keys:
-        #         if key.startswith('log_C_ratio'):
-        #             included_params.append(key)
-                
-        #         elif key.startswith('log_C13_12_ratio'):
-        #             included_params.append(key)
-        #         elif key.startswith('log_O18_16_ratio'):
-        #             included_params.append(key)
-        #         elif key.startswith('log_O17_16_ratio'):
-        #             included_params.append(key)
-
-        #         elif key.startswith('log_P_quench'):
-        #             included_params.append(key)
-
-        #     included_params.extend(['C/O', 'Fe/H'])
-
-        # figsize = (
-        #     # 4/3*len(included_params), 4/3*len(included_params)
-        #     )
-        # figsize = (18,18)
-        # fig, ax = self.fig_corner(
-        #     included_params=included_params, 
-        #     fig=plt.figure(figsize=figsize), 
-        #     smooth=False, ann_fs=10,
-        #     posterior=self.Chem.VMRs_posterior,
-        #     )
         # compute quantiles
         # Q = np.percentile(np.array(list(self.Chem.VMRs_posterior.values())), [16, 50, 84], axis=0)
         # ranges = np.array([4*(Q[1]-Q[0])+Q[1], 4*(Q[2]-Q[1])+Q[1]]) # FIXME: this does not work...

@@ -17,6 +17,8 @@ import pandas as pd
 import json
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
+save_transparent_to = pathlib.Path('/home/dario/phd/presentations/october24/')
+
 # out_path = path / 'HBDs'
 out_path = pathlib.Path('/home/dario/phd/Hot_Brown_Dwarfs_Retrievals/figures/')
 # targets = dict(J1200='freechem_15', 
@@ -187,4 +189,7 @@ plt.show()
 save= True
 if save:
     fig.savefig(out_path / f'fig6_chemistry.pdf', bbox_inches='tight', dpi=300)
+    if save_transparent_to is not None:
+        fig.savefig(save_transparent_to / f'fig6_chemistry.png', dpi=300, transparent=True)
+    print(f'Saved figure in {out_path / f"fig6_chemistry.pdf"}')
     plt.close()

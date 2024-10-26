@@ -41,3 +41,5 @@ profile_*
 MANIFEST*
 TWA28/jwst/curve_data.csv
 TWA28/lbl_test/bestfit.json
+data/hitran
+data/slab_models

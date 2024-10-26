@@ -13,7 +13,7 @@ import corner
 import pandas as pd
 import json
 
-
+save_transparent_to = pathlib.Path('/home/dario/phd/presentations/october24/')
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
@@ -153,6 +153,9 @@ for order in orders:
     # plt.show()
     fig.savefig(out_path / f'fig3_order{order}.pdf', bbox_inches='tight', dpi=300)
     print('- Saved figure to ', out_path / f'fig3_order{order}.pdf')
+    if save_transparent_to is not None:
+        fig.savefig(save_transparent_to / f'fig3_order{order}.png', dpi=300, transparent=True)
+        print('- Saved transparent figure to ', save_transparent_to / f'fig3_order{order}.png')
     plt.close(fig)
     
 # save SNR fig

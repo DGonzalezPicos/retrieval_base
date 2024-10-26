@@ -12,6 +12,7 @@ import pickle
 import corner
 import pandas as pd
 import json
+save_transparent_to = pathlib.Path('/home/dario/phd/presentations/october24/')
 
 path = pathlib.Path('/home/dario/phd/retrieval_base')
 # out_path = path / 'HBDs'
@@ -80,3 +81,6 @@ save = True
 if save:
     fig.savefig(out_path / f'fig4_bestfit_PT.pdf', bbox_inches='tight', dpi=300)
     print(f'Saved figure in {out_path / f"fig4_bestfit_PT.pdf"}')
+    if save_transparent_to is not None:
+        fig.savefig(save_transparent_to / f'fig4_bestfit_PT.png', dpi=300, transparent=True)
+        print(f'Saved transparent figure in {save_transparent_to / f"fig4_bestfit_PT.png"}')

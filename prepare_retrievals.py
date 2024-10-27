@@ -9,42 +9,43 @@ path = pathlib.Path('/home/dario/phd/retrieval_base/')
 # targets = [f.name for f in folders if str(f.name).startswith('gl')]
 ignore_targets = []
 
+# query from simbad
 targets_rv = {
-                # 'gl338B': 12.0,
-                # 'gl382' : 8.0,
-                # 'gl408' : 3.0,
-                # 'gl411' :-85.0,
-                # 'gl436' : -40.0,
-                # 'gl699' : -111.0,
-                # 'gl752A': 36.0,
-                # 'gl832': 36.0,
-                # 'gl905' : -78.0,
-                # 'gl1286': 8.0,
-                # 'gl15A': 12.0,
-                # 'gl15B': 11.0,
-                # 'gl687': -29.0,
-                # 'gl725A': -31.0,
-                # 'gl725B': 1.0,
-                # 'gl849': -15.0,
-                # 'gl876': -2.0,
-                # 'gl880': -27.0,
-                # 'gl1151': -35.0,
-                # 'gl205': -40.0,
-                # 'gl412A': 9.0,
-                # 'gl445': 9.0,
-                'gl447': -31.0,
-                # 'gl1002': -40.0,
-                # 'gl412A': 69.0,
-                # 'gl1286': -41.0,
-                # 'gl3622': 2.0,
-                # 'gl4063': 12.0,
-                
-}
+    # 'gl338B': 12.43,
+    # 'gl382': 7.87,
+    # 'gl408': 3.29,
+    # 'gl411': -84.64,
+    # 'gl436': 9.59,
+    # 'gl699': -110.11,
+    # 'gl752A': 35.884,
+    'gl905': -77.51,
+    'gl1286': -10.384,
+    'gl15A': 11.73,
+    'gl15B': 11.17,
+    'gl687': -28.65,
+    'gl725A': -0.58,
+    'gl725B': 1.19,
+    'gl849': -15.3,
+    'gl876': -1.47,
+    'gl880': -27.5,
+    'gl1151': -35.12,
+    'gl205': 8.56,
+    'gl412A': 68.84,
+    'gl445': -111.51,
+    'gl447': -30.66,
+    'gl1002': -33.7,
+    'gl3622': 2.18,
+    'gl4063': 12.533
+    }
+# DPG 2024-10-27: Gl 447 still needs to re rerun with all species
+
 targets = list(targets_rv.keys())
 delta_rv = 20.0
 
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
-run = 'fc4'
+run = 'fc4_wo_C18O'
+ignore = 'C18O'
+
 testing = False
 cache = "True"
 
@@ -76,6 +77,7 @@ for target in targets:
     print(f' rv = {rv}')
     update_file(str(path / target / 'config_freechem.py'), 'rv_min = -100.0', f'rv_min = {rv-delta_rv:.1f}')
     update_file(str(path / target / 'config_freechem.py'), 'rv_max = 100.0', f'rv_max= {rv+delta_rv:.1f}')
+    update_file(str(path / target / 'config_freechem.py'), 'ignore_opacity_params = []', f'ignore_opacity_params = [\'log_{ignore}\']')
     if testing:
         break
     

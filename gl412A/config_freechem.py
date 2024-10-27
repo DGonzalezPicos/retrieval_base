@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc4'
+run = 'fc4_wo_C18O'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -35,8 +35,8 @@ config_data = {
     }
 
 # priors for the radial velocity parameter, adjust to the expected RV of the target to avoid weird results
-rv_min = 49.0
-rv_max= 89.0
+rv_min = 48.8
+rv_max= 88.8
 
 ####################################################################################
 # Model parameters
@@ -59,6 +59,9 @@ opacity_params = {
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MYTHOS_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
 }
+ignore_opacity_params = ['log_C18O']
+if len(ignore_opacity_params) > 0:
+    opacity_params = {k:v for k,v in opacity_params.items() if k not in ignore_opacity_params}
 print(f' --> {len(opacity_params)} opacity parameters')
 # Define the priors of the parameters
 free_params = {

@@ -38,6 +38,8 @@ targets_rv = {
 targets = list(targets_rv.keys())
 run = 'fc4_no_C18O'
 
+ignore_targets = []
+
 def update_file(file, old_str, new_str):
     
     with open(file, 'r') as f:

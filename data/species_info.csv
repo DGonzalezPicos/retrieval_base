@@ -6,10 +6,12 @@ C17O,CO_27_high_Sam,29.010130999999998,C7,C$^{17}$O,1.0,1.0,0.0
 H2O,H2O_pokazatel_main_iso,18.014680000000002,#3881bb,H$_2$O,0.0,1.0,2.0
 H2O_181,H2O_181_HotWat78,20.014841,C7,H$_2^{18}$O,0.0,1.0,2.0
 HDO,HDO_voronin,19.02084,b,HDO,0.0,1.0,2.0
-CH4,CH4_hargreaves_main_iso,16.04236,#ff71ce,CH$_4$,1.0,0.0,4.0
+CH4,CH4_MM_main_iso,16.04236,#ff71ce,CH$_4$,1.0,0.0,4.0
 13CH4,CH4_31111_hargreaves,17.034715000000002,magenta,$^{13}$CH$_4$,1.0,0.0,4.0
-NH3,NH3_coles_main_iso,17.03022,#b967ff,NH$_3$,0.0,0.0,3.0
+NH3,NH3_coles_main_iso_Sam,17.03022,#b967ff,NH$_3$,0.0,0.0,3.0
 HCN,HCN_main_iso,27.02554,orange,HCN,1.0,0.0,1.0
+NH,NH_kNigHt_main_iso,15.01454,#ff71ce,NH,0.0,0.0,1.0
+SH,SH_main_iso,33.987721,C10,SH,0.0,0.0,1.0
 CN,CN_high,26.017699999999998,magenta,CN,1.0,0.0,0.0
 13CN,CN_34_high,27.010055,#ff71ce,$^{13}$CN,1.0,0.0,0.0
 H2S,H2S_Sid_main_iso,34.08068,C11,H$_2$S,0.0,0.0,2.0

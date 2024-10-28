@@ -538,10 +538,12 @@ class pRT_model:
                                         
                     disk_params = {attr:self.params.get(f'{attr}_{ds_i}') for attr in ['T_ex', 'N_mol', 'A_au']}
                     disk_params['d_pc'] = self.params['d_pc']
+                    rv_disk = self.params.get('rv_disk', 0.0)
                     
                     f_slab_i = self.slab[ds_i].interpolate(**disk_params)
                     # fill with zeros values beyond the range of the slab model
-                    m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid, f_slab_i, right=0.0, left=0.0)
+                    m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid * (1+(rv_disk/2.998e5)), f_slab_i, right=0.0, left=0.0)
+                    assert np.sum(np.isnan(m_flux_slab_i)) == 0, '[pRT_model.get_model_spectrum] line 546: NaNs in m_flux_slab_i'
                     # print(f' [pRT_model] ds_i = {ds_i}  mean(f_slab_i) = {np.mean(f_slab_i)}')
 
                     m_slab_i += m_flux_slab_i # store for plotting purposes

@@ -4,31 +4,31 @@ import numpy as np
 import subprocess
 import shutil
 targets_rv = {
-    # 'gl15A': 11.73,
-    # 'gl15B': 11.17,
+    'gl15A': 11.73,
+    'gl15B': 11.17,
     'gl205': 8.5,
-    # 'gl338B': 12.43,
+    'gl338B': 12.43,
     'gl382': 7.87,
-    # 'gl408': 3.29,
-    # 'gl411': -84.64,
+    'gl408': 3.29,
+    'gl411': -84.64,
     'gl412A': 68.84,
-    # 'gl436': 9.59,
+    'gl436': 9.59,
     'gl445': -111.51,
-    # 'gl447': -30.66,
-    # 'gl699': -110.11,
+    'gl447': -30.66,
+    'gl699': -110.11,
     'gl725A': -0.58,
     'gl725B': 1.19,
-    # 'gl752A': 35.884,
-    # 'gl687': -28.65,
-    # 'gl849': -15.3,
-    # 'gl876': -1.47,
-    # 'gl880': -27.5,
-    # 'gl905': -77.51,
+    'gl752A': 35.884,
+    'gl687': -28.65,
+    'gl849': -15.3,
+    'gl876': -1.47,
+    'gl880': -27.5,
+    'gl905': -77.51,
     'gl1002': -33.7,
-    # 'gl1151': -35.12,
+    'gl1151': -35.12,
     'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
     'gl3622': 2.18,
-    # 'gl4063': 12.533
+    'gl4063': 12.533
     }
 targets = list(targets_rv.keys())
 run = 'fc4_wo_C18O'
@@ -83,9 +83,16 @@ for target in targets:
         # check if test_output dir exists
         test_output = base_path / target / f'retrieval_outputs/{run}/test_output'
         test_plots  = base_path / target / f'retrieval_outputs/{run}/plots'
-        if test_output.exists() and not cache:
-            print(f' Removing {test_output}...')
-            shutil.rmtree(test_output)
+        if test_output.exists():
+            # chek it is not empty
+            if len(list(test_output.iterdir())) > 0 and cache:
+                print(f' {target} {run}: Found test_output folder with {len(list(test_output.iterdir()))} files.')
+                ok = True
+            else:
+                print(f' {target} {run}: Found empty test_output folder.')
+                print(f' Removing {test_output}...')
+                shutil.rmtree(test_output)
+                ok = download_run(target, run)
             # if test_plots.exists():
             #     shutil.rmtree(test_plots)
         if not cache:

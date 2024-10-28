@@ -53,7 +53,7 @@
 - Ready to download.
 
 ### 832
-- Ready to download.
+- Missing data... check on zandkreek/`spirou_m` folder
 
 ### 849
 - Ready to download.

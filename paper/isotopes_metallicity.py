@@ -43,6 +43,18 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
         print(f' {target}: No files found in {test_output}')
         return None
     
+    # load sigma for C18O
+    sigma = 10.0 # default, > 3 for plotting as errorbar
+    if isotope == 'oxygen' and main_label == 'CO':
+        sigma_file = test_output / f'B_sigma_C18O.dat' # contains two values: B, sigma
+        if sigma_file.exists():
+            print(f' {target}: Found {sigma_file}')
+            B, sigma = np.loadtxt(sigma_file)
+            print(f' {target}: B = {B:.2f}, sigma = {sigma:.2f}')
+            # replace nan with 0.0
+            sigma = 0.0 if np.isnan(sigma) else sigma
+
+    
     isotope_posterior_file = base_path + target + '/retrieval_outputs/' + run + f'/{main_label}_{isotope}_isotope_posterior.npy'
     if not os.path.exists(isotope_posterior_file):
 
@@ -89,17 +101,33 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
         xerr = [[x-xerr[0]], [xerr[1]-x]]
         
     fmt = 'o'
-    ax.errorbar(x, isotope_quantiles[1],
-                xerr=xerr,
-                yerr=[[isotope_quantiles[1]-isotope_quantiles[0]], [isotope_quantiles[2]-isotope_quantiles[1]]],
-                fmt=fmt, 
-                label=label.replace('gl', 'Gl '),
-                alpha=0.9,
-                    # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                markeredgecolor='black', # Black edge color
-                markeredgewidth=0.8,     # Thickness of the edge
-                color=kwargs.get('color', 'k'),
-    )
+    if sigma > 3.0:
+        ax.errorbar(x, isotope_quantiles[1],
+                    xerr=xerr,
+                    yerr=[[isotope_quantiles[1]-isotope_quantiles[0]], [isotope_quantiles[2]-isotope_quantiles[1]]],
+                    fmt=fmt, 
+                    label=label.replace('gl', 'Gl '),
+                    alpha=0.9,
+                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+                    markeredgecolor='black', # Black edge color
+                    markeredgewidth=0.8,     # Thickness of the edge
+                    color=kwargs.get('color', 'k'),
+        )
+    else:
+        # plot lower limit
+        fmt = '^'
+        ax.errorbar(x, isotope_quantiles[0],
+                    xerr=xerr,
+                    yerr=[[0.0], [isotope_quantiles[2]-isotope_quantiles[0]]],
+                    lolims=True,
+                    fmt=fmt, 
+                    label=label.replace('gl', 'Gl '),
+                    alpha=0.9,
+                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+                    markeredgecolor='red', # Black edge color
+                    markeredgewidth=0.8,     # Thickness of the edge
+                    color=kwargs.get('color', 'k'),
+        )
         
         
     if xytext is not None:
@@ -149,7 +177,7 @@ fig, axes = plt.subplots(2,1, figsize=(5,8), sharex=True, gridspec_kw={'hspace':
                                                                        'wspace': 0.1,
                                                                         'left': 0.14, 
                                                                         'right': 0.78, 
-                                                                        'top': 0.85, 
+                                                                        'top': 0.84, 
                                                                         'bottom': 0.06})
 # ylim_min = 50.0
 # ylim_max = 3000.0
@@ -170,7 +198,9 @@ for i, isotope in enumerate(isotopes):
     ism = ism_dict[isotope]
     sun = sun_dict[isotope]
 
-    ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='deepskyblue', alpha=0.3, label='Solar',lw=0)
+    # ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='gold', alpha=0.3, label='Solar',lw=0)
+    ax.plot(0.0, sun[0], color='gold', marker='*', ms=16, label='Sun', alpha=0.8, markeredgecolor='black', markeredgewidth=0.8, zorder=100)
+    
 
     plot_teff_max = 4400.0
     for name in names:
@@ -219,7 +249,7 @@ for i, isotope in enumerate(isotopes):
                     
         
     if x_param == '[M/H]':
-        ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-1)
+        ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-10)
 
     if i == 0:
         ax.legend(ncol=4, frameon=False, fontsize=8, loc=(-0.05, 1.01))

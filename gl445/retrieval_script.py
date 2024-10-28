@@ -26,6 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--target', '-t', type=str, help='Target name', default='gl436')
     parser.add_argument('--run', '-run', type=str, help='Run name', default='None')
     parser.add_argument('--cache_pRT', '-cache_pRT', type=str, help='Cache pRT', default='False')
+    parser.add_argument('--copy_to_snellius', '-copy_to_snellius', action='store_true')
     # parser.add_argument('--synthetic', action='store_true')
     args = parser.parse_args()
     target = args.target
@@ -50,7 +51,32 @@ if __name__ == '__main__':
                     w_set='spirou',
                     fig_name=conf.prefix + 'plots/prior_check.pdf',
         )
+    if args.copy_to_snellius:
+        import pathlib
+        snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}'
+        path = pathlib.Path(path)
+        local_dir = str(path / target / 'retrieval_outputs' / run)
+        print(f' Copying {local_dir} to {snellius_dir}...')
+        # if parent directory does not exist, create it on remote
+        try:
+            # subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
 
+            subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+
+        except subprocess.CalledProcessError as e:
+            print(f' -> Error copying {local_dir} to {snellius_dir} with rsync:\n{e}')
+            print(f' -> Try to create parent directory on remote...')
+            subprocess.run(f'ssh dgonzalezpi@snellius.surf.nl "mkdir -p {snellius_dir}"', shell=True, check=True)
+
+            try:
+                subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+            except:
+                print(f' -> Error copying {local_dir} to {snellius_dir} again...')
+                # print(f' -> VPN must be disabled or set to NL!!')
+
+        print(f' Succesful copy for {target}!\n')
+
+        
     if args.retrieval:
         conf = Config(path=path, target=target, run=run)
         conf(config_file)

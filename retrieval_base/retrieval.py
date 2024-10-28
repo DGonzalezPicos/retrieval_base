@@ -446,6 +446,9 @@ def prior_check(conf, n=3,
             
         # m_spec_list.append(ret.m_spec[w_set])
         m_spec_list.append(ret.LogLike[w_set].m)
+        if not random and i == n//2:
+            if ln_L < logL_list[-1]:
+                print(f' WARNING: ln_L[{i}] = {ln_L:.4e} < ln_L[{i-1}] = {logL_list[-1]:.4e}')
         logL_list.append(ln_L)
         s_list.append(ret.LogLike[w_set].s)
         
@@ -1152,6 +1155,17 @@ class Retrieval:
 
             return flux_envelope
         
+    def PMN_stats(self):
+        
+        # Set-up analyzer object
+        analyzer = pymultinest.Analyzer(
+            n_params=self.Param.n_params, 
+            # outputfiles_basename=self.conf_output
+            outputfiles_basename=self.conf_output,
+            )
+        stats = analyzer.get_stats()
+        return stats
+    
     def PMN_analyze(self, map=True, return_dict=False):
         
         # Set-up analyzer object

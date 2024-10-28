@@ -11,6 +11,9 @@ ignore_targets = []
 
 # query from simbad
 targets_rv = {
+    # 'gl15A': 11.73,
+    # 'gl15B': 11.17,
+    'gl205': 8.5,
     # 'gl338B': 12.43,
     # 'gl382': 7.87,
     # 'gl408': 3.29,
@@ -18,26 +21,23 @@ targets_rv = {
     # 'gl436': 9.59,
     # 'gl699': -110.11,
     # 'gl752A': 35.884,
-    'gl905': -77.51,
-    'gl1286': -10.384,
-    'gl15A': 11.73,
-    'gl15B': 11.17,
-    'gl687': -28.65,
-    'gl725A': -0.58,
-    'gl725B': 1.19,
-    'gl849': -15.3,
-    'gl876': -1.47,
-    'gl880': -27.5,
-    'gl1151': -35.12,
-    'gl205': 8.56,
-    'gl412A': 68.84,
-    'gl445': -111.51,
-    'gl447': -30.66,
-    'gl1002': -33.7,
-    'gl3622': 2.18,
-    'gl4063': 12.533
+    # 'gl905': -77.51,
+    # 'gl687': -28.65,
+    # 'gl725A': -0.58,
+    # 'gl725B': 1.19,
+    # 'gl849': -15.3,
+    # 'gl876': -1.47,
+    # 'gl880': -27.5,
+    # 'gl1151': -35.12,
+    # 'gl412A': 68.84,
+    # 'gl445': -111.51,
+    # 'gl447': -30.66,
+    # 'gl1002': -33.7,
+    # 'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
+    # 'gl3622': 2.18,
+    # 'gl4063': 12.533
     }
-# DPG 2024-10-27: Gl 447 still needs to re rerun with all species
+# DPG 2024-10-27: Gl 447 still needs to be rerun with all species
 
 targets = list(targets_rv.keys())
 delta_rv = 20.0
@@ -47,7 +47,7 @@ run = 'fc4_wo_C18O'
 ignore = 'C18O'
 
 testing = False
-cache = "True"
+cache = "False"
 
 def update_file(file, old_str, new_str):
     

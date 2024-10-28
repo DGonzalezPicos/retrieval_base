@@ -35,8 +35,8 @@ config_data = {
     }
 
 # priors for the radial velocity parameter, adjust to the expected RV of the target to avoid weird results
-rv_min = -30.4
-rv_max= 9.6
+rv_min = -61.0
+rv_max= -21.0
 
 ####################################################################################
 # Model parameters

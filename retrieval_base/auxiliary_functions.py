@@ -456,3 +456,25 @@ def apply_PT_cutoff(atm, T_min, T_max, P_min=1e-4, P_max=1e2):
             Ps = np.unique(np.array(new_custom_line_TP_grid)[:,1])
             atm.custom_diffPs[species] = len(Ps)
     return atm
+
+
+def compare_evidence(ln_Z_A, ln_Z_B):
+    '''Convert log-evidences of two models to a sigma confidence level
+    
+    Adapted from samderegt/retrieval_base'''
+
+    from scipy.special import lambertw as W
+    from scipy.special import erfcinv
+
+    ln_list = [ln_Z_B, ln_Z_A]
+    
+    for i in range(2):
+        ln_list = ln_list[::-1] if i == 1 else ln_list
+        labels = ['A', 'B'] if i == 1 else ['B', 'A']
+        ln_B = ln_list[0] - ln_list[1]
+        B = np.exp(ln_B)
+        p = np.real(np.exp(W((-1.0/(B*np.exp(1))),-1)))
+        sigma = np.sqrt(2)*erfcinv(p)
+        
+        print(f'{labels[0]} vs. {labels[1]}: ln(B)={ln_B:.2f} | sigma={sigma:.2f}')
+    return B, sigma

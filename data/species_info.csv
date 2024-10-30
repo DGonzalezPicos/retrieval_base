@@ -29,7 +29,7 @@ MgO,MgO_Sid_main_iso,40.304,C6,MgO,0.0,1.0,0.0
 AlO,AlO_main_iso,42.980539,C14,AlO,0.0,1.0,0.0
 SiO,SiO_SiOUVenIR_main_iso,44.084,C7,SiO,0.0,1.0,0.0
 CO2,CO2_main_iso,44.009,C9,CO$_2$,1.0,2.0,0.0
-HF,HF_high,20.006243,#00ced1,HF,0.0,0.0,1.0
+HF,HF_main_iso_new,20.006243,#00ced1,HF,0.0,0.0,1.0
 HCl,HCl_main_iso,36.460840000000005,C15,HCl,0.0,0.0,1.0
 C2H2,C2H2_main_iso,26.037679999999998,#50FF45,C$_2$H$_2$,2.0,0.0,2.0
 H2,H2_main_iso,2.01568,C8,H2,0.0,0.0,2.0

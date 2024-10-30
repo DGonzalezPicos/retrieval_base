@@ -136,17 +136,10 @@ def prior_check(conf, n=3, random=False, get_contr=False, remove_disk=False, fig
 class Retrieval:
 
     plot_ccf = False
-    def __init__(self, conf, evaluation, d_spec=None, tmp_path=None):
+    def __init__(self, conf, evaluation, d_spec=None, plot_ccf=False):
 
         self.conf = conf
-        # if MPI active, change self.conf.prefix
-        if tmp_path is not None:
-            # print(f' rank = {rank}')
-            # self.conf.prefix = self.conf.prefix + f'rank{rank}/'
-            # get $TMP_PATH variable
-            print(f' Updating conf.prefix to {tmp_path}retrieval_outputs/{self.conf.run}/test_')
-            self.conf.prefix = f'{tmp_path}retrieval_outputs/{self.conf.run}/test_'
-            
+
         self.conf_output = '/'.join(self.conf.prefix.split('/')[:-1])+'/test_output/'+self.conf.prefix.split('/')[-1]
         self.evaluation = evaluation
 
@@ -256,19 +249,20 @@ class Retrieval:
             species_to_plot_VMR=self.conf.species_to_plot_VMR, 
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )
-
+        
+        self.plot_ccf = plot_ccf
         if (rank == 0) and self.evaluation and self.plot_ccf:
             self.pRT_atm_broad = {}
             for w_set in conf.config_data.keys():
                 
                 if os.path.exists(self.conf.prefix+f'data/pRT_atm_broad_{w_set}.pkl'):
-
+                    print(f' Loading pRT_atm_broad_{w_set}.pkl')
                     # Load the pRT model
                     self.pRT_atm_broad[w_set] = af.pickle_load(
                         self.conf.prefix+f'data/pRT_atm_broad_{w_set}.pkl'
                         )
                     continue
-
+                print(f' Creating a wider pRT model for {w_set}')
                 # Create a wider pRT model during evaluation
                 self.pRT_atm_broad[w_set] = copy.deepcopy(self.pRT_atm[w_set])
                 self.pRT_atm_broad[w_set].get_atmospheres(CB_active=True)

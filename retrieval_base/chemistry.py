@@ -375,16 +375,16 @@ class FastChemistry(Chemistry):
         self.data = np.moveaxis(data, 0, 1) # shape (n_pressure, n_temperature, n_species) -> (n_temperature, n_pressure, n_species)
         self.fc_species_dict = dict(zip(species, labels))
         
-        print('[FastChemistry] self.species = ', self.species)
+        # print('[FastChemistry] self.species = ', self.species)
         # create interpolator for each species
         self.interpolator = {}
         for i, (species_i, label_i) in enumerate(self.fc_species_dict.items()):
-            print(f' Looking for {label_i} ({species_i})')
+            # print(f' Looking for {label_i} ({species_i})')
             if (species_i in self.species) or (species_i in ['H2', 'He', 'e-']):
                 
                 if label_i in columns:
                     idx = columns.index(label_i)
-                    print(f' Loading interpolator for {label_i} ({species_i}) from column {idx}')
+                    # print(f' Loading interpolator for {label_i} ({species_i}) from column {idx}')
                     self.interpolator[species_i] = RegularGridInterpolator((self.t_grid, self.p_grid), self.data[:,:,idx], bounds_error=False, fill_value=None)
                 # else:
                     # print(f' WARNING: {label_i} not in columns')
@@ -416,7 +416,7 @@ class FastChemistry(Chemistry):
                 alpha_main = params.get(f'alpha_{main}', 0.0)
                 ratio = params.get(f'{main}/{species_i}') # in VMR
                 assert ratio is not None, f'No ratio {main}/{species_i} given'
-                self.VMRs[species_i] = np.clip((self.VMRs[main] * 10.**alpha_main) / ratio, a_max=1e-2, a_min=1e-14)
+                self.VMRs[species_i] = (self.VMRs[main] * 10.**alpha_main) / ratio
                 
             elif species_i in params.keys():
                 self.VMRs[species_i] = params[species_i] * np.ones(self.n_atm_layers)
@@ -425,7 +425,7 @@ class FastChemistry(Chemistry):
                 # print(f' WARNING: {species_i} not in VMRs, setting to 0')
                 self.VMRs[species_i] = 0.0 * np.ones(self.n_atm_layers)
                 
-            self.mass_fractions[line_species_i] = np.clip(mass_i * (self.VMRs[species_i] * 10.**alpha_i),a_max=1e-2, a_min=1e-14) # VMRs is already an array
+            self.mass_fractions[line_species_i] = np.clip(mass_i * (self.VMRs[species_i] * 10.**alpha_i),a_max=1e-1, a_min=1e-14) # VMRs is already an array
                 
         self.mass_fractions['He'] = self.read_species_info('He', 'mass') * self.VMRs['He']
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * self.VMRs['H2']

@@ -115,39 +115,6 @@ class pRT_model:
         print(f' [pRT_model] d_spec.gratings_list = {d_spec.gratings_list}')
         if (len(self.disk_species) > 0) and (T_ex_range != None):
             print(f' [pRT_model] Disk species: {disk_species}')
-            # import iris as iris
-            # from iris import setup
-            # from iris import spectrum as sp
-            # from retrieval_base.slab_model import Disk
-            
-            # # self.disk_species = disk_species
-            # self.disk = Disk(molecules=self.disk_species,
-            #     # wave_range=(wmin, wmax),
-            #     wave_range=(4.2,5.3), # WARNING: manually fixed to only cover the CO lines in G395H
-            #     wave_step=None,
-            #     grating=None,
-            #     path_to_moldata=path+'data/hitran',
-            #     )
-            
-            # NEW slab model: load precomputed models for each species
-            # self.gratings = set(d_spec.gratings_list) # unique gratings
-            
-            # self.slab = {}
-            # for disk_species_i in self.disk_species:
-            #     self.slab[disk_species_i] = {}
-            #     for grating in self.gratings:
-            #         file_name = pathlib.Path(path) / 'data/slab_models' / f'slab_model_{disk_species_i}_{grating}.npy'
-            #         # print(f' [pRT_model] Loading {file_name}')
-            #         assert file_name.exists(), f'File {file_name} does not exist'
-            #         self.slab[disk_species_i][grating] = np.load(file_name, allow_pickle=True)
-            #         # wave = self.slab[disk_species_i][grating][0,:] in [um]
-            #         # flux = self.slab[disk_species_i][grating][1,:] in [erg s^-1 cm^-2 um^-1]
-            #         print(f' [pRT_model] Loaded {file_name}')
-            #         # print(f' [pRT_model] shape = {self.slab[disk_species_i][grating].shape}')
-            #         print(f' [pRT_model] wave range = {np.min(self.slab[disk_species_i][grating][0,:]), np.max(self.slab[disk_species_i][grating][0,:])}')
-            #         print(f' [pRT_model] flux range = {np.min(self.slab[disk_species_i][grating][1,:]), np.max(self.slab[disk_species_i][grating][1,:])}')
-                    
-                    
             # New approach (Oct 18.): interpolate on a (T_ex, N_mol) grid
             # for disk_species_i  
             self.slab = {}
@@ -167,13 +134,6 @@ class pRT_model:
                 # self.slab_wave[disk_species_i] = slab.wave_grid * 1e3 # [um] --> [nm]
                 print(f' [pRT_model] slab setup: Min wave = {np.min(self.slab[disk_species_i].wave_grid)}  Max wave = {np.max(self.slab[disk_species_i].wave_grid)}')
                 
-            # check waves are the same
-            # assert all([np.allclose(wave, slab_wave[0]) for wave in slab_wave]), 'Wavelength grids are not the same'
-            # self.slab_wave = slab_wave[0] * 1e3 # [um] --> [nm]
-            
-            
-        # assert hasattr(self, 'slab'), 'Slab interpolator not set' # debugging (2024-10-18)
-        # print(stop)
         # Make the pRT.Radtrans objects
         if mode == 'lbl':
             self.get_atmospheres(CB_active=False)
@@ -189,13 +149,9 @@ class pRT_model:
 
         # pRT model is somewhat wider than observed spectrum
         if CB_active:
-            self.rv_max = 1000
+            self.rv_max = 2000
         wave_pad = 1.1 * self.rv_max/(nc.c*1e-5) * np.nanmax(self.d_wave)
 
-        # self.wave_range_micron = np.concatenate(
-        #     (self.d_wave.min(axis=(1,2))[None,:]-wave_pad, 
-        #      self.d_wave.max(axis=(1,2))[None,:]+wave_pad
-        #     )).T
         self.wave_range_micron=np.concatenate(
             (np.nanmin(self.d_wave, axis=(1,2))[None,:]-wave_pad,
                 np.nanmax(self.d_wave, axis=(1,2))[None,:]+wave_pad

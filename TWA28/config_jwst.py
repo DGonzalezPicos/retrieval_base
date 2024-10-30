@@ -9,8 +9,8 @@ file_params = 'config_jwst.py'
 
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
-lbl = 15
-run = f'lbl{lbl}_G2_4'
+lbl = 10
+run = f'lbl{lbl}_G2G3_5'
 prefix = f'./retrieval_outputs/{run}/test_'
 grating = 'g235h+g395h'
 # grating = 'g235h'
@@ -30,7 +30,7 @@ config_data = {
         'Nedge': 40, # (2024-10-18): 20 --> 40
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, # (2024-10-20): update 35 --> 40
+        'n_atm_layers': 50, # (2024-10-20): update 35 --> 40
         'T_cutoff': (1200.0, 3600.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e2), # DGP (2024-10-14): new parameter
         }, 
@@ -57,23 +57,23 @@ opacity_params = {
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
-    'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'), # DGP (2024-07-16): accidentally removed 
+    'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso_new'), # DGP (2024-07-16): accidentally removed 
     'log_HCl': ([(-14,-2), r'$\log\ \mathrm{HCl}$'], 'HCl_main_iso'), # DGP (2024-07-16): try this one
     
     'log_CO2': ([(-14,-2), r'$\log\ \mathrm{CO_2}$'], 'CO2_main_iso'),
     # 'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     # try new 2024-10-28
-    'log_CH4': ([(-14,-2), r'$\log\ \mathrm{CH_4}$'], 'CH4_MM_main_iso'),
+    # 'log_CH4': ([(-14,-2), r'$\log\ \mathrm{CH_4}$'], 'CH4_MM_main_iso'),
     # 'log_CH': ([(-14,-2), r'$\log\ \mathrm{CH}$'], 'CH_main_iso'),
-    'log_NH3': ([(-14,-2), r'$\log\ \mathrm{NH_3}$'], 'NH3_coles_main_iso_Sam'),
+    # 'log_NH3': ([(-14,-2), r'$\log\ \mathrm{NH_3}$'], 'NH3_coles_main_iso_Sam'),
     'log_HCN': ([(-14,-2), r'$\log\ \mathrm{HCN}$'], 'HCN_main_iso'),
-    'log_NH': ([(-14,-2), r'$\log\ \mathrm{NH}$'], 'NH_kNigHt_main_iso'),
-    'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
+    # 'log_NH': ([(-14,-2), r'$\log\ \mathrm{NH}$'], 'NH_kNigHt_main_iso'),
+    # 'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
     
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    # 'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
+    'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     # 'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
     # 'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
@@ -98,7 +98,8 @@ opacity_params = {
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
-    # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
+    'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
+    'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 # exclude_opacity_params = ['C18O', 'C17O', 'CO2', 'SiO','HCl']
@@ -221,7 +222,7 @@ for log_k, v in opacity_params.items():
     if k in fc_species:
         # pass
         # add deviation parameter `alpha` for each species: log X = log X_0 + alpha
-        free_params[f'alpha_{k}'] = [(-4.0, 4.0), f'$\\alpha_{{{k}}}$']
+        free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
     elif k in isotopologues_dict.keys():
         # add isotope ratio as free parameter
         free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]
@@ -232,7 +233,7 @@ for log_k, v in opacity_params.items():
 print(f' --> {free_params} free parameters')
 
 # distance in pc to parallax
-parallax_mas = 16.87 # Gaia DR3
+parallax_mas = 16.87 # Gaia DR3, for TWA 28 (Manjavacas+2024)
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 
 PT_interp_mode = 'linear'

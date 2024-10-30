@@ -243,9 +243,33 @@ class CallBack:
             
             del self.LogLike, self.m_spec, self.pRT_atm
             # self.fig_abundances_corner()
-            figs.fig_corner_VMRs_posterior(self.Chem, 
-                                           fig_name=self.prefix+'plots/VMRs_posterior.pdf',
-                                           save_posterior=self.evaluation)
+            # figs.fig_corner_VMRs_posterior(self.Chem, 
+            #                                fig_name=self.prefix+'plots/VMRs_posterior.pdf',
+            #                                save_posterior=self.evaluation)
+            
+            try:
+                figs.fig_VMR(self.Chem, 
+                             ax=None,
+                             xlim=(1e-10, 5e-2),
+                             showlegend=True,
+                            fig_name=self.prefix+'plots/VMRs.pdf',
+                             )
+            except Exception as e:
+                print(f'Error in fig_VMR: {e}')
+                
+                 
+            try: # FIXME: plotting C/O, Fe/H runs into issues...
+                figs.fig_chemistry(Chem=self.Chem,
+                                        fig=None,
+                                        species_to_plot=None,
+                                        color=self.bestfit_color,
+                                        smooth=None,
+                                        fontsize=14,
+                                        fig_name=self.prefix+f'plots/chemistry.pdf',
+                                        fig_size=(24,24),
+                )
+            except Exception as e:
+                print(f'Error in fig_chemistry: {e}')
 
 
         # Remove attributes from memory
@@ -381,6 +405,7 @@ class CallBack:
         print(f' ranges.shape = {ranges.shape}')
         print(f' posterior.shape = {np.array(self.Chem.VMRs_posterior.values()).shape}')
         
+        fig_size = kwargs.get('fig_size', (15,15))
         fig = corner.corner(
             np.array(self.Chem.VMRs_posterior.values()),
             labels=list(self.Chem.VMRs_posterior.keys()),

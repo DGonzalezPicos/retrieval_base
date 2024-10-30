@@ -122,10 +122,12 @@ def CCF_to_SNR(rv, CCF, ACF=None, rv_to_exclude=(-100,100)):
     CCF_SNR = CCF / std_CCF
     if ACF is not None:
         ACF_SNR = ACF*(CCF/ACF)[rv==0]/std_CCF
+        return CCF_SNR, ACF_SNR, (CCF - ACF*(CCF/ACF)[rv==0])/std_CCF
     else:
         ACF_SNR = None
+        return CCF_SNR, None, None
     
-    return CCF_SNR, ACF_SNR, (CCF - ACF*(CCF/ACF)[rv==0])/std_CCF
+    # return CCF_SNR, ACF_SNR, (CCF - ACF*(CCF/ACF)[rv==0])/std_CCF
     
 def CCF(d_spec, 
         m_spec, 
@@ -137,6 +139,7 @@ def CCF(d_spec,
         Cov=None, 
         rv=np.arange(-500,500+1e-6,1), 
         apply_high_pass_filter=True, 
+        high_pass_filter_sigma=300,
         ):
 
     CCF = np.zeros((d_spec.n_orders, d_spec.n_dets, len(rv)))
@@ -190,9 +193,9 @@ def CCF(d_spec,
 
             if m_spec_wo_species is not None:
                 # Perform the cross-correlation on the residuals
-                d_flux_ij -= LogLike.f[:,i,j] @ m_spec_wo_species.flux[:,i,j,mask_ij]
+                # d_flux_ij -= LogLike.f[:,i,j] @ m_spec_wo_species.flux[:,i,j,mask_ij]
                 # d_flux_ij -= np.sum(LogLike.f[:,i,j,None] * m_spec_wo_species.flux[:,i,j,mask_ij],axis=0)
-
+                d_flux_ij -= m_spec_wo_species.flux[i,j,mask_ij]
             # Function to interpolate the observed spectrum
             d_interp_func = interp1d(
                 d_wave_ij, d_flux_ij, bounds_error=False, 
@@ -222,10 +225,10 @@ def CCF(d_spec,
                 if apply_high_pass_filter:
                     # Apply high-pass filter
                     d_flux_ij_shifted -= gaussian_filter1d(
-                        d_flux_ij_shifted, sigma=300, mode='reflect'
+                        d_flux_ij_shifted, sigma=high_pass_filter_sigma, mode='nearest'
                         )
                     m_flux_ij_shifted -= gaussian_filter1d(
-                        m_flux_ij_shifted, sigma=300, mode='reflect'
+                        m_flux_ij_shifted, sigma=high_pass_filter_sigma, mode='nearest'
                         )
 
                 # Compute the cross-correlation coefficients, weighted 

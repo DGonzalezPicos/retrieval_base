@@ -656,105 +656,68 @@ def fig_opa_cloud(ax_opa_cloud, integrated_opa_cloud, pressure, xlim=(1e0, 1e-10
         )
 
 
-def fig_VMR(ax_VMR, 
-            Chem, 
-            species_to_plot, 
-            pressure, 
-            ylabel=r'$P\ \mathrm{(bar)}$', 
-            yticks=np.logspace(-6, 2, 9), 
-            xlim=(1e-12, 1e-2), 
+def fig_VMR(Chem,
+            ax=None,
+            fig=None,
+            species_to_plot=[],
+            pressure=[],
+            ylabel=r'$P\ \mathrm{(bar)}$',
+            ls='-', # deprecated
+            xlim=(1e-12, 1e-2),
+            showlegend=True,
+            fig_name=None,
             ):
-
+    
+    is_new_fig = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(7,7), tight_layout=True)
+        is_new_fig = True
+    
     MMW = Chem.mass_fractions['MMW']
-
-    for species_i in Chem.species_info.keys():
-        
-        if species_i not in species_to_plot:
-            continue
-
-        # Check if the line species was included in the model
-        line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
-        if line_species_i not in Chem.line_species:
-            continue
-
-        # Read the mass, color and label
+    for species_i in species_to_plot:
         mass_i  = Chem.read_species_info(species_i, info_key='mass')
         color_i = Chem.read_species_info(species_i, info_key='color')
         label_i = Chem.read_species_info(species_i, info_key='label')
-
-        # Convert the mass fraction to a VMR
-        mass_fraction_i = Chem.mass_fractions[line_species_i]
-        VMR_i = mass_fraction_i * MMW/mass_i
-
-        if Chem.mass_fractions_envelopes is not None:
-
-            # Median MMW
-            MMW = Chem.mass_fractions_envelopes['MMW'][3]
-
-            x1 = MMW/mass_i * Chem.mass_fractions_envelopes[line_species_i][1]
-            x2 = MMW/mass_i * Chem.mass_fractions_envelopes[line_species_i][-2]
-
-            # Plot the median VMR profile
-            VMR_i = MMW/mass_i * Chem.mass_fractions_envelopes[line_species_i][3]
-
-            if not (np.abs(np.log10(x2)-np.log10(x1)) < 1.0).any():
-                continue
-
-            # Plot the VMR envelope as well
-            cmap_i = mpl.colors.LinearSegmentedColormap.from_list(
-                'cmap_i', colors=['w', color_i]
-                )
-            VMR_envelope_colors_i = cmap_i([0.4,0.6,0.8])
-
-            ax_VMR.fill_betweenx(
-                y=pressure, x1=x1, x2=x2, color=VMR_envelope_colors_i[1], ec='none', alpha=0.5
-                )
-
-        # Plot volume-mixing ratio as function of pressure
-        ax_VMR.plot(VMR_i, pressure, c=color_i, lw=1, label=label_i)
-
-        if not hasattr(Chem, 'P_quench'):
+        line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
+        ls_i = ':' if line_species_i.endswith('_high') else '-'
+        lw_i = 2.5 if line_species_i.endswith('_high') else 1.5
+        if line_species_i not in Chem.mass_fractions.keys():
+            print(f'No mass fraction for {species_i}')
             continue
+        vmr_i = Chem.mass_fractions[line_species_i] * (MMW / mass_i)
+        # vmr_i = Chem.VMRs[line_species_i]
+        if vmr_i is None:
+            print(f'No VMR for {species_i}')
+            continue
+        # print(f' - Plotting {species_i} ({line_species_i})')
 
-        for quench_key, P_quench in Chem.P_quench.items():
-
-            if not (species_i in Chem.quench_setup[quench_key]):
-                continue
-
-            if (P_quench < pressure.min()) or (P_quench > pressure.max()):
-                continue
-
-            # Place a marker at the quench pressure
-            P_quench_i   = pressure[pressure < P_quench][-1]
-            VMR_quench_i = VMR_i[pressure < P_quench][-1]
-
-            # Interpolate to find the quenched VMR
-            ax_VMR.scatter(VMR_quench_i, P_quench_i, c=color_i, s=20, marker='_')
-
-            # Find the un-quenched VMR
-            unquenched_mass_fraction_i = Chem.unquenched_mass_fractions[line_species_i]
-            if Chem.mass_fractions_envelopes is not None:
-                unquenched_mass_fraction_i = Chem.mass_fractions_envelopes[line_species_i][3]
-
-            unquenched_VMR_i = unquenched_mass_fraction_i * MMW/mass_i
-
-            # Plot volume-mixing ratio as function of pressure
-            ax_VMR.plot(
-                unquenched_VMR_i, pressure, c=color_i, lw=1, ls='--', alpha=0.8
+        label_i = label_i if showlegend else None
+        if hasattr(Chem, 'VMRs_envelopes'):
+            ax.fill_betweenx(
+                y=pressure, x1=Chem.VMRs_envelopes[species_i][0], 
+                x2=Chem.VMRs_envelopes[species_i][-1], 
+                color=color_i, ec='none', alpha=0.4,
                 )
-
-    ax_VMR.legend(
-        loc='upper left', ncol=2, handlelength=0.5, 
-        handletextpad=0.3, framealpha=0.7
-        )
-    ax_VMR.set(
-        xlabel='VMR', xscale='log', xlim=xlim, 
-        ylabel=ylabel, yscale='log', yticks=yticks, 
-        ylim=(pressure.min(), pressure.max()), 
-        )
-    ax_VMR.invert_yaxis()
-
-    return ax_VMR
+            ax.plot(Chem.VMRs_envelopes[species_i][1], pressure, label=label_i, ls=ls_i, color=color_i, lw=lw_i)
+        else:
+            ax.plot(vmr_i, pressure, label=label_i, ls=ls_i, color=color_i, lw=lw_i)
+        
+        
+    ax.set(xscale='log', yscale='log', xlabel='VMR',
+           ylabel=ylabel, 
+           xlim=xlim,
+            ylim=(np.max(pressure), np.min(pressure)),
+            )
+    # print(f' [fig_VMR] showlegend = {showlegend}')
+    if showlegend:
+        # ncol = 1 + len(species_to_plot)//2
+        # ax.legend(ncol=ncol, loc=(0.00, 1.01+0.08*(ncol-3)), frameon=False)
+        ax.legend(ncol=2, loc='upper left', frameon=False)
+    if (fig_name is not None):
+        fig.savefig(fig_name)
+        print(f'--> Saved {fig_name}')
+        plt.close(fig)
+    return ax
 
 def fig_hist_posterior(posterior_i, 
                        param_range_i, 
@@ -1214,7 +1177,7 @@ def fig_contr_em(contr_em,
     print(f' - Saved {fig_name}')
     
     
-def fig_corner_VMRs_posterior(Chem,
+def old_fig_corner_VMRs_posterior(Chem,
                               fig_name=None,
                               **kwargs):
     
@@ -1346,4 +1309,147 @@ def fix_corner_axes(fig, ts=10):
                         
     
     
-                             
+def fig_chemistry(
+                  Chem,
+                  fig=None,
+                  species_to_plot=None,
+                  color='k',
+                  smooth=None,
+                  fontsize=14,
+                  fig_name=None,
+                  **kwargs):
+    
+    assert hasattr(Chem, 'VMRs_posterior'), 'No VMRs_posterior found'
+    
+    species_to_plot = list(Chem.VMRs_posterior.keys()) if species_to_plot is None else species_to_plot
+    assert len(species_to_plot) > 1, 'No species to plot'
+    if '12_13CO' in species_to_plot:
+        # species_to_plot.remove('12CO')
+        species_to_plot.remove('13CO')
+    if 'C16_18O' in species_to_plot:
+        species_to_plot.remove('C18O')
+        
+    if 'H2_16_18O' in species_to_plot:
+        species_to_plot.remove('H2O_181')
+        
+        
+    if 'C/O' not in species_to_plot and 'C/O' in Chem.VMRs_posterior.keys():    
+        species_to_plot.append('C/O')
+        
+    if 'Fe/H' not in species_to_plot and 'Fe/H' in Chem.VMRs_posterior.keys():
+        species_to_plot.append('[Fe/H]')
+        
+    samples = []
+    labels = []
+    for species in species_to_plot:
+        if species not in ['12_13CO', 'C16_18O', 'C/O', 'Fe/H']:
+            samples.append(np.log10(Chem.VMRs_posterior[species]))
+            labels.append(f'log {species}')
+            
+        else:
+            samples.append(Chem.VMRs_posterior[species])
+            labels.append(species)
+    
+    samples = np.array(samples).T
+    # rearrange samples array to have C/O, Fe/H, 12_13CO first
+    # samples = np.roll(samples, 3, axis=-1)
+    # labels = np.roll(labels, 3)
+    # replace with latex labels
+    samples_dict = dict(zip(labels, samples.T))
+    # change keys for latex labels for 12CO/13CO and H2O/H2O_181
+    if '12_13CO' in samples_dict.keys():
+        samples_dict['$^{12}$CO/$^{13}$CO\n'] = samples_dict.pop('12_13CO')
+        
+    if 'C16_18O' in samples_dict.keys():
+        samples_dict['$^{16}$CO/$^{18}$CO\n'] = samples_dict.pop('C16_18O')
+        
+    if 'log H2_16_18O' in samples_dict.keys():
+        samples_dict['log H$_2$$^{16}$O/H$_2$$^{18}$O\n'] = samples_dict.pop('log H2_16_18O')
+    if 'Fe/H' in samples_dict.keys():
+        samples_dict['[Fe/H]'] = samples_dict.pop('Fe/H')
+        
+    
+    samples = np.array(list(samples_dict.values())).T
+    labels = list(samples_dict.keys())
+    # ensure C/O and Fe/H are the first two labels and samples
+    new_samples = np.copy(samples)
+    new_labels = np.copy(labels)
+    
+    first_labels =['C/O', '[Fe/H]', '$^{12}$CO/$^{13}$CO\n', 
+                   '$^{16}$CO/$^{18}$CO\n',
+                   'log H$_2$$^{16}$O/H$_2$$^{18}$O\n']
+    
+    for i, label in enumerate(first_labels):
+        if label in labels:
+            idx = labels.index(label)
+            new_samples = np.insert(new_samples, i, samples[:,idx], axis=1)
+            new_labels = np.insert(new_labels, i, label)
+            
+            # delete old
+            delete_idx = (idx+1) if (idx+1) > len(labels) else -1
+            new_samples = np.delete(new_samples, delete_idx, axis=1)
+            new_labels = np.delete(new_labels, delete_idx)
+            
+    samples, labels = new_samples, new_labels
+        
+    
+    # get quantiles for ranges
+    quantiles = np.array(
+            [af.quantiles(samples[:,i], q=[0.16,0.5,0.84]) \
+             for i in range(samples.shape[1])]
+             )
+        
+    ranges = np.array(
+        [(4*(q_i[0]-q_i[1])+q_i[1], 4*(q_i[2]-q_i[1])+q_i[1]) \
+            for q_i in quantiles]
+        )
+    # pop elements that have identical min and max
+    idx_to_pop = []
+    for i, r in enumerate(ranges):
+        if r[0] == r[1]:
+            idx_to_pop.append(i)
+    for i in idx_to_pop:
+        print(f' - Removing {labels[i]} from plot with identical min and max: {ranges[i]}')
+        ranges = np.delete(ranges, i, axis=0)
+        labels = np.delete(labels, i)
+        samples = np.delete(samples, i, axis=1)
+    
+    
+    
+    # samples = np.log10(np.array([Chem.VMRs_posterior[species_i] for species_i in species_to_plot]))
+    print(f'Shape of samples array: {samples.shape}')
+    fig = None
+    if kwargs.get('fig_size', None) is not None:
+        assert len(kwargs.get('fig_size')) == 2, 'fig_size must be a tuple of length 2'
+        fig = plt.figure(figsize=kwargs.get('fig_size'))
+    fig = corner.corner(
+        samples, 
+        labels=labels, 
+        title_kwargs={'fontsize': fontsize},
+        labelpad=0.25*samples.shape[0]/17,
+        bins=20,
+        max_n_ticks=3,
+        show_titles=True,
+        range=ranges,
+        
+        quantiles=[0.16,0.84],
+        title_quantiles=[0.16,0.5,0.84],
+        
+        color=color,
+        linewidths=0.5,
+        hist_kwargs={'color':color,
+                        'linewidth':0.5,
+                        'density':True,
+                        'histtype':'stepfilled',
+                        'alpha':0.5,
+                        },
+        
+        fill_contours=True,
+        smooth=smooth,
+        fig=fig,
+        )
+    if fig_name is not None:
+        fig.savefig(fig_name)
+        print(f' - Saved {fig_name}')
+    plt.close(fig)
+    return fig

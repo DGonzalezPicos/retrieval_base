@@ -1,12 +1,13 @@
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
-from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, load_romano_models
 # import config_freechem as conf
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 import pathlib
+import matplotlib.patheffects as pe
 
 base_path = '/home/dario/phd/retrieval_base/'
 
@@ -173,11 +174,12 @@ ism_dict = {'oxygen': (557, 30), # ISM value from Wilson et al. 1999
 
 plot_crossfield = True
 
+top = 0.77
 fig, axes = plt.subplots(2,1, figsize=(5,8), sharex=True, gridspec_kw={'hspace': 0.1, 
                                                                        'wspace': 0.1,
                                                                         'left': 0.14, 
                                                                         'right': 0.78, 
-                                                                        'top': 0.84, 
+                                                                        'top': top, 
                                                                         'bottom': 0.06})
 # ylim_min = 50.0
 # ylim_max = 3000.0
@@ -251,15 +253,15 @@ for i, isotope in enumerate(isotopes):
     if x_param == '[M/H]':
         ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-10)
 
-    if i == 0:
-        ax.legend(ncol=4, frameon=False, fontsize=8, loc=(-0.05, 1.01))
+    # if i == 0:
+        
     if i == 1:
         ax.set_xlabel(x_param)
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])  # Only needed for color bar
         
         # define cbar_ax for colorbar
-        cbar_ax = fig.add_axes([0.79, 0.06, 0.035, 0.790])
+        cbar_ax = fig.add_axes([0.79, 0.06, 0.035, top-0.06])
         cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=20)
         cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
@@ -267,6 +269,21 @@ for i, isotope in enumerate(isotopes):
         
     ax.set_ylabel(y_labels[isotope])
     
+# load Romano+2022 models
+mass_ranges = ['1_8', '3_8']
+
+gce_colors = ['black', 'royalblue']
+# add white edge to line
+path_effects = [pe.Stroke(linewidth=2.5, foreground='white'), pe.Normal()]
+
+for i, mass_range in enumerate(mass_ranges):
+    Z, c12c13, o16o18 = load_romano_models(Z_min=-0.7, mass_range=mass_range)
+    mass_range_label = 'Romano22 (' + mass_range.replace('_', '-') + r' M$_\odot$)'
+    axes[0].plot(Z, c12c13, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
+    axes[1].plot(Z, o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
+    
+
+axes[0].legend(ncol=3, frameon=False, fontsize=8, loc=(-0.05, 1.01))
 loglog = True
 loglog_label = '_loglog' if loglog else ''
 if loglog:

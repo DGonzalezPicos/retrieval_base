@@ -2,6 +2,7 @@ import pickle
 import os
 import shutil
 import wget
+import pathlib
 
 import numpy as np
 from scipy.interpolate import interp1d
@@ -37,7 +38,7 @@ def read_spirou_sample_csv():
     
 
 
-def get_path():
+def get_path(return_pathlib=False):
     
     cwd = os.getcwd()
     if 'dgonzalezpi' in cwd:
@@ -47,6 +48,8 @@ def get_path():
     if 'dario' in cwd:
         path = '/home/dario/phd/retrieval_base/'
         
+    if return_pathlib:
+        return pathlib.Path(path)
     return path
 
 def pickle_save(file, object_to_pickle):
@@ -478,3 +481,28 @@ def compare_evidence(ln_Z_A, ln_Z_B):
         
         print(f'{labels[0]} vs. {labels[1]}: ln(B)={ln_B:.2f} | sigma={sigma:.2f}')
     return B, sigma
+
+def load_romano_models(mass_range='1_8', Z_min=None):
+    
+    mass_range_files = {'1_8': 'abunda.bncmrkTHIN18_300',
+                        '3_8': 'abunda.bncmrkTHIN_300'}
+    assert mass_range in ['1_8', '3_8'], f'Invalid mass range: {mass_range}'
+    
+    file = get_path(return_pathlib=True) / 'paper/data' / mass_range_files[mass_range]
+    assert file.exists(), f'File {file} does not exist'
+    data = np.loadtxt(file, skiprows=0)
+    
+    Z = data[:, 1]
+    c12 = data[:, 5] / 12
+    c13 = data[:, 6] / 13
+    c12c13 = c12 / c13
+
+    o16 = data[:, 12] / 16
+    o18 = data[:, 13] / 18
+    o16o18 = o16 / o18
+    if Z_min is not None:
+        mask = (Z > Z_min)
+        Z = Z[mask]
+        c12c13 = c12c13[mask]
+        o16o18 = o16o18[mask]
+    return Z, c12c13, o16o18

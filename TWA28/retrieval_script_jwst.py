@@ -3,7 +3,7 @@ import pathlib
 import subprocess as sp
 import numpy as np
 import shutil
-import subprocess
+import os
 
 from retrieval_base.retrieval import prior_check, Retrieval
 from retrieval_base.spectrum_jwst import SpectrumJWST
@@ -143,7 +143,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     random_label = '_random' if random else ''
     disk = False
     disk_label = '_disk' if disk else ''
@@ -174,7 +174,22 @@ if args.copy_to_snellius:
     # if parent directory does not exist, create it on remote
     # sp.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
     # use rync -av --delete instead of scp -r
-    sp.run(f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
+    rsync_command = f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
+    try:
+        sp.run(rsync_command, shell=True, check=True)
+        
+    except:
+        proxy_jump = 'ssh.strw.leidenuniv.nl'
+       # Define SSH command with all options for skipping confirmation
+        ssh_command = f"ssh -J picos@{proxy_jump} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o CheckHostIP=no"
+        # Set the RSYNC_RSH environment variable to the SSH command
+        os.environ["RSYNC_RSH"] = ssh_command
+
+        # Now run rsync without needing the -e option
+        print(f' Attempting to use RSYNC_RSH with command:\n{rsync_command}')
+        
+        sp.run(rsync_command, shell=True, check=True)
+        print(f' Successful download for {target} {run}!\n')
 
     print(f' Succesful copy for {target}!\n')
     
@@ -190,15 +205,26 @@ if args.download:
     if test_output.exists() and not cache:
         shutil.rmtree(test_output)
     
+    rsync_command = f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/'
+
     try:
-        # subprocess.run(f'scp -r dgonzalezpi@snellius.surf.nl:{snellius_dir} {local_dir}', shell=True, check=True)
-        subprocess.run(f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/', shell=True, check=True)
+        # sp.run(f'scp -r dgonzalezpi@snellius.surf.nl:{snellius_dir} {local_dir}', shell=True, check=True)
+        sp.run(rsync_command, shell=True, check=True)
         print(f' Succesful download for {target} {run}!\n')
-        # catch error and print message
-    except subprocess.CalledProcessError as e:
-        print(f' -> Error downloading {snellius_dir} to {local_dir}:\n{e}')
-        print(f' -> VPN must be disabled or set to NL!!')
-    
+    except:
+        proxy_jump = 'ssh.strw.leidenuniv.nl'
+       # Define SSH command with all options for skipping confirmation
+        ssh_command = f"ssh -J picos@{proxy_jump} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o CheckHostIP=no"
+        # Set the RSYNC_RSH environment variable to the SSH command
+        os.environ["RSYNC_RSH"] = ssh_command
+
+        # Now run rsync without needing the -e option
+        rsync_command = f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/'
+        print(f' Attempting to use RSYNC_RSH with command:\n{rsync_command}')
+        
+        sp.run(rsync_command, shell=True, check=True)
+        print(f' Successful download for {target} {run}!\n')
+        
 if args.retrieval:
     ret = Retrieval(
         conf=conf, 

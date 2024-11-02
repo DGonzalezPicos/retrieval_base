@@ -9,8 +9,8 @@ file_params = 'config_jwst.py'
 
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
-lbl = 10
-run = f'lbl{lbl}_G2G3_5'
+lbl = 12
+run = f'lbl{lbl}_G2G3_6'
 prefix = f'./retrieval_outputs/{run}/test_'
 grating = 'g235h+g395h'
 # grating = 'g235h'
@@ -30,7 +30,7 @@ config_data = {
         'Nedge': 40, # (2024-10-18): 20 --> 40
     
         'log_P_range': (-5,2),
-        'n_atm_layers': 50, # (2024-10-20): update 35 --> 40
+        'n_atm_layers': 40, # (2024-10-20): update 35 --> 40
         'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
         }, 
@@ -362,7 +362,7 @@ PT_kwargs = dict(
 ####################################################################################
 testing = False
 const_efficiency_mode = True
-sampling_efficiency = 0.05 if not testing else 0.20
+sampling_efficiency = 0.10 if not testing else 0.20
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
 n_live_points = 200 if not testing else 120

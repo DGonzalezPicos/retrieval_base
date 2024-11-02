@@ -2,6 +2,7 @@ import pickle
 import os
 import shutil
 import wget
+import pathlib
 
 import numpy as np
 from scipy.interpolate import interp1d
@@ -14,7 +15,7 @@ import petitRADTRANS.nat_cst as nc
 pi = 3.14159265358979323846
 rjup_cm = 7.1492e9 # 1 Jupiter radius in cm
 
-def get_path():
+def get_path(return_pathlib=False):
     
     cwd = os.getcwd()
     if 'dgonzalezpi' in cwd:
@@ -24,6 +25,8 @@ def get_path():
     if 'dario' in cwd:
         path = '/home/dario/phd/retrieval_base/'
         
+    if return_pathlib:
+        return pathlib.Path(path)
     return path
     
 

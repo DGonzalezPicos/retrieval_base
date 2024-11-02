@@ -347,6 +347,8 @@ class Retrieval:
                 # get_contr=self.CB.active, 
                 get_contr=self.evaluation,
                 get_full_spectrum=self.evaluation, 
+                # calc_flux_fast=self.calc_flux_fast,
+                calc_flux_fast=True,
                 )
             
             # Add blackbody flux from disk with radius R_d and temperature T_d (inner disk)

@@ -2,6 +2,8 @@ import numpy as np
 import pathlib
 import os
 import json
+import time
+
 import seaborn as sns
 # set palette from sns for matplotlib
 sns.set_palette('deep')
@@ -36,29 +38,22 @@ spec.reshape(spec.n_orders, 1)
 
 opacity_params = {
     'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
+    'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
+
     'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
     # 'log_K': ([(-14,-2), r'$\log\ \mathrm{K}$'], 'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
+    'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
+    'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
+    'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
 }
 
 line_species = [v[-1] for k,v in opacity_params.items()]
 
-# lbl = 100
-
-# d_spec = 
-
 cache = True
-lbl_range = [
-            5,
-            10, 
-            12,
-            15,
-            #  20, 
-            #  100,
-             ]
-
-# lbl_range = [100]
+lbl = 12
 
 def load_pRT_atm(grating, lbl, cache=True):
     pRT_file = f'./lbl_test/pRT_atm_{grating}_lbl{lbl}.pkl'
@@ -75,6 +70,8 @@ def load_pRT_atm(grating, lbl, cache=True):
             log_P_range=log_P_range,
             n_atm_layers=n_atm_layers,
             rv_range=rv_range,
+            T_cutoff=(1200.0, 3200.0),
+            P_cutoff=(1e-4, 1e1),
             )
         # pickle save
         af.pickle_save(pRT_file, pRT_atm)
@@ -99,20 +96,29 @@ rv_range = (-20,20.)
 
 # fig, ax = 
 path = af.get_path(return_pathlib=True)
-pdf_name = path / f'TWA28/lbl_test/opacity_sampling_{gratings[0]}lbl_{min(lbl_range)}_{max(lbl_range)}.pdf'
+pdf_name = path / f'TWA28/lbl_test/speed_calcflux_{gratings[0]}lbl_{lbl}.pdf'
 
 flux_list = []
     
-
-for i, lbl in enumerate(lbl_range):
+speeds = ['norm', 'fast']
+for i, speed in enumerate(speeds):
     # pRT_file = f'./lbl_test/pRT_atm_{gratings[0]}_lbl{lbl}.pkl'
+
+    cache_i = True 
+    if not cache and i ==0:
+        cache_i = False
+    pRT_atm = load_pRT_atm(gratings[0], lbl, cache=cache_i)
     
-    pRT_atm = load_pRT_atm(gratings[0], lbl, cache=cache)
-    
-    m_spec = pRT_atm(mass_fractions=chem.mass_fractions,
-                    temperature=PT.temperature,
-                    params=bestfit['params'],
-                    )
+    for i in range(3):
+        start = time.time()
+        m_spec = pRT_atm(mass_fractions=chem.mass_fractions,
+                        temperature=PT.temperature,
+                        params=bestfit['params'],
+                        calc_flux_fast= (speed == 'fast'),
+                        )
+        end = time.time()
+
+        print(f'{i+1}/2 --> Speed={speed}, time={1000*(end-start):.1f} ms\n')
     # print(m_spec.flux.shape)
     flux_list.append(np.atleast_2d(np.squeeze(m_spec.flux)))
         
@@ -125,8 +131,9 @@ with PdfPages(pdf_name) as pdf:
         
         fig, ax = plt.subplots(2,1, figsize=(12, 6), gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
         
-        for j in range(len(lbl_range)):
-            ax[0].plot(wave[i], flux_list[j][i,], label=f'lbl={lbl_range[j]}', alpha=0.9-0.1*j, lw=lw)
+        for j in range(2):
+            ax[0].plot(wave[i], flux_list[j][i,], label='Fast' if speeds[j]=='fast' else 'Norm',
+                       alpha=0.9-0.1*j, lw=lw)
             
             if j > 0:
                 res = flux_list[j][i,] - flux_list[0][i,]

@@ -20,7 +20,10 @@ path = get_path()
 class pRT_model:
     
     Av = 0.0 # default, no extinction
+    disk_species = []
 
+    calc_flux_fast = False
+    
     def __init__(self, 
                  line_species, 
                  d_spec, 
@@ -110,9 +113,9 @@ class pRT_model:
         print(f' disk_species = {disk_species}')
         self.disk_species = disk_species if disk_species is not None else []
         
-        print(f' [pRT_model] T_ex_range = {T_ex_range}')
-        print(f' [pRT_model] N_mol_range = {N_mol_range}')
-        print(f' [pRT_model] d_spec.gratings_list = {d_spec.gratings_list}')
+        # print(f' [pRT_model] T_ex_range = {T_ex_range}')
+        # print(f' [pRT_model] N_mol_range = {N_mol_range}')
+        # print(f' [pRT_model] d_spec.gratings_list = {d_spec.gratings_list}')
         if (len(self.disk_species) > 0) and (T_ex_range != None):
             print(f' [pRT_model] Disk species: {disk_species}')
             # New approach (Oct 18.): interpolate on a (T_ex, N_mol) grid
@@ -220,6 +223,7 @@ class pRT_model:
                  params, 
                  get_contr=False, 
                  get_full_spectrum=False, 
+                 calc_flux_fast=False,
                  ):
         '''
         Create a new model spectrum with the given arguments.
@@ -279,7 +283,8 @@ class pRT_model:
         # Generate a model spectrum
         m_spec = self.get_model_spectrum(
             get_contr=get_contr, 
-            get_full_spectrum=get_full_spectrum
+            get_full_spectrum=get_full_spectrum,
+            fast=calc_flux_fast,
             )
 
         return m_spec
@@ -350,7 +355,7 @@ class pRT_model:
 
     # @line_profiler.profile
     # @memory_profiler.profile
-    def get_model_spectrum(self, get_contr=False, get_full_spectrum=False):
+    def get_model_spectrum(self, get_contr=False, get_full_spectrum=False, fast=False):
         '''
         Generate a model spectrum with the given parameters.
 
@@ -384,17 +389,44 @@ class pRT_model:
         for i, atm_i in enumerate(self.atm):
             
             # Compute the emission spectrum
-            atm_i.calc_flux(
-                self.temperature, 
-                self.mass_fractions, 
-                gravity=10.0**self.params['log_g'], 
-                mmw=self.mass_fractions['MMW'], 
-                Kzz=self.K_zz, 
-                fsed=self.f_sed, 
-                sigma_lnorm=self.sigma_g,
-                give_absorption_opacity=self.give_absorption_opacity, 
-                contribution=get_contr, 
-                )
+            # if i == 0 and fast:
+            #     atm_i.calc_flux_init(self.temperature, 
+            #         self.mass_fractions, 
+            #         gravity=10.0**self.params['log_g'], 
+            #         mmw=self.mass_fractions['MMW'], 
+            #         Kzz=self.K_zz, 
+            #         fsed=self.f_sed, 
+            #         sigma_lnorm=self.sigma_g,
+            #         give_absorption_opacity=self.give_absorption_opacity, 
+            #     )
+            # else:
+            #     # copy attributes from the previous order
+            #     atm_i.copy_flux_init(self.atm[0])
+            
+            if fast:
+                atm_i.calc_flux_fast(
+                    self.temperature, 
+                    self.mass_fractions, 
+                    gravity=10.0**self.params['log_g'], 
+                    mmw=self.mass_fractions['MMW'], 
+                    Kzz=self.K_zz, 
+                    fsed=self.f_sed, 
+                    sigma_lnorm=self.sigma_g,
+                    give_absorption_opacity=self.give_absorption_opacity, 
+                    contribution=get_contr, 
+                    )
+            else:
+                atm_i.calc_flux(
+                    self.temperature, 
+                    self.mass_fractions, 
+                    gravity=10.0**self.params['log_g'], 
+                    mmw=self.mass_fractions['MMW'], 
+                    Kzz=self.K_zz, 
+                    fsed=self.f_sed, 
+                    sigma_lnorm=self.sigma_g,
+                    give_absorption_opacity=self.give_absorption_opacity, 
+                    contribution=get_contr, 
+                    )
             # end_cf = time.time()
             # print(f'Order {i} took {end_cf-start_cf:.3f} s to compute the flux')
             wave_i = nc.c / atm_i.freq

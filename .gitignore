@@ -53,3 +53,7 @@ SPHINX/
 gl880/test_starpool.py
 data/slab_models
 *.gif
+*THIN*
+*.f90
+*.o
+*.mod

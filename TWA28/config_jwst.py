@@ -360,12 +360,12 @@ PT_kwargs = dict(
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = False
+testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.10 if not testing else 0.20
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 200 if not testing else 120
+evidence_tolerance = 0.5 if not testing else 1.0
+n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

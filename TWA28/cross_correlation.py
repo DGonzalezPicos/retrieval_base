@@ -16,7 +16,7 @@ path = af.get_path()
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 # run = None
-run = 'lbl15_G2_4'
+run = 'lbl12_G2G3_6'
 w_set='NIRSpec'
 
 cwd = os.getcwd()
@@ -35,6 +35,7 @@ ret = Retrieval(
     evaluation=True,
     plot_ccf=True
     )
+ret.calc_flux_fast = False # backwards compatibility
 
 bestfit_params, posterior = ret.PMN_analyze()
 bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
@@ -60,20 +61,28 @@ def get_species(ret,
                  wave, 
                  line_species, 
                  bestfit_params_dict, 
+                 disk_species=False,
                   **kwargs):
 
     n_orders = len(wave)
     
     bestfit_params_dict_copy = copy.deepcopy(bestfit_params_dict)
-            
-    if conf.chem_mode == 'fastchem':
-        bestfit_params_dict_copy[f'alpha_{line_species}'] = -14.0
-        if line_species in conf.isotopologues_dict.keys():
-            print(f'Found isotopologue {line_species} with ratio {conf.isotopologues_dict[line_species][0]}')
-            log_ratio = conf.isotopologues_dict[line_species][0]
-            bestfit_params_dict_copy[log_ratio] = 4.0
+    
+    if disk_species:
+        line_species = line_species.replace('_disk','')
+        bestfit_params_dict_copy[f'log_A_au_{line_species}'] = -5.0
+        bestfit_params_dict_copy[f'log_N_mol_{line_species}'] = 15.0
+    
     else:
-        bestfit_params_dict_copy[f'log_{line_species}'] = -14.0
+            
+        if conf.chem_mode == 'fastchem':
+            bestfit_params_dict_copy[f'alpha_{line_species}'] = -14.0
+            if line_species in conf.isotopologues_dict.keys():
+                print(f'Found isotopologue {line_species} with ratio {conf.isotopologues_dict[line_species][0]}')
+                log_ratio = conf.isotopologues_dict[line_species][0]
+                bestfit_params_dict_copy[log_ratio] = 4.0
+        else:
+            bestfit_params_dict_copy[f'log_{line_species}'] = -14.0
 
     ret.evaluate_model(np.array(list(bestfit_params_dict_copy.values())))
     ret.PMN_lnL_func()
@@ -114,15 +123,25 @@ single_species_dict = {k:v for i, (k,v) in enumerate(ret.Chem.pRT_name_dict_r.it
 # if run_ccf:
 # species_list = ['12CO', 'H2O', 'TiO', 'CO2', 'AlH', 'SiO']
 species_list = [k[4:] for k in ret.conf.opacity_params.keys() if 'log_' in k]
+
+disk_species = getattr(ret.conf, 'disk_species', [])
+species_list += [f'{k}_disk' for k in disk_species]
 # species_list = ['12CO', '13CO']
 # species_list = ['SiO']
 # print(stop)
 rv_max = 2000.0
 rv_noise = 400.0
 for species in species_list:
-    label_species = conf.opacity_params[f'log_{species}'][0][1].replace('\\log\\','')
     
-    m_flux_wo, m_spec_wo_species, m_flux_wo_species_pRT_grid = get_species(ret, m_wave, species, bestfit_params_dict)
+    disk_species = False
+    if 'disk' in species:
+        disk_species = True
+        label_species = species.replace('_disk',' (disk)')
+    else:
+        label_species = conf.opacity_params[f'log_{species}'][0][1].replace('\\log\\','')
+    
+    m_flux_wo, m_spec_wo_species, m_flux_wo_species_pRT_grid = get_species(ret, m_wave, species, bestfit_params_dict,
+                                                                           disk_species = disk_species)
 
     rv, CCF, d_ACF, m_ACF = af.CCF(d_spec=d_spec,
                                     m_spec=m_spec,

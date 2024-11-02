@@ -136,6 +136,7 @@ def prior_check(conf, n=3, random=False, get_contr=False, remove_disk=False, fig
 class Retrieval:
 
     plot_ccf = False
+    calc_flux_fast = True
     def __init__(self, conf, evaluation, d_spec=None, plot_ccf=False):
 
         self.conf = conf
@@ -233,7 +234,8 @@ class Retrieval:
             self.PT.sonora = self.conf.PT_kwargs['sonora']
                 
         self.Chem = get_Chemistry_class(
-            self.pRT_atm[w_set].line_species, 
+            # self.pRT_atm[w_set].line_species, 
+            self.conf.line_species_dict,
             self.pRT_atm[w_set].pressure, 
             self.Param.chem_mode, 
             **self.conf.chem_kwargs, 
@@ -347,8 +349,8 @@ class Retrieval:
                 # get_contr=self.CB.active, 
                 get_contr=self.evaluation,
                 get_full_spectrum=self.evaluation, 
-                # calc_flux_fast=self.calc_flux_fast,
-                calc_flux_fast=True,
+                calc_flux_fast=self.calc_flux_fast,
+                # calc_flux_fast=True, # New, 2024-10-02
                 )
             
             # Add blackbody flux from disk with radius R_d and temperature T_d (inner disk)

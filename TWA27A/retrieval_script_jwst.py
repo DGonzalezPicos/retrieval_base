@@ -2,8 +2,10 @@ import argparse
 import pathlib
 import subprocess as sp
 import numpy as np
+import shutil
+import os
 
-from retrieval_base.retrieval import pre_processing, prior_check, Retrieval
+from retrieval_base.retrieval import prior_check, Retrieval
 from retrieval_base.spectrum_jwst import SpectrumJWST
 from retrieval_base.pRT_model import pRT_model
 import retrieval_base.auxiliary_functions as af
@@ -13,7 +15,7 @@ import config_jwst as conf
 
 config_file = 'config_jwst.txt'
 target = 'TWA27A'
-run = None
+# run = None
 # run = 'jwst_KLM_N10_veiling3'
 
 conf_data = conf.config_data['NIRSpec']
@@ -43,9 +45,11 @@ parser.add_argument('--retrieval', '-r', action='store_true', default=False)
 parser.add_argument('--evaluation', '-e', action='store_true', default=False)
 # parser.add_argument('--time_profiler', '-t', action='store_true', default=False)
 parser.add_argument('--memory_profiler', '-m', action='store_true', default=False)
-parser.add_argument('--minimize', action='store_true', default=False)
+parser.add_argument('--copy_to_snellius', '-copy_to_snellius', action='store_true', default=False)
+parser.add_argument('--download', '-d', action='store_true', default=False)
+parser.add_argument('--run', '-run', type=str, default=None)
 args = parser.parse_args()
-
+run = args.run
 if args.pre_processing:
     sp.call(['python', f'{path}/{target}/config_jwst.py'])
     ## Pre-processing data
@@ -99,6 +103,14 @@ if args.pre_processing:
 
     ## Create pRT_atm object
     pRT_file =pathlib.Path(f'{conf.prefix}data/pRT_atm_{spec.w_set}.pkl')
+    if 'rv' in conf.free_params:
+        rv_range = conf.free_params['rv'][0]
+    elif 'rv' in conf.constant_params:
+        rv = conf.constant_params['rv']
+        rv_range = (rv-10.0, rv+10.0)
+    else:
+        raise ValueError('No rv_range defined in conf.free_params or conf.constant_params')
+        
     if not pRT_file.exists():
         print(f'--> Creating {pRT_file}')
         lbl = conf_data['lbl_opacity_sampling']
@@ -114,8 +126,12 @@ if args.pre_processing:
             continuum_opacities=conf.continuum_opacities,
             log_P_range=conf_data.get('log_P_range'), 
             n_atm_layers=conf_data.get('n_atm_layers'), 
-            rv_range=conf.free_params['rv'][0], 
-            disk_species=conf.disk_species,
+            rv_range=rv_range,
+            disk_species=getattr(conf, 'disk_species', []),
+            T_ex_range=getattr(conf, 'T_ex_range', None),
+            N_mol_range=getattr(conf, 'N_mol_range', None),
+            T_cutoff=conf_data.get('T_cutoff', None),
+            P_cutoff=conf_data.get('P_cutoff', None),
             )
         # check parent directory
         # pRT_file.parent.mkdir(parents=True, exist_ok=True)
@@ -127,12 +143,15 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     random_label = '_random' if random else ''
+    disk = False
+    disk_label = '_disk' if disk else ''
     ret = prior_check(conf=conf, n=3, 
                 random=random, 
                 get_contr=False,
-                fig_name=figs_path / f'prior_predictive_check{random_label}.pdf')
+                remove_disk=not disk,
+                fig_name=figs_path / f'prior_predictive_check{disk_label}{random_label}.pdf')
     
     if args.memory_profiler:
         print('--> Running memory profiler..')
@@ -141,11 +160,71 @@ if args.prior_check:
         for w_set in ret.d_spec.keys():
             ret.list_memory_allocation(obj=ret.pRT_atm[w_set], min_size_mb=0.1)
         
-if args.minimize:
-    print('--> Running minimization..')
-    ret = Retrieval(conf=conf, evaluation=False)
-    ret.gradient_based_optimization(method='L-BFGS-B', options={'maxiter': 100})
+# if args.minimize:
+#     print('--> Running minimization..')
+#     ret = Retrieval(conf=conf, evaluation=False)
+#     ret.gradient_based_optimization(method='L-BFGS-B', options={'maxiter': 100})
+
+if args.copy_to_snellius:
+    # copy this folder to snellius
+    snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{conf.run}'
+    local_dir = str(path / target / 'retrieval_outputs' / conf.run)
+    print(f' Copying {local_dir} to {snellius_dir}...')
     
+    # if parent directory does not exist, create it on remote
+    # sp.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
+    # use rync -av --delete instead of scp -r
+    rsync_command = f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
+    try:
+        sp.run(rsync_command, shell=True, check=True)
+        
+    except:
+        proxy_jump = 'ssh.strw.leidenuniv.nl'
+       # Define SSH command with all options for skipping confirmation
+        ssh_command = f"ssh -J picos@{proxy_jump} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o CheckHostIP=no"
+        # Set the RSYNC_RSH environment variable to the SSH command
+        os.environ["RSYNC_RSH"] = ssh_command
+
+        # Now run rsync without needing the -e option
+        print(f' Attempting to use RSYNC_RSH with command:\n{rsync_command}')
+        
+        sp.run(rsync_command, shell=True, check=True)
+        print(f' Successful download for {target} {run}!\n')
+
+    print(f' Succesful copy for {target}!\n')
+    
+if args.download:
+    # download from snellius using scp -r
+    run = conf.run
+    snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}/test_output'
+    local_dir = str(path / target / f'retrieval_outputs/{run}/test_output')
+    print(f' Downloading {snellius_dir} to {local_dir}...')
+    
+    cache = False
+    test_output = path / target / f'retrieval_outputs/{run}/test_output'
+    if test_output.exists() and not cache:
+        shutil.rmtree(test_output)
+    
+    rsync_command = f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/'
+
+    try:
+        # sp.run(f'scp -r dgonzalezpi@snellius.surf.nl:{snellius_dir} {local_dir}', shell=True, check=True)
+        sp.run(rsync_command, shell=True, check=True)
+        print(f' Succesful download for {target} {run}!\n')
+    except:
+        proxy_jump = 'ssh.strw.leidenuniv.nl'
+       # Define SSH command with all options for skipping confirmation
+        ssh_command = f"ssh -J picos@{proxy_jump} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o CheckHostIP=no"
+        # Set the RSYNC_RSH environment variable to the SSH command
+        os.environ["RSYNC_RSH"] = ssh_command
+
+        # Now run rsync without needing the -e option
+        rsync_command = f'rsync -av --progress dgonzalezpi@snellius.surf.nl:{snellius_dir}/ {local_dir}/'
+        print(f' Attempting to use RSYNC_RSH with command:\n{rsync_command}')
+        
+        sp.run(rsync_command, shell=True, check=True)
+        print(f' Successful download for {target} {run}!\n')
+        
 if args.retrieval:
     ret = Retrieval(
         conf=conf, 

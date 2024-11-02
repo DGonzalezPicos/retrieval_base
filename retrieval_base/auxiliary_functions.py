@@ -429,7 +429,6 @@ def instr_broadening(wave, flux, out_res=1e6, in_res=1e6):
                 (2*np.sqrt(2*np.log(2)))
 
     spacing = np.mean(2*np.diff(wave) / (wave[1:] + wave[:-1]))
-
     # Calculate the sigma to be used in the gauss filter in pixels
     sigma_LSF_gauss_filter = sigma_LSF / spacing
     

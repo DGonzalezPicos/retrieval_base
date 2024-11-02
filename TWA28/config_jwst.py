@@ -67,7 +67,7 @@ opacity_params = {
     # 'log_CH4': ([(-14,-2), r'$\log\ \mathrm{CH_4}$'], 'CH4_MM_main_iso'),
     # 'log_CH': ([(-14,-2), r'$\log\ \mathrm{CH}$'], 'CH_main_iso'),
     # 'log_NH3': ([(-14,-2), r'$\log\ \mathrm{NH_3}$'], 'NH3_coles_main_iso_Sam'),
-    'log_HCN': ([(-14,-2), r'$\log\ \mathrm{HCN}$'], 'HCN_main_iso'),
+    # 'log_HCN': ([(-14,-2), r'$\log\ \mathrm{HCN}$'], 'HCN_main_iso'),
     # 'log_NH': ([(-14,-2), r'$\log\ \mathrm{NH}$'], 'NH_kNigHt_main_iso'),
     # 'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
     
@@ -86,7 +86,7 @@ opacity_params = {
     # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
     # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
-    'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_AloHa_main_iso'),
+    # 'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_AloHa_main_iso'),
     # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
     # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
     # 'log_ScH': ([(-14,-2), r'$\log\ \mathrm{ScH}$'], 'ScH_main_iso'), # DGP (2024-07-16): try
@@ -99,7 +99,7 @@ opacity_params = {
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
+    # 'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 # exclude_opacity_params = ['C18O', 'C17O', 'CO2', 'SiO','HCl']
@@ -267,7 +267,8 @@ free_params = {k:v for k,v in free_params.items() if k not in list(constant_para
 if grating == 'g235h+g395h':
     constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
     
-    disk_species = ['12CO', '13CO', 'H2O']
+    # disk_species = ['12CO', '13CO', 'H2O']
+    disk_species = ['12CO']
     T_ex_range = np.arange(300.0, 800.0+50.0, 50.0).tolist()
     N_mol_range = np.logspace(15, 20, 6*2).tolist()
 
@@ -315,7 +316,7 @@ chem_mode = 'fastchem'
 chem_kwargs = dict()
 if chem_mode == 'fastchem':
     chem_kwargs['fastchem_grid_file'] = '../data/fastchem_grid_twx.h5'
-    chem_kwargs['line_species_dict'] = line_species_dict
+    # chem_kwargs['line_species'] = line_species_dict
 
 
 species_to_plot_VMR , species_to_plot_CCF = [], []
@@ -362,7 +363,7 @@ PT_kwargs = dict(
 ####################################################################################
 testing = True
 const_efficiency_mode = True
-sampling_efficiency = 0.10 if not testing else 0.20
+sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 400 if not testing else 200

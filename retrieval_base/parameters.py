@@ -135,7 +135,7 @@ class Parameters:
                 low =  min(self.params['dlnT_dlnP_RCE'], low)
                 
             if key_i == 'R_out':
-                low = max(self.params['R_cav'], low)
+                low = max(self.params['R_cav'] * 1.01, low)
                 
             # print(f' [Parameters.__call__]: key_i = {key_i}, low = {low}, high = {high}')
             cube[i] = low + (high-low)*cube[i]
@@ -472,15 +472,22 @@ class Parameters:
             
         if 'R_cav' in self.param_keys:
             self.params['R_cav'] = self.params['R_cav']
-            self.params['R_out'] = self.params.get('R_out', self.params['R_cav'] * 100.0)
+            # self.params['R_out'] = self.params.get('R_out', self.params['R_cav'] * 100.0)
+            self.params['R_out'] = self.params['R_out']
             # self.params['T_star']
-            assert 'T_star' in self.params.keys(), ' [Parameters.read_disk_params]: T_star not found in the parameter keys'
-            self.params['i'] = np.radians(self.params.get('i_deg', 45.0))
             
-            assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
-            self.params['q'] = self.params.get('q', 0.75)
+            # multiply by factor to get the area in AU^2: (1 AU = 1.496e13 cm, 1 Rjup = 7.1492e9 cm)
+            self.params['A_au'] = np.pi * (self.params['R_out']**2 - self.params['R_cav']**2) * (7.1492e9/1.496e13)**2
+            # self.params['i'] = np.radians(self.params.get('i_deg', 45.0))
+            self.params['i_deg'] = self.params.get('i_deg', 0.0)
+
+            if 'q' in self.param_keys:
+                assert 'T_star' in self.params.keys(), ' [Parameters.read_disk_params]: T_star not found in the parameter keys'
+                
+                assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
+                self.params['q'] = self.params.get('q', 0.75)
             
-        if 'log_A_au_12CO' in self.param_keys:
+        elif 'log_A_au_12CO' in self.param_keys:
             # self.params['A_au_12CO'] = 10**self.params['log_A_au_12CO']
             # self.params['A_au_13CO'] = 10**self.params['log_A_au_13CO']
             # self.params['A_au_H2O'] = 10**self.params['log_A_au_H2O']

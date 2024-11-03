@@ -14,7 +14,7 @@ import petitRADTRANS.nat_cst as nc
 from .spectrum import Spectrum, ModelSpectrum
 from retrieval_base.slab_grid import SlabGrid
 
-from retrieval_base.auxiliary_functions import get_path, apply_extinction, geom_thin_disk_emission
+from retrieval_base.auxiliary_functions import get_path, apply_extinction, geom_thin_disk_emission, apply_keplerian_profile
 path = get_path()
 
 class pRT_model:
@@ -38,6 +38,7 @@ class pRT_model:
                  chem_mode='free', 
                  rv_range=(-50,50), 
                  disk_species=[],
+                 disk_kwargs={},
                  T_ex_range=None,
                 N_mol_range=None,
                  T_cutoff=None,
@@ -112,7 +113,7 @@ class pRT_model:
         
         print(f' disk_species = {disk_species}')
         self.disk_species = disk_species if disk_species is not None else []
-        
+        self.disk_kwargs = disk_kwargs
         # print(f' [pRT_model] T_ex_range = {T_ex_range}')
         # print(f' [pRT_model] N_mol_range = {N_mol_range}')
         # print(f' [pRT_model] d_spec.gratings_list = {d_spec.gratings_list}')
@@ -456,29 +457,29 @@ class pRT_model:
             # then broaden and resample together with the model spectrum
             # print(f' [pRT_model] wave_i[0] = {wave_i[0]}')
             # WARNING: disk emisission deprecated... use self.slab instead
-            if False and (len(self.disk_species)>0) and wave_i[0] > 4000.0: # only for G395H reddest filter
-                # Compute the disk emission
-                # Add the disk emission to the model spectrum
-                # print(f' [pRT_model] Computing disk emission for order {i}...')
-                wave_i_um = wave_i * 1e-3
-                # DGP sep 17: fine_wgrid must have a spacing of <= 1e-5 um
-                fine_wgrid = np.arange(np.nanmin(wave_i_um), np.nanmax(wave_i_um)+1e-5, 1e-5)
-                self.disk.set_fine_wgrid(fine_wgrid)
-                # disk params must be a dictionary containing (at least): T_ex, N_mol, A_au, dV
-                disk_keys = ['T_ex', 'N_mol', 'A_au', 'dV', 'd_pc']
-                # assert all([k in self.disk_params.keys() for k in disk_keys]), \
-                #     'Disk parameters must contain T_ex, N_mol, A_au, dV'
+            # if False and (len(self.disk_species)>0) and wave_i[0] > 4000.0: # only for G395H reddest filter
+            #     # Compute the disk emission
+            #     # Add the disk emission to the model spectrum
+            #     # print(f' [pRT_model] Computing disk emission for order {i}...')
+            #     wave_i_um = wave_i * 1e-3
+            #     # DGP sep 17: fine_wgrid must have a spacing of <= 1e-5 um
+            #     fine_wgrid = np.arange(np.nanmin(wave_i_um), np.nanmax(wave_i_um)+1e-5, 1e-5)
+            #     self.disk.set_fine_wgrid(fine_wgrid)
+            #     # disk params must be a dictionary containing (at least): T_ex, N_mol, A_au, dV
+            #     disk_keys = ['T_ex', 'N_mol', 'A_au', 'dV', 'd_pc']
+            #     # assert all([k in self.disk_params.keys() for k in disk_keys]), \
+            #     #     'Disk parameters must contain T_ex, N_mol, A_au, dV'
                     
-                disk_dict = {k: self.params[k] for k in disk_keys}
-                flux_disk = self.disk(disk_dict,
-                                    wave=wave_i_um,)
+            #     disk_dict = {k: self.params[k] for k in disk_keys}
+            #     flux_disk = self.disk(disk_dict,
+            #                         wave=wave_i_um,)
 
-                flux_i += flux_disk
-            if self.geom_thin_disk_emission:
-                f_geom_thin_disk = geom_thin_disk_emission(wave_nm=wave_i, **self.geom_thin_disk_args)
-                # print(f' [pRT_model] f_geom_thin_disk.shape = {f_geom_thin_disk.shape}')
-                # print(f' [pRT_model] mean(f_geom_thin_disk) = {np.mean(f_geom_thin_disk)}')
-                flux_i += f_geom_thin_disk
+            #     flux_i += flux_disk
+            # if self.geom_thin_disk_emission:
+            #     f_geom_thin_disk = geom_thin_disk_emission(wave_nm=wave_i, **self.geom_thin_disk_args)
+            #     # print(f' [pRT_model] f_geom_thin_disk.shape = {f_geom_thin_disk.shape}')
+            #     # print(f' [pRT_model] mean(f_geom_thin_disk) = {np.mean(f_geom_thin_disk)}')
+            #     flux_i += f_geom_thin_disk
 
             # Create a ModelSpectrum instance
             m_spec_i = ModelSpectrum(
@@ -524,11 +525,19 @@ class pRT_model:
                     
                     # skip if all values of flux are below 1e-18
                                         
-                    disk_params = {attr:self.params.get(f'{attr}_{ds_i}') for attr in ['T_ex', 'N_mol', 'A_au']}
+                    disk_params = {attr:self.params.get(f'{attr}_{ds_i}') for attr in ['T_ex', 'N_mol']}
+                    disk_params['A_au'] = self.params.get(f'A_au_{ds_i}', self.params['A_au'])
                     disk_params['d_pc'] = self.params['d_pc']
                     rv_disk = self.params.get('rv_disk', 0.0)
                     
                     f_slab_i = self.slab[ds_i].interpolate(**disk_params)
+                    if 'i_deg' in self.params.keys():
+                        f_slab_i = apply_keplerian_profile(self.slab[ds_i].wave_grid, f_slab_i, 
+                                                              np.linspace(self.params['R_cav'], self.params['R_out'], self.disk_kwargs['nr']),
+                                                              self.params.get("M_star_Mjup", 20.0),
+                                                                self.params['i_deg'],
+                                                                self.disk_kwargs['ntheta'],
+                                                                )
                     # fill with zeros values beyond the range of the slab model
                     m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid * (1+(rv_disk/2.998e5)), f_slab_i, right=0.0, left=0.0)
                     assert np.sum(np.isnan(m_flux_slab_i)) == 0, '[pRT_model.get_model_spectrum] line 546: NaNs in m_flux_slab_i'

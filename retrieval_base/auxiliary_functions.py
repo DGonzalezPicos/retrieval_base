@@ -14,6 +14,7 @@ from astropy.io import fits
 import petitRADTRANS.nat_cst as nc
 pi = 3.14159265358979323846
 rjup_cm = 7.1492e9 # 1 Jupiter radius in cm
+G = 6.67430e-8  # Gravitational constant in cgs units (cm^3 g^-1 s^-2)
 
 def get_path(return_pathlib=False):
     
@@ -702,3 +703,47 @@ def apply_PT_cutoff(atm, T_min, T_max, P_min=1e-4, P_max=1e2):
             Ps = np.unique(np.array(new_custom_line_TP_grid)[:,1])
             atm.custom_diffPs[species] = len(Ps)
     return atm
+
+
+def apply_keplerian_profile(
+    wave: np.ndarray,
+    flux: np.ndarray,
+    radii: np.ndarray,
+    m_star: float = 20.0,
+    inclination_deg: float = 45,
+    ntheta: int = 60,
+) -> np.ndarray:
+    """
+    Apply a Keplerian profile to the given flux data.
+
+    Parameters:
+    wave (np.ndarray): Wavelength array.
+    flux (np.ndarray): Flux array corresponding to the wavelengths.
+    radii (np.ndarray): Array of radii in Rjup.
+    m_star (float): Mass of the star in Mjup.
+    inclination_deg (float): Inclination angle in degrees.
+    ntheta (int): Number of angular steps for integration.
+
+    Returns:
+    np.ndarray: Flux array with the applied Keplerian profile.
+    """
+    radii_cm = radii * 7.1492e9  # Convert radii to cm
+    m_star_cm = m_star * 1.898e30  # Convert mass to grams
+    
+    total_flux = np.nansum(flux)
+    if total_flux == 0:
+        print(f'--> Total flux is zero, returning original flux')
+        return flux
+    flux_s = np.zeros_like(wave)
+    sin_inclination = np.sin(np.radians(inclination_deg))
+    cos_phi = np.cos(np.linspace(0, 2 * np.pi, ntheta))
+
+    for r in radii_cm:
+        v_kepler = np.sqrt(G * m_star_cm / r)
+        rdr = r * r / ntheta
+        for j in range(ntheta):
+            v_los = v_kepler * sin_inclination * cos_phi[j]
+            flux_s += np.interp(wave, wave * (1 + v_los / 2.998e10), flux) * rdr
+
+    flux_s *= total_flux / np.nansum(flux_s)
+    return flux_s

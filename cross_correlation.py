@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 # pdf pages
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
+import argparse
 
 from retrieval_base.retrieval import Retrieval
 from retrieval_base.spectrum import ModelSpectrum
@@ -12,11 +13,20 @@ import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
 # import config_jwst as conf
 
+# define arguments
+parser = argparse.ArgumentParser(description='Run retrieval')
+parser.add_argument('-t', '--target', type=str, help='Target name')
+parser.add_argument('-r', '--run', type=str, help='Run name')
+args = parser.parse_args()
+
+target = args.target
+run = args.run
+
 path = af.get_path()
 config_file = 'config_jwst.txt'
-target = 'TWA28'
+# target = 'TWA28'
 # run = None
-run = 'lbl12_G2G3_6'
+# run = 'lbl12_G2G3_6'
 w_set='NIRSpec'
 
 cwd = os.getcwd()
@@ -130,6 +140,7 @@ species_list += [f'{k}_disk' for k in disk_species]
 # species_list = ['SiO']
 # print(stop)
 rv_max = 2000.0
+rv_step = 5.0
 rv_noise = 400.0
 for species in species_list:
     
@@ -151,7 +162,7 @@ for species in species_list:
                                     m_flux_wo_species_pRT_grid=m_flux_wo_species_pRT_grid,
                                     # LogLike=ret.LogLike[w_set],
                                     Cov=ret.Cov[w_set],
-                                    rv=np.arange(-rv_max,rv_max+1e-6,10), 
+                                    rv=np.arange(-rv_max,rv_max+1e-6, rv_step), 
                                     apply_high_pass_filter=True, 
                                     high_pass_filter_sigma=10.0, # WARNING: sigma > 10 does not remove continuum properly... check this
     )

@@ -537,9 +537,10 @@ class pRT_model:
                                                             f_slab_i,
                                                             np.linspace(self.params['R_cav'], self.params['R_out'], self.disk_kwargs['nr']),
                                                             self.params.get("M_star_Mjup", 20.0),
-                                                            self.params['i_deg'],
-                                                            self.disk_kwargs['ntheta'],
-                                                            self.params.get('nu', 0.0),
+                                                            inclination_deg=self.params['i_deg'],
+                                                            ntheta=self.disk_kwargs['ntheta'],
+                                                            nu=self.params.get('nu', 0.0),
+                                                            vsys=self.params.get('rv', 0.0),
                                                                 )
                     # fill with zeros values beyond the range of the slab model
                     m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid * (1+(rv_disk/2.998e5)), f_slab_i, right=0.0, left=0.0)

@@ -15,8 +15,6 @@ import config_jwst as conf
 
 config_file = 'config_jwst.txt'
 target = 'TWA27A'
-# run = None
-# run = 'jwst_KLM_N10_veiling3'
 
 conf_data = conf.config_data['NIRSpec']
 # create output directory
@@ -26,16 +24,7 @@ for key in ['data', 'plots', 'output']:
     # print(f'--> Created {conf.prefix}{key}/')
     
     
-cwd = str(pathlib.Path(__file__).parent.absolute())
-if 'dgonzalezpi' in cwd:
-    print('Running on Snellius.. disabling interactive plotting')
-    import matplotlib
-    # disable interactive plotting
-    matplotlib.use('Agg')
-    path = pathlib.Path('/home/dgonzalezpi/retrieval_base/')
-else:
-    path = pathlib.Path('/home/dario/phd/retrieval_base')
-    
+path = af.get_path(return_pathlib=True)
 
 # Instantiate the parser
 parser = argparse.ArgumentParser()
@@ -48,6 +37,7 @@ parser.add_argument('--memory_profiler', '-m', action='store_true', default=Fals
 parser.add_argument('--copy_to_snellius', '-copy_to_snellius', action='store_true', default=False)
 parser.add_argument('--download', '-d', action='store_true', default=False)
 parser.add_argument('--run', '-run', type=str, default=None)
+parser.add_argument('--ccf', '-ccf', action='store_true', default=False)
 args = parser.parse_args()
 run = args.run
 if args.pre_processing:
@@ -257,3 +247,11 @@ if args.evaluation:
         ln_Z_err=None, 
         nullcontext=None
         )
+    
+if args.ccf:
+    run = run or conf.run
+    print(f' ** Running cross-correlation function for {target} {run}..')
+    # command = f'python {path}/retrieval_base/cross_correlation.py -t {target} -r {run}'
+    # print(f' ** Running command: {command}')
+    sp.call(command, shell=True)
+    print(f' ** Done with cross-correlation function for {target} {run}..')

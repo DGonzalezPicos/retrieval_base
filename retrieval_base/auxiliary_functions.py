@@ -713,6 +713,7 @@ def apply_keplerian_profile(
     inclination_deg: float = 45,
     ntheta: int = 60,
     nu: float = 0.0,
+    vsys: float = 0.0,
 ) -> np.ndarray:
     """
     Apply a Keplerian profile to the given flux data.
@@ -725,12 +726,13 @@ def apply_keplerian_profile(
     inclination_deg (float): Inclination angle in degrees.
     ntheta (int): Number of angular steps for integration.
     nu (float): asymmetric factor for theta.
+    vsys (float): Systemic velocity in km/s.
 
     Returns:
     np.ndarray: Flux array with the applied Keplerian profile.
     """
     radii_cm = radii * 7.1492e9  # Convert radii to cm
-    m_star_cm = m_star * 1.898e30  # Convert mass to grams
+    m_star_g = m_star * 1.898e30  # Convert mass to grams
     
     total_flux = np.nansum(flux)
     if total_flux == 0:
@@ -748,10 +750,10 @@ def apply_keplerian_profile(
     w[~pos] *= 1 + nu
 
     for r in radii_cm:
-        v_kepler = np.sqrt(G * m_star_cm / r)
+        v_kepler = np.sqrt(G * m_star_g / r)
         rdr = r * r / ntheta
         for j in range(ntheta):
-            v_los = v_kepler * sin_inclination * cos_theta[j]
+            v_los = v_kepler * sin_inclination * cos_theta[j] + (vsys * 1e5)
             
             flux_s += w[j] * np.interp(wave, wave * (1 + v_los / 2.998e10), flux) * rdr
 

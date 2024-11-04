@@ -9,8 +9,8 @@ file_params = 'config_jwst.py'
 
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
-lbl = 12
-run = f'lbl{lbl}_G2G3_6'
+lbl = 15
+run = f'lbl{lbl}_G2G3_7'
 prefix = f'./retrieval_outputs/{run}/test_'
 grating = 'g235h+g395h'
 # grating = 'g235h'
@@ -73,9 +73,9 @@ opacity_params = {
     
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
+    # 'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
-    # 'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
+    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
     # 'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
     # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
     # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
@@ -145,7 +145,7 @@ free_params = {
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
    'T_0': [(2000,8000), r'$T_0$'], 
-    'log_P_RCE': [(-2.0,1.0), r'$\log\ P_\mathrm{RCE}$'],
+    'log_P_RCE': [(-3.0,1.0), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
@@ -249,6 +249,7 @@ constant_params = {
     # 'log_g': 3.5,
     'vsini':0.,
     'T_star': 2430.0, # effective temperature in K, Cooper+2024 (Gaia DR3)
+    'M_star_Mjup': 20.0, # mass in Mjup, Manjavacas+2024
 
     # PT profile
     'N_knots': N_knots, # avoid using spline to fit the continuum
@@ -271,14 +272,19 @@ if grating == 'g235h+g395h':
     disk_species = ['12CO']
     T_ex_range = np.arange(300.0, 800.0+50.0, 50.0).tolist()
     N_mol_range = np.logspace(15, 20, 6*2).tolist()
+    
+    disk_kwargs = dict(nr=20, ntheta=60)
 
     if len(disk_species) > 0:
-        free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
+        # free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
         free_params.update({f'log_N_mol_{sp}': [(15.0, 20.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
         free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
 
-        free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
-
+        # free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
+        free_params.update({'R_cav': [(0.5, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
+        free_params.update({'R_out': [(0.5, 200.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
+        free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
+        free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 else:
     constant_params['gratings'] = [grating] * 4
@@ -347,7 +353,7 @@ if free_params.get('log_l') is not None:
 
 
 PT_kwargs = dict(
-    conv_adiabat = True, 
+    conv_adiabat = False, 
 
     ln_L_penalty_order = 3, 
     PT_interp_mode = PT_interp_mode, 
@@ -365,7 +371,7 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
+evidence_tolerance = 0.5 if not testing else 0.5
 n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1

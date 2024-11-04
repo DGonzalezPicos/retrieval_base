@@ -45,7 +45,7 @@ ret = Retrieval(
     evaluation=True,
     plot_ccf=True
     )
-ret.calc_flux_fast = False # backwards compatibility
+ret.calc_flux_fast = True # backwards compatibility
 
 bestfit_params, posterior = ret.PMN_analyze()
 bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
@@ -127,16 +127,12 @@ single_species_dict = {k:v for i, (k,v) in enumerate(ret.Chem.pRT_name_dict_r.it
 # ax.plot(m_wave_pRT_grid[order], m_flux_pRT_grid_full[order], color='blue', lw=0.7, label='Full model pRT')
 # plt.show()
 
+# species_list = [k[4:] for k in ret.conf.opacity_params.keys() if 'log_' in k]
+# disk_species = getattr(ret.conf, 'disk_species', [])
+# species_list += [f'{k}_disk' for k in disk_species]
 
-# run_ccf = True
 
-# if run_ccf:
-# species_list = ['12CO', 'H2O', 'TiO', 'CO2', 'AlH', 'SiO']
-species_list = [k[4:] for k in ret.conf.opacity_params.keys() if 'log_' in k]
-
-disk_species = getattr(ret.conf, 'disk_species', [])
-species_list += [f'{k}_disk' for k in disk_species]
-# species_list = ['12CO', '13CO']
+species_list = ['12CO', '13CO']
 # species_list = ['SiO']
 # print(stop)
 rv_max = 2000.0
@@ -170,10 +166,11 @@ for species in species_list:
                                                np.sum(CCF, axis=(0,1)),
                                                ACF=np.sum(m_ACF,axis=(0,1)),
                                                rv_to_exclude=(-rv_noise, rv_noise))
-    # WARNING: data autocorrelation is all NaNs
+    # WARNING: What is d_ACF_SNR?
     # d_ACF_SNR,_,_ = af.CCF_to_SNR(rv,
     #                             np.sum(d_ACF, axis=(0,1)),
     #                             rv_to_exclude=(-rv_noise, rv_noise))
+    # assert np.all(np.isfinite(d_ACF_SNR)), f'Data ACF is not finite: {np.sum(np.isnan(d_ACF_SNR))}/{len(d_ACF_SNR)} NaNs'
     # save ccf file with three columns: rv, CCF, ACF
     ccf_file = ccf_path / f'RV_CCF_ACF_{species}.txt'
     np.savetxt(ccf_file, np.array([rv, CCF_SNR, ACF_SNR]).T, header='rv CCF ACF')

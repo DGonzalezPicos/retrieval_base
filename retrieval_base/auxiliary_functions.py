@@ -177,7 +177,7 @@ def CCF(d_spec,
                 m_interp_func = interp1d(
                     m_wave_i[np.isfinite(m_flux_i)], 
                     m_flux_i[np.isfinite(m_flux_i)], 
-                    bounds_error=False, fill_value=np.nan
+                    bounds_error=False, fill_value=0.0
                     )
                     
             # Select only the pixels within this order
@@ -203,7 +203,7 @@ def CCF(d_spec,
             # Function to interpolate the observed spectrum
             d_interp_func = interp1d(
                 d_wave_ij, d_flux_ij, bounds_error=False, 
-                fill_value=np.nan
+                fill_value=0.0
                 )
             
             # Create a static model template
@@ -211,10 +211,10 @@ def CCF(d_spec,
 
             if apply_high_pass_filter:
                 # Apply high-pass filter
-                d_flux_ij -= gaussian_filter1d(d_flux_ij, sigma=300, mode='reflect')
+                d_flux_ij -= gaussian_filter1d(d_flux_ij, sigma=high_pass_filter_sigma, mode='nearest')
                 m_flux_ij_static -= gaussian_filter1d(
-                    m_flux_ij_static, sigma=300, mode='reflect'
-                    )
+                    m_flux_ij_static, sigma=high_pass_filter_sigma, mode='nearest')
+                    
             
             
             for k, rv_k in enumerate(rv):
@@ -712,6 +712,7 @@ def apply_keplerian_profile(
     m_star: float = 20.0,
     inclination_deg: float = 45,
     ntheta: int = 60,
+    nu: float = 0.0,
 ) -> np.ndarray:
     """
     Apply a Keplerian profile to the given flux data.
@@ -723,6 +724,7 @@ def apply_keplerian_profile(
     m_star (float): Mass of the star in Mjup.
     inclination_deg (float): Inclination angle in degrees.
     ntheta (int): Number of angular steps for integration.
+    nu (float): asymmetric factor for theta.
 
     Returns:
     np.ndarray: Flux array with the applied Keplerian profile.
@@ -736,14 +738,22 @@ def apply_keplerian_profile(
         return flux
     flux_s = np.zeros_like(wave)
     sin_inclination = np.sin(np.radians(inclination_deg))
-    cos_phi = np.cos(np.linspace(0, 2 * np.pi, ntheta))
+    theta = np.linspace(0, 2 * np.pi, ntheta)
+    # theta = np.linspace(-pi, pi, ntheta)
+    cos_theta = np.cos(theta)
+    w = np.ones(ntheta)
+    # introduce angular asymmetry
+    pos = (theta <= pi/2) | (theta > 3*pi/2)
+    w[pos] *= 1 - nu
+    w[~pos] *= 1 + nu
 
     for r in radii_cm:
         v_kepler = np.sqrt(G * m_star_cm / r)
         rdr = r * r / ntheta
         for j in range(ntheta):
-            v_los = v_kepler * sin_inclination * cos_phi[j]
-            flux_s += np.interp(wave, wave * (1 + v_los / 2.998e10), flux) * rdr
+            v_los = v_kepler * sin_inclination * cos_theta[j]
+            
+            flux_s += w[j] * np.interp(wave, wave * (1 + v_los / 2.998e10), flux) * rdr
 
     flux_s *= total_flux / np.nansum(flux_s)
     return flux_s

@@ -10,7 +10,7 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 lbl = 15
-run = f'lbl{lbl}_G2G3_7'
+run = f'lbl{lbl}_G2G3_8'
 prefix = f'./retrieval_outputs/{run}/test_'
 grating = 'g235h+g395h'
 # grating = 'g235h'
@@ -73,7 +73,7 @@ opacity_params = {
     
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
+    # 'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
     # 'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
@@ -97,7 +97,7 @@ opacity_params = {
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
-    'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
+    # 'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     # 'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
     # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
@@ -233,8 +233,8 @@ for log_k, v in opacity_params.items():
 print(f' --> {free_params} free parameters')
 
 # distance in pc to parallax
-parallax_mas = 16.46 # Gaia DR3, for TWA 28 (Manjavacas+2024)
-d_pc = 1e3 / parallax_mas # ~ 59.17 pc
+parallax_mas = 15.46 # Gaia DR3, for TWA 27A (Manjavacas+2024)
+d_pc = 1e3 / parallax_mas # ~ 59 pc
 
 PT_interp_mode = 'linear'
 PT_mode = 'RCE'
@@ -281,10 +281,10 @@ if grating == 'g235h+g395h':
         free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
 
         # free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
-        free_params.update({'R_cav': [(1.0, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
-        free_params.update({'R_out': [(1.0, 200.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
-        free_params.update({'i_deg': [(-90.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
-
+        free_params.update({'R_cav': [(0.5, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
+        free_params.update({'R_out': [(0.5, 200.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
+        free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
+        free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 else:
     constant_params['gratings'] = [grating] * 4
@@ -371,7 +371,7 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
+evidence_tolerance = 0.5 if not testing else 0.5
 n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1

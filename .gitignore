@@ -44,3 +44,6 @@ SPHINX/
 data/slab_models
 data/hitran
 *THIN*
+TWA28/constants_block.mod
+*.f90
+*.o

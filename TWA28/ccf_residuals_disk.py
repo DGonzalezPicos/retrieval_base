@@ -2,7 +2,8 @@ import pathlib
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-# pdf pages
+# pdf pages, use path effects for white edge
+import matplotlib.patheffects as path_effects
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
 
@@ -32,14 +33,15 @@ rv_noise = 400.0
 fig, (ax, ax_res) = plt.subplots(2, 1, figsize=(6, 6), tight_layout=True, sharex=True,
                            gridspec_kw={'height_ratios': [3, 1]})
 
+pe = path_effects.withStroke(linewidth=2, foreground='w', alpha=0.9)
 for i, run in enumerate(runs):
     rv, CCF_SNR, ACF_SNR = np.loadtxt(path / target / f'retrieval_outputs/{run}/test_plots/CCF/RV_CCF_ACF_{species}.txt', unpack=True)
     
-    ax.plot(rv, CCF_SNR, color=colors[i])
+    ax.plot(rv, CCF_SNR, color=colors[i], path_effects=[pe], alpha=0.8)
     ax.plot(rv, ACF_SNR, color=colors[i], ls='--')
     
     CCF_RES = CCF_SNR - ACF_SNR
-    ax_res.plot(rv, CCF_RES, color=colors[i])
+    ax_res.plot(rv, CCF_RES, color=colors[i], path_effects=[pe], alpha=0.8)
     
     rv_peak = rv[np.argmax(CCF_SNR)]
     snr_peak = np.max(CCF_SNR)

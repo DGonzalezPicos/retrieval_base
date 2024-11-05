@@ -7,7 +7,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import pathlib
-from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, get_path
+
+def find_run(base_path, target, run=None):
+    outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
+    # find dirs in outputs
+    # print(f' outputs = {outputs}')
+    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and '_' not in d.name]
+    print(f' dirs = {dirs}')
+    runs = [int(d.name.split('fc')[-1]) for d in dirs]
+    print(f' runs = {runs}')
+    print(f' {target}: Found {len(runs)} runs: {runs}')
+    assert len(runs) > 0, f'No runs found in {outputs}'
+    if run is None:
+        run = 'fc'+str(max(runs))
+    else:
+        run = 'fc'+str(run)
+        assert run in [d.name for d in dirs], f'Run {run} not found in {dirs}'
+    # print('Run:', run)
+    # check that the folder 'test_output' is not empty
+    test_output = outputs / run / 'test_output'
+    assert test_output.exists(), f'No test_output folder found in {test_output}'
+    if len(list(test_output.iterdir())) == 0:
+        print(f' {target}: No files found in {test_output}')
+        return None
+    
+    return run
 
 def get_model(ret, bestfit_params, order, return_data=False):
     ret.evaluate_model(bestfit_params)
@@ -23,8 +48,10 @@ def get_model(ret, bestfit_params, order, return_data=False):
     return m, chi2
 
 base_path = '/home/dario/phd/retrieval_base/'
-target = 'gl725A'
-run = 'fc3'
+# target = 'gl725A'
+target = 'gl205'
+# run = 'fc3'
+run = find_run(base_path, target, run=None)
 order = 0
 if target not in os.getcwd():
     os.chdir(base_path + target)
@@ -35,10 +62,15 @@ ret = Retrieval(
             conf=conf, 
             evaluation=False,
             )
+path_data = pathlib.Path(base_path) / target / 'retrieval_outputs' / run  / 'test_data'
+path_plots = pathlib.Path(base_path) / target / 'retrieval_outputs' / run  / 'test_plots'
+
 
 bestfit_params, posterior = ret.PMN_analyze()
 bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
 wave, flux, m, chi2 = get_model(ret, bestfit_params, order, return_data=True)
+
+# save model with filename
 
 # generate model with different isotope ratios
 # key = 'log_12CO/C18O'
@@ -60,13 +92,29 @@ for new_value in new_values:
     m_new, chi2_new = get_model(ret, bestfit_params_new, order, return_data=False)
     chi2_list.append(chi2_new)
     
-    
-# plot chi2 parabola as
+main_label = 'CO'
+isotope = 'carbon' if key == 'log_12CO/13CO' else 'oxygen'
+isotope_posterior_file = base_path + target + '/retrieval_outputs/' + run + f'/{main_label}_{isotope}_isotope_posterior.npy'
+if os.path.exists(isotope_posterior_file) and False: # FIXME: convert to linear scale
+    isotope_posterior = np.load(isotope_posterior_file)
+
+    quantiles = np.quantile(isotope_posterior, [0.16, 0.5, 0.84])
+else:
+    quantiles = [np.nan, bestfit_params_dict[key], np.nan]
+
 fig, ax = plt.subplots(1,1, figsize=(5,5))
-ax.plot(new_values, chi2_list, color='k')
-ax.scatter(bestfit_params_dict[key], chi2,s=60)
+ax.plot(new_values, chi2_list, '--o', color='k', zorder=-1)
+
+if quantiles[0] is not np.nan:
+    ax.errorbar(quantiles[1], chi2, xerr=[[quantiles[1]-quantiles[0]], [quantiles[2]-quantiles[1]]], fmt='o', color='red', zorder=1)
+else:
+    ax.scatter(bestfit_params_dict[key], chi2,s=60)
 ax.set(xlabel=label, ylabel='chi2', title=f'{target}')
-plt.show()
+# plt.show()
+fig_name = path_plots / f'chi2_{key.replace("/","_")}.pdf'
+fig.savefig(fig_name)
+print(f' Saved {fig_name}')
+plt.close(fig)
     
 fig, ax = plt.subplots(3,1, figsize=(14,6), sharex=True, gridspec_kw={'height_ratios': [3, 2, 2]})
 ax[0].plot(wave, flux, color='k', lw=0.5)
@@ -94,7 +142,11 @@ ax[-1].set_ylabel('Residuals [%]')
 
 ylim = ax[-1].get_ylim()
 # ax[1].set_ylim(ylim)
-plt.show()
+# plt.show()
+fig_name = path_plots / f'bestfit_residuals_{key.replace("/","_")}.pdf'
+fig.savefig(fig_name)
+print(f' Saved {fig_name}')
+plt.close(fig)
 
 
 

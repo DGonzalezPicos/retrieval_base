@@ -251,7 +251,7 @@ if args.evaluation:
 if args.ccf:
     run = run or conf.run
     print(f' ** Running cross-correlation function for {target} {run}..')
-    # command = f'python {path}/retrieval_base/cross_correlation.py -t {target} -r {run}'
+    command = f'python {path}/retrieval_base/cross_correlation.py -t {target} -r {run}'
     # print(f' ** Running command: {command}')
     sp.call(command, shell=True)
     print(f' ** Done with cross-correlation function for {target} {run}..')

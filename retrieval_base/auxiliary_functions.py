@@ -164,6 +164,7 @@ def CCF(d_spec,
         Cov=None, 
         rv=np.arange(-500,500+1e-6,1), 
         apply_high_pass_filter=True, 
+        high_pass_filter_sigma=300,
         ):
 
     CCF = np.zeros((d_spec.n_orders, d_spec.n_dets, len(rv)))
@@ -192,27 +193,23 @@ def CCF(d_spec,
             if m_wave_pRT_grid is None:
                 m_wave_i = m_spec.wave[i,j]
                 m_flux_i = m_spec.flux[i,j]
-                
-                # finite = np.isfinite(m_flux_i)
 
                 # Function to interpolate the model spectrum
                 m_interp_func = interp1d(
                     m_wave_i[np.isfinite(m_flux_i)], 
                     m_flux_i[np.isfinite(m_flux_i)], 
-                    bounds_error=False, fill_value=np.nan
+                    bounds_error=False, fill_value=0.0
                     )
                     
             # Select only the pixels within this order
             mask_ij = d_spec.mask_isfinite[i,j,:]
-            if np.sum(mask_ij) == 0:
-                continue
 
             d_wave_ij = d_spec.wave[i,j,mask_ij]
             d_flux_ij = d_spec.flux[i,j,mask_ij]
 
-            if LogLike is not None:
-                # Scale the data instead of the models
-                d_flux_ij /= LogLike.f[i,j]
+            # if LogLike is not None:
+            #     # Scale the data instead of the models
+            #     d_flux_ij /= LogLike.f[i,j]
             
             if Cov is not None:
                 # Use the covariance matrix to weigh 
@@ -221,12 +218,13 @@ def CCF(d_spec,
 
             if m_spec_wo_species is not None:
                 # Perform the cross-correlation on the residuals
+                # d_flux_ij -= LogLike.f[:,i,j] @ m_spec_wo_species.flux[:,i,j,mask_ij]
+                # d_flux_ij -= np.sum(LogLike.f[:,i,j,None] * m_spec_wo_species.flux[:,i,j,mask_ij],axis=0)
                 d_flux_ij -= m_spec_wo_species.flux[i,j,mask_ij]
-
             # Function to interpolate the observed spectrum
             d_interp_func = interp1d(
                 d_wave_ij, d_flux_ij, bounds_error=False, 
-                fill_value=np.nan
+                fill_value=0.0
                 )
             
             # Create a static model template
@@ -234,10 +232,10 @@ def CCF(d_spec,
 
             if apply_high_pass_filter:
                 # Apply high-pass filter
-                d_flux_ij -= gaussian_filter1d(d_flux_ij, sigma=300, mode='reflect')
+                d_flux_ij -= gaussian_filter1d(d_flux_ij, sigma=high_pass_filter_sigma, mode='nearest')
                 m_flux_ij_static -= gaussian_filter1d(
-                    m_flux_ij_static, sigma=300, mode='reflect'
-                    )
+                    m_flux_ij_static, sigma=high_pass_filter_sigma, mode='nearest')
+                    
             
             
             for k, rv_k in enumerate(rv):
@@ -252,10 +250,10 @@ def CCF(d_spec,
                 if apply_high_pass_filter:
                     # Apply high-pass filter
                     d_flux_ij_shifted -= gaussian_filter1d(
-                        d_flux_ij_shifted, sigma=300, mode='reflect'
+                        d_flux_ij_shifted, sigma=high_pass_filter_sigma, mode='nearest'
                         )
                     m_flux_ij_shifted -= gaussian_filter1d(
-                        m_flux_ij_shifted, sigma=300, mode='reflect'
+                        m_flux_ij_shifted, sigma=high_pass_filter_sigma, mode='nearest'
                         )
 
                 # Compute the cross-correlation coefficients, weighted 

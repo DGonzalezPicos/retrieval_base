@@ -514,10 +514,10 @@ def prior_check(conf, n=3,
 
 class Retrieval:
 
-    plot_ccf = False
+    # plot_ccf = False
     PMN_resume = False
     
-    def __init__(self, conf, evaluation):
+    def __init__(self, conf, evaluation, plot_ccf=False):
 
         self.conf = conf
         self.evaluation = evaluation
@@ -647,7 +647,7 @@ class Retrieval:
             species_to_plot_VMR=self.conf.species_to_plot_VMR, 
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )
-
+        self.plot_ccf = plot_ccf
         if (rank == 0) and self.evaluation and self.plot_ccf:
             self.pRT_atm_broad = {}
             for w_set in conf.config_data.keys():

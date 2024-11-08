@@ -36,35 +36,36 @@ def query_rv(targets):
     return rv_dict
 
 targets_rv = {
-                'gl338B': 12.0,
-                'gl382' : 8.0,
-                'gl408' : 3.0,
-                'gl411' :-85.0,
-                'gl436' : -40.0,
-                'gl699' : -111.0,
-                'gl752A': 36.0,
-                'gl832': 36.0,
-                'gl905' : -78.0,
-                'gl1286': 8.0,
-                'gl15A': 12.0,
-                'gl15B': 11.0,
-                'gl687': -29.0,
-                'gl725A': -31.0,
-                'gl725B': 1.0,
-                'gl849': -15.0,
-                'gl876': -2.0,
-                'gl880': -27.0,
-                'gl1151': -35.0,
-                'gl205': 8.5,
-                'gl412A': 9.0,
-                'gl445': 9.0,
-                'gl447': -31.0,
-                'gl1002': -40.0,
-                'gl412A': 69.0,
-                'gl1286': -41.0,
-                'gl3622': 2.0,
-                'gl4063': 12.0,
-                
-}
+    'gl15A': 11.73,
+    'gl15B': 11.17,
+    'gl205': 8.5,
+    'gl338B': 12.43,
+    'gl382': 7.87,
+    'gl408': 3.29,
+    'gl411': -84.64,
+    'gl412A': 68.8,
+    'gl436': 9.59,
+    'gl445': -111.51,
+    'gl447': -30.66,
+    'gl687': -28.65,
+    'gl699': -110.11,
+    'gl725A': -0.58,
+    'gl725B': 1.19,
+    'gl752A': 35.884,
+    'gl849': -15.3,
+    'gl876': -1.47,
+    'gl880': -27.5,
+    'gl905': -77.51,
+    'gl1002': -33.7,
+    'gl1151': -35.12,
+    'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
+    'gl3622': 2.18,
+    'gl4063': 12.533
+    }
 targets = list(targets_rv.keys())
 rv_dict = query_rv(targets)
+
+# compare rvs from SIMBAD with the ones in the dictionary
+for target in targets:
+    rv_simbad = rv_dict[target]
+    print(f' {target}: {targets_rv[target]} vs. {rv_simbad}')

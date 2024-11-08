@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc4_wo_C18O'
+run = 'fc5'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -16,7 +16,7 @@ config_data = {
         'w_set': 'spirou',
         'orders': (0,1,2), # file only contains 3 orders
 
-        'lbl_opacity_sampling' : 5,
+        'lbl_opacity_sampling' : 3, # (2024-11-08): 5 --> 3 for final results
         'slit': 'spirou',
         'sigma_clip': 5,
         'sigma_clip_width': 11, 
@@ -42,11 +42,12 @@ rv_max= 31.7
 # Model parameters
 ####################################################################################
 opacity_params = {
-    'log_12CO': ([(-12,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
-    'log_13CO': ([(-12,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
+    'log_12CO': ([(-14,-2), r'$\log\ \mathrm{^{12}CO}$'], 'CO_high_Sam'),
+    'log_13CO': ([(-14,-2), r'$\log\ \mathrm{^{13}CO}$'], 'CO_36_high_Sam'),
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
+    'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
         
-    'log_H2O': ([(-12,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'),
@@ -59,7 +60,7 @@ opacity_params = {
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MYTHOS_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
 }
-ignore_opacity_params = ['log_C18O']
+ignore_opacity_params = []
 if len(ignore_opacity_params) > 0:
     opacity_params = {k:v for k,v in opacity_params.items() if k not in ignore_opacity_params}
 print(f' --> {len(opacity_params)} opacity parameters')
@@ -88,10 +89,10 @@ free_params = {
     'log_P_RCE': [(-2.0,1.2), r'$\log\ P_\mathrm{RCE}$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_0':   [(0.06, 0.44), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_1':   [(0.06, 0.44), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_0':   [(0.04, 0.44), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_1':   [(0.04, 0.44), r'$\nabla_{T,1}$'],
     'dlnT_dlnP_RCE': [(0.04, 0.44), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_2':   [(0.06, 0.44), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_2':   [(0.04, 0.44), r'$\nabla_{T,2}$'],
     'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
     'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
     'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
@@ -252,7 +253,7 @@ testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 200
+n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

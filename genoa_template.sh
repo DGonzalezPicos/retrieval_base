@@ -2,7 +2,7 @@
 # Set job requirements
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-#SBATCH -t 03:59:30
+#SBATCH -t 04:59:30
 #SBATCH -p genoa
 #SBATCH --ntasks=146
 #SBATCH --mem=336G

@@ -52,9 +52,6 @@
 ### 752A
 - Ready to download.
 
-### 832
-- Missing data... check on zandkreek/`spirou_m` folder
-
 ### 849
 - Ready to download.
 

@@ -4,7 +4,7 @@
 #SBATCH --error=logs/%x_%j.err
 #SBATCH -t 04:59:30
 #SBATCH -p genoa
-#SBATCH --ntasks=146
+#SBATCH --ntasks=130
 #SBATCH --mem=336G
 
 

@@ -40,7 +40,7 @@ print(f' len(targets) = {len(targets)}')
 # run = 'fc4_no_C18O'
 run = 'fc5'
 
-ignore_targets = []
+ignore_targets = ['gl15A']
 
 def update_file(file, old_str, new_str):
     

@@ -201,10 +201,10 @@ plot_crossfield = True
 top = 0.92
 fig, axes = plt.subplots(2,1, figsize=(4,6), sharex=True, gridspec_kw={'hspace': 0.1, 
                                                                        'wspace': 0.1,
-                                                                        'left': 0.14, 
+                                                                        'left': 0.15, 
                                                                         'right': 0.78, 
                                                                         'top': top, 
-                                                                        'bottom': 0.06})
+                                                                        'bottom': 0.07})
 # ylim_min = 50.0
 # ylim_max = 3000.0
 
@@ -258,12 +258,12 @@ for i, isotope in enumerate(isotopes):
 
     # plot crossfield values
     if plot_crossfield:
-        for i, (k, v) in enumerate(crossfield.items()):
+        for cross_i, (k, v) in enumerate(crossfield.items()):
             teff_cf = v[1][0]
             color = cmap(norm(teff_cf))
             x_cf = v[1][0] if x_param == 'Teff (K)' else v[2][0]
             x_err_cf = v[1][1] if x_param == 'Teff (K)' else v[2][1]
-            fmt = 's' if i == 0 else 'D'
+            fmt = 's' if cross_i == 0 else 'D'
             ax.errorbar(x_cf, v[0][0], xerr=x_err_cf, yerr=v[0][1], fmt=fmt, label=k+' (C19)', color=color, markeredgecolor='black', markeredgewidth=0.8)
 
             # add thin arrow pointing to the marker with the name of the target
@@ -287,8 +287,8 @@ for i, isotope in enumerate(isotopes):
         sm.set_array([])  # Only needed for color bar
         
         # define cbar_ax for colorbar
-        cbar_ax = fig.add_axes([0.79, 0.06, 0.035, top-0.06])
-        cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=20)
+        cbar_ax = fig.add_axes([0.80, 0.06, 0.027, top-0.06])
+        cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=1)
         cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
         

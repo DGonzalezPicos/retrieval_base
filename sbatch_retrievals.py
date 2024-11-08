@@ -9,7 +9,7 @@ path = pathlib.Path(f'/home/{user}/retrieval_base/')
 # folders = [f for f in path.iterdir() if f.is_dir()]
 # targets = [f.name for f in folders if str(f.name).startswith('gl')]
 targets_rv = {
-    # 'gl15A': 11.73,
+    'gl15A': 11.73,
     # 'gl15B': 11.17,
     'gl205': 8.5,
     'gl338B': 12.43,

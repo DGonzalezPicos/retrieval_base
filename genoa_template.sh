@@ -2,7 +2,7 @@
 # Set job requirements
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-#SBATCH -t 05:59:30
+#SBATCH -t 07:59:30
 #SBATCH -p genoa
 #SBATCH --ntasks=132
 #SBATCH --mem=336G
@@ -33,5 +33,5 @@ target=gl436
 run=fc1
 resume=1 # 1 = True, 0 = False
 
-mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target -run $run -resume $resume
+mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target -run $run
 echo "Done"

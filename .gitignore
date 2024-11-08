@@ -47,3 +47,5 @@ data/hitran
 TWA28/constants_block.mod
 *.f90
 *.o
+*.log
+*.bib

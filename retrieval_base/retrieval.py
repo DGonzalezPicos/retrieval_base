@@ -515,7 +515,7 @@ def prior_check(conf, n=3,
 class Retrieval:
 
     # plot_ccf = False
-    PMN_resume = False
+    PMN_resume = True
     
     def __init__(self, conf, evaluation, plot_ccf=False):
 

@@ -8,8 +8,20 @@ import matplotlib.pyplot as plt
 import os
 import pathlib
 import matplotlib.patheffects as pe
+import scienceplots
+
+# reset to default
+plt.style.use('default')
+# plt.style.use(['latex-sans'])
+plt.style.use(['sans'])
+# enable latex
+# plt.rcParams['text.usetex'] = True
+plt.rcParams.update({
+    "font.size": 8,
+})
 
 base_path = '/home/dario/phd/retrieval_base/'
+nat_path = '/home/dario/phd/nat/figures/'
 
 water = False # take isotope ratio from H2O
 main_label = 'H2O' if water else 'CO'
@@ -31,6 +43,10 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
     print(f' runs = {runs}')
     print(f' {target}: Found {len(runs)} runs: {runs}')
     assert len(runs) > 0, f'No runs found in {outputs}'
+    ignore_fc5 = True
+    if ignore_fc5:
+        runs = [r for r in runs if r != 5]
+    
     if run is None:
         run = 'fc'+str(max(runs))
     else:
@@ -102,16 +118,23 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
         xerr = [[x-xerr[0]], [xerr[1]-x]]
         
     fmt = 'o'
+    # add errorbar style with capsize
     if sigma > 3.0:
         ax.errorbar(x, isotope_quantiles[1],
                     xerr=xerr,
                     yerr=[[isotope_quantiles[1]-isotope_quantiles[0]], [isotope_quantiles[2]-isotope_quantiles[1]]],
                     fmt=fmt, 
                     label=label.replace('gl', 'Gl '),
-                    alpha=0.9,
+                    alpha=0.96,
                         # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
                     markeredgecolor='black', # Black edge color
                     markeredgewidth=0.8,     # Thickness of the edge
+                    capsize=2,               # Size of the cap on error bars
+                    capthick=0.8,             # Thickness of the cap on error bars
+                    ecolor='gray',          # Color of the error bars, set alpha of ecolor to make it transparent
+                    elinewidth=0.8,           # Thickness of the error bars
+                    
+                    
                     color=kwargs.get('color', 'k'),
         )
     else:
@@ -125,7 +148,7 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
                     label=label.replace('gl', 'Gl '),
                     alpha=0.9,
                         # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='red', # Black edge color
+                    markeredgecolor='k', # Black edge color
                     markeredgewidth=0.8,     # Thickness of the edge
                     color=kwargs.get('color', 'k'),
         )
@@ -158,9 +181,10 @@ x_err = dict(zip(names, [float(t.split('+-')[1]) for t in df[x_param].to_list()]
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
 # create colormap with teff in K
-norm = plt.Normalize(min(teff.values()), 4000.0)
-cmap = plt.cm.plasma
-
+# norm = plt.Normalize(min(teff.values()), 4000.0)
+# cmap = plt.cm.plasma
+norm = plt.Normalize(2900, 3900.0)
+cmap = plt.cm.coolwarm_r
 # add Crossfield+2019 values for Gl 745 AB: isotope ratio, teff and metallicity, with errors
 crossfield_dict = {'oxygen': {'Gl 745 A': [(1220, 260), (3454, 31), (-0.43, 0.05)],
                         'Gl 745 B': [(1550, 360), (3440, 31), (-0.39, 0.05)]},
@@ -174,8 +198,8 @@ ism_dict = {'oxygen': (557, 30), # ISM value from Wilson et al. 1999
 
 plot_crossfield = True
 
-top = 0.77
-fig, axes = plt.subplots(2,1, figsize=(5,8), sharex=True, gridspec_kw={'hspace': 0.1, 
+top = 0.92
+fig, axes = plt.subplots(2,1, figsize=(4,6), sharex=True, gridspec_kw={'hspace': 0.1, 
                                                                        'wspace': 0.1,
                                                                         'left': 0.14, 
                                                                         'right': 0.78, 
@@ -220,7 +244,8 @@ for i, isotope in enumerate(isotopes):
                        x[name], 
                        xerr=x_err[name],
                         ax=ax, 
-                        label=name, 
+                        # label=name, 
+                        label='',
                         run=None,
                         color=color,
                         xytext=xytext.get(name, None))
@@ -233,12 +258,13 @@ for i, isotope in enumerate(isotopes):
 
     # plot crossfield values
     if plot_crossfield:
-        for k, v in crossfield.items():
+        for i, (k, v) in enumerate(crossfield.items()):
             teff_cf = v[1][0]
             color = cmap(norm(teff_cf))
             x_cf = v[1][0] if x_param == 'Teff (K)' else v[2][0]
             x_err_cf = v[1][1] if x_param == 'Teff (K)' else v[2][1]
-            ax.errorbar(x_cf, v[0][0], xerr=x_err_cf, yerr=v[0][1], fmt='s', label=k+' (C19)', color=color, markeredgecolor='black', markeredgewidth=0.8)
+            fmt = 's' if i == 0 else 'D'
+            ax.errorbar(x_cf, v[0][0], xerr=x_err_cf, yerr=v[0][1], fmt=fmt, label=k+' (C19)', color=color, markeredgecolor='black', markeredgewidth=0.8)
 
             # add thin arrow pointing to the marker with the name of the target
             annotate = False
@@ -272,7 +298,7 @@ for i, isotope in enumerate(isotopes):
 # load Romano+2022 models
 mass_ranges = ['1_8', '3_8']
 
-gce_colors = ['black', 'royalblue']
+gce_colors = ['black', 'purple']
 # add white edge to line
 path_effects = [pe.Stroke(linewidth=2.5, foreground='white'), pe.Normal()]
 
@@ -283,13 +309,13 @@ for i, mass_range in enumerate(mass_ranges):
     axes[1].plot(Z, o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
     
 
-axes[0].legend(ncol=3, frameon=False, fontsize=8, loc=(-0.05, 1.01))
+axes[0].legend(ncol=3, frameon=False, fontsize=8, loc=(-0.12, 1.01))
 loglog = True
 loglog_label = '_loglog' if loglog else ''
 if loglog:
     
     ylims = {'oxygen': (100, 6000), 'carbon': (30, 600)}
-    yticks = {'oxygen': [100, 200, 500, 1000, 2000, 6000], 'carbon': [30, 60, 100, 200, 600]}
+    yticks = {'oxygen': [100, 300, 600, 1000, 2000, 6000], 'carbon': [30, 60, 100, 200, 600]}
     
     for ax, isotope in zip(axes, isotopes):
         ax.set_yscale('log')
@@ -318,7 +344,8 @@ x_param_label = {
     'Teff (K)': 'Teff',
     '[M/H]': 'metallicity',
 }[x_param]
-fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
+# fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
+fig_name = nat_path + f'{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

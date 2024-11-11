@@ -158,7 +158,7 @@ class Chemistry:
         
     def get_VMRs_posterior(self, save_to=None):
         
-        assert hasattr(self, 'mass_fractions_posterior')
+        assert getattr(self, 'mass_fractions_posterior') is not None, 'mass_fractions_posterior not yet calculated'
         self.VMRs_posterior = {}
         self.VMRs_envelopes = {}
         # info = self.species_info

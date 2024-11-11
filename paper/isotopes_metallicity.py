@@ -43,7 +43,7 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
     print(f' runs = {runs}')
     print(f' {target}: Found {len(runs)} runs: {runs}')
     assert len(runs) > 0, f'No runs found in {outputs}'
-    ignore_fc5 = True
+    ignore_fc5 = False
     if ignore_fc5:
         runs = [r for r in runs if r != 5]
     
@@ -62,14 +62,17 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
     
     # load sigma for C18O
     sigma = 10.0 # default, > 3 for plotting as errorbar
-    if isotope == 'oxygen' and main_label == 'CO':
-        sigma_file = test_output / f'B_sigma_C18O.dat' # contains two values: B, sigma
+    
+    if main_label == 'CO':
+        species_sigma = 'C18O' if isotope == 'oxygen' else '13CO'
+        sigma_file = test_output / f'B_sigma_{species_sigma}.dat' # contains two values: B, sigma
         if sigma_file.exists():
             print(f' {target}: Found {sigma_file}')
             B, sigma = np.loadtxt(sigma_file)
             print(f' {target}: B = {B:.2f}, sigma = {sigma:.2f}')
             # replace nan with 0.0
             sigma = 0.0 if np.isnan(sigma) else sigma
+            sigma = 100.0 if sigma > 100.0 else sigma
 
     
     isotope_posterior_file = base_path + target + '/retrieval_outputs/' + run + f'/{main_label}_{isotope}_isotope_posterior.npy'
@@ -169,7 +172,7 @@ teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list
 valid = dict(zip(names, df['Valid'].to_list()))
 
 ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
-ignore_more_targets = ['gl3622']
+ignore_more_targets = ['gl3622'] # FIXME: find metallicity for this target, from our own [F/H] vs. [M/H] relation??
 ignore_targets += ignore_more_targets
 
 # x_param = 'Teff (K)'

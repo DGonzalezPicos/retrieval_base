@@ -38,7 +38,7 @@ def get_evidence(target, run=None, key='global evidence'):
         
     return log_Z
 
-def main(target, run=None, species='C18O', key='global evidence'):
+def main(target, run=None, species='C18O', key='global evidence', cache=True):
     
     if target not in os.getcwd():
         os.chdir(base_path + target)
@@ -67,18 +67,20 @@ def main(target, run=None, species='C18O', key='global evidence'):
         print(f' {target}: No files found in {test_output}')
         return None
     
-    run_wo_species = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and species in d.name]
+    # run_wo_species = sorted([d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and species in d.name])
+    run_wo_species = f'{run}_no{species}'
     sigma_file = test_output / f'B_sigma_{species}.dat' # contains two values: B, sigma
-    if sigma_file.exists():
+    if sigma_file.exists() and cache:
         print(f' {target}: Found {sigma_file}')
         B, sigma = np.loadtxt(sigma_file)
     else:
         
-        if len(run_wo_species) == 0:
-            print(f' {target}: No runs found without {species} in {outputs}')
-            return None
-        runs = [run, run_wo_species[0].name]
-        print(f' {target}: Found runs: {runs}')
+        # if len(run_wo_species) == 0:
+        #     print(f' {target}: No runs found without {species} in {outputs}')
+        #     return None
+        # runs = [run, run_wo_species[-1].name]
+        runs = [run, run_wo_species]
+        # print(f' {target}: Found runs: {runs}')
         
         log_Z_list = [get_evidence(target, run, key=key) for run in runs]
         if any([log_Z is None for log_Z in log_Z_list]):
@@ -104,7 +106,7 @@ name = 'Gl 205'
 ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
 ignore_more_targets = ['gl3622']
 ignore_targets += ignore_more_targets
-
+cache = True
 sigma_dict = {}
 for name in names:
     target = name.replace('Gl ', 'gl')
@@ -114,7 +116,7 @@ for name in names:
     
     print(f'Target = {target}')
     try:
-        B, sigma = main(target, key='global evidence')
+        B, sigma = main(target, key='global evidence', species='C18O', cache=cache)
     except Exception as e:
         print(f'Error for {target}: {e}')
         sigma = None

@@ -504,3 +504,14 @@ def load_romano_models(mass_range='1_8', Z_min=None):
         c12c13 = c12c13[mask]
         o16o18 = o16o18[mask]
     return Z, c12c13, o16o18
+
+
+def find_run(base_path='/home/dario/phd/retrieval_base/',
+             target='gl15A',
+):
+    outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
+    dirs = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and '_' not in d.name]
+    runs = [int(d.name.split('fc')[-1]) for d in dirs]
+
+    run = 'fc'+str(max(runs))
+    return run

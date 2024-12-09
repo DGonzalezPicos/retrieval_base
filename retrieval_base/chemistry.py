@@ -156,13 +156,14 @@ class Chemistry:
             
         return self.species_info.loc[self.species_info['name'] == species, info_key].values[0]
         
-    def get_VMRs_posterior(self, save_to=None):
+    def get_VMRs_posterior(self, profile_id=0, save_to=None):
         
         assert getattr(self, 'mass_fractions_posterior') is not None, 'mass_fractions_posterior not yet calculated'
         self.VMRs_posterior = {}
         self.VMRs_envelopes = {}
         # info = self.species_info
-        MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
+        # MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
+        MMW = self.mass_fractions['MMW']
         print(f'[Chemistry.get_VMRs_posterior] Calculating VMRs posterior and envelopes for {self.line_species}')
         for line_species_i in self.line_species:
             # key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]
@@ -178,7 +179,7 @@ class Chemistry:
             # free-chemistry = constant VMR
             # WARNING: equilibrium chemistry should use the mean value or something else
             vmr_i = self.mass_fractions_posterior[line_species_i] * (MMW/ mu)
-            self.VMRs_posterior[key_i] = vmr_i[:,0]
+            self.VMRs_posterior[key_i] = vmr_i[:,profile_id] # WARNING: do not use, this, use posterior directly i.e. alpha 
             # print(f' vmr_i.shape = {vmr_i.shape}')
             self.VMRs_envelopes[key_i] = quantiles(vmr_i, q=[0.16, 0.5, 0.84], axis=0)
             
@@ -339,8 +340,8 @@ class FreeChemistry(Chemistry):
         # Compute the C/O ratio and metallicity
         self.CO = C/O
 
-        log_CH_solar = 8.43 - 12 # Asplund et al. (2009)
-        # log_CH_solar = 8.46 - 12 # Asplund et al. (2021)
+        # log_CH_solar = 8.43 - 12 # Asplund et al. (2009)
+        log_CH_solar = 8.46 - 12 # Asplund et al. (2021)
         self.FeH = np.log10(C/H) - log_CH_solar
         self.CH  = self.FeH
 

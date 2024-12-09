@@ -27,15 +27,14 @@ def query_rv(targets):
     
     rv_dict = {}
     for target in targets:
-        print(f' Querying radial velocity for {target}...')
+        print(f' Querying {target}...')
         try:
             result_table = customSimbad.query_object(target)
-            rv = result_table['RV_VALUE'][0]
-            rv_dict[target] = rv
+            
         except Exception as e:
             print(f' -> Error querying {target}: {e}')
             rv_dict[target] = np.nan
-    return rv_dict
+    return result_table
 
 targets_rv = {
     'gl15A': 11.73,
@@ -65,9 +64,21 @@ targets_rv = {
     'gl4063': 12.533
     }
 targets = list(targets_rv.keys())
-rv_dict = query_rv(targets)
+# result = query_rv(targets)
 
 # compare rvs from SIMBAD with the ones in the dictionary
+attrs = ['SP_TYPE', 'RV_VALUE', 'PLX_VALUE']
+
+ref_dict = {}
+
+info = {}
 for target in targets:
-    rv_simbad = rv_dict[target]
-    print(f' {target}: {targets_rv[target]} vs. {rv_simbad}')
+    result = query_rv([target])
+    spt = result['SP_TYPE'][0]
+    spt_ref = result['SP_BIBCODE'][0]
+    rv = result['RV_VALUE'][0]
+    
+    distance = result['Distance_distance'][0]
+    distance_unit = result['Distance_unit'][0]
+    distance_ref = result['Distance_bibcode'][0]
+    print(f'{target}: {spt} ({spt_ref}), RV = {rv} km/s, Distance = {distance} {distance_unit} ({distance_ref})')

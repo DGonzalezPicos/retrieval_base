@@ -1,7 +1,7 @@
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
-from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, load_romano_models
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, find_run, load_romano_models
 # import config_freechem as conf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -145,7 +145,7 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
         fmt = '^'
         ax.errorbar(x, isotope_quantiles[0],
                     xerr=xerr,
-                    yerr=[[0.0], [isotope_quantiles[2]-isotope_quantiles[0]]],
+                    yerr=[[0.0], [0.4*(isotope_quantiles[2]-isotope_quantiles[1])]],
                     lolims=True,
                     fmt=fmt, 
                     label=label.replace('gl', 'Gl '),
@@ -169,17 +169,23 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-valid = dict(zip(names, df['Valid'].to_list()))
+# valid = dict(zip(names, df['Valid'].to_list()))
+ignore_targets = ['gl3622']
 
-ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
-ignore_more_targets = ['gl3622'] # FIXME: find metallicity for this target, from our own [F/H] vs. [M/H] relation??
-ignore_targets += ignore_more_targets
+x_param = '[C/H]'
+
+c23 = False
+if x_param == '[M/H]':
+    # Load name, metallicity and error from Cristofari+2023
+    c23 = np.loadtxt(f'{base_path}paper/data/c23_mh.txt', dtype=object)
+    c23_names = ['Gl '+n[2:] for n in c23[:,0]]
+    x = dict(zip(c23_names, c23[:,1].astype(float)))
+    x_err = dict(zip(c23_names, c23[:,2].astype(float)))
 
 # x_param = 'Teff (K)'
-x_param = '[M/H]'
-assert x_param in df.columns, f'Column {x_param} not found in {df.columns}'
-x =  dict(zip(names, [float(t.split('+-')[0]) for t in df[x_param].to_list()]))
-x_err = dict(zip(names, [float(t.split('+-')[1]) for t in df[x_param].to_list()]))
+# assert x_param in df.columns, f'Column {x_param} not found in {df.columns}'
+# x =  dict(zip(names, [float(t.split('+-')[0]) for t in df[x_param].to_list()]))
+# x_err = dict(zip(names, [float(t.split('+-')[1]) for t in df[x_param].to_list()]))
 
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
@@ -241,7 +247,18 @@ for i, isotope in enumerate(isotopes):
             print(f'---> Skipping {target}...')
             continue
         color = cmap(norm(teff[name]))
-
+        
+        if x_param == '[C/H]':
+            run = find_run(target=target)
+            posterior_file_CH = base_path + target + '/retrieval_outputs/' + run + f'/CH_posterior.npy'
+            C_H_posterior = np.load(posterior_file_CH)
+        
+            q=[0.16, 0.5, 0.84]
+            C_H_quantiles = np.quantile(C_H_posterior, q)
+            x = {name: C_H_quantiles[1]}
+            x_err = {name: [C_H_quantiles[0], C_H_quantiles[2]]}
+            print(f'---> {name}: {C_H_quantiles}')
+            print(f' xerr = {x_err[name]}')
         ratio_t = main(target, 
                        isotope,
                        x[name], 
@@ -307,7 +324,7 @@ path_effects = [pe.Stroke(linewidth=2.5, foreground='white'), pe.Normal()]
 
 for i, mass_range in enumerate(mass_ranges):
     Z, c12c13, o16o18 = load_romano_models(Z_min=-0.7, mass_range=mass_range)
-    mass_range_label = 'Romano22 (' + mass_range.replace('_', '-') + r' M$_\odot$)'
+    mass_range_label = 'R22 (' + mass_range.replace('_', '-') + r' M$_\odot$)'
     axes[0].plot(Z, c12c13, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
     axes[1].plot(Z, o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
     
@@ -317,35 +334,26 @@ loglog = True
 loglog_label = '_loglog' if loglog else ''
 if loglog:
     
-    ylims = {'oxygen': (100, 6000), 'carbon': (30, 600)}
-    yticks = {'oxygen': [100, 300, 600, 1000, 2000, 6000], 'carbon': [30, 60, 100, 200, 600]}
+    ylims = {'oxygen': (200, 4000), 'carbon': (40, 400)}
+    yticks = {'oxygen': [200, 500, 1000, 2000, 4000], 'carbon': [40, 60, 100, 200, 300, 400]}
     
     for ax, isotope in zip(axes, isotopes):
         ax.set_yscale('log')
         
         ylim = ylims[isotope]
         ax.set_ylim(*ylim)
-        
+        # remove all ytick labels
+        ax.set_yticks([])
         ax.set_yticks(yticks[isotope])
         ax.set_yticklabels([str(t) for t in yticks[isotope]])
         
-        
-        
-        # yticks = [120, 240, 480, 960]
-        # ax.set_yticks(yticks)
-        # ax.set_yticklabels([str(t) for t in yticks])
-        
-        # xticks = [10, 20, 50, 100, 200, 400,800]
-        # ax.set_xticks(xticks)
-        # ax.set_xticklabels([str(t) for t in xticks])
-else:
-    # ax.set_ylim(ylim_min, ylim_max)
-    pass
-    # ax.set_xlim(xlim)
+xlims = (-0.6, 0.6)
+axes[1].set_xlim(*xlims)
 # x_param_label = x_param.split('(')[0].strip()
 x_param_label = {
     'Teff (K)': 'Teff',
     '[M/H]': 'metallicity',
+    '[C/H]': 'carbon_metallicity'
 }[x_param]
 # fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
 fig_name = nat_path + f'{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'

@@ -803,6 +803,7 @@ def fig_VMR(Chem,
             xlim=(1e-12, 1e-2),
             showlegend=True,
             fig_name=None,
+            leg_kwargs={},
             ):
     
     is_new_fig = False
@@ -849,7 +850,10 @@ def fig_VMR(Chem,
     if showlegend:
         # ncol = 1 + len(species_to_plot)//2
         # ax.legend(ncol=ncol, loc=(0.00, 1.01+0.08*(ncol-3)), frameon=False)
-        ax.legend(ncol=2, loc='upper left', frameon=False)
+        loc = leg_kwargs.get('loc', 'upper right')
+        fs = leg_kwargs.get('fontsize', 8)
+        ncol = leg_kwargs.get('ncol', 2)
+        ax.legend(ncol=ncol, loc=loc, fontsize=fs, frameon=leg_kwargs.get('frameon', False))
     if (fig_name is not None):
         fig.savefig(fig_name)
         print(f'--> Saved {fig_name}')

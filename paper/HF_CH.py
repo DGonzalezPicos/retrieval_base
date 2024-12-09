@@ -60,18 +60,11 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
     
     # load sigma for C18O
     sigma = 10.0 # default, > 3 for plotting as errorbar
-    # if HF == 'oxygen' and main_label == 'CO':
-    #     sigma_file = test_output / f'B_sigma_C18O.dat' # contains two values: B, sigma
-    #     if sigma_file.exists():
-    #         print(f' {target}: Found {sigma_file}')
-    #         B, sigma = np.loadtxt(sigma_file)
-    #         print(f' {target}: B = {B:.2f}, sigma = {sigma:.2f}')
-    #         # replace nan with 0.0
-    #         sigma = 0.0 if np.isnan(sigma) else sigma
 
-    
     posterior_file = base_path + target + '/retrieval_outputs/' + run + f'/FH_posterior.npy'
-    if not os.path.exists(posterior_file) or not cache:
+    posterior_file_CH = base_path + target + '/retrieval_outputs/' + run + f'/CH_posterior.npy'
+    # if not os.path.exists(posterior_file) or not cache:
+    if any([not os.path.exists(posterior_file), not os.path.exists(posterior_file_CH), not cache]):
 
         config_file = 'config_freechem.txt'
         conf = Config(path=base_path, target=target, run=run)(config_file)
@@ -83,7 +76,8 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
 
         bestfit_params, posterior = ret.PMN_analyze()
         ret.get_PT_mf_envelopes(posterior=posterior)
-        # ret.Chem.get_VMRs_posterior()
+        # get_VMRs_posterior
+        # ret.Chem.get_VMRs_posterior(save_to=base_path + target + '/retrieval_outputs/' + run)
         MMW = ret.Chem.mass_fractions_posterior['MMW'].mean() if hasattr(ret.Chem, 'mass_fractions_posterior') else ret.Chem.mass_fractions['MMW']
         print(f' {target}: MMW = {MMW}')
         line_species_i = 'HF_high'
@@ -91,39 +85,65 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
         mu = ret.Chem.read_species_info(key_i, 'mass')
         HF = ret.Chem.mass_fractions_posterior[line_species_i] * (MMW/ mu)
         
+        C = ret.Chem.mass_fractions_posterior['CO_high_Sam'] * (MMW/ 28.01)
+        # C += ret.Chem.mass_fractions_posterior['CO_36_high_Sam'] * (MMW/ 29.01)
+        H = ret.Chem.mass_fractions['H'] * (MMW/ 1.01)
+        H += ret.Chem.mass_fractions['H2'] * (MMW/ 2.02)
+        
         # select altitude
-        HF = HF[:, HF.shape[1]//2]
-        param_keys = list(ret.Param.param_keys)
-        # key = 'log_HF'
-        # id = param_keys.index(key)
+        vid = HF.shape[1]//2 # vertical id
+        HF = HF[:, vid]
+        
+        print(f' C.shape before selection = {C.shape}')
+        C = C[:, vid]
+        
+        H_species = ['H2O', 'OH']
+        # H_species =[]
+        if len(H_species) > 0:
+            for species in H_species:
+                line_species_i = ret.Chem.pRT_name_dict_r.get(species, None)
+                mu = ret.Chem.read_species_info(species, 'mass')
+                print(f' {target}: mu({species}) = {mu}, {line_species_i}')
+                H += np.quantile(ret.Chem.mass_fractions_posterior[line_species_i], 0.5, axis=0)[vid] * (MMW/ mu)
 
-        # make scatter plot with one point corresponding to Teff vs log(12CO/13CO)
-        # take uncertainties from posterior quantiles 
-        # log_HF = posterior[:, id]
-        # HF = ret.Chem.VMRs_posterior['HF']
+    
+        
+        param_keys = list(ret.Param.param_keys)
         assert np.sum(np.isnan(HF)) == 0, f'Found {np.sum(np.isnan(HF))} nan values in log_HF'
         
         A_F_sun = 4.40 # +- 0.25, Maiorca+2014, 
         A_F_sun_err = 0.25
+        
+        A_C_sun = 8.46 # +- 0.05, Asplund+2009
+        A_C_sun_err = 0.04
     
         # solar scaled abundance
-        H = ret.Chem.mass_fractions['H']
+        # H = ret.Chem.mass_fractions['H']
         print(f' {target}: H = {H.mean()}')
         F_H_posterior = np.log10(1e12 * HF / H.mean()) - A_F_sun
         assert np.sum(np.isnan(F_H_posterior)) == 0, f'Found {np.sum(np.isnan(F_H_posterior))} nan values in F_H_posterior'
         
         np.save(posterior_file, F_H_posterior)
         print(f' {target}: Saved [F/H] posterior to {posterior_file}')
+        C_H_posterior = np.log10(1e12 * C / H.mean()) - A_C_sun
+        assert np.sum(np.isnan(C_H_posterior)) == 0, f'Found {np.sum(np.isnan(C_H_posterior))} nan values in C_H_posterior'
+        
+        np.save(posterior_file_CH, C_H_posterior)
+        print(f' {target}: Saved [C/H] posterior to {posterior_file_CH}')
+        
     else:
         F_H_posterior = np.load(posterior_file)
+        C_H_posterior = np.load(posterior_file_CH)
         
     q=[0.16, 0.5, 0.84]
     F_H_quantiles = np.quantile(F_H_posterior, q)
+    C_H_quantiles = np.quantile(C_H_posterior, q)
         
 
     ax_new = ax is None
     ax = ax or plt.gca()
     print(f' {target}: log HF = {F_H_quantiles[1]:.2f} +{F_H_quantiles[2]-F_H_quantiles[1]:.2f} -{F_H_quantiles[1]-F_H_quantiles[0]:.2f}\n')
+    print(f' {target}: log CH = {C_H_quantiles[1]:.2f} +{C_H_quantiles[2]-C_H_quantiles[1]:.2f} -{C_H_quantiles[1]-C_H_quantiles[0]:.2f}\n')
     # add black edge to points
     xerr = [x,x] if xerr is None else xerr
     if isinstance(xerr, (int, float)):
@@ -132,6 +152,8 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
         xerr = [[x-xerr[0]], [xerr[1]-x]]
         
     fmt = 'o'
+    x = C_H_quantiles[1] # NEW: use CH instead of [M/H]
+    xerr = [[C_H_quantiles[1]-C_H_quantiles[0]], [C_H_quantiles[2]-C_H_quantiles[1]]]
     # add errorbar style with capsize
     if sigma > 3.0:
         ax.errorbar(x, F_H_quantiles[1],
@@ -183,7 +205,8 @@ teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list
 valid = dict(zip(names, df['Valid'].to_list()))
 
 ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
-ignore_more_targets = ['gl3622']
+# ignore_more_targets = ['gl3622']
+ignore_more_targets = []
 ignore_targets += ignore_more_targets
 
 # x_param = 'Teff (K)'
@@ -201,13 +224,13 @@ norm = plt.Normalize(3000.0, 3900.0)
 cmap = plt.cm.coolwarm_r
 # add Crossfield+2019 values for Gl 745 AB: HF ratio, teff and metallicity, with errors
 
-top = 0.92
+top = 0.96
 fig, ax = plt.subplots(1,1, figsize=(4,3), sharex=True, gridspec_kw={'hspace': 0.1, 
                                                                        'wspace': 0.1,
                                                                         'left': 0.15, 
-                                                                        'right': 0.78, 
+                                                                        'right': 0.76, 
                                                                         'top': top, 
-                                                                        'bottom': 0.07})
+                                                                        'bottom': 0.13})
 # ylim_min = 50.0
 # ylim_max = 3000.0
 
@@ -253,15 +276,15 @@ for name in names:
         break
     
 
-ism = (0.0, 0.10)
-ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label='ISM')
+# ism = (0.0, 0.10)
+# ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label='ISM')
 # ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
                 
-    
-if x_param == '[M/H]':
-    ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-10)
 
-# if i == 0:
+# draw diagonal line
+ax.plot([-1.0, 1.0], [-1.0, 1.0], color='gray', lw=0.5, ls='--', zorder=-10)
+# add text
+
 
 ax.set_xlabel(x_param)
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -275,33 +298,19 @@ cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
     
     
 ax.set_ylabel('[F/H]')
-    
+ax.set_xlabel('[C/H]')
 
-ax.legend(ncol=3, frameon=False, fontsize=8, loc=(-0.12, 1.01))
+ax.legend(ncol=1, frameon=True, fontsize=8, loc='upper left', bbox_to_anchor=(0.0, 1.0))
 loglog = False
 loglog_label = '_loglog' if loglog else ''
-if loglog:
-    
-    ylims = (-0.5, 0.5)
-    yticks = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-    
-    ax.set_yscale('log')
-    
-    ax.set_ylim(ylims)
-    
-    ax.set_yticks(yticks)
-    ax.set_yticklabels([str(t) for t in yticks])
-else:
-    # ax.set_ylim(ylim_min, ylim_max)
-    pass
-    # ax.set_xlim(xlim)
+
+xlim = (-0.9, 0.4)
+ax.set_xlim(xlim)
+ax.set_ylim(xlim)
 # x_param_label = x_param.split('(')[0].strip()
-x_param_label = {
-    'Teff (K)': 'Teff',
-    '[M/H]': 'metallicity',
-}[x_param]
+ax.set_xlabel('[C/H]')
 # fig_name = base_path + f'paper/latex/figures/{main_label}_HFs_{x_param_label}{loglog_label}.pdf'
-fig_name = nat_path + f'HF_{x_param_label}{loglog_label}.pdf'
+fig_name = nat_path + f'HF_CH{loglog_label}.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

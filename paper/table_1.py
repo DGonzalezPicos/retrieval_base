@@ -29,10 +29,29 @@ def generate_latex_table(csv_file, output_file):
     labels = list(attrs_dict.values())
     # Begin the LaTeX table
     latex_table = r'''\begin{table*}[ht]
+\renewcommand{\arraystretch}{1.3}
 \centering
-\begin{tabular}{lccccccc}
-\hline
 '''
+    latex_table += "\\caption{"
+    latex_table += "Fundamental Parameters of the Stars in the Sample. "
+    latex_table += "The spectral types, effective temperatures and masses are from \citep{"
+    latex_table += f"{refs['Cristofari2022']}"
+    latex_table += "} and references therein. "
+    latex_table += "The distances from Gaia EDR3 \citep{"
+    latex_table += f"{refs['GaiaEDR3']}"
+    latex_table += "}. "
+    latex_table += "The metallicities are from \citep{"
+    latex_table += f"{refs['Cristofari2023']}"
+    latex_table += "}}."                                                    
+    #   {refs['Cristofari2022']}} and references therein. \
+            # The distances from  Gaia EDR3 \citep{refs['GaiaEDR3']}. \
+            #     The metallicities are from \citep{refs['Cristofari2023']}."
+                
+    # latex_table += r'''}
+    
+    latex_table += "\\label{tab:fundamental_parameters}\n"
+    latex_table += "\\begin{tabular}{lccccccc}\\hline\n"
+    
     latex_table += ' & '.join(labels) + r'\\' + '\n' + r'\hline' + '\n'
 
     # Loop through the DataFrame and format each row for LaTeX
@@ -73,23 +92,6 @@ def generate_latex_table(csv_file, output_file):
     # End the LaTeX table
     latex_table += r'''\hline
 \end{tabular}
-\caption{'''
-    latex_table += "Fundamental Parameters of the Stars in the Sample. "
-    latex_table += "The spectral types, effective temperatures and masses are from \citep{"
-    latex_table += f"{refs['Cristofari2022']}"
-    latex_table += "} and references therein. "
-    latex_table += "The distances from Gaia EDR3 \citep{"
-    latex_table += f"{refs['GaiaEDR3']}"
-    latex_table += "}. "
-    latex_table += "The metallicities are from \citep{"
-    latex_table += f"{refs['Cristofari2023']}"
-    latex_table += "}."                                                    
-    #   {refs['Cristofari2022']}} and references therein. \
-            # The distances from  Gaia EDR3 \citep{refs['GaiaEDR3']}. \
-            #     The metallicities are from \citep{refs['Cristofari2023']}."
-                
-    latex_table += r'''}
-\label{tab:fundamental_parameters}
 \end{table*}
 '''
 

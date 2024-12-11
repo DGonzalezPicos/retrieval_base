@@ -176,108 +176,124 @@ def get_ccf(
 
 base_path = af.get_path(return_pathlib=True)
 target = 'gl205'
-run = None
+run = 'fc5'
 
-if target not in os.getcwd():
-    os.chdir(os.path.join(base_path, target))
+df = af.read_spirou_sample_csv()
+names = df['Star'].to_list()
+ignore_targets = ['gl3622']
 
-outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
-# find dirs in outputs
-# print(f' outputs = {outputs}')
-dirs = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and '_' not in d.name]
-print(f' dirs = {dirs}')
-runs = [int(d.name.split('fc')[-1]) for d in dirs]
-print(f' runs = {runs}')
-print(f' {target}: Found {len(runs)} runs: {runs}')
-assert len(runs) > 0, f'No runs found in {outputs}'
-if run is None:
-    run = 'fc'+str(max(runs))
-else:
-    run = 'fc'+str(run)
-    assert run in [d.name for d in dirs], f'Run {run} not found in {dirs}'
-# print('Run:', run)
-# check that the folder 'test_output' is not empty
-test_output = outputs / run / 'test_output'
-assert test_output.exists(), f'No test_output folder found in {test_output}'
-if len(list(test_output.iterdir())) == 0:
-    print(f' {target}: No files found in {test_output}')
-
-
-config_file = 'config_freechem.txt'
-conf = Config(path=base_path, target=target, run=run)(config_file)
-ccf_path = pathlib.Path(conf.prefix + 'plots/CCF/')
-ccf_path.mkdir(parents=True, exist_ok=True)
-
-ret = Retrieval(
-                    conf=conf, 
-                    evaluation=True,
-                    plot_ccf=True,
-
-                    )
-
-bestfit_params, posterior = ret.PMN_analyze()
-bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
-
-ret.evaluate_model(bestfit_params)
-ret.PMN_lnL_func()
-
-
-w_set = 'spirou'
-d_spec = ret.d_spec[w_set]
-d_flux = ret.d_spec[w_set].flux
-
-m_spec = ret.m_spec[w_set]
-
-m_wave_pRT_grid = ret.pRT_atm_broad['spirou'].wave_pRT_grid
-m_flux_pRT_grid_full = ret.pRT_atm_broad['spirou'].flux_pRT_grid
-
-m_wave = ret.d_spec[w_set].wave
-m_flux = ret.LogLike[w_set].m
-
-chi2_full = ret.LogLike[w_set].chi_squared_red
+testing = False
+for i, name in enumerate(names):
+    target = name.replace('Gl ', 'gl')
+    if target in ignore_targets:
+        print(f'---> Skipping {target}...')
+        continue
     
-m_flux_wo, m_spec_wo_species, m_flux_wo_species_pRT_grid = get_species(
-                    ret=ret,
-                    wave=m_wave, 
-                    line_species='CO_36_high_Sam', 
-                    bestfit_params_dict=bestfit_params_dict, 
-                    )
+    print(f'Target = {target}')
 
-#  species_list = [k[4:] for k in ret.conf.opacity_params.keys() if 'log_' in k]
-species_list = ['12CO', '13CO','C18O', 'OH', 'H2O', 'HF', 'Ca','Na', 'CN',
-                'Ti','Mg','Fe']
-# TODO: calculate for more species
 
-# species_list = ['SiO']
-# print(stop)
-rv_max = 1000.0
-rv_step = 1.0
-rv_noise = 100.0
-max_rv_plot = 200.0
-cache = True
-for species in species_list:
-    
-    
-    ccf_file = ccf_path / f'RV_CCF_ACF_{species}.txt'
-    if ccf_file.exists() and cache:
-        rv, CCF_SNR, ACF_SNR = np.loadtxt(ccf_file).T
-        print(f' Loaded {ccf_file}')
+    if target not in os.getcwd():
+        os.chdir(os.path.join(base_path, target))
+
+    outputs = pathlib.Path(base_path) / target / 'retrieval_outputs'
+    # find dirs in outputs
+    # print(f' outputs = {outputs}')
+    # dirs = [d for d in outputs.iterdir() if d.is_dir() and 'fc' in d.name and '_' not in d.name]
+    # print(f' dirs = {dirs}')
+    # runs = [int(d.name.split('fc')[-1]) for d in dirs]
+    # print(f' runs = {runs}')
+    # print(f' {target}: Found {len(runs)} runs: {runs}')
+    # assert len(runs) > 0, f'No runs found in {outputs}'
+    # if run is None:
+    #     run = 'fc'+str(max(runs))
+    # else:
+    #     run = 'fc'+str(run)
+    #     assert run in [d.name for d in dirs], f'Run {run} not found in {dirs}'
+    # print('Run:', run)
+    # check that the folder 'test_output' is not empty
+    test_output = outputs / run / 'test_output'
+    assert test_output.exists(), f'No test_output folder found in {test_output}'
+    if len(list(test_output.iterdir())) == 0:
+        print(f' {target}: No files found in {test_output}')
+
+
+    config_file = 'config_freechem.txt'
+    conf = Config(path=base_path, target=target, run=run)(config_file)
+    ccf_path = pathlib.Path(conf.prefix + 'plots/CCF/')
+    ccf_path.mkdir(parents=True, exist_ok=True)
+
+    ret = Retrieval(
+                        conf=conf, 
+                        evaluation=True,
+                        plot_ccf=True,
+
+                        )
+
+    bestfit_params, posterior = ret.PMN_analyze()
+    bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
+
+    ret.evaluate_model(bestfit_params)
+    ret.PMN_lnL_func()
+
+
+    w_set = 'spirou'
+    d_spec = ret.d_spec[w_set]
+    d_flux = ret.d_spec[w_set].flux
+
+    m_spec = ret.m_spec[w_set]
+
+    m_wave_pRT_grid = ret.pRT_atm_broad['spirou'].wave_pRT_grid
+    m_flux_pRT_grid_full = ret.pRT_atm_broad['spirou'].flux_pRT_grid
+
+    m_wave = ret.d_spec[w_set].wave
+    m_flux = ret.LogLike[w_set].m
+
+    chi2_full = ret.LogLike[w_set].chi_squared_red
         
-    else:
-        rv, CCF_SNR, ACF_SNR = get_ccf(ret, m_spec, m_wave_pRT_grid, 
-                m_flux_pRT_grid_full, 
-                species, 
-                rv_max=rv_max, 
-                rv_step=rv_step, 
-                rv_noise=rv_noise,
-                ccf_file=ccf_file,
-                )
-    
-    plot_ccf(rv, 
-             CCF_SNR, 
-             ACF_SNR, 
-             conf.opacity_params[f'log_{species}'][0][1].replace('\\log\\',''),
-             rv_noise, 
-             max_rv_plot, 
-             ccf_path,
-    )
+    # m_flux_wo, m_spec_wo_species, m_flux_wo_species_pRT_grid = get_species(
+    #                     ret=ret,
+    #                     wave=m_wave, 
+    #                     line_species='CO_36_high_Sam', 
+    #                     bestfit_params_dict=bestfit_params_dict, 
+    #                     )
+
+    #  species_list = [k[4:] for k in ret.conf.opacity_params.keys() if 'log_' in k]
+    species_list = ['12CO', '13CO','C18O', 'C17O', 'H2O_181', 'OH', 'H2O', 'HF', 'CN',
+                    # 'Ca','Na', 
+                    # 'Ti','Mg','Fe',
+                    ]
+
+    rv_max = 1000.0
+    rv_step = 1.0
+    rv_noise = 100.0
+    max_rv_plot = 200.0
+    cache = True
+    for species in species_list:
+        
+        
+        ccf_file = ccf_path / f'RV_CCF_ACF_{species}.txt'
+        if ccf_file.exists() and cache:
+            rv, CCF_SNR, ACF_SNR = np.loadtxt(ccf_file).T
+            print(f' Loaded {ccf_file}')
+            
+        else:
+            rv, CCF_SNR, ACF_SNR = get_ccf(ret, m_spec, m_wave_pRT_grid, 
+                    m_flux_pRT_grid_full, 
+                    species, 
+                    rv_max=rv_max, 
+                    rv_step=rv_step, 
+                    rv_noise=rv_noise,
+                    ccf_file=ccf_file,
+                    )
+        
+        plot_ccf(rv, 
+                CCF_SNR, 
+                ACF_SNR, 
+                conf.opacity_params[f'log_{species}'][0][1].replace('\\log\\',''),
+                rv_noise, 
+                max_rv_plot, 
+                ccf_path,
+        )
+
+    if testing:
+        break

@@ -1164,6 +1164,8 @@ class Retrieval:
             outputfiles_basename=self.conf_output,
             )
         stats = analyzer.get_stats()
+        self.map_logL = analyzer.get_best_fit()['log_likelihood'] # maximum likelihood value
+        self.BIC = {k:self.Param.n_params*np.log(np.sum(self.d_spec[k].mask_isfinite)) - 2*self.map_logL for k in self.d_spec.keys()}
         return stats
     
     def PMN_analyze(self, map=True, return_dict=False):
@@ -1175,7 +1177,9 @@ class Retrieval:
             outputfiles_basename=self.conf_output,
             )
         stats = analyzer.get_stats()
-
+        # maximum likelihood value
+        
+        # stats = self.PMN_stats()
         # Load the equally-weighted posterior distribution
         posterior = analyzer.get_equal_weighted_posterior()
         posterior = posterior[:,:-1]

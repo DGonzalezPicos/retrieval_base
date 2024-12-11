@@ -176,8 +176,9 @@ for j, title in enumerate(titles):
     
 # add VMR plot
 Chem = pickle_load(outputs / run / 'test_data/bestfit_Chem.pkl')
-# Chem = ret.Chem
-# Chem.get_VMRs_posterior(profile_id=30)
+PT = pickle_load(outputs / run / 'test_data/bestfit_PT.pkl')
+
+assert hasattr(PT, 'temperature_envelopes'), 'No temperature envelopes found'
 
 ax_chem = fig.add_axes([0.58,0.64,0.38,0.30])
 

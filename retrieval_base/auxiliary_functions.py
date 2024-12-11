@@ -473,12 +473,34 @@ def compare_evidence(ln_Z_A, ln_Z_B):
         ln_list = ln_list[::-1] if i == 1 else ln_list
         labels = ['A', 'B'] if i == 1 else ['B', 'A']
         ln_B = ln_list[0] - ln_list[1]
-        B = np.exp(ln_B)
-        p = np.real(np.exp(W((-1.0/(B*np.exp(1))),-1)))
-        sigma = np.sqrt(2)*erfcinv(p)
+        # B = np.exp(ln_B)
+        # p = np.real(np.exp(W((-1.0/(B*np.exp(1))),-1)))
+        # sigma = np.sqrt(2)*erfcinv(p)
+        
+        if abs(ln_B) > 200:  # Prevent overflow
+            print(f"ln_B = {ln_B:.2f} > 100, setting sigma=10")
+            return ln_B, 10 # Arbitrary large values
+        else:
+            B = np.exp(ln_B)  # Safe if ln_B isn't too large
+
+            # Lambert W calculation with asymptotic handling for large B
+            x = -1 / (B * np.exp(1))
+            if x > -1e-5:
+                W_val = np.log(-x) - np.log(-np.log(-x))  # Asymptotic approx
+            else:
+                W_val = W(x, k=-1).real
+
+            p = np.exp(W_val)
+
+            # Error function inverse with large p handling
+            if p < 1e-16:
+                sigma = np.sqrt(2 * -np.log(p / 2))  # Asymptotic approx
+            else:
+                sigma = np.sqrt(2) * erfcinv(p)
+
         
         print(f'{labels[0]} vs. {labels[1]}: ln(B)={ln_B:.2f} | sigma={sigma:.2f}')
-    return B, sigma
+    return ln_B, sigma
 
 def load_romano_models(mass_range='1_8', Z_min=None):
     

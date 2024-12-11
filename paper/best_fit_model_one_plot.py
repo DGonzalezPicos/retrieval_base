@@ -131,7 +131,7 @@ def plot(text_x=None):
 
     ax.set_xlabel('Wavelength (nm)')
     ax.set_ylabel('Flux + offset')
-    fig_name = base_path + 'paper/latex/figures/best_fit_model' + "-".join(orders_str) + ".pdf"
+    fig_name = base_path + 'paper/latex/figures/new_best_fit_model' + "-".join(orders_str) + ".pdf"
     fig.savefig(fig_name)
     print(f'Figure saved as {fig_name}')
 

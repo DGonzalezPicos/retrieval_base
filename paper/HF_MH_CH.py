@@ -17,7 +17,7 @@ plt.style.use(['sans'])
 # enable latex
 # plt.rcParams['text.usetex'] = True
 plt.rcParams.update({
-    "font.size": 8,
+    "font.size": 7,
 })
 
 base_path = '/home/dario/phd/retrieval_base/'
@@ -28,7 +28,7 @@ y_lims = (-0.5, 0.5)
 
 
 def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
-         cache=True, **kwargs):
+         cache=True, use_ch=False,**kwargs):
     if target not in os.getcwd():
         os.chdir(base_path + target)
 
@@ -152,8 +152,9 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
         xerr = [[x-xerr[0]], [xerr[1]-x]]
         
     fmt = 'o'
-    x = C_H_quantiles[1] # NEW: use CH instead of [M/H]
-    xerr = [[C_H_quantiles[1]-C_H_quantiles[0]], [C_H_quantiles[2]-C_H_quantiles[1]]]
+    if use_ch:
+        x = C_H_quantiles[1] # NEW: use CH instead of [M/H]
+        xerr = [[C_H_quantiles[1]-C_H_quantiles[0]], [C_H_quantiles[2]-C_H_quantiles[1]]]
     # add errorbar style with capsize
     if sigma > 3.0:
         ax.errorbar(x, F_H_quantiles[1],
@@ -170,25 +171,10 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
                     ecolor='gray',          # Color of the error bars, set alpha of ecolor to make it transparent
                     elinewidth=0.8,           # Thickness of the error bars
                     
-                    
+                    ms=5,                   # Size of the marker
                     color=kwargs.get('color', 'k'),
         )
-    else:
-        # plot lower limit
-        fmt = '^'
-        ax.errorbar(x, F_H_quantiles[0],
-                    xerr=xerr,
-                    yerr=[[0.0], [F_H_quantiles[2]-F_H_quantiles[0]]],
-                    lolims=True,
-                    fmt=fmt, 
-                    label=label.replace('gl', 'Gl '),
-                    alpha=0.9,
-                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='k', # Black edge color
-                    markeredgewidth=0.8,     # Thickness of the edge
-                    color=kwargs.get('color', 'k'),
-        )
-        
+   
         
     if xytext is not None:
         # add text with target name next to point, offset text from point
@@ -225,12 +211,13 @@ cmap = plt.cm.coolwarm_r
 # add Crossfield+2019 values for Gl 745 AB: HF ratio, teff and metallicity, with errors
 
 top = 0.96
-fig, ax = plt.subplots(1,1, figsize=(4,3), sharex=True, gridspec_kw={'hspace': 0.1, 
+fig, (ax, ax1) = plt.subplots(1,2, figsize=(6,2), sharey=True, gridspec_kw={'hspace': 0.1, 
                                                                        'wspace': 0.1,
                                                                         'left': 0.15, 
                                                                         'right': 0.76, 
                                                                         'top': top, 
                                                                         'bottom': 0.13})
+axl = [ax, ax1]
 # ylim_min = 50.0
 # ylim_max = 3000.0
 
@@ -242,8 +229,10 @@ xytext = {'Gl 699' : (-28,5),
 }
 
 sun = (0.0, 0.0)
-# ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='gold', alpha=0.3, label='Solar',lw=0)
-ax.plot(0.0, sun[0], color='gold', marker='*', ms=16, label='Sun', alpha=0.8, markeredgecolor='black', markeredgewidth=0.8, zorder=100)
+# draw diagonal line
+for axi in axl:
+    axi.plot([-1.0, 1.0], [-1.0, 1.0], color='gray', lw=0.5, ls='--', zorder=-10)
+    axi.plot(0.0, sun[0], color='gold', marker='*', ms=16, label='Sun', alpha=0.8, markeredgecolor='black', markeredgewidth=0.8, zorder=100)
 
 
 testing = False
@@ -257,17 +246,19 @@ for name in names:
         continue
     color = cmap(norm(teff[name]))
 
-    ratio_t = main(target, 
-                    x[name], 
-                    xerr=x_err[name],
-                    ax=ax, 
-                    # label=name, 
-                    label='',
-                    run=None,
-                    color=color,
-                    xytext=xytext.get(name, None),
-                    cache=cache,
-    )
+    for i, boo in enumerate([False, True]):
+        ratio_t = main(target, 
+                        x[name], 
+                        xerr=x_err[name],
+                        ax=axl[i], 
+                        # label=name, 
+                        label='',
+                        run=None,
+                        color=color,
+                        xytext=xytext.get(name, None),
+                        cache=cache,
+                        use_ch=boo,
+        )
     
     if testing:
         break
@@ -278,36 +269,45 @@ for name in names:
 # ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
                 
 
-# draw diagonal line
-ax.plot([-1.0, 1.0], [-1.0, 1.0], color='gray', lw=0.5, ls='--', zorder=-10)
 # add text
 
+# add colorbar
+colorbar = False
+if colorbar:
+    ax.set_xlabel(x_param)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])  # Only needed for color bar
 
-ax.set_xlabel(x_param)
-sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-sm.set_array([])  # Only needed for color bar
-
-# define cbar_ax for colorbar
-cbar_ax = fig.add_axes([0.80, 0.06, 0.027, top-0.06])
-cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=1)
-cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
+    # define cbar_ax for colorbar
+    cbar_ax = fig.add_axes([0.80, 0.06, 0.027, top-0.06])
+    cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=1)
+    cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
     
     
-ax.set_ylabel('[F/H]')
-ax.set_xlabel('[C/H]')
+ax.set_ylabel('measured [F/H]')
 
-ax.legend(ncol=1, frameon=True, fontsize=8, loc='upper left', bbox_to_anchor=(0.0, 1.0))
+ax1.legend(ncol=1, frameon=True, fontsize=8, loc='lower right')
 loglog = False
 loglog_label = '_loglog' if loglog else ''
 
-xlim = (-0.9, 0.4)
+xlim = (-0.85, 0.6)
 ax.set_xlim(xlim)
-ax.set_ylim(xlim)
+ylim = (-0.9, 0.4)
+ax.set_ylim(ylim)
 # x_param_label = x_param.split('(')[0].strip()
-ax.set_xlabel('[C/H]')
+ax.set_xlabel('literature [M/H]')
+ax1.set_xlabel('measured [C/H]')
+ax1.set_xlim(xlim)
+
+# add subplots labels: a, b
+
+for i, axi in enumerate(axl):
+    axi.text(0.05, 0.90, f'{chr(97+i)}', transform=axi.transAxes, fontsize=12, fontweight='bold')
+
+
 # fig_name = base_path + f'paper/latex/figures/{main_label}_HFs_{x_param_label}{loglog_label}.pdf'
-fig_name = nat_path + f'HF_CH{loglog_label}.pdf'
-fig.savefig(fig_name)
+fig_name = nat_path + f'HF_MH_CH{loglog_label}.pdf'
+fig.savefig(fig_name, bbox_inches='tight')
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

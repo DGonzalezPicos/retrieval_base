@@ -1,3 +1,4 @@
+""" 2024-12-11 Generate same fig as Fig. 1 for appendix with all orders and all targets """
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
@@ -27,7 +28,7 @@ import matplotlib.patheffects as path_effects
 
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
-def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, offset_x=0.0, **kwargs):
+def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, fl=1.0, **kwargs):
     
     
     assert len(ax) == 2, f'Lenght of ax must be 2, not {len(ax)}'
@@ -103,10 +104,10 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, offset_x=0.0
         
         err = np.ones_like(wave) * np.nan
         mask = ret.d_spec['spirou'].mask_isfinite[:,0]
-        for i in range(3):
+        # for i in range(3):
             # err_i = np.ones_like(wave[order]) * np.nan
         
-            err[order, mask[order]] = ret.Cov['spirou'][order][0].err * s[order]
+        err[order, mask[order]] = ret.Cov['spirou'][order][0].err * s[order]
         
         # save file
         np.save(bestfit_spec_file, np.array([wave, flux, err, mask, m, spline_cont]))
@@ -121,9 +122,18 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, offset_x=0.0
     flux += offset
     # residuals, save as npy with wave, residuals, err
     # np.save(ret.conf_output + 'residuals.npy', np.array([wave, flux-m, ret.Cov['spirou'][0].err * s[0]]))
+    # select 200 pixels without nans
+    nans = np.isnan(flux[order])
+    flux_nonans = flux[order, ~nans]
     
+    if fl != 1.0:
+        scale = np.median(flux_nonans[:100]) / fl
+        
+        flux /= scale
+        m /= scale
+        print(f' Flux scaled by {scale}')
     
-    lw = kwargs.get('lw', 1.0)
+    lw = kwargs.get('lw', 0.7)
     color = kwargs.get('color', 'orange')
     # for i, order in enumerate(orders):
 
@@ -138,36 +148,38 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, offset_x=0.0
     ax[0].fill_between(wave[order], flux[order]-err[order], flux[order]+err[order], alpha=0.2, color='k', lw=0)
     ax[0].plot(wave[order], m[order], label=target,lw=lw, color=color)
     
-    ax[1].plot(wave[order], residuals_i, color=color, lw=lw, alpha=0.8)
+    ax[1].plot(wave[order], residuals_i, color=color, lw=lw, alpha=0.6)
     # ax[i].plot(wave[order],spline_cont[order]+offset, color='red', lw=lw)
     
     # add text above spectra in units of data
-
-    text_pos = [np.nanmin(wave[order, mask[order]]), np.nanquantile(flux[order, :len(flux[order]//2)], 0.90)-0.15]
-    if text_x is not None:
-        text_pos[0] = text_x[0]
-    # add white box around text
+    if order==0:
+        text_pos = [np.nanmin(wave[order, mask[order]]), np.nanquantile(flux[order, :len(flux[order]//2)], 0.90)-0.15]
+        if text_x is not None:
+            text_pos[0] = text_x[0]
+        # add white box around text
+        
+        pe = [path_effects.withStroke(linewidth=2, foreground='w')]
+        s = target.replace('gl','')
+        ax[0].text(*text_pos, s, color='k', fontsize=9, weight='bold', transform=ax[0].transData,
+                    path_effects=pe)
     
-    pe = [path_effects.withStroke(linewidth=2, foreground='w')]
-    s = target.replace('gl','')
-    ax[0].text(*text_pos, s, color='k', fontsize=9, weight='bold', transform=ax[0].transData,
-                path_effects=pe)
+   
     
-    # show the mean error in the residual plot as errorbar
-    # err_q = [0.50, 0.90, 0.95]
-    # 
-    # for q, err_i in enumerate(np.nanquantile(residuals_i, err_q)):
-    #     ax[1].errorbar(2290-offset_x, 0, yerr=err_i, color=color, zorder=1, alpha=alpha[q])
-    
-    sigmas = [1,2,3]
-    mean_err = np.nanmean(err[order])
-    alpha = [1.0, 0.7, 0.4]
-    for s, sigma in enumerate(sigmas):
-        ax[1].errorbar(2286.4-offset_x, 0, yerr=mean_err*sigma, color=color, zorder=1, lw=1.5, capsize=0, capthick=1.5, alpha=alpha[s])
+    # if order ==0:
+    if order == 99: # ignore for now... too many errorbars
+        # take the mean error of ALL ORDERS here
+        sigmas = [1,2,3]
+        # mean_err = np.nanmean(err[order])
+        mean_err = np.nanmedian(err) # NEW 2024-12-11
+        # only plot once (order=0)
+        alpha = [1.0, 0.7, 0.4]
+        for s, sigma in enumerate(sigmas):
+            ax[1].errorbar(2250-offset_x, 0, yerr=mean_err*sigma, color=color, zorder=1, lw=1.5, capsize=0, capthick=1.5, alpha=alpha[s])
         
         
     
-    return None
+    
+    return np.median(flux_nonans[-100:])
 
 
 df = read_spirou_sample_csv()
@@ -182,17 +194,19 @@ spt = dict(zip(names, [t.split('+-')[0] for t in df['SpT'].to_list()]))
 # prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
 # prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
-
+ignore_names = ['Gl 3622']
 # norm = plt.Normalize(min(temperature_dict.values()), max(temperature_dict.values()))
 # norm = plt.Normalize(min(teff.values()), 4000.0)
-norm = plt.Normalize(2800, 4000.0)
+norm = plt.Normalize(3000, 3900.0)
 cmap = plt.cm.coolwarm_r
 
 my_targets_id = ['338B', '205', '411', '436','699', '1286']
-my_targets = ['gl'+t for t in my_targets_id]
+# my_targets = ['gl'+t for t in my_targets_id]
+my_targets = [s.replace('Gl ', 'gl') for s in names if s not in ignore_names][::-1]
+
 
 def plot(orders, text_x=None, xlim=None, **kwargs):
-    fig, ax = plt.subplots(2,1, figsize=(5,3), sharex=True, gridspec_kw={'height_ratios': [4, 1],
+    fig, ax = plt.subplots(2,1, figsize=(5,9), sharex=True, gridspec_kw={'height_ratios': [9, 1],
                                                                         'hspace': 0.08,
                                                                         'top': 0.97,
                                                                         'bottom': 0.13,
@@ -214,12 +228,16 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         
         # offset = 0.42*(len(names)-t)
         offset = 0.54*(len(my_targets)-my_targets.index(target)-1)
-        ret = main(target, ax=ax, offset=offset, orders=orders,
-                run=None, 
-                lw=0.4, color=color,
-                text_x=text_x, divide_spline=True,
-                offset_x=-0.7*count,
-                **kwargs)
+        fl  = 1.0
+        for order in orders:
+            fl = main(target, ax=ax, offset=offset, order=order,
+                    run=None, 
+                    lw=0.4, color=color,
+                    text_x=text_x, 
+                    divide_spline=True,
+                    offset_x=-2*count,
+                    fl=fl,
+                    **kwargs)   
         
         ax[0].text(s=spt[name].split('.')[0].replace('V',''), x=text_x[1]-3, y=1.02+offset, transform=ax[0].transData,
                     color=color, fontsize=7, weight='bold', path_effects=[path_effects.withStroke(linewidth=2, foreground='w')])
@@ -229,7 +247,11 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])  # Only needed for color bar
-    cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=40, location='right')
+    
+    # create ax for colorbar
+    cbar_ax = fig.add_axes([1.005, 0.242, 0.02, 0.728])
+    cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', pad=0.01, aspect=80, location='right')
+    # cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=80, location='right')
     cbar.set_label('Temperature (K)')
 
     if xlim is not None:
@@ -239,7 +261,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         ax[0].set_xlim((xlim[0]-5, xlim[1]-3))
 
 
-    ax[0].set_ylim(0.45, 3.9)
+    ax[0].set_ylim(0.25, 13.7)
     ax[-1].set_xlabel('Wavelength (nm)')
     ylim_res = ax[1].get_ylim()
     # make symmetric
@@ -249,7 +271,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     ax[1].set_ylabel('Residuals', labelpad=0)
     # fig_name = base_path + 'paper/latex/figures/best_fit_model' + "-".join(orders_str) + ".pdf"
     fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
-    fig.savefig(fig_name)
+    fig.savefig(fig_name, bbox_inches='tight')
     print(f'Figure saved as {fig_name}')
 
     show = False
@@ -263,6 +285,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
 #           (2435.0, 2510.0),
 # ]
 order = 0
-xlim = (2282, 2364)
-text_x = (xlim[0]+1.5, xlim[1]-2)
-plot([order], text_x=text_x, xlim=xlim)
+# xlim = (2282, 2364) # for order 0
+xlim = (2270, 2500) # for all orders
+text_x = (xlim[0]+1.5, xlim[1]-9)
+plot([0,1,2], text_x=text_x, xlim=xlim)

@@ -65,11 +65,12 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
     
     if main_label == 'CO':
         species_sigma = 'C18O' if isotope == 'oxygen' else '13CO'
-        sigma_file = test_output / f'B_sigma_{species_sigma}.dat' # contains two values: B, sigma
+        # sigma_file = test_output / f'B_sigma_{species_sigma}.dat' # contains two values: B, sigma
+        sigma_file = test_output / f'lnB_sigma_{species_sigma}.dat'
         if sigma_file.exists():
             print(f' {target}: Found {sigma_file}')
-            B, sigma = np.loadtxt(sigma_file)
-            print(f' {target}: B = {B:.2f}, sigma = {sigma:.2f}')
+            lnB, sigma = np.loadtxt(sigma_file)
+            print(f' {target}: lnB = {lnB:.2f}, sigma = {sigma:.2f}')
             # replace nan with 0.0
             sigma = 0.0 if np.isnan(sigma) else sigma
             sigma = 100.0 if sigma > 100.0 else sigma

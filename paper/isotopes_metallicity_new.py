@@ -23,7 +23,7 @@ plt.rcParams.update({
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
 
-water = False # take isotope ratio from H2O
+water = True # take isotope ratio from H2O
 main_label = 'H2O' if water else 'CO'
 isotope = 'oxygen' 
 assert isotope in ['carbon', 'oxygen'], f'Isotope {isotope} not recognized (choose from oxygen, carbon)'
@@ -173,7 +173,8 @@ teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list
 # valid = dict(zip(names, df['Valid'].to_list()))
 ignore_targets = ['gl3622']
 
-x_param = '[C/H]'
+# x_param = '[C/H]'
+x_param = '[M/H]'
 
 c23 = False
 if x_param == '[M/H]':

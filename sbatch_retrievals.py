@@ -9,36 +9,45 @@ path = pathlib.Path(f'/home/{user}/retrieval_base/')
 # folders = [f for f in path.iterdir() if f.is_dir()]
 # targets = [f.name for f in folders if str(f.name).startswith('gl')]
 targets_rv = {
-    'gl15A': 11.73,
-    'gl15B': 11.17,
-    'gl205': 8.5,
-    'gl338B': 12.43,
-    'gl382': 7.87,
-    'gl408': 3.29,
-    'gl411': -84.64,
-    'gl412A': 68.8,
-    'gl436': 9.59,
-    'gl445': -111.51,
-    'gl447': -30.66,
-    'gl687': -28.65,
-    'gl699': -110.11,
-    'gl725A': -0.58,
-    'gl725B': 1.19,
-    'gl752A': 35.884,
-    'gl849': -15.3,
-    'gl876': -1.47,
-    'gl880': -27.5,
-    'gl905': -77.51,
-    'gl1002': -33.7,
-    'gl1151': -35.12,
-    'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
-    'gl3622': 2.18,
-    'gl4063': 12.533
-    }
+    # 'gl15A': 11.73,
+    # 'gl15B': 11.17,
+    # 'gl205': 8.5,
+    # 'gl338B': 12.43,
+    # 'gl382': 7.87,
+    # 'gl408': 3.29,
+    # 'gl411': -84.64,
+    # 'gl412A': 68.8,
+    # 'gl436': 9.59,
+    # 'gl445': -111.51,
+    # 'gl447': -30.66,
+    # 'gl687': -28.65,
+    # 'gl699': -110.11,
+    # 'gl725A': -0.58,
+    # 'gl725B': 1.19,
+    # 'gl752A': 35.884,
+    # 'gl849': -15.3,
+    # 'gl876': -1.47,
+    # 'gl880': -27.5,
+    # 'gl905': -77.51,
+    # 'gl1002': -33.7,
+    # 'gl1151': -35.12,
+    # 'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
+    # 'gl3622': 2.18,
+    # 'gl4063': 12.533,
+    'gl48': 1.56,
+    'gl317': 87.94,
+    'gl410': -14.04,
+    'gl480': -4.19,
+    'gl514': 14.47,
+    'gl617B': -18.36,
+    'gl846': 18.25,
+    'gl4333': -6.31
+ }
 targets = list(targets_rv.keys())
 print(f' len(targets) = {len(targets)}')
 # run = 'fc4_no_C18O'
-run = 'fc5_no13CO'
+# run = 'fc5_no13CO'
+run = 'fc5'
 resume = True
 
 ignore_targets = []

@@ -5,8 +5,8 @@ import subprocess
 import shutil
 targets_rv = {
     # 'gl15A': 11.73,
-    'gl15B': 11.17,
-    'gl205': 8.5,
+    # 'gl15B': 11.17,
+    # 'gl205': 8.5,
     # 'gl338B': 12.43,
     # 'gl382': 7.87,
     # 'gl408': 3.29,
@@ -18,7 +18,7 @@ targets_rv = {
     # 'gl699': -110.11,
     # 'gl725A': -0.58,
     # 'gl725B': 1.19,
-    'gl752A': 35.884,
+    # 'gl752A': 35.884,
     # 'gl687': -28.65,
     # 'gl849': -15.3,
     # 'gl876': -1.47,
@@ -29,11 +29,22 @@ targets_rv = {
     # 'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
     # 'gl3622': 2.18,
     # 'gl4063': 12.533
-    }
+    
+    'gl48': 1.56,
+    'gl317': 87.94,
+    'gl410': -14.04,
+    'gl480': -4.19,
+    'gl514': 14.47,
+    'gl617B': -18.36,
+    'gl846': 18.25,
+    'gl4333': -6.31
+ }
+
 targets = list(targets_rv.keys())
 # run = 'fc4_wo_C18O'
 run = 'fc5'
-ignore = 'C18O'
+ignore=None
+# ignore = 'C18O'
 # ignore  = '13CO'
 if ignore is not None:
     print(f' Ignoring {ignore} in retrieval...')

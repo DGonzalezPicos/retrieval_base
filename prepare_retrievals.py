@@ -11,42 +11,51 @@ ignore_targets = []
 
 # query from simbad
 targets_rv = {
-    'gl15A': 11.73,
-    'gl15B': 11.17,
-    'gl205': 8.5,
-    'gl338B': 12.43,
-    'gl382': 7.87,
-    'gl408': 3.29,
-    'gl411': -84.64,
-    'gl412A': 68.8,
-    'gl436': 9.59,
-    'gl445': -111.51,
-    'gl447': -30.66,
-    'gl687': -28.65,
-    'gl699': -110.11,
-    'gl725A': -0.58,
-    'gl725B': 1.19,
-    'gl752A': 35.884,
-    'gl849': -15.3,
-    'gl876': -1.47,
-    'gl880': -27.5,
-    'gl905': -77.51,
-    'gl1002': -33.7,
-    'gl1151': -35.12,
-    'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
-    'gl3622': 2.18,
-    'gl4063': 12.533
-    }
-# DPG 2024-10-27: Gl 447 still needs to be rerun with all species
-
+    # 'gl15A': 11.73,
+    # 'gl15B': 11.17,
+    # 'gl205': 8.5,
+    # 'gl338B': 12.43,
+    # 'gl382': 7.87,
+    # 'gl408': 3.29,
+    # 'gl411': -84.64,
+    # 'gl412A': 68.8,
+    # 'gl436': 9.59,
+    # 'gl445': -111.51,
+    # 'gl447': -30.66,
+    # 'gl687': -28.65,
+    # 'gl699': -110.11,
+    # 'gl725A': -0.58,
+    # 'gl725B': 1.19,
+    # 'gl752A': 35.884,
+    # 'gl849': -15.3,
+    # 'gl876': -1.47,
+    # 'gl880': -27.5,
+    # 'gl905': -77.51,
+    # 'gl1002': -33.7,
+    # 'gl1151': -35.12,
+    # 'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
+    # 'gl3622': 2.18,
+    # 'gl4063': 12.533
+    
+    # 'gl48': 1.56,
+    # 'gl317': 87.94,
+    # 'gl410': -14.04,
+    # 'gl480': -4.19,
+    # 'gl514': 14.47,
+    'gl617B': -18.36,
+    'gl846': 18.25,
+    'gl4333': -6.31
+ }
+    
 targets = list(targets_rv.keys())
 print(f' len(targets) = {len(targets)}')
 delta_rv = 20.0
 
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
 run = 'fc5'
-ignore = 'C18O'
-# ignore  = '13CO'
+ignore=None
+# ignore = 'C18O' # TODO
+# ignore  = '13CO' # TODO
 if ignore is not None:
     print(f' Ignoring {ignore} in retrieval...')
     run = f'{run}_no{ignore}'

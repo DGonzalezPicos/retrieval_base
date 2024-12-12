@@ -62,7 +62,16 @@ targets_rv = {
     'gl1151': -35.12,
     'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
     'gl3622': 2.18,
-    'gl4063': 12.533
+    'gl4063': 12.533,
+    
+    'gl48': 0.0,
+    'gl317': 0.0,
+    'gl410': 0.0,
+    'gl480': 0.0, 
+    'gl514': 0.0,
+    'gl617B': 0.0,
+    'gl846': 0.0,   
+    'gl4333': 0.0,
     }
 targets = list(targets_rv.keys())
 rv_dict = query_rv(targets)

@@ -10,10 +10,12 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 lbl = 15
-run = f'lbl{lbl}_G2G3_8'
+# run = f'lbl{lbl}_G2G3_8'
+run = f'lbl{lbl}_G1_1'
 prefix = f'./retrieval_outputs/{run}/test_'
-grating = 'g235h+g395h'
+# grating = 'g235h+g395h'
 # grating = 'g235h'
+grating = 'g140h'
 
 config_data = {
     'NIRSpec': {
@@ -37,7 +39,9 @@ config_data = {
     }
 
 # update wave_range
-gratings_wave_range = {'g235h': (1630, 3200),
+gratings_wave_range = {
+                        'g140h':(920, 1940),
+                        'g235h': (1630, 3200),
                        'g395h': (2800, 5300),
                        'g235h+g395h': (1630, 5300),
                        }
@@ -64,44 +68,81 @@ opacity_params = {
     # 'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
     
     # try new 2024-10-28
-    # 'log_CH4': ([(-14,-2), r'$\log\ \mathrm{CH_4}$'], 'CH4_MM_main_iso'),
-    # 'log_CH': ([(-14,-2), r'$\log\ \mathrm{CH}$'], 'CH_main_iso'),
-    # 'log_NH3': ([(-14,-2), r'$\log\ \mathrm{NH_3}$'], 'NH3_coles_main_iso_Sam'),
-    # 'log_HCN': ([(-14,-2), r'$\log\ \mathrm{HCN}$'], 'HCN_main_iso'),
-    # 'log_NH': ([(-14,-2), r'$\log\ \mathrm{NH}$'], 'NH_kNigHt_main_iso'),
-    # 'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
+    'log_CH4': ([(-14,-2), r'$\log\ \mathrm{CH_4}$'], 'CH4_MM_main_iso'),
+    'log_CH': ([(-14,-2), r'$\log\ \mathrm{CH}$'], 'CH_main_iso'),
+    'log_NH3': ([(-14,-2), r'$\log\ \mathrm{NH_3}$'], 'NH3_coles_main_iso_Sam'),
+    'log_HCN': ([(-14,-2), r'$\log\ \mathrm{HCN}$'], 'HCN_main_iso'),
+    'log_NH': ([(-14,-2), r'$\log\ \mathrm{NH}$'], 'NH_kNigHt_main_iso'),
+    'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
     
     
     'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    # 'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
+    'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
     'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
-    # 'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
-    # 'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
-    # 'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
-    # 'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe'),
-    # 'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al_high'),
+    'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
+    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
+    'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
+    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al_high'),
+    'log_Cr': ([(-14,-2), r'$\log\ \mathrm{Cr}$'], 'Cr_high'),
+    'log_Cs': ([(-14,-2), r'$\log\ \mathrm{Cs}$'], 'Cs_high'),
+    'log_V':  ([(-14,-2), r'$\log\ \mathrm{V}$'],  'V_high'),
+    'log_Li': ([(-14,-2), r'$\log\ \mathrm{Li}$'], 'Li_high'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
-    # 'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
+    'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
-    # 'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
-    # 'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_AloHa_main_iso'),
-    # 'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
-    # 'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
-    # 'log_ScH': ([(-14,-2), r'$\log\ \mathrm{ScH}$'], 'ScH_main_iso'), # DGP (2024-07-16): try
+    'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
+    'log_AlH': ([(-14,-2), r'$\log\ \mathrm{AlH}$'], 'AlH_AloHa_main_iso'),
+    'log_MgH': ([(-14,-2), r'$\log\ \mathrm{MgH}$'], 'MgH_main_iso'),
+    'log_NaH': ([(-14,-2), r'$\log\ \mathrm{NaH}$'], 'NaH_main_iso'), # DGP (2024-07-16)
+    'log_ScH': ([(-14,-2), r'$\log\ \mathrm{ScH}$'], 'ScH_main_iso'), # DGP (2024-07-16): try
 
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MYTHOS_main_iso'),
-    # 'log_H2': ([(-12,-0.01), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
+    'log_H2': ([(-12,-0.01), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
-    # 'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
-    # 'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
-    # 'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
-    # 'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
+    'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
+    'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
+    'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
+
+species_grating = {'g140h': ['12CO', '13CO', 'H2O','H2O_181', 'HF', 'C2H2',
+                             'H2S', 'HCl', 'NH',
+                             'Na', 'K', 'Ca', 'Ti',
+                             'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V','Li',
+                             'FeH', 'AlH', 'MgH', 'NaH', 'CaH', 'TiH', 'CrH',
+                             'OH', 'VO', 'TiO', 'MgO',
+],
+                  'g235h': ['12CO',
+                            '13CO',
+                            'C18O',
+                            'C17O',
+                            'H2O',
+                            'H2O_181',
+                            'HF',
+                            'HCl',
+                            'CO2',
+                            'Na',
+                            'Ca',
+                            'Ti',
+                            'FeH',
+                            'TiH',
+                            'OH',
+                            'VO',
+                            'TiO',
+                            'SiO']
+}
+
+if grating == 'g140h':
+    opacity_params = {k:v for k,v in opacity_params.items() if k[4:] in species_grating['g140h']}
+else:
+    opacity_params = {k:v for k,v in opacity_params.items() if k[4:] in species_grating['g235h']}
+
 # exclude_opacity_params = ['C18O', 'C17O', 'CO2', 'SiO','HCl']
 exclude_opacity_params = []
 
@@ -121,26 +162,6 @@ free_params = {
     'log_g': [(2.5,4.5), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
-    # veiling parameters
-    # 'log_r_0': [(-20, -14), r'$\log\ r_0$'], # veiling amplitude at wave=min(wave)
-    # 'alpha': [(1.0, 20.0), r'$\alpha$'], # veiling power-law index, should be positive for dust emission
-    'R_d': [(0.0, 50.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
-    # 'R_d': [(14.0, 15.0), r'$R_d [R_{Jup}]$'], # disk radius in R_jup
-    # 'log_R_d' : [(-2, 4), r'$\log\ R_d$'], # disk radius in R_jup
-    'T_d': [(300.0, 1000.0), r'$T_d$'], # disk temperature in K
-    # disk emission parameters
-    # 'log_T_ex_12CO': [(1.8, 3.2), r'$T_\mathrm{ex}$'], # disk temperature in K
-    # 'T_ex_12CO': [(400.0, 900.0), r'$T_\mathrm{ex}$'], # disk temperature in K
-    # 'log_N_mol_12CO': [(15, 20), r'log $N_\mathrm{mol}$'], # disk temperature in K
-    # 'log_A_au_12CO': [(-4, 1), r'$\log\ A_\mathrm{au}$'], # disk temperature in K
-    # 'R_cav': [(1.0, 30.0), r'$R_\mathrm{cav}$'], # disk radius in R_jup
-    # 'R_out': [(1.0, 200.0), r'$R_\mathrm{out}$'], # disk radius in R_jup
-    # 'q': [(0.4, 1.2), r'$q$'], # disk temperature exponent
-    # 'i_deg': [(0, 90), r'$i$'], # disk inclination in degrees
-        
-    
-    # 'Av': [(0.0, 5.0), r'$A_v$'], # extinction in magnitudes
-    
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 
@@ -157,6 +178,11 @@ free_params = {
     'dlnT_dlnP_4':   [(0.00, 0.34), r'$\nabla_{T,4}$'],
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
 }
+
+if grating == 'g235h' or grating==('g235h+g395h'):
+    # add disk params
+    free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
+    free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
 
 fc_species_dict={
     'H2': 'H2',
@@ -371,8 +397,8 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 400 if not testing else 200
+evidence_tolerance = 0.5 if not testing else 1.0
+n_live_points = 400 if not testing else 100
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

@@ -38,13 +38,13 @@ targets_rv = {
     # 'gl4063': 12.533
     
     # 'gl48': 1.56,
-    # 'gl317': 87.94,
-    # 'gl410': -14.04,
-    # 'gl480': -4.19,
-    # 'gl514': 14.47,
+    'gl317': 87.94,
+    'gl410': -14.04,
+    'gl480': -4.19,
+    'gl514': 14.47,
     'gl617B': -18.36,
     'gl846': 18.25,
-    'gl4333': -6.31
+    'gl4333': -6.31,
  }
     
 targets = list(targets_rv.keys())
@@ -53,9 +53,9 @@ delta_rv = 20.0
 
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
 run = 'fc5'
-ignore=None
-# ignore = 'C18O' # TODO
-# ignore  = '13CO' # TODO
+# ignore=None
+ignore = 'C18O' # doing it....
+# ignore  = '13CO' # done!
 if ignore is not None:
     print(f' Ignoring {ignore} in retrieval...')
     run = f'{run}_no{ignore}'
@@ -130,3 +130,6 @@ for target in targets:
     # catch error and print message
     except subprocess.CalledProcessError as e:
         print(f' -> Error running {target}:\n{e}')
+        
+        
+print(f' Done!')

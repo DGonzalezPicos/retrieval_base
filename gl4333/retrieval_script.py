@@ -13,7 +13,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 # target = 'gl436'
-run = 'fc5' # important to set this to the correct run
+run = 'fc5_no13CO' # important to set this to the correct run
 
 if __name__ == '__main__':
 

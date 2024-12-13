@@ -12,14 +12,14 @@ import copy
 import matplotlib.pyplot as plt
 import pymultinest
 
-from .spectrum import DataSpectrum, Photometry
-from .parameters import Parameters
-from .pRT_model import pRT_model
-from .log_likelihood import LogLikelihood
-from .PT_profile import get_PT_profile_class
-from .chemistry import get_Chemistry_class
-from .covariance import get_Covariance_class
-from .callback import CallBack
+from retrieval_base.spectrum import DataSpectrum, Photometry
+from retrieval_base.parameters import Parameters
+from retrieval_base.pRT_model import pRT_model
+from retrieval_base.log_likelihood import LogLikelihood
+from retrieval_base.PT_profile import get_PT_profile_class
+from retrieval_base.chemistry import get_Chemistry_class
+from retrieval_base.covariance import get_Covariance_class
+from retrieval_base.callback import CallBack
 
 import retrieval_base.figures as figs
 import retrieval_base.auxiliary_functions as af

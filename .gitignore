@@ -49,3 +49,5 @@ TWA28/constants_block.mod
 *.o
 *.log
 *.bib
+requirements_dec24.txt
+retrieval_env.yml

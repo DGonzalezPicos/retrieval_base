@@ -57,3 +57,4 @@ data/slab_models
 *.f90
 *.o
 *.mod
+retrieval_dec24/

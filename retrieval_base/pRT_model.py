@@ -5,6 +5,8 @@ import pathlib
 try:
     import line_profiler
     import memory_profiler
+    from retrieval_base.slab_grid import SlabGrid
+
 except:
     pass
 
@@ -12,7 +14,6 @@ from petitRADTRANS import Radtrans
 import petitRADTRANS.nat_cst as nc
 
 from .spectrum import Spectrum, ModelSpectrum
-from retrieval_base.slab_grid import SlabGrid
 
 from retrieval_base.auxiliary_functions import get_path, apply_extinction, geom_thin_disk_emission, apply_keplerian_profile
 path = get_path()

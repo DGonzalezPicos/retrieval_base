@@ -9,6 +9,7 @@ file_params = 'config_jwst.py'
 
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
+target = 'TWA27A'
 lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 run = f'lbl{lbl}_G1_1'
@@ -47,6 +48,32 @@ gratings_wave_range = {
                        }
 config_data['NIRSpec']['wave_range'] = gratings_wave_range[grating]
 
+# distance in pc to parallax
+parallax_mas = 15.46 # Gaia DR3, for TWA 27A (Manjavacas+2024)
+d_pc = 1e3 / parallax_mas # ~ 59 pc
+
+
+
+N_knots = 1 # spline knots (continuum fitting)
+
+constant_params = {
+    # General properties
+    # 'R_p' : 1.0, 
+    'parallax': parallax_mas, 
+    'epsilon_limb': 0.5, 
+    # 'log_g': 3.5,
+    'vsini':0.,
+    'T_star': 2430.0, # effective temperature in K, Cooper+2024 (Gaia DR3)
+    'M_star_Mjup': 20.0, # mass in Mjup, Manjavacas+2024
+
+    # PT profile
+    'N_knots': N_knots, # avoid using spline to fit the continuum
+    
+    # fix 12CO and H2O to the best-fit G235 values
+    # 'log_12CO': -3.52,
+    # 'log_H2O': -3.63,
+    # 'rv': 12.16,
+}
 
 
 ####################################################################################
@@ -76,19 +103,19 @@ opacity_params = {
     'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
     
     
-    'log_Na': ([(-14,-2), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    'log_K':  ([(-14,-2), r'$\log\ \mathrm{K}$'],  'K_high'),
-    'log_Ca': ([(-14,-2), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
-    'log_Ti': ([(-14,-2), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
-    'log_Sc': ([(-14,-2), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
-    'log_Mg': ([(-14,-2), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
-    'log_Mn': ([(-14,-2), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
-    'log_Fe': ([(-14,-2), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
-    'log_Al': ([(-14,-2), r'$\log\ \mathrm{Al}$'], 'Al_high'),
-    'log_Cr': ([(-14,-2), r'$\log\ \mathrm{Cr}$'], 'Cr_high'),
-    'log_Cs': ([(-14,-2), r'$\log\ \mathrm{Cs}$'], 'Cs_high'),
-    'log_V':  ([(-14,-2), r'$\log\ \mathrm{V}$'],  'V_high'),
-    'log_Li': ([(-14,-2), r'$\log\ \mathrm{Li}$'], 'Li_high'),
+    'log_Na': ([(-14,-4), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
+    'log_K':  ([(-14,-4), r'$\log\ \mathrm{K}$'],  'K_high'),
+    'log_Ca': ([(-14,-4), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
+    'log_Ti': ([(-14,-4), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
+    'log_Sc': ([(-14,-5), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
+    'log_Mg': ([(-14,-5), r'$\log\ \mathrm{Mg}$'], 'Mg_high'),
+    'log_Mn': ([(-14,-5), r'$\log\ \mathrm{Mn}$'], 'Mn_high'),
+    'log_Fe': ([(-14,-5), r'$\log\ \mathrm{Fe}$'], 'Fe_high'),
+    'log_Al': ([(-14,-5), r'$\log\ \mathrm{Al}$'], 'Al_high'),
+    'log_Cr': ([(-14,-5), r'$\log\ \mathrm{Cr}$'], 'Cr_high'),
+    'log_Cs': ([(-14,-5), r'$\log\ \mathrm{Cs}$'], 'Cs_high'),
+    'log_V':  ([(-14,-5), r'$\log\ \mathrm{V}$'],  'V_high'),
+    'log_Li': ([(-14,-5), r'$\log\ \mathrm{Li}$'], 'Li_high'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
@@ -159,13 +186,21 @@ free_params = {
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
      'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-    'log_g': [(2.5,4.5), r'$\log\ g$'], 
+    # 'log_g': [(2.5,4.5), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
+}
 
-   'T_0': [(2000,8000), r'$T_0$'], 
+# Define PT profile
+PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
+# PT_mode = 'RCE'
+PT_mode = 'fixed'
+PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
+
+if PT_mode  == 'RCE':
+    RCE_params = {'T_0': [(2000,8000), r'$T_0$'], 
     'log_P_RCE': [(-3.0,1.0), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
@@ -177,7 +212,22 @@ free_params = {
     'dlnT_dlnP_3':   [(0.00, 0.34), r'$\nabla_{T,3}$'],
     'dlnT_dlnP_4':   [(0.00, 0.34), r'$\nabla_{T,4}$'],
     'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
-}
+    }
+    
+    free_params.update(RCE_params)
+    
+if PT_mode == 'fixed':
+    constant_params['PT_run'] = PT_run # load PT profile from previous best fit
+    constant_params['PT_target'] = target
+    
+# Surface gravity
+# log_g = [(2.5,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
+log_g = 4.49 # from PT_run
+if isinstance(log_g, float):
+    constant_params['log_g'] = log_g
+else:
+    free_params['log_g'] = log_g
+    
 
 if grating == 'g235h' or grating==('g235h+g395h'):
     # add disk params
@@ -258,33 +308,6 @@ for log_k, v in opacity_params.items():
 
 print(f' --> {free_params} free parameters')
 
-# distance in pc to parallax
-parallax_mas = 15.46 # Gaia DR3, for TWA 27A (Manjavacas+2024)
-d_pc = 1e3 / parallax_mas # ~ 59 pc
-
-PT_interp_mode = 'linear'
-PT_mode = 'RCE'
-
-N_knots = 1 # spline knots (continuum fitting)
-
-constant_params = {
-    # General properties
-    # 'R_p' : 1.0, 
-    'parallax': parallax_mas, 
-    'epsilon_limb': 0.5, 
-    # 'log_g': 3.5,
-    'vsini':0.,
-    'T_star': 2430.0, # effective temperature in K, Cooper+2024 (Gaia DR3)
-    'M_star_Mjup': 20.0, # mass in Mjup, Manjavacas+2024
-
-    # PT profile
-    'N_knots': N_knots, # avoid using spline to fit the continuum
-    
-    # fix 12CO and H2O to the best-fit G235 values
-    # 'log_12CO': -3.52,
-    # 'log_H2O': -3.63,
-    # 'rv': 12.16,
-}
 
 # free_params.update({k:v[0] for k,v in opacity_params.items()})
 # remove constant params from free_params dictionary
@@ -312,8 +335,11 @@ if grating == 'g235h+g395h':
         free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
         free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
-else:
+if grating == 'g140h':
     constant_params['gratings'] = [grating] * 4
+    
+else:
+    raise ValueError(f'Unknown grating: {grating}')
 
 ####################################################################################
 #
@@ -387,8 +413,12 @@ PT_kwargs = dict(
     enforce_PT_corr = False, 
     # n_T_knots = N_PT_knots,
     sonora=dict(teff=2400, log_g=4.0),
-    
 )
+if PT_mode == 'fixed':
+    PT_kwargs['PT_target'] = target
+    PT_kwargs['PT_run'] = PT_run
+    
+    
 
 ####################################################################################
 # Multinest parameters

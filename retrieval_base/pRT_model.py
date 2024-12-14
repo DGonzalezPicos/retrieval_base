@@ -5,8 +5,11 @@ import pathlib
 try:
     import line_profiler
     import memory_profiler
-    from retrieval_base.slab_grid import SlabGrid
+except:
+    pass
 
+try:
+    from retrieval_base.slab_grid import SlabGrid
 except:
     pass
 
@@ -16,6 +19,7 @@ import petitRADTRANS.nat_cst as nc
 from .spectrum import Spectrum, ModelSpectrum
 
 from retrieval_base.auxiliary_functions import get_path, apply_extinction, geom_thin_disk_emission, apply_keplerian_profile
+from broadpy.utils import load_nirspec_resolution_profile
 path = get_path()
 
 class pRT_model:
@@ -79,6 +83,18 @@ class pRT_model:
         self.d_wave          = d_spec.wave
         self.d_mask_isfinite = d_spec.mask_isfinite
         self.d_resolution    = d_spec.resolution
+        # self.gratings = np.atleast_1d(set(list(d_spec.gratings)))
+        self.gratings = np.unique(d_spec.gratings)
+        # remove `_f100lp` from 'g140h_f100lp'
+        self.gratings = [g.split('_')[0] for g in self.gratings]
+        
+        print(f' [pRT_model] Gratings: {self.gratings}')
+        
+        
+        if len(self.gratings) > 1:
+            self.load_nirspec_gratings()
+            
+
         # self.apply_high_pass_filter = d_spec.high_pass_filtered
         self.apply_high_pass_filter = False
         self.w_set = d_spec.w_set
@@ -139,6 +155,8 @@ class pRT_model:
                 # self.slab_wave[disk_species_i] = slab.wave_grid * 1e3 # [um] --> [nm]
                 print(f' [pRT_model] slab setup: Min wave = {np.min(self.slab[disk_species_i].wave_grid)}  Max wave = {np.max(self.slab[disk_species_i].wave_grid)}')
                 
+                
+            
         # Make the pRT.Radtrans objects
         if mode == 'lbl':
             self.get_atmospheres(CB_active=False)
@@ -249,12 +267,12 @@ class pRT_model:
 
         # Update certain attributes
         self.mass_fractions = mass_fractions.copy()
-        if hasattr(self, 'gratings'):
-            for k,v in mass_fractions.items():
-                if k.split('-')[0] in self.line_species:
-                    for g in self.gratings:
-                        # print(f'{k}_{g}')
-                        self.mass_fractions[f'{k}_{g}'] = v
+        # if hasattr(self, 'gratings'):
+        #     for k,v in mass_fractions.items():
+        #         if k.split('-')[0] in self.line_species:
+        #             for g in self.gratings:
+        #                 # print(f'{k}_{g}')
+        #                 self.mass_fractions[f'{k}_{g}'] = v
             
         self.temperature    = temperature
         self.params = params
@@ -455,32 +473,6 @@ class pRT_model:
             if self.Av > 0.0:
                 flux_i = apply_extinction(flux_i, wave_i * 1e-3, self.Av) # wave in [um]
             
-            # then broaden and resample together with the model spectrum
-            # print(f' [pRT_model] wave_i[0] = {wave_i[0]}')
-            # WARNING: disk emisission deprecated... use self.slab instead
-            # if False and (len(self.disk_species)>0) and wave_i[0] > 4000.0: # only for G395H reddest filter
-            #     # Compute the disk emission
-            #     # Add the disk emission to the model spectrum
-            #     # print(f' [pRT_model] Computing disk emission for order {i}...')
-            #     wave_i_um = wave_i * 1e-3
-            #     # DGP sep 17: fine_wgrid must have a spacing of <= 1e-5 um
-            #     fine_wgrid = np.arange(np.nanmin(wave_i_um), np.nanmax(wave_i_um)+1e-5, 1e-5)
-            #     self.disk.set_fine_wgrid(fine_wgrid)
-            #     # disk params must be a dictionary containing (at least): T_ex, N_mol, A_au, dV
-            #     disk_keys = ['T_ex', 'N_mol', 'A_au', 'dV', 'd_pc']
-            #     # assert all([k in self.disk_params.keys() for k in disk_keys]), \
-            #     #     'Disk parameters must contain T_ex, N_mol, A_au, dV'
-                    
-            #     disk_dict = {k: self.params[k] for k in disk_keys}
-            #     flux_disk = self.disk(disk_dict,
-            #                         wave=wave_i_um,)
-
-            #     flux_i += flux_disk
-            # if self.geom_thin_disk_emission:
-            #     f_geom_thin_disk = geom_thin_disk_emission(wave_nm=wave_i, **self.geom_thin_disk_args)
-            #     # print(f' [pRT_model] f_geom_thin_disk.shape = {f_geom_thin_disk.shape}')
-            #     # print(f' [pRT_model] mean(f_geom_thin_disk) = {np.mean(f_geom_thin_disk)}')
-            #     flux_i += f_geom_thin_disk
 
             # Create a ModelSpectrum instance
             m_spec_i = ModelSpectrum(
@@ -491,6 +483,16 @@ class pRT_model:
             del atm_i.flux
             
             # Apply radial-velocity shift, rotational/instrumental broadening
+            
+            grating = self.params['gratings'][i]
+            if not hasattr(self, 'fwhms'):
+                self.gratings = set(list(self.params['gratings']))
+                self.load_nirspec_gratings()
+                
+            fwhms = np.interp(wave_i, self.wave_fwhms[grating], self.fwhms[grating])
+            # print(f'{grating} fwhm (min, mean, max) = {np.min(fwhms):.2f}, {np.mean(fwhms):.2f}, {np.max(fwhms):.2f}')
+            assert isinstance(fwhms, np.ndarray), f'fwhms has type {type(fwhms)}'
+                
             # start_sbr = time.time()
             if self.mode =='lbl':
                 m_spec_i.shift_broaden_rebin(
@@ -498,10 +500,11 @@ class pRT_model:
                     vsini=self.params['vsini'], 
                     epsilon_limb=self.params['epsilon_limb'], 
                     # out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
-                    grating=self.params['gratings'][i], # NEW 2024-05-26: grating per order
+                    # grating=self.params['gratings'][i], # NEW 2024-05-26: grating per order
                     in_res=m_spec_i.resolution, 
                     rebin=False, 
                     instr_broad_fast=False,
+                    fwhms=fwhms,
                     )
             else:
                 m_spec_i.rv_shift(rv=self.params['rv'], replace_wave=True)
@@ -552,14 +555,17 @@ class pRT_model:
                     m_spec_i.flux += m_flux_slab_i # add to model flux (already shifted and broadened)
                     
             
-            self.m_slab.append(m_slab_i) # store for plotting purposes
-                
+                    self.m_slab.append(m_slab_i) # store for plotting purposes
+                    
+            # print(f' Rebinning onto cenwave = {np.nanmedian(self.d_wave[i,]):.2f} nm from model cenwave = {np.nanmedian(m_spec_i.wave):.2f} nm')
             m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True)
             # end_sbr = time.time()   
             # print(f'Order {i} took {end_sbr-start_sbr:.3f} s to shift, broaden and rebin')
 
             wave[i,:,:] = m_spec_i.wave # nm
             flux[i,:,:] = m_spec_i.flux
+            # print(f'{grating} mean(wave) = {m_spec_i.wave.mean()} nm, mean(flux) = {m_spec_i.flux.mean()} erg/s/cm2/nm')
+            # print(f' std(flux) = {m_spec_i.flux.std()} erg/s/cm2/nm')
             
             if get_contr:
                 # print(f'[pRT_model] Computing emission contribution for order {i}...')
@@ -572,7 +578,7 @@ class pRT_model:
                     m_spec_i=m_spec_i, 
                     order=i
                     )
-                # print(f'ICE for order {i} = {self.int_contr_em}')
+                    # print(f'ICE for order {i} = {self.int_contr_em}')
 
         # Create a new ModelSpectrum instance with all orders
         m_spec = ModelSpectrum(
@@ -680,4 +686,14 @@ class pRT_model:
                         flux=m_spec_i.flux[d_mask_i].flatten(), 
                         array=opa_cloud_ij.flux[d_mask_i].flatten(), 
                         )
+        return self
+    
+    def load_nirspec_gratings(self):
+        self.wave_fwhms = {}
+        self.fwhms = {}
+        for g in self.gratings:
+            print(f' Loading resolution profile for grating {g}')
+            self.wave_fwhms[g], resolution_g = load_nirspec_resolution_profile(grating=g)
+            self.fwhms[g] = 2.998e5 / resolution_g
+            
         return self

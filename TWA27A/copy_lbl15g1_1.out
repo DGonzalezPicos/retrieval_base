@@ -1,0 +1,19 @@
+nohup: ignoring input
+ --> 32 opacity parameters
+ --> {'R_p': [(1.8, 3.8), '$R_\\mathrm{p}$'], 'rv': [(-30.0, 30.0), '$v_\\mathrm{rad}$'], 'alpha_12CO': [(-3.0, 3.0), '$\\alpha_{12CO}$'], 'log_12CO/13CO': [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$'], 'alpha_H2O': [(-3.0, 3.0), '$\\alpha_{H2O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'alpha_HF': [(-3.0, 3.0), '$\\alpha_{HF}$'], 'alpha_HCl': [(-3.0, 3.0), '$\\alpha_{HCl}$'], 'alpha_NH': [(-3.0, 3.0), '$\\alpha_{NH}$'], 'alpha_Na': [(-3.0, 3.0), '$\\alpha_{Na}$'], 'alpha_K': [(-3.0, 3.0), '$\\alpha_{K}$'], 'alpha_Ca': [(-3.0, 3.0), '$\\alpha_{Ca}$'], 'alpha_Ti': [(-3.0, 3.0), '$\\alpha_{Ti}$'], 'log_Sc': [(-14, -5), '$\\log\\ \\mathrm{Sc}$'], 'log_Mn': [(-14, -5), '$\\log\\ \\mathrm{Mn}$'], 'alpha_Fe': [(-3.0, 3.0), '$\\alpha_{Fe}$'], 'alpha_Al': [(-3.0, 3.0), '$\\alpha_{Al}$'], 'alpha_Cr': [(-3.0, 3.0), '$\\alpha_{Cr}$'], 'log_Cs': [(-14, -5), '$\\log\\ \\mathrm{Cs}$'], 'log_V': [(-14, -5), '$\\log\\ \\mathrm{V}$'], 'log_Li': [(-14, -5), '$\\log\\ \\mathrm{Li}$'], 'alpha_FeH': [(-3.0, 3.0), '$\\alpha_{FeH}$'], 'alpha_CrH': [(-3.0, 3.0), '$\\alpha_{CrH}$'], 'alpha_TiH': [(-3.0, 3.0), '$\\alpha_{TiH}$'], 'alpha_CaH': [(-3.0, 3.0), '$\\alpha_{CaH}$'], 'alpha_AlH': [(-3.0, 3.0), '$\\alpha_{AlH}$'], 'alpha_MgH': [(-3.0, 3.0), '$\\alpha_{MgH}$'], 'alpha_NaH': [(-3.0, 3.0), '$\\alpha_{NaH}$'], 'alpha_OH': [(-3.0, 3.0), '$\\alpha_{OH}$'], 'alpha_VO': [(-3.0, 3.0), '$\\alpha_{VO}$'], 'alpha_TiO': [(-3.0, 3.0), '$\\alpha_{TiO}$'], 'alpha_C2H2': [(-3.0, 3.0), '$\\alpha_{C2H2}$'], 'log_MgO': [(-14, -2), '$\\log\\ \\mathrm{MgO}$'], 'alpha_H2S': [(-3.0, 3.0), '$\\alpha_{H2S}$']} free parameters
+ Copying /home/dario/phd/retrieval_base/TWA27A/retrieval_outputs/lbl15_G1_1 to /home/dgonzalezpi/retrieval_base/TWA27A/retrieval_outputs/lbl15_G1_1...
+sending incremental file list
+test_data/
+test_data/pRT_atm_NIRSpec.pkl
+test_plots/prior_predictive_check.pdf
+test_plots/prior_predictive_check_PT.pdf
+test_plots/prior_predictive_check_random.pdf
+test_plots/prior_predictive_check_random_PT.pdf
+test_plots/sigma_clip_0.pdf
+test_plots/sigma_clip_1.pdf
+test_plots/spec_to_fit.pdf
+
+sent 2,604,742,504 bytes  received 178 bytes  1,103,470.74 bytes/sec
+total size is 2,604,273,159  speedup is 1.00
+ Succesful copy for TWA27A!
+

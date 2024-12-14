@@ -15,6 +15,8 @@ import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
 from retrieval_base.resample import Resample
 
+from broadpy import InstrumentalBroadening
+from broadpy.utils import load_nirspec_resolution_profile
 
 class SpectrumJWST:
     
@@ -167,8 +169,13 @@ class SpectrumJWST:
                 setattr(self, attr, np.vstack([getattr(spec, attr) for spec in spec_list])[idx])
         # self.set_n_orders()
         assert self.n_orders > 1, 'No data loaded'
+        self.grating = np.array([spec.grating for spec in spec_list])[idx]
         # Stack the arrays                    
         return self
+    
+    @property
+    def gratings(self):
+        return self.grating # alias
     
     @property
     def nans(self):

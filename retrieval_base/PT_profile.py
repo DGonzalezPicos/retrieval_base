@@ -22,6 +22,9 @@ def get_PT_profile_class(pressure, mode, **kwargs):
     
     if mode == 'RCE':
         return PT_profile_RCE(pressure, **kwargs)
+    
+    if mode == 'fixed':
+        return PT_profile_fixed(pressure, **kwargs)
 
 class PT_profile():
 
@@ -625,3 +628,49 @@ class PT_profile_RCE(PT_profile):
         ax.set(yscale='log', xlabel='dlnT/dlnP', ylabel='Pressure [bar]')
 
         return ax
+
+
+class PT_profile_fixed(PT_profile):
+    def __init__(self, pressure=None, temperature=None, **kwargs):
+        super().__init__(pressure)
+        self.temperature = temperature
+        
+        if kwargs.get('PT_run', None) is not None:
+            assert kwargs.get('PT_target', None) is not None, 'PT_target must be given if PT_run is given'
+            self.load_PT_run(kwargs['PT_target'], kwargs['PT_run'])
+            
+            
+    def load_PT_run(self, PT_target, PT_run):
+        # load pickle file with best fit pressure, temperature
+        from retrieval_base.auxiliary_functions import pickle_load, get_path
+        
+        path = get_path(return_pathlib=True)
+        PT_file = path / PT_target / f'retrieval_outputs/{PT_run}/test_data/bestfit_PT.pkl'
+        assert PT_file.is_file(), f'PT_file {PT_file} does not exist'
+        PT = pickle_load(PT_file)
+        # copy attributes
+        if getattr(self, 'pressure', None) is not None:
+            assert np.allclose(self.pressure, PT.pressure), f'pressure not the same'
+        
+        attrs = ['pressure', 'temperature','dlnT_dlnP_array']
+        for attr in attrs:
+            setattr(self, attr, getattr(PT, attr))
+        
+        return self
+    
+    def __call__(self, params={}):
+        
+        # params argument is a placeholder
+        return self.temperature
+    
+    
+    
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    
+    
+    kwargs = {'PT_target' : 'TWA27A',
+              'PT_run' : 'lbl15_G2G3_8'}
+    # pt = PT_profile_fixed(**kwargs).load_PT_run(**kwargs)
+    pt = PT_profile_fixed(**kwargs)
+    temperature = pt({})

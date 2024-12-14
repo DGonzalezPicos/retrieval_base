@@ -57,3 +57,9 @@ data/slab_models
 *.f90
 *.o
 *.mod
+nirspec_wavegrid.txt
+prepare_13CO_dec13
+prepare_C18O_dec13
+prepare_C18O_dec13_2
+requirements_dec24.txt
+retrieval_env.yml

@@ -57,7 +57,7 @@ class Parameters:
 
         # Check the used PT profile
         self.PT_mode = PT_mode
-        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere', 'RCE'])
+        assert(self.PT_mode in ['free', 'free_gradient', 'grid', 'Molliere', 'RCE', 'fixed'])
         self.PT_adiabatic = PT_adiabatic
         
         self.n_T_knots = n_T_knots

@@ -230,6 +230,8 @@ class Retrieval:
             self.Param.PT_mode, 
             **self.conf.PT_kwargs, 
             )
+        if self.Param.PT_mode == 'fixed':
+            assert getattr(self.PT, 'temperature', None) is not None, 'temperature not set for fixed PT profile'
         if 'sonora' in self.conf.PT_kwargs.keys():
             self.PT.sonora = self.conf.PT_kwargs['sonora']
                 

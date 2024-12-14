@@ -134,7 +134,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = False
+    random = True
     random_label = '_random' if random else ''
     disk = False
     disk_label = '_disk' if disk else ''

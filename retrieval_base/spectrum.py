@@ -17,7 +17,8 @@ import spectres
 import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
 from retrieval_base.spline_model import SplineModel
-from nirspersion import NIRSpec
+# from nirspersion import NIRSpec
+from broadpy.instrument import InstrumentalBroadening
 
 class Spectrum:
 
@@ -382,7 +383,8 @@ class Spectrum:
         flux_LSF : ndarray
             Flux array after applying instrumental broadening.
         """
-        return NIRSpec()(wave, flux, grating=grating)
+        # return NIRSpec()(wave, flux, grating=grating)
+        return self.nirspec(grating=grating, x=wave, y=flux)
     
     @classmethod
     def spectrally_weighted_integration(cls, wave, flux, array):
@@ -955,6 +957,7 @@ class ModelSpectrum(Spectrum):
                             rebin_spectres=False,
                             instr_broad_fast=True,
                             grating=None,
+                            fwhms=None,
                             ):
 
         # Apply Doppler shift, rotational/instrumental broadening, 
@@ -968,8 +971,12 @@ class ModelSpectrum(Spectrum):
         # if rebin:
         #     self.rebin(d_wave, replace_wave_flux=True)
         if grating is not None:
-            # WARNING: convert wave from [nm] -> [um]
+            # OLD WARNING: convert wave from [nm] -> [um]
+            # 2024-12-13: keep wavelength in nm for `broadpy.nirspec`
             self.flux = self.instr_broadening_nirspec(self.wave * 1e-3, self.flux, grating=grating)
+            # self.flux = self.nirspec(grating=grating, x=self.wave, y=self.flux)
+        elif fwhms is not None:
+            self.flux = InstrumentalBroadening(self.wave, self.flux)(fwhm=fwhms, kernel='gaussian_variable')
         else:
             assert out_res is not None, 'Instrumental resolution must be provided as `out_res`'
             self.flux = self.instr_broadening(self.wave, self.flux, out_res, in_res)
@@ -977,6 +984,7 @@ class ModelSpectrum(Spectrum):
             self.rebin(d_wave, replace_wave_flux=True)
         if rebin_spectres:
             assert rebin==False, 'Cannot rebin twice'
+            # print(f' Rebinning onto cenwave = {np.nanmedian(d_wave):.2f} nm')
             self.rebin_spectres(d_wave, replace_wave_flux=True, numba=True)
             
     def spline_decomposition(self, N=9, replace_flux=False):
@@ -1073,6 +1081,8 @@ class ModelSpectrum(Spectrum):
         self.flux *= scale_factor
         return self
     
+    def init_nirspec(self, gratings):
+        self.nirspec = NIRSpec(gratings=gratings)
 
 class Photometry:
 

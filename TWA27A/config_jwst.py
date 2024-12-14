@@ -10,9 +10,9 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 target = 'TWA27A'
-lbl = 15
+lbl = 20
 # run = f'lbl{lbl}_G2G3_8'
-run = f'lbl{lbl}_G1_1'
+run = f'lbl{lbl}_G1_3'
 prefix = f'./retrieval_outputs/{run}/test_'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
@@ -40,13 +40,16 @@ config_data = {
     }
 
 # update wave_range
-gratings_wave_range = {
-                        'g140h':(920, 1940),
-                        'g235h': (1630, 3200),
-                       'g395h': (2800, 5300),
-                       'g235h+g395h': (1630, 5300),
-                       }
-config_data['NIRSpec']['wave_range'] = gratings_wave_range[grating]
+# gratings_wave_range = {
+#                         'g140h':(1700, 1940),
+#                         'g235h': (1630, 3200),
+#                         # 'g235h': (920, 3250),
+#                        'g395h': (2800, 5300),
+#                        'g235h+g395h': (1630, 5300),
+#                     #    'g235h+g395h': (920, 5300),
+#                        }
+# config_data['NIRSpec']['wave_range'] = gratings_wave_range[grating]
+# config_data['NIRSpec'].update({'wave_range': gratings_wave_range[grating]})
 
 # distance in pc to parallax
 parallax_mas = 15.46 # Gaia DR3, for TWA 27A (Manjavacas+2024)
@@ -138,12 +141,23 @@ opacity_params = {
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 
-species_grating = {'g140h': ['12CO', '13CO', 'H2O','H2O_181', 'HF', 'C2H2',
-                             'H2S', 'HCl', 'NH',
-                             'Na', 'K', 'Ca', 'Ti',
-                             'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V','Li',
-                             'FeH', 'AlH', 'MgH', 'NaH', 'CaH', 'TiH', 'CrH',
-                             'OH', 'VO', 'TiO', 'MgO',
+species_grating = {'g140h': ['12CO', 'H2O',
+                            #  '13CO','H2O_181', 
+                            #  'HF',
+                            #  'C2H2',
+                            #  'H2S', 
+                            #  'HCl', 'NH',
+                            #  'Na', 'K', 'Ca', 'Ti',
+                            #  'Sc', 
+                            #  'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V',
+                            #  'Li',
+                            #  'FeH', 
+                            #  'AlH', 
+                            #  'MgH', 
+                            #  'NaH', 'CaH', 'TiH', 'CrH',
+                            # 'CrH',
+                            #  'OH', 'VO', 'TiO', 
+                            #  'MgO',
 ],
                   'g235h': ['12CO',
                             '13CO',
@@ -184,7 +198,8 @@ free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+    #  'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+    'R_p': [(3.4, 3.44), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'log_g': [(2.5,4.5), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
@@ -195,9 +210,9 @@ free_params = {
 
 # Define PT profile
 PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
-# PT_mode = 'RCE'
-PT_mode = 'fixed'
-PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
+PT_mode = 'RCE'
+# PT_mode = 'fixed'
+# PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
 
 if PT_mode  == 'RCE':
     RCE_params = {'T_0': [(2000,8000), r'$T_0$'], 
@@ -221,8 +236,8 @@ if PT_mode == 'fixed':
     constant_params['PT_target'] = target
     
 # Surface gravity
-# log_g = [(2.5,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
-log_g = 4.49 # from PT_run
+log_g = [(2.5,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
+# log_g = 4.49 # from PT_run
 if isinstance(log_g, float):
     constant_params['log_g'] = log_g
 else:
@@ -233,6 +248,11 @@ if grating == 'g235h' or grating==('g235h+g395h'):
     # add disk params
     free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
     free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
+    
+if grating == 'g140h':
+    # add disk params from best fit of g235h+g395h
+    constant_params['R_d'] =  15.66 # from g235h+g395h
+    constant_params['T_d'] =  575.35 # from g235h+g395h
 
 fc_species_dict={
     'H2': 'H2',

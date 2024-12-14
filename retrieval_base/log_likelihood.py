@@ -64,10 +64,15 @@ class LogLikelihood:
                 if N_ij == 0:
                     print(f'No data points in order {i}, detector {j}')
                     continue
-
+                
                 m_flux_ij = m_spec.flux[:,i,j,mask_ij] # shape must be (n_knots, n_orders, n_dets, n_pixels)
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err
+                
+                print(f'[LogLikelihood] Number of data points in order {i}, detector {j} = {N_ij}')
+                print(f'[LogLikelihood] Mean(m_flux) = {np.nanmean(m_flux_ij)}')
+                print(f'[LogLikelihood] Mean(d_flux) = {np.nanmean(d_flux_ij)}')
+                print(f'[LogLikelihood] Mean(d_err)  = {np.nanmean(d_err_ij)}')
 
                 res_ij = (d_flux_ij - m_flux_ij)
                 

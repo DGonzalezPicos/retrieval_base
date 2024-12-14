@@ -91,7 +91,7 @@ class pRT_model:
         print(f' [pRT_model] Gratings: {self.gratings}')
         
         
-        if len(self.gratings) > 1:
+        if len(self.gratings) > 0:
             self.load_nirspec_gratings()
             
 
@@ -111,10 +111,11 @@ class pRT_model:
         self.P_cutoff = P_cutoff # pressure cutoff for custom line opacities
 
         # Clouds
-        if self.cloud_species is None:
-            self.do_scat_emis = False
-        else:
-            self.do_scat_emis = True
+        # if self.cloud_species is None:
+        #     self.do_scat_emis = False
+        # else:
+        #     self.do_scat_emis = True
+        self.do_scat_emis = (self.cloud_species is not None)
 
         self.cloud_mode = cloud_mode
         self.chem_mode  = chem_mode
@@ -179,8 +180,9 @@ class pRT_model:
             (np.nanmin(self.d_wave, axis=(1,2))[None,:]-wave_pad,
                 np.nanmax(self.d_wave, axis=(1,2))[None,:]+wave_pad
                 )).T
-        print(self.wave_range_micron)
         self.wave_range_micron *= 1e-3
+        print('[pRT_model.wave_range_micron] = ', self.wave_range_micron)
+
 
         self.atm = []            
         for wave_range_i in self.wave_range_micron:
@@ -490,22 +492,26 @@ class pRT_model:
                 self.load_nirspec_gratings()
                 
             fwhms = np.interp(wave_i, self.wave_fwhms[grating], self.fwhms[grating])
-            # print(f'{grating} fwhm (min, mean, max) = {np.min(fwhms):.2f}, {np.mean(fwhms):.2f}, {np.max(fwhms):.2f}')
+            print(f'{i}: {grating} fwhm idx(0,mid,-1) = {fwhms[0]:.1f}, {fwhms[len(fwhms)//2]:.1f}, {fwhms[-1]:.1f}')
             assert isinstance(fwhms, np.ndarray), f'fwhms has type {type(fwhms)}'
                 
             # start_sbr = time.time()
             if self.mode =='lbl':
-                m_spec_i.shift_broaden_rebin(
-                    rv=self.params['rv'], 
-                    vsini=self.params['vsini'], 
-                    epsilon_limb=self.params['epsilon_limb'], 
-                    # out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
-                    # grating=self.params['gratings'][i], # NEW 2024-05-26: grating per order
-                    in_res=m_spec_i.resolution, 
-                    rebin=False, 
-                    instr_broad_fast=False,
-                    fwhms=fwhms,
-                    )
+                
+                # testing
+                skip_shift_broaden_rebin = True
+                if not skip_shift_broaden_rebin:
+                    m_spec_i.shift_broaden_rebin(
+                        rv=self.params['rv'], 
+                        vsini=self.params['vsini'], 
+                        epsilon_limb=self.params['epsilon_limb'], 
+                        # out_res=self.d_resolution[i], # NEW 2024-05-26: resolution per order
+                        # grating=self.params['gratings'][i], # NEW 2024-05-26: grating per order
+                        in_res=m_spec_i.resolution, 
+                        rebin=False, 
+                        instr_broad_fast=False,
+                        fwhms=fwhms,
+                        )
             else:
                 m_spec_i.rv_shift(rv=self.params['rv'], replace_wave=True)
                 

@@ -2,13 +2,13 @@
 # Set job requirements
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-#SBATCH -t 02:59:30
+#SBATCH -t 07:59:30
 #SBATCH -p genoa
-#SBATCH --ntasks=134
+#SBATCH --ntasks=132
 #SBATCH --mem=336G
 
 
-#SBATCH --job-name=fc2
+#SBATCH --job-name=gl411_fc5_noC18O
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
@@ -30,6 +30,8 @@ echo "Starting Python script"
 
 # define variable target
 target=gl411
+run=fc5_noC18O
+resume=1 # 1 = True, 0 = False
 
-mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target
+mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target -run $run
 echo "Done"

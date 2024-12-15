@@ -2,6 +2,7 @@ import pathlib
 import os
 import subprocess
 import shutil
+import time
 
 testing = False
 user = 'dario/phd' if testing else 'dgonzalezpi'
@@ -46,12 +47,12 @@ targets_rv = {
 targets = list(targets_rv.keys())
 print(f' len(targets) = {len(targets)}')
 # run = 'fc4_no_C18O'
-# run = 'fc5_no13CO'
-run = 'fc5'
-resume = True
+run = 'fc5_no13CO'
+# run = 'fc5'
+resume = False
 
 ignore_targets = []
-
+sleep = 3 # wait 3 seconds between jobs
 def update_file(file, old_str, new_str):
     
     with open(file, 'r') as f:
@@ -86,5 +87,10 @@ for target in targets:
         subprocess.run(f'sbatch {genoa_file}', shell=True, check=True, cwd=str(path / target))
     except subprocess.CalledProcessError as e:
         print(f' -> Error running genoa for {target}:\n{e}')
+        
+        
+    if sleep > 0:
+        time.sleep(sleep)
+        
         
 print(f' Succesful scheduling for {len(targets)} targets!\n')

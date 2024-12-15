@@ -8,7 +8,7 @@
 #SBATCH --mem=336G
 
 
-#SBATCH --job-name=gl905_fc5_noC18O
+#SBATCH --job-name=gl3622_fc5_noC18O
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
@@ -29,7 +29,7 @@ echo "Number of tasks $SLURM_NTASKS"
 echo "Starting Python script"
 
 # define variable target
-target=gl905
+target=gl3622
 run=fc5_noC18O
 resume=1 # 1 = True, 0 = False
 

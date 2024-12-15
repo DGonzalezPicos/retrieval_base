@@ -8,16 +8,21 @@
 #SBATCH --mem=336G
 
 
-#SBATCH --job-name=gl905_fc5_noC18O
+#SBATCH --job-name=gl846_fc5_no13CO
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
 # Loading modules
-module load 2022
-module load Python/3.10.4-GCCcore-11.3.0
-module load OpenBLAS/0.3.20-GCC-11.3.0
-module load OpenMPI/4.1.4-GCC-11.3.0
-module load libarchive/3.6.1-GCCcore-11.3.0
+# module load 2022
+# module load Python/3.10.4-GCCcore-11.3.0
+# module load OpenBLAS/0.3.20-GCC-11.3.0
+# module load OpenMPI/4.1.4-GCC-11.3.0
+# module load libarchive/3.6.1-GCCcore-11.3.0
+# source $HOME/retrieval_base/activate.sh
+source $HOME/retrieval_base/modules23.sh
+
+# TODO: activate python environment with retrieval_base and everything else...
+# watch out with the python version....match my local installation
 
 
 # Export environment variables
@@ -29,9 +34,9 @@ echo "Number of tasks $SLURM_NTASKS"
 echo "Starting Python script"
 
 # define variable target
-target=gl905
-run=fc5_noC18O
-resume=1 # 1 = True, 0 = False
+target=gl846
+run=fc5_no13CO
+resume=0 # 1 = True, 0 = False
 
 mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target -run $run
 echo "Done"

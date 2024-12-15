@@ -1,14 +1,13 @@
 #!/bin/bash
+
 # Set job requirements
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-#SBATCH -t 07:59:30
-#SBATCH -p genoa
-#SBATCH --ntasks=132
-#SBATCH --mem=336G
+#SBATCH -t 07:00:00
+#SBATCH -p fat_genoa
+#SBATCH --ntasks=192
 
-
-#SBATCH --job-name=gl905_fc5_noC18O
+#SBATCH --job-name=lbl12_G2G3_7
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
@@ -28,10 +27,6 @@ export pRT_input_data_path=/projects/0/prjs1096/pRT/input_data
 echo "Number of tasks $SLURM_NTASKS"
 echo "Starting Python script"
 
-# define variable target
-target=gl905
-run=fc5_noC18O
-resume=1 # 1 = True, 0 = False
+mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script_jwst.py -r
 
-mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target -run $run
 echo "Done"

@@ -2,7 +2,10 @@ import pandas as pd
 import pathlib
 import numpy as np
 
-file = pathlib.Path('paper/data/c23_table_raw.tex')
+table_id = 3 # 3 is logg free, 4 is logg derived from L/Lsun and Teff
+assert table_id in [3,4], f'table_id must be 3 or 4, not {table_id}'
+
+file = pathlib.Path(f'paper/data/c23_table{table_id}_raw.tex')
 
 df = pd.read_csv(file, sep='&', header=0, engine='python', skiprows=[1])
 print(df.columns)
@@ -23,7 +26,7 @@ values_err = [(v, e) for v, e in zip(values, err)]
 
 mh_dict = dict(zip(names, values_err))
 # save dict as txt with three columns: name, value, error
-np.savetxt('paper/data/c23_mh.txt', np.array([names, values, err]).T, fmt='%s')
+np.savetxt(f'paper/data/c23_table{table_id}_mh.txt', np.array([names, values, err]).T, fmt='%s')
 
 # load the data
-md_load = np.loadtxt('paper/data/c23_mh.txt', dtype=object)
+# md_load = np.loadtxt('paper/data/c23_mh.txt', dtype=object)

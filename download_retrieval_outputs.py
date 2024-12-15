@@ -86,7 +86,7 @@ def download_run(target, run, cache=False, eval=True):
     return download_ok
 
 cache = True
-eval = False
+eval = True
 # try_runs = [f'fc{i}' for i in [4]][::-1] # fc1, fc2
 try_runs = [run]
 ok = False

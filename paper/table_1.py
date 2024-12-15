@@ -58,9 +58,9 @@ def generate_latex_table(csv_file, output_file):
     # attrs = ['Star', 'SpT', 'Distance (pc)', 'M/M_sun', 'Teff (K)', '[M/H]']
     for index, row in df.iterrows():
         print(f' row {index}', row)
-        valid = row['Valid']
-        if not valid:
-            continue
+        # valid = row['Valid']
+        # if not valid:
+        #     continue
         for attr in attrs:
             # check if it exists
             if attr in row:

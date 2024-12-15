@@ -23,7 +23,7 @@ plt.rcParams.update({
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
 
-water = True # take isotope ratio from H2O
+water = False # take isotope ratio from H2O
 main_label = 'H2O' if water else 'CO'
 isotope = 'oxygen' 
 assert isotope in ['carbon', 'oxygen'], f'Isotope {isotope} not recognized (choose from oxygen, carbon)'
@@ -170,19 +170,44 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
+dist = dict(zip(names, [float(t) for t in df['Distance (pc)'].to_list()]))
 # valid = dict(zip(names, df['Valid'].to_list()))
-ignore_targets = ['gl3622']
+ignore_targets = []
 
 # x_param = '[C/H]'
 x_param = '[M/H]'
 
-c23 = False
+sub10pc = True
+sub10pc_label = '_sub10pc' if sub10pc else ''
+# ignore targets with distance greater than 10 pc
+if sub10pc:
+    ignore_targets += [name for name in names if dist[name] > 10.0]
+
+table_id_label = ''
+
+metallicity_ref = 'C23'
+assert metallicity_ref in ['M15', 'C23'], f'metallicity_ref must be M15 or C23, not {metallicity_ref}'
+
 if x_param == '[M/H]':
-    # Load name, metallicity and error from Cristofari+2023
-    c23 = np.loadtxt(f'{base_path}paper/data/c23_mh.txt', dtype=object)
-    c23_names = ['Gl '+n[2:] for n in c23[:,0]]
-    x = dict(zip(c23_names, c23[:,1].astype(float)))
-    x_err = dict(zip(c23_names, c23[:,2].astype(float)))
+
+    if metallicity_ref == 'M15':
+        m15 = np.loadtxt(f'{base_path}paper/data/mann15_feh.txt', dtype=object)
+        m15_names = ['Gl '+n[2:] for n in m15[:,0]]
+        x = dict(zip(m15_names, m15[:,1].astype(float)))
+        x_err   = dict(zip(m15_names, m15[:,2].astype(float)))
+        
+    if metallicity_ref == 'C23':
+        # Load name, metallicity and error from Cristofari+2023
+        table_id = 3 # 3 or 4 possible
+        table_id_label = f'_table{table_id}'
+        c23 = np.loadtxt(f'{base_path}paper/data/c23_table{table_id}_mh.txt', dtype=object)
+        if table_id == 4:
+            # manually add entry for GL 4063
+            c23 = np.append(c23, [['Gl4063', '0.36', '0.1']], axis=0) # from table 3 C23
+
+        c23_names = ['Gl '+n[2:] for n in c23[:,0]]
+        x = dict(zip(c23_names, c23[:,1].astype(float)))
+        x_err = dict(zip(c23_names, c23[:,2].astype(float)))
 
 # x_param = 'Teff (K)'
 # assert x_param in df.columns, f'Column {x_param} not found in {df.columns}'
@@ -245,8 +270,8 @@ for i, isotope in enumerate(isotopes):
         if teff[name] > plot_teff_max:
             continue
         target = name.replace('Gl ', 'gl')
-        if target in ignore_targets:
-            print(f'---> Skipping {target}...')
+        if name in ignore_targets:
+            print(f'---> Skipping {name}...')
             continue
         color = cmap(norm(teff[name]))
         
@@ -261,17 +286,22 @@ for i, isotope in enumerate(isotopes):
             x_err = {name: [C_H_quantiles[0], C_H_quantiles[2]]}
             print(f'---> {name}: {C_H_quantiles}')
             print(f' xerr = {x_err[name]}')
-        ratio_t = main(target, 
-                       isotope,
-                       x[name], 
-                       xerr=x_err[name],
-                        ax=ax, 
-                        # label=name, 
-                        label='',
-                        run=None,
-                        color=color,
-                        xytext=xytext.get(name, None))
-        
+            
+        try:
+            ratio_t = main(target, 
+                        isotope,
+                        x[name], 
+                        xerr=x_err[name],
+                            ax=ax, 
+                            # label=name, 
+                            label='',
+                            run=None,
+                            color=color,
+                            xytext=xytext.get(name, None))
+        except Exception as e:
+            print(e)
+            print(f'---> Skipping {name}')
+            continue
 
 
     ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label='ISM')
@@ -358,7 +388,7 @@ x_param_label = {
     '[C/H]': 'carbon_metallicity'
 }[x_param]
 # fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
-fig_name = nat_path + f'{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
+fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}{sub10pc_label}.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

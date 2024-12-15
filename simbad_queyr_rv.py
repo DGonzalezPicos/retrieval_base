@@ -25,17 +25,24 @@ def query_rv(targets):
     # get spectra type, parallax, mass, radius, distance, radial velocity
     customSimbad.add_votable_fields('sptype', 'plx', 'distance', 'rv_value')
     
-    rv_dict = {}
+    # rv_dict = {}
+    result = {}
     for target in targets:
         print(f' Querying radial velocity for {target}...')
         try:
             result_table = customSimbad.query_object(target)
+            print(result_table.columns)
             rv = result_table['RV_VALUE'][0]
-            rv_dict[target] = rv
+            spt = result_table['SP_TYPE'][0]
+            distance = result_table['Distance_distance'][0]
+            
+            result[target] = [rv, spt, distance]
+            # rv_dict[target] = rv
         except Exception as e:
             print(f' -> Error querying {target}: {e}')
-            rv_dict[target] = np.nan
-    return rv_dict
+            # rv_dict[target] = np.nan
+            result[target] = [np.nan, np.nan, np.nan]
+    return result
 
 targets_rv = {
     'gl15A': 11.73,
@@ -74,9 +81,12 @@ targets_rv = {
     'gl4333': 0.0,
     }
 targets = list(targets_rv.keys())
-rv_dict = query_rv(targets)
+result = query_rv(targets)
+rv_dict = {k:v[0] for k,v in result.items()}
 
 # compare rvs from SIMBAD with the ones in the dictionary
 for target in targets:
     rv_simbad = rv_dict[target]
     print(f' {target}: {targets_rv[target]} vs. {rv_simbad}')
+    # print distance in pc
+    # print(f' {target}: {targets_rv[target]} vs. {rv_simbad}')

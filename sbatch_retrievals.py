@@ -35,14 +35,14 @@ targets_rv = {
     # 'gl1286': -41.0, # WARNING: SIMBAD has wrong RV (Davison+2015; RV = -40 km/s)
     # 'gl3622': 2.18,
     # 'gl4063': 12.533,
-    'gl48': 1.56,
-    # 'gl317': 87.94,
-    # 'gl410': -14.04,
-    # 'gl480': -4.19,
-    # 'gl514': 14.47,
-    # 'gl617B': -18.36,
-    # 'gl846': 18.25,
-    # 'gl4333': -6.31
+    # 'gl48': 1.56,
+    'gl317': 87.94,
+    'gl410': -14.04,
+    'gl480': -4.19,
+    'gl514': 14.47,
+    'gl617B': -18.36,
+    'gl846': 18.25,
+    'gl4333': -6.31
  }
 targets = list(targets_rv.keys())
 print(f' len(targets) = {len(targets)}')

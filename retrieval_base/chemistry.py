@@ -434,7 +434,11 @@ class FastChemistry(Chemistry):
         # mass of electron in amu
         mass_e = 5.48579909070e-4
         self.mass_fractions['e-'] = mass_e * self.VMRs['e-']
-        self.mass_fractions['H-'] = self.VMRs['e-'] # amu of H is 1.0
+        if 'Hminus' in params.keys():
+            # print(f' [FastChemistry] params["Hminus"] = {params["Hminus"]}')
+            self.mass_fractions['H-'] = params['Hminus'] * np.ones(self.n_atm_layers)
+        else:
+            self.mass_fractions['H-'] = 6e-9 * np.ones(self.n_atm_layers)# FIXME: fix to solar value?
         # self.mass_fractions['H-'] = 6e-9 * (self.VMRs['e-'] / 6e-9) # scale with respect to solar using e-
         # self.mass_fractions['e-'] = self.VMRs['e-']
         MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
@@ -549,7 +553,7 @@ if __name__ == '__main__':
             
         
     # plot abundance of H, H2, He
-    species = ['H', 'H2', 'He']
+    species = ['H', 'H2', 'He', 'H-', 'e-']
     for key in species:
         ax.plot(mf[key], p, label=key)
         ax.plot(mf_free[key], p, label=key, ls='--')

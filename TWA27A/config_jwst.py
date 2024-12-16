@@ -13,6 +13,7 @@ target = 'TWA27A'
 lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 run = f'lbl{lbl}_G1_4_fastchem'
+# run = f'lbl{lbl}_G1_2_freechem'
 prefix = f'./retrieval_outputs/{run}/test_'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
@@ -190,7 +191,6 @@ species_grating = {'g140h': ['12CO', 'H2O',
                             'TiO',
                             'SiO']
 }
-
 if grating == 'g140h':
     opacity_params = {k:v for k,v in opacity_params.items() if k[4:] in species_grating['g140h']}
 else:
@@ -394,6 +394,8 @@ mask_lines = {}
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
+# add free parameter for H-
+free_params['log_Hminus'] = [(-12.0, -8.0), r'$\log\ H^-$']
 
 line_species =list(set([v[1] for _,v in opacity_params.items()]))
 line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}

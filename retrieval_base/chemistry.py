@@ -489,17 +489,53 @@ if __name__ == '__main__':
     
     # test FastChemistry
     import matplotlib.pyplot as plt
-    p = np.logspace(-5, 2, 100)
-    t = np.linspace(1200, 3000, len(p))
-    
+    import json
+    # p = np.logspace(-5, 2, 100)
+    # t = np.linspace(1200, 3000, len(p))
+    path = pathlib.Path(get_path(return_pathlib=True))
+
+    target = 'TWA27A'
+    w_set='NIRSpec'
+    run = 'lbl20_G1_3'
+    run_bf = 'lbl15_G2G3_8'
+
+    # PT = af.pickle_load(path / target / 'retrieval_outputs' / run_bf / 'test_data' / 'bestfit_PT.pkl')
+    bestfit = json.load(open(path / target / f'retrieval_outputs/{run_bf}/test_data/bestfit.json'))
+    t = np.array(bestfit['temperature'])
+    p = np.array(bestfit['pressure'])
+    # bestfit['params'].update({'gratings' : ['g140h'] *4})
+        
     line_species_dict = {'12CO': 'CO_high_Sam', 'H2O': 'H2O_pokazatel_main_iso'}
     
-    fc_grid = '/home/dario/phd/fastchem/output/output_grid_twx.h5'
+    fc_grid = '/home/dario/phd/retrieval_base/data/fastchem_grid_twx.h5'
     chem = FastChemistry(line_species=list(line_species_dict.values()),
                             pressure=p,
                             fastchem_grid_file=fc_grid
         )
-    mf = chem({'CO_high_Sam': 1e-4, 'H2O_pokazatel_main_iso': 1e-3}, t)
+    
+    
+    linelists = {'12CO': 'CO_high_Sam', 'H2O': 'H2O_pokazatel_main_iso'}
+    # random float between 0 and 1
+    randf = np.random.rand()
+    fc_params = {f'alpha_{key}': -3.0 + (np.random.random() * 6) for key in linelists.keys()}
+    mf = chem(fc_params, t)
+    
+    freechem = FreeChemistry(line_species=list(line_species_dict.values()),
+                            pressure=p,
+                            )
+    # free_params = {key:10.0**(-8.0 + (np.random.random() * 4)) for key in linelists.keys()}
+    # free_params = {key:np.mean(mf[val]) for key, val in line_species_dict.items()}
+    free_params = {} # define volume mixing ratios for the species directly from the mean of the fastchem grid
+    mmw = chem.mass_fractions['MMW'].mean()
+    print(f' FastChem MMW = {mmw:.2f}')
+    for key, val in line_species_dict.items():
+        mass_i = chem.read_species_info(key, 'mass')
+        free_params[key] = np.mean(mf[val]) * (mmw/mass_i)
+        
+        
+    mf_free = freechem(free_params)
+    print(f' FreeChem MMW = {mf_free["MMW"].mean():.2f}')
+    # plt.plot(mf['12CO'], p)
     
                          
     fig, ax = plt.subplots(1,1, figsize=(8,6))
@@ -507,6 +543,20 @@ if __name__ == '__main__':
         if key in list(line_species_dict.values()):
             ax.plot(value, p, label=key)
             
+            ax.plot(mf_free[key], p, label=key, ls='--')
+            print(f'{key}: fastchem: {np.mean(value):.2e} freechem: {np.mean(mf_free[key]):.2e}')
+            
+            
+        
+    # plot abundance of H, H2, He
+    species = ['H', 'H2', 'He']
+    for key in species:
+        ax.plot(mf[key], p, label=key)
+        ax.plot(mf_free[key], p, label=key, ls='--')
+        print(f'{key}: fastchem: {np.mean(mf[key]):.2e} freechem: {np.mean(mf_free[key]):.2e}')
+            
+            
     ax.set(xscale='log', yscale='log', ylim=(np.max(p), np.min(p)))
+    ax.set_xlim(1e-9, 1e-2)
     ax.legend()
     plt.show()

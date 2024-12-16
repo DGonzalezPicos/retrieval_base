@@ -10,7 +10,7 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 target = 'TWA27A'
-lbl = 20
+lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 run = f'lbl{lbl}_G1_4'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -153,21 +153,20 @@ opacity_params = {
 }
 
 species_grating = {'g140h': ['12CO', 'H2O',
-                            #  '13CO','H2O_181', 
+                             '13CO','H2O_181',
                              'HF',
-                            #  'C2H2',
-                            #  'H2S', 
-                            #  'HCl', 'NH',
+                             'C2H2',
+                             'H2S', 
+                             'HCl', 
+                            #  'NH',
                              'Na', 'K', 'Ca', 'Ti',
-                             'Sc', 
-                            #  'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V',
+                             'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V',
                             #  'Li',
                              'FeH', 
                             #  'AlH', 
                             #  'MgH', 
-                            #  'NaH', 'CaH',
+                             'NaH', 'CaH',
                              'TiH', 'CrH',
-                            # 'CrH',
                              'OH', 'VO', 'TiO', 
                             #  'MgO',
 ],
@@ -320,15 +319,20 @@ isotopologues_dict = {
                       
 for log_k, v in opacity_params.items():
     k = log_k[4:]
-    if k in fc_species and (chem_mode=='fastchem'):
-        # pass
-        # add deviation parameter `alpha` for each species: log X = log X_0 + alpha
-        # free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
-        free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
-    elif k in isotopologues_dict.keys():
-        # add isotope ratio as free parameter
-        free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]
-    else:
+    
+    if chem_mode == 'fastchem':
+        if k in fc_species:
+            # pass
+            # add deviation parameter `alpha` for each species: log X = log X_0 + alpha
+            # free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
+            free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
+        elif k in isotopologues_dict.keys():
+            # add isotope ratio as free parameter
+            free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]
+        else:
+            free_params[log_k] = v[0]
+            
+    if chem_mode == 'free':
         free_params[log_k] = v[0]
         
 

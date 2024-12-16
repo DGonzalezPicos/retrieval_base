@@ -492,9 +492,9 @@ class pRT_model:
                 self.gratings = set(list(self.params['gratings']))
                 self.load_nirspec_gratings()
                 
-            fwhms = np.interp(wave_i, self.wave_fwhms[grating], self.fwhms[grating])
+            self.fwhms_i = np.interp(wave_i, self.wave_fwhms[grating], self.fwhms[grating])
             # print(f'{i}: {grating} fwhm idx(0,mid,-1) = {fwhms[0]:.1f}, {fwhms[len(fwhms)//2]:.1f}, {fwhms[-1]:.1f}')
-            assert isinstance(fwhms, np.ndarray), f'fwhms has type {type(fwhms)}'
+            # assert isinstance(fwhms, np.ndarray), f'fwhms has type {type(fwhms)}'
                 
             # start_sbr = time.time()
             if self.mode =='lbl':
@@ -511,7 +511,7 @@ class pRT_model:
                         in_res=m_spec_i.resolution, 
                         rebin=False, 
                         instr_broad_fast=False,
-                        fwhms=fwhms,
+                        fwhms=self.fwhms_i,
                         )
             else:
                 m_spec_i.rv_shift(rv=self.params['rv'], replace_wave=True)
@@ -661,9 +661,10 @@ class pRT_model:
                 vsini=self.params['vsini'], 
                 epsilon_limb=self.params['epsilon_limb'], 
                 # out_res=self.d_resolution[order], 
-                grating=self.params['gratings'][order],
-                in_res=m_spec_i.resolution, 
+                # grating=self.params['gratings'][order],
+                # in_res=m_spec_i.resolution, 
                 rebin=True, 
+                fwhms=self.fwhms_i,
                 # instr_broad_fast=True,
                 )
             # Compute the spectrally-weighted emission contribution function

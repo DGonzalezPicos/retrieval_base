@@ -366,8 +366,8 @@ class Spectrum:
         flux_LSF = np.einsum('ij, ij->i', kernels, flux_matrix)
         return flux_LSF
     
-    @classmethod
-    def instr_broadening_nirspec(cls, wave, flux, grating='g235h'):
+    # @classmethod
+    def instr_broadening_nirspec(self, wave, flux, grating='g235h'):
         """
         Broadens the spectrum by the instrumental resolution of NIRSpec.
 
@@ -384,6 +384,8 @@ class Spectrum:
             Flux array after applying instrumental broadening.
         """
         # return NIRSpec()(wave, flux, grating=grating)
+        if not hasattr(self, 'nirspec'):
+            self.nirspec = InstrumentalBroadening()
         return self.nirspec(grating=grating, x=wave, y=flux)
     
     @classmethod

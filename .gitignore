@@ -51,8 +51,5 @@ TWA28/constants_block.mod
 *.bib
 requirements_dec24.txt
 retrieval_env.yml
-prepare_13CO_dec13
-prepare_C18O_dec13
-prepare_C18O_dec13_2
 nirspec_wavegrid.txt
 retrieval_dec24/

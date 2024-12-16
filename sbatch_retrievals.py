@@ -36,13 +36,13 @@ targets_rv = {
     # 'gl3622': 2.18,
     # 'gl4063': 12.533,
     'gl48': 1.56,
-    'gl317': 87.94,
-    'gl410': -14.04,
-    'gl480': -4.19,
-    'gl514': 14.47,
-    'gl617B': -18.36,
-    'gl846': 18.25,
-    'gl4333': -6.31
+    # 'gl317': 87.94,
+    # 'gl410': -14.04,
+    # 'gl480': -4.19,
+    # 'gl514': 14.47,
+    # 'gl617B': -18.36,
+    # 'gl846': 18.25,
+    # 'gl4333': -6.31
  }
 targets = list(targets_rv.keys())
 print(f' len(targets) = {len(targets)}')
@@ -50,7 +50,8 @@ print(f' len(targets) = {len(targets)}')
 run = 'fc5_no13CO'
 # run = 'fc5'
 resume = False
-
+fat = True
+genoa_label = 'fat_' if fat else ''
 ignore_targets = []
 sleep = 3 # wait 3 seconds between jobs
 def update_file(file, old_str, new_str):
@@ -65,8 +66,8 @@ def update_file(file, old_str, new_str):
     print(f' Updated {file} with new {new_str}!')
 # copy genoa.sh file to all targets
 
-genoa_template = 'genoa_template.sh'
-genoa_file = 'genoa.sh'
+genoa_template = f'{genoa_label}genoa_template.sh'
+genoa_file = f'{genoa_label}genoa.sh'
 for target in targets:
     if target in ignore_targets:
         continue

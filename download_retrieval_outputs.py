@@ -45,7 +45,7 @@ targets = list(targets_rv.keys())
 run = 'fc5'
 ignore=None
 # ignore = 'C18O'
-# ignore  = '13CO'
+ignore  = '13CO'
 if ignore is not None:
     print(f' Ignoring {ignore} in retrieval...')
     run = f'{run}_no{ignore}'

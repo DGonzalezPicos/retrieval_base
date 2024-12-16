@@ -261,7 +261,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         ax[0].set_xlim((xlim[0]-5, xlim[1]-3))
 
 
-    ax[0].set_ylim(0.25, 13.7)
+    ax[0].set_ylim(0.25, 18.1)
     ax[-1].set_xlabel('Wavelength (nm)')
     ylim_res = ax[1].get_ylim()
     # make symmetric

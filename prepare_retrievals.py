@@ -54,8 +54,8 @@ delta_rv = 20.0
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
 run = 'fc5'
 # ignore=None
-# ignore = 'C18O' # doing it....
-ignore  = '13CO' # done!
+ignore = 'C18O' # doing it....
+# ignore  = '13CO' # done!
 if ignore is not None:
     print(f' Ignoring {ignore} in retrieval...')
     run = f'{run}_no{ignore}'

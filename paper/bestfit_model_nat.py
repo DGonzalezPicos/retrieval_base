@@ -186,14 +186,14 @@ runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sampl
 
 # norm = plt.Normalize(min(temperature_dict.values()), max(temperature_dict.values()))
 # norm = plt.Normalize(min(teff.values()), 4000.0)
-norm = plt.Normalize(2800, 4000.0)
+norm = plt.Normalize(3000, 3900.0)
 cmap = plt.cm.coolwarm_r
 
 my_targets_id = ['338B', '205', '411', '436','699', '1286']
 my_targets = ['gl'+t for t in my_targets_id]
 
 def plot(orders, text_x=None, xlim=None, **kwargs):
-    fig, ax = plt.subplots(2,1, figsize=(5,3), sharex=True, gridspec_kw={'height_ratios': [4, 1],
+    fig, ax = plt.subplots(2,1, figsize=(3.35,3.35/2), sharex=True, gridspec_kw={'height_ratios': [4, 1],
                                                                         'hspace': 0.08,
                                                                         'top': 0.97,
                                                                         'bottom': 0.13,
@@ -222,7 +222,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
                 offset_x=-0.7*count,
                 **kwargs)
         
-        ax[0].text(s=spt[name].split('.')[0].replace('V',''), x=text_x[1]-3, y=1.02+offset, transform=ax[0].transData,
+        ax[0].text(s=spt[name].split('.')[0].replace('V',''), x=text_x[1]-3, y=1.0+offset, transform=ax[0].transData,
                     color=color, fontsize=7, weight='bold', path_effects=[path_effects.withStroke(linewidth=2, foreground='w')])
         
         
@@ -230,8 +230,15 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])  # Only needed for color bar
-    cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=40, location='right')
+    # cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=40, location='right')
+    cbar_ax = fig.add_axes([1.002, 0.325, 0.015, 0.648])
+    cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', location='right')
     cbar.set_label('Temperature (K)')
+
+    # set ticks of colorbar
+    cbar_ticks = np.linspace(3000, 3900, 7)
+    cbar.set_ticks(cbar_ticks)
+    cbar.set_ticklabels([str(int(t)) for t in cbar_ticks])
 
     if xlim is not None:
         ax[0].set_xlim(xlim)
@@ -240,7 +247,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         ax[0].set_xlim((xlim[0]-5, xlim[1]-3))
 
 
-    ax[0].set_ylim(0.45, 3.9)
+    ax[0].set_ylim(0.45, 4.0)
     ax[-1].set_xlabel('Wavelength (nm)')
     ylim_res = ax[1].get_ylim()
     # make symmetric
@@ -250,7 +257,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     ax[1].set_ylabel('Residuals', labelpad=0)
     # fig_name = base_path + 'paper/latex/figures/best_fit_model' + "-".join(orders_str) + ".pdf"
     fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
-    fig.savefig(fig_name)
+    fig.savefig(fig_name, bbox_inches='tight')
     print(f'Figure saved as {fig_name}')
 
     show = False
@@ -265,5 +272,5 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
 # ]
 order = 0
 xlim = (2282, 2364)
-text_x = (xlim[0]+1.5, xlim[1]-2)
+text_x = (xlim[0]+1., xlim[1]-3)
 plot([order], text_x=text_x, xlim=xlim)

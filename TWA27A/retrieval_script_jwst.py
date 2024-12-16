@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 import subprocess as sp
-import numpy as np
+
 import shutil
 import os
 
@@ -138,7 +138,7 @@ if args.prior_check:
     random_label = '_random' if random else ''
     disk = False
     disk_label = '_disk' if disk else ''
-    ret = prior_check(conf=conf, n=5, 
+    ret = prior_check(conf=conf, n=3, 
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,

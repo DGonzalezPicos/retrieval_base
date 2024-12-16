@@ -473,6 +473,7 @@ class pRT_model:
                 )**2
             
             if self.Av > 0.0:
+                print(f'Applying extinction with Av = {self.Av}')
                 flux_i = apply_extinction(flux_i, wave_i * 1e-3, self.Av) # wave in [um]
             
 
@@ -526,6 +527,7 @@ class pRT_model:
             m_slab_i = 0.0
             if len(self.disk_species) > 0 and (self.params['gratings'][i]=='g395h'):
                 for ds_i in self.disk_species:
+                    # print(f'Adding disk emission for {ds_i}')
                     # grating = self.params['gratings'][i]
                     # # units are correct because input model already multiplied by A_au**2 / d_pc**2 with correct units
                     # factor = self.params[f'A_au_{ds_i}'] / np.pi / self.params['d_pc']**2
@@ -564,7 +566,14 @@ class pRT_model:
                     self.m_slab.append(m_slab_i) # store for plotting purposes
                     
             # print(f' Rebinning onto cenwave = {np.nanmedian(self.d_wave[i,]):.2f} nm from model cenwave = {np.nanmedian(m_spec_i.wave):.2f} nm')
-            m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True)
+            
+            print(f'[pRT_model] Rebinning...')
+            print(f'[pRT_model] Original wave: len({len(m_spec_i.wave)}, ({m_spec_i.wave.min():.2f}, {m_spec_i.wave.max():.2f}) nm')
+            print(f'[pRT_model] Data wave: len({len(self.d_wave[i,:])}, ({self.d_wave[i,:].min():.2f}, {self.d_wave[i,:].max():.2f}) nm')
+            # m_spec_i.flux = np.interp(self.d_wave[i,:], m_spec_i.wave, m_spec_i.flux)
+            # m_spec_i.wave = self.d_wave[i,:]
+            m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True) # UNCOMMENT THIS AAFTER TESTING
+            
             # end_sbr = time.time()   
             # print(f'Order {i} took {end_sbr-start_sbr:.3f} s to shift, broaden and rebin')
 

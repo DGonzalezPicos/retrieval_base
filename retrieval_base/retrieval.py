@@ -289,6 +289,7 @@ class Retrieval:
         # Param.params dictionary is already updated
         if self.Param.params.get('temperature') is not None:
             # Read the constant temperatures
+            print(f' Set constant temperature (mean) = {np.mean(self.Param.params.get("temperature")):.2f} K')
             temperature = self.Param.params.get('temperature')
             self.PT.temperature = temperature
         
@@ -311,7 +312,7 @@ class Retrieval:
             print(f' ret.PT.temperature = {temperature}')
             print('Negative temperatures...')
             return -np.inf
-
+        print(f'[Retrieval.PMN_lnL_func] Min, Mean, Max temperature = {np.min(temperature):.2f}, {np.mean(temperature):.2f}, {np.max(temperature):.2f}')
         # Retrieve the ln L penalty (=0 by default)
         ln_L_penalty = 0
         if hasattr(self.PT, 'ln_L_penalty'):

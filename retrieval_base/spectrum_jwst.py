@@ -86,10 +86,13 @@ class SpectrumJWST:
             self.flux_unit = 'erg/s/cm2/nm'
             
         # drop pixels with nan values in wavelength solution
-        nans_in = np.isnan(self.wave)
-        self.wave = self.wave[~nans_in]
-        self.flux = self.flux[~nans_in]
-        self.err = self.err[~nans_in]
+        # nans_in = np.isnan(self.wave)
+        # print(f'    Nans in wave: {np.sum(nans_in)}')
+        # print(f' wave.shape = {self.wave.shape}')
+        # self.wave = self.wave[~nans_in]
+        # self.flux = self.flux[~nans_in]
+        # self.err = self.err[~nans_in]
+        # print(f' wave.shape = {self.wave.shape}')
         
             
         # split into two filters
@@ -196,20 +199,26 @@ class SpectrumJWST:
     
     def fix_wave_nans(self):
         '''Replace NaNs in the wavelength array with linear interpolation'''
+        new_wave = np.nan * np.ones_like(self.wave)
+        
+        print(f' self.n_orders, self.n_dets = {self.n_orders}, {self.n_dets}')
         for i in range(self.n_orders):
             for j in range(self.n_dets):
                 wave_ij = self.wave[i, j]  # Extract the 1D array
                 mask = np.isnan(wave_ij)
-                if np.any(mask):  # Check if there are any NaNs to interpolate
+                print(f' Wave array contains {np.sum(mask)} NaNs in order {i}, detector {j}')
+                if np.sum(mask) > 0:  # Check if there are any NaNs to interpolate
                     wave_ij[mask] = np.interp(
                         np.flatnonzero(mask), 
                         np.flatnonzero(~mask), 
                         wave_ij[~mask]
                     )
                     # No need to reassign back to self.wave[i, j] since wave_ij is a reference
-
+                    # self.wave[i, j] = wave_ij
+                new_wave[i, j] = wave_ij
         # Assert to ensure all NaNs are replaced
-        assert np.sum(np.isnan(self.wave)) == 0, f'Wave array contains {np.sum(np.isnan(self.wave))} NaNs'
+        # assert np.sum(np.isnan(self.wave)) == 0, f'Wave array contains {np.sum(np.isnan(self.wave))} NaNs'
+        assert np.sum(np.isnan(new_wave)) == 0, f'Wave array contains {np.sum(np.isnan(new_wave))} NaNs'
         return self
     
     def flux_scaling(self, factor):

@@ -25,7 +25,11 @@ import retrieval_base.figures as figs
 import retrieval_base.auxiliary_functions as af
 from matplotlib.backends.backend_pdf import PdfPages
     
-def prior_check(conf, n=3, random=False, get_contr=False, remove_disk=False, fig_name=None):
+def prior_check(conf, n=3, random=False,
+                get_contr=False, 
+                remove_disk=False, 
+                species_to_plot=['12CO','H2O'],
+                fig_name=None):
     
     ret = Retrieval(conf=conf, evaluation=False)
     w_set = 'NIRSpec'
@@ -42,8 +46,10 @@ def prior_check(conf, n=3, random=False, get_contr=False, remove_disk=False, fig
     print(f' --> Evaluating the model at {n} different parameter values')
     print(f' ret.Cov[w_set][0,0].cov.shape = {ret.Cov[w_set][0,0].cov.shape}')
     # plot PT
-    fig, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
+    fig_PT, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
+    fig_chem, ax_chem = plt.subplots(1,n, figsize=(8 + 2*n, 5), sharey=True, sharex=True)
     
+    # chem_list = []
     time_list = []
     for i, theta_i in enumerate(theta):
         start = time.time()
@@ -86,8 +92,20 @@ def prior_check(conf, n=3, random=False, get_contr=False, remove_disk=False, fig
         figs.fig_PT(ret.PT, ax=ax_PT, ax_grad=ax_grad, 
                     bestfit_color=f'C{i}', 
                     show_knots=(i==0), 
-                    fig=fig,
+                    fig=fig_PT,
                     fig_name=str(fig_name).replace('.pdf', '_PT.pdf') if i==(len(theta)-1) else None)
+        
+        figs.fig_VMR(ret.Chem,
+            ax=ax_chem[i],
+            fig=fig_chem,
+            species_to_plot=species_to_plot,
+            pressure=ret.Chem.pressure,
+            ylabel=r'$P\ \mathrm{(bar)}$' if (i==0) else None,
+            ls='-', # deprecated
+            xlim=(1e-10, 1e-1),
+            showlegend=True,
+            fig_name=str(fig_name).replace('.pdf', '_VMR.pdf') if i==(len(theta)-1) else None
+            )
         
 
     print(f' --> Time per evaluation: {np.mean(time_list):.2f} +- {np.std(time_list):.2f} s')
@@ -312,7 +330,7 @@ class Retrieval:
             print(f' ret.PT.temperature = {temperature}')
             print('Negative temperatures...')
             return -np.inf
-        print(f'[Retrieval.PMN_lnL_func] Min, Mean, Max temperature = {np.min(temperature):.2f}, {np.mean(temperature):.2f}, {np.max(temperature):.2f}')
+        # print(f'[Retrieval.PMN_lnL_func] Min, Mean, Max temperature = {np.min(temperature):.2f}, {np.mean(temperature):.2f}, {np.max(temperature):.2f}')
         # Retrieve the ln L penalty (=0 by default)
         ln_L_penalty = 0
         if hasattr(self.PT, 'ln_L_penalty'):
@@ -343,7 +361,10 @@ class Retrieval:
             if self.evaluation and self.plot_ccf:
                 # Retrieve the model spectrum, with the wider pRT model
                 pRT_atm_to_use = self.pRT_atm_broad[w_set]
-        
+
+            # debug
+            # print(f' Mass fractions H2O mean = {np.mean(mass_fractions["H2O_pokazatel_main_iso"])}')
+            
             # Retrieve the model spectrum
             self.m_spec[w_set] = pRT_atm_to_use(
                 mass_fractions, 

@@ -120,7 +120,7 @@ class pRT_model:
         self.cloud_mode = cloud_mode
         self.chem_mode  = chem_mode
 
-        self.rv_max = max(np.abs(list(rv_range)))
+        self.rv_max = max(max(np.abs(list(rv_range))), 120.0) # 100 km/s for JWST is ~ 1 pixel
 
         # Define the atmospheric layers
         if log_P_range is None:
@@ -493,14 +493,14 @@ class pRT_model:
                 self.load_nirspec_gratings()
                 
             fwhms = np.interp(wave_i, self.wave_fwhms[grating], self.fwhms[grating])
-            print(f'{i}: {grating} fwhm idx(0,mid,-1) = {fwhms[0]:.1f}, {fwhms[len(fwhms)//2]:.1f}, {fwhms[-1]:.1f}')
+            # print(f'{i}: {grating} fwhm idx(0,mid,-1) = {fwhms[0]:.1f}, {fwhms[len(fwhms)//2]:.1f}, {fwhms[-1]:.1f}')
             assert isinstance(fwhms, np.ndarray), f'fwhms has type {type(fwhms)}'
                 
             # start_sbr = time.time()
             if self.mode =='lbl':
                 
                 # testing
-                skip_shift_broaden_rebin = True
+                skip_shift_broaden_rebin = False
                 if not skip_shift_broaden_rebin:
                     m_spec_i.shift_broaden_rebin(
                         rv=self.params['rv'], 
@@ -567,9 +567,11 @@ class pRT_model:
                     
             # print(f' Rebinning onto cenwave = {np.nanmedian(self.d_wave[i,]):.2f} nm from model cenwave = {np.nanmedian(m_spec_i.wave):.2f} nm')
             
-            print(f'[pRT_model] Rebinning...')
-            print(f'[pRT_model] Original wave: len({len(m_spec_i.wave)}, ({m_spec_i.wave.min():.2f}, {m_spec_i.wave.max():.2f}) nm')
-            print(f'[pRT_model] Data wave: len({len(self.d_wave[i,:])}, ({self.d_wave[i,:].min():.2f}, {self.d_wave[i,:].max():.2f}) nm')
+            # print(f'[pRT_model] Rebinning...')
+            # print(f'[pRT_model] Original wave: len({len(m_spec_i.wave)}, ({m_spec_i.wave.min():.2f}, {m_spec_i.wave.max():.2f}) nm')
+            # print(f'[pRT_model] Data wave: len({len(self.d_wave[i,:])}, ({self.d_wave[i,:].min():.2f}, {self.d_wave[i,:].max():.2f}) nm')
+            # nans_wave = np.sum(np.isnan(self.d_wave[i,:]))
+            # assert nans_wave == 0, f'[pRT_model.get_model_spectrum] line 573: {nans_wave} NaNs in self.d_wave[i,:]'
             # m_spec_i.flux = np.interp(self.d_wave[i,:], m_spec_i.wave, m_spec_i.flux)
             # m_spec_i.wave = self.d_wave[i,:]
             m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True) # UNCOMMENT THIS AAFTER TESTING
@@ -707,7 +709,7 @@ class pRT_model:
         self.wave_fwhms = {}
         self.fwhms = {}
         for g in self.gratings:
-            print(f' Loading resolution profile for grating {g}')
+            # print(f' Loading resolution profile for grating {g}')
             self.wave_fwhms[g], resolution_g = load_nirspec_resolution_profile(grating=g)
             self.fwhms[g] = 2.998e5 / resolution_g
             

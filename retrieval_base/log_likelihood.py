@@ -69,10 +69,10 @@ class LogLikelihood:
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err
                 
-                print(f'[LogLikelihood] Number of data points in order {i}, detector {j} = {N_ij}')
-                print(f'[LogLikelihood] Mean(m_flux) = {np.nanmean(m_flux_ij)}')
-                print(f'[LogLikelihood] Mean(d_flux) = {np.nanmean(d_flux_ij)}')
-                print(f'[LogLikelihood] Mean(d_err)  = {np.nanmean(d_err_ij)}')
+                # print(f'[LogLikelihood] Number of data points in order {i}, detector {j} = {N_ij}')
+                # print(f'[LogLikelihood] Mean(m_flux) = {np.nanmean(m_flux_ij)}')
+                # print(f'[LogLikelihood] Mean(d_flux) = {np.nanmean(d_flux_ij)}')
+                # print(f'[LogLikelihood] Mean(d_err)  = {np.nanmean(d_err_ij)}')
 
                 res_ij = (d_flux_ij - m_flux_ij)
                 

@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 import subprocess as sp
-import numpy as np
+
 import shutil
 import os
 
@@ -134,7 +134,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = False
+    random = True
     random_label = '_random' if random else ''
     disk = False
     disk_label = '_disk' if disk else ''
@@ -251,7 +251,7 @@ if args.evaluation:
 if args.ccf:
     run = run or conf.run
     print(f' ** Running cross-correlation function for {target} {run}..')
-    command = f'python {path}/retrieval_base/cross_correlation.py -t {target} -r {run}'
+    # command = f'python {path}/retrieval_base/cross_correlation.py -t {target} -r {run}'
     # print(f' ** Running command: {command}')
     sp.call(command, shell=True)
     print(f' ** Done with cross-correlation function for {target} {run}..')

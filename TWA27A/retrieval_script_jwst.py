@@ -134,14 +134,15 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     random_label = '_random' if random else ''
-    disk = False
+    disk = True
     disk_label = '_disk' if disk else ''
     ret = prior_check(conf=conf, n=3, 
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,
+                species_to_plot=['12CO', 'H2O', 'FeH','TiO','VO'],
                 fig_name=figs_path / f'prior_predictive_check{disk_label}{random_label}.pdf')
     
     if args.memory_profiler:

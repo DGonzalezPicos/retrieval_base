@@ -929,12 +929,24 @@ class ModelSpectrum(Spectrum):
         if numba:
             attr += '_numba'
             
+        
+            
         # print(f'd_wave.shape = {d_wave.shape}')
-        # flux_rebinned = np.nan * np.ones(d_wave.shape[-1])
-        # nans = np.isnan(d_wave[0,])
-        # flux_rebinned[~nans] = getattr(spectres, attr)(d_wave[0,~nans], self.wave, self.flux)
+        flux_rebinned = np.nan * np.ones(d_wave.shape[-1])
+        nans = np.isnan(d_wave[0,])
+        # wave_nonans = d_wave[0,~nans]
+        # # check range of new wavs and old wavs
+        # print(f' Data wave [0], mid, [-1] = {d_wave[0,0]}, {d_wave[0,int(d_wave.shape[-1]/2)]}, {d_wave[0,-1]}')
+        # print(f' Model wave [0], mid, [-1] = {self.wave[0]}, {self.wave[int(self.wave.shape[-1]/2)]}, {self.wave[-1]}')
+        
+        # if np.max(d_wave[0,~nans]) >= np.max(self.wave) or np.min(d_wave[0,~nans]) <= np.min(self.wave):
+        #     print(f'WARNING: New wavelength range {np.min(d_wave[0,~nans])} {np.max(d_wave[0,~nans])} outside of the old range {np.min(self.wave)} {np.max(self.wave)}')
+        #     # raise ValueError(f'New wavelength range {np.min(wave_nonans)} {np.max(wave_nonans)} outside of the old range {np.min(self.wave)} {np.max(self.wave)}')
 
-        flux_rebinned = getattr(spectres, attr)(d_wave[0,:], self.wave, self.flux, verbose=False)
+        # default fill = 0.0, should be ok!
+        flux_rebinned[~nans] = getattr(spectres, attr)(d_wave[0,~nans], self.wave, self.flux)
+
+        # flux_rebinned = getattr(spectres, attr)(d_wave[0,:], self.wave, self.flux, verbose=False)
         if replace_wave_flux:
             self.flux = flux_rebinned.reshape(d_wave.shape)
             self.wave = d_wave

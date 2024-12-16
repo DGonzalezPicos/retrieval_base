@@ -38,7 +38,7 @@ bestfit['params'].update({'gratings' : ['g140h'] *4})
 chem = af.pickle_load(path / target / 'retrieval_outputs' / run_bf / 'test_data' / 'bestfit_Chem.pkl')
 # generate new spectrum with pRT_atm
 m_spec = pRT_atm(mass_fractions=chem.mass_fractions,
-                 temperature=np.array(bestfit['temperature']) + 600.0,
+                 temperature=np.array(bestfit['temperature']) + 100.0,
                  params=bestfit['params'],
                  get_contr=False,
                  get_full_spectrum=False,

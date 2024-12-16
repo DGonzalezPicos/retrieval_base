@@ -9,7 +9,7 @@ file_params = 'config_jwst.py'
 
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
-target = 'TWA28'
+target = 'TWA27A'
 lbl = 20
 # run = f'lbl{lbl}_G2G3_8'
 run = f'lbl{lbl}_G1_3'
@@ -53,8 +53,9 @@ config_data = {
 # config_data['NIRSpec'].update({'wave_range': gratings_wave_range[grating]})
 
 # distance in pc to parallax
-parallax_mas = 16.87 # Gaia DR3, for TWA 28 (Manjavacas+2024)
-d_pc = 1e3 / parallax_mas # ~ 59.17 pc
+parallax_mas = 15.46 # Gaia DR3, for TWA 27A (Manjavacas+2024)
+d_pc = 1e3 / parallax_mas # ~ 59 pc
+
 
 
 N_knots = 1 # spline knots (continuum fitting)

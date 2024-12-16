@@ -12,11 +12,21 @@ file_params = 'config_jwst.py'
 target = 'TWA27A'
 lbl = 20
 # run = f'lbl{lbl}_G2G3_8'
-run = f'lbl{lbl}_G1_3'
+run = f'lbl{lbl}_G1_4'
 prefix = f'./retrieval_outputs/{run}/test_'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
 grating = 'g140h'
+
+# Define PT profile
+PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
+PT_mode = 'RCE'
+# PT_mode = 'fixed'
+# PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
+
+# chem_mode = 'fastchem'
+chem_mode = 'free'
+
 
 config_data = {
     'NIRSpec': {
@@ -53,8 +63,8 @@ config_data = {
 # config_data['NIRSpec'].update({'wave_range': gratings_wave_range[grating]})
 
 # distance in pc to parallax
-parallax_mas = 15.46 # Gaia DR3, for TWA 27A (Manjavacas+2024)
-d_pc = 1e3 / parallax_mas # ~ 59 pc
+parallax_mas = 16.87 # Gaia DR3, for TWA 28 (Manjavacas+2024)
+d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 
 
 
@@ -144,20 +154,21 @@ opacity_params = {
 
 species_grating = {'g140h': ['12CO', 'H2O',
                             #  '13CO','H2O_181', 
-                            #  'HF',
+                             'HF',
                             #  'C2H2',
                             #  'H2S', 
                             #  'HCl', 'NH',
-                            #  'Na', 'K', 'Ca', 'Ti',
-                            #  'Sc', 
+                             'Na', 'K', 'Ca', 'Ti',
+                             'Sc', 
                             #  'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V',
                             #  'Li',
-                            #  'FeH', 
+                             'FeH', 
                             #  'AlH', 
                             #  'MgH', 
-                            #  'NaH', 'CaH', 'TiH', 'CrH',
+                            #  'NaH', 'CaH',
+                             'TiH', 'CrH',
                             # 'CrH',
-                            #  'OH', 'VO', 'TiO', 
+                             'OH', 'VO', 'TiO', 
                             #  'MgO',
 ],
                   'g235h': ['12CO',
@@ -199,8 +210,8 @@ free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-    #  'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-    'R_p': [(3.4, 3.44), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+    # 'R_p': [(2.4, 4.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'log_g': [(2.5,4.5), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
@@ -208,26 +219,19 @@ free_params = {
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 }
-
-# Define PT profile
-PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
-PT_mode = 'RCE'
-# PT_mode = 'fixed'
-# PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
-
 if PT_mode  == 'RCE':
-    RCE_params = {'T_0': [(2000,8000), r'$T_0$'], 
+    RCE_params = {'T_0': [(3000,8000), r'$T_0$'], 
     'log_P_RCE': [(-3.0,1.0), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.34), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_0':   [(0.04, 0.34), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_1':   [(0.04, 0.34), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_2':   [(0.04, 0.34), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.34), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.34), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
+    'dlnT_dlnP_RCE': [(0.04, 0.36), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_1':   [(0.04, 0.32), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_0':   [(0.04, 0.32), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_2':   [(0.04, 0.32), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
+    'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
     }
     
     free_params.update(RCE_params)
@@ -316,9 +320,10 @@ isotopologues_dict = {
                       
 for log_k, v in opacity_params.items():
     k = log_k[4:]
-    if k in fc_species:
+    if k in fc_species and (chem_mode=='fastchem'):
         # pass
         # add deviation parameter `alpha` for each species: log X = log X_0 + alpha
+        # free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
         free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
     elif k in isotopologues_dict.keys():
         # add isotope ratio as free parameter
@@ -390,7 +395,6 @@ line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}
 
 #chem_mode  = 'free'
 # chem_mode  = 'free'
-chem_mode = 'fastchem'
 
 chem_kwargs = dict()
 if chem_mode == 'fastchem':

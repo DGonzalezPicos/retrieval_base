@@ -83,8 +83,7 @@ if __name__ == '__main__':
         print(f' Succesful copy for {target}!\n')
         
     if args.retrieval:
-        conf = Config(path=path, target=target, run=run)
-        conf(config_file)
+        conf = Config(path=path, target=target, run=run)(config_file)
     
         ret = Retrieval(
             conf=conf, 
@@ -94,8 +93,7 @@ if __name__ == '__main__':
         ret.PMN_run()
 
     if args.evaluation:
-        conf = Config(path=path, target=target, run=run)
-        conf(config_file)
+        conf = Config(path=path, target=target, run=run)(config_file)
     
         ret = Retrieval(
             conf=conf, 

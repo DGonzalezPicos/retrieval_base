@@ -37,7 +37,7 @@ targets_rv = {
     # 'gl3622': 2.18,
     # 'gl4063': 12.533
     
-    # 'gl48': 1.56,
+    'gl48': 1.56,
     'gl317': 87.94,
     'gl410': -14.04,
     'gl480': -4.19,
@@ -54,15 +54,15 @@ delta_rv = 20.0
 copy_files = ['config_freechem_template.py', 'retrieval_script_template.py']
 run = 'fc5'
 # ignore=None
-ignore = 'C18O' # doing it....
-# ignore  = '13CO' # done!
+# ignore = 'C18O' # doing it....
+ignore  = '13CO' # done!
 if ignore is not None:
     print(f' Ignoring {ignore} in retrieval...')
     run = f'{run}_no{ignore}'
 
 testing = False
 cache = "True"
-
+copy_snellius = False
 def update_file(file, old_str, new_str):
     
     with open(file, 'r') as f:
@@ -98,38 +98,16 @@ for target in targets:
     
     
     # run retrieval script as python retrieval_script.py -pc
-    try:
-        print(f' Running retrieval_script -pc for {target}...')
-        command = f'python retrieval_script.py -t {target} -pc -to_snellius --cache_pRT {cache}'
-        subprocess.run(command, shell=True, check=True, cwd=str(path / target))
-        # # copy this folder to snellius
-        # snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}'
-        # local_dir = str(path / target / 'retrieval_outputs' / run)
-        # print(f' Copying {local_dir} to {snellius_dir}...')
-        
-        # # if parent directory does not exist, create it on remote
-        # try:
-        #     # subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
-
-        #     subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
-
-        # except subprocess.CalledProcessError as e:
-        #     print(f' -> Error copying {local_dir} to {snellius_dir} with rsync:\n{e}')
-        #     print(f' -> Try to create parent directory on remote...')
-        #     subprocess.run(f'ssh dgonzalezpi@snellius.surf.nl "mkdir -p {snellius_dir}"', shell=True, check=True)
-
-        #     try:
-        #         subprocess.run(f'rsync -av {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/', shell=True, check=True)
-        #     except:
-        #         print(f' -> Error copying {local_dir} to {snellius_dir} again...')
-        #         # print(f' -> VPN must be disabled or set to NL!!')
-
-        # print(f' Succesful copy for {target}!\n')
-        
-        
-    # catch error and print message
-    except subprocess.CalledProcessError as e:
-        print(f' -> Error running {target}:\n{e}')
+    if copy_snellius:
+        try:
+            print(f' Running retrieval_script -pc for {target}...')
+            command = f'python retrieval_script.py -t {target} -pc -to_snellius --cache_pRT {cache}'
+            subprocess.run(command, shell=True, check=True, cwd=str(path / target))
+            
+            
+        # catch error and print message
+        except subprocess.CalledProcessError as e:
+            print(f' -> Error running {target}:\n{e}')
         
         
 print(f' Done!')

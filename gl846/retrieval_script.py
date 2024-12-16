@@ -13,7 +13,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 # target = 'gl436'
-run = 'fc5_noC18O' # important to set this to the correct run
+run = 'fc5_no13CO' # important to set this to the correct run
 
 if __name__ == '__main__':
 
@@ -83,8 +83,7 @@ if __name__ == '__main__':
         print(f' Succesful copy for {target}!\n')
         
     if args.retrieval:
-        conf = Config(path=path, target=target, run=run)
-        conf(config_file)
+        conf = Config(path=path, target=target, run=run)(config_file)
     
         ret = Retrieval(
             conf=conf, 
@@ -94,8 +93,7 @@ if __name__ == '__main__':
         ret.PMN_run()
 
     if args.evaluation:
-        conf = Config(path=path, target=target, run=run)
-        conf(config_file)
+        conf = Config(path=path, target=target, run=run)(config_file)
     
         ret = Retrieval(
             conf=conf, 

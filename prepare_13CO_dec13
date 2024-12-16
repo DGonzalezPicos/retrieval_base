@@ -1,0 +1,3066 @@
+nohup: ignoring input
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-18.4, 21.6), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = -18.4
+rv_max = 21.6
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-18.4, 21.6), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['H2O_pokazatel_main_iso', 'Na_allard_high', 'CO_high_Sam', 'Ti_high', 'Fe_high', 'H2O_181_HotWat78', 'Sc_high', 'CN_high', 'OH_MYTHOS_main_iso', 'Ca_high', 'CO_27_high_Sam', 'HF_high', 'Mg_high', 'CO_28_high_Sam']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl48/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-18.4, 21.6), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.2343605789574, 2403.126639276156, 2515.8449646547283
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=395)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 165 pixels
+ [mask_tellurics] Order 1: masked 415 pixels
+ [mask_tellurics] Order 2: masked 1624 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 8 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 0 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': -18.4, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 7.9261e+03
+ Error scaling factor: [[138.84231252]
+ [118.8516121 ]
+ [ 93.94424663]]
+Elapsed time: 1.19 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (-18.4, 21.6)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl48/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+
+sent 730,597,045 bytes  received 318 bytes  1,102,788.47 bytes/sec
+total size is 730,417,847  speedup is 1.00
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': 1.6000000000000014, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.4598e+04
+ Error scaling factor: [[65.31140428]
+ [64.20013768]
+ [47.42149943]]
+Elapsed time: 0.92 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 21.6, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -6.1305e+03
+ Error scaling factor: [[587.87831048]
+ [513.24954878]
+ [390.32731675]]
+Elapsed time: 0.90 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 1.00 +- 0.13 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl48/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl48/retrieval_outputs/fc5_no13CO...
+ Succesful copy for gl48!
+
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(67.9, 107.9), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = 67.9
+rv_max = 107.9
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(67.9, 107.9), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['CO_27_high_Sam', 'Na_allard_high', 'Sc_high', 'Fe_high', 'Ca_high', 'CN_high', 'H2O_pokazatel_main_iso', 'CO_28_high_Sam', 'HF_high', 'Ti_high', 'H2O_181_HotWat78', 'OH_MYTHOS_main_iso', 'Mg_high', 'CO_high_Sam']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl317/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(67.9, 107.9), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.2124637802526, 2403.102725732045, 2515.8235124403463
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=394)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 212 pixels
+ [mask_tellurics] Order 1: masked 518 pixels
+ [mask_tellurics] Order 2: masked 1765 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 7 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 0 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': 67.9, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 7.3663e+03
+ Error scaling factor: [[81.18164177]
+ [66.85358432]
+ [42.96518154]]
+Elapsed time: 1.09 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (67.9, 107.9)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl317/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+
+sent 742,519,954 bytes  received 319 bytes  561,452.00 bytes/sec
+total size is 742,337,860  speedup is 1.00
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': 87.9, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.3574e+04
+ Error scaling factor: [[38.63220947]
+ [37.21398683]
+ [23.12782433]]
+Elapsed time: 0.88 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 107.9, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -6.1252e+03
+ Error scaling factor: [[321.1127954 ]
+ [287.40773798]
+ [186.56859299]]
+Elapsed time: 1.03 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 1.00 +- 0.09 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl317/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl317/retrieval_outputs/fc5_no13CO...
+ Succesful copy for gl317!
+
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-34.0, 6.0), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = -34.0
+rv_max = 6.0
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-34.0, 6.0), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['CO_27_high_Sam', 'Ca_high', 'OH_MYTHOS_main_iso', 'CO_28_high_Sam', 'Ti_high', 'HF_high', 'Mg_high', 'H2O_pokazatel_main_iso', 'Na_allard_high', 'Sc_high', 'CO_high_Sam', 'H2O_181_HotWat78', 'CN_high', 'Fe_high']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl410/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-34.0, 6.0), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.0906982645856, 2402.9750872538048, 2515.69098252553
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=395)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 188 pixels
+ [mask_tellurics] Order 1: masked 687 pixels
+ [mask_tellurics] Order 2: masked 2240 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 4 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 0 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': -34.0, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 8.9570e+03
+ Error scaling factor: [[111.11816348]
+ [ 88.94260074]
+ [ 56.32169628]]
+Elapsed time: 1.08 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (-34.0, 6.0)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl410/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+
+sent 730,555,727 bytes  received 319 bytes  37,464,412.62 bytes/sec
+total size is 730,376,545  speedup is 1.00
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': -14.0, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.4018e+04
+ Error scaling factor: [[48.22070594]
+ [53.63948684]
+ [51.30250465]]
+Elapsed time: 0.90 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 6.0, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -5.4547e+03
+ Error scaling factor: [[489.96196174]
+ [463.46880459]
+ [350.96010721]]
+Elapsed time: 0.87 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 0.95 +- 0.09 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl410/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl410/retrieval_outputs/fc5_no13CO...
+ Succesful copy for gl410!
+
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-24.2, 15.8), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = -24.2
+rv_max = 15.8
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-24.2, 15.8), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['Ti_high', 'CO_high_Sam', 'CO_28_high_Sam', 'CN_high', 'Fe_high', 'H2O_181_HotWat78', 'Sc_high', 'OH_MYTHOS_main_iso', 'HF_high', 'Ca_high', 'Mg_high', 'Na_allard_high', 'H2O_pokazatel_main_iso', 'CO_27_high_Sam']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl480/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-24.2, 15.8), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.000977962975, 2402.8811792652286, 2515.5905111660104
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=395)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 147 pixels
+ [mask_tellurics] Order 1: masked 467 pixels
+ [mask_tellurics] Order 2: masked 1729 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 7 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 1 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': -24.2, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 7.8809e+03
+ Error scaling factor: [[92.65076414]
+ [73.05757782]
+ [53.21392053]]
+Elapsed time: 1.08 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (-24.2, 15.8)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl480/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+
+sent 730,591,642 bytes  received 319 bytes  763,020.32 bytes/sec
+total size is 730,412,448  speedup is 1.00
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': -4.199999999999999, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.4541e+04
+ Error scaling factor: [[41.68829539]
+ [39.53705759]
+ [28.17079558]]
+Elapsed time: 0.90 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 15.8, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -6.0500e+03
+ Error scaling factor: [[374.01145528]
+ [330.08361884]
+ [227.84834683]]
+Elapsed time: 1.11 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 1.03 +- 0.09 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl480/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl480/retrieval_outputs/fc5_no13CO...
+ Succesful copy for gl480!
+
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-5.5, 34.5), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = -5.5
+rv_max = 34.5
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-5.5, 34.5), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['Ti_high', 'CO_28_high_Sam', 'Na_allard_high', 'H2O_pokazatel_main_iso', 'CN_high', 'Mg_high', 'OH_MYTHOS_main_iso', 'HF_high', 'CO_27_high_Sam', 'Sc_high', 'Ca_high', 'H2O_181_HotWat78', 'CO_high_Sam', 'Fe_high']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl514/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-5.5, 34.5), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.1237005754283, 2403.009942031581, 2515.725019384507
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=395)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 72 pixels
+ [mask_tellurics] Order 1: masked 260 pixels
+ [mask_tellurics] Order 2: masked 1483 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 4 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 0 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': -5.5, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 1.0119e+04
+ Error scaling factor: [[135.54771916]
+ [113.83794226]
+ [ 97.47923584]]
+Elapsed time: 1.10 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (-5.5, 34.5)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl514/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+
+sent 730,601,023 bytes  received 319 bytes  14,467,353.31 bytes/sec
+total size is 730,421,830  speedup is 1.00
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': 14.5, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.6325e+04
+ Error scaling factor: [[59.11492083]
+ [62.90265073]
+ [72.97747763]]
+Elapsed time: 0.93 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 34.5, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -6.3087e+03
+ Error scaling factor: [[633.33809968]
+ [608.25864917]
+ [528.77281172]]
+Elapsed time: 0.89 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 0.97 +- 0.09 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl514/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl514/retrieval_outputs/fc5_no13CO...
+ Succesful copy for gl514!
+
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-38.4, 1.6), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = -38.4
+rv_max = 1.6
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-38.4, 1.6), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['HF_high', 'CO_27_high_Sam', 'Ti_high', 'OH_MYTHOS_main_iso', 'Sc_high', 'Fe_high', 'CN_high', 'Ca_high', 'CO_high_Sam', 'H2O_pokazatel_main_iso', 'CO_28_high_Sam', 'Na_allard_high', 'Mg_high', 'H2O_181_HotWat78']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl617B/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-38.4, 1.6), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.131172644415, 2403.017607748507, 2515.738618250841
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=394)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 180 pixels
+ [mask_tellurics] Order 1: masked 647 pixels
+ [mask_tellurics] Order 2: masked 2111 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 7 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 0 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': -38.4, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 8.0778e+03
+ Error scaling factor: [[111.60511969]
+ [ 94.17104982]
+ [ 75.35307697]]
+Elapsed time: 1.07 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (-38.4, 1.6)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl617B/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+
+sent 730,582,236 bytes  received 320 bytes  39,490,948.97 bytes/sec
+total size is 730,403,046  speedup is 1.00
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': -18.4, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.4338e+04
+ Error scaling factor: [[51.10662938]
+ [50.3816358 ]
+ [40.6602336 ]]
+Elapsed time: 1.13 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 1.6000000000000014, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -5.5033e+03
+ Error scaling factor: [[485.37507511]
+ [434.33675013]
+ [334.4827281 ]]
+Elapsed time: 1.10 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 1.10 +- 0.02 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl617B/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl617B/retrieval_outputs/fc5_no13CO...
+ Succesful copy for gl617B!
+
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-1.8, 38.2), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = -1.8
+rv_max = 38.2
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-1.8, 38.2), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['CN_high', 'CO_27_high_Sam', 'H2O_181_HotWat78', 'CO_high_Sam', 'H2O_pokazatel_main_iso', 'Sc_high', 'Fe_high', 'HF_high', 'Na_allard_high', 'OH_MYTHOS_main_iso', 'Ti_high', 'Ca_high', 'CO_28_high_Sam', 'Mg_high']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl846/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-1.8, 38.2), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.058732790559, 2402.9427103146627, 2515.653170354317
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=395)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 112 pixels
+ [mask_tellurics] Order 1: masked 329 pixels
+ [mask_tellurics] Order 2: masked 1553 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 1 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 0 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': -1.8, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 8.8483e+03
+ Error scaling factor: [[193.56635464]
+ [156.40490073]
+ [113.83640905]]
+Elapsed time: 1.09 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (-1.8, 38.2)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl846/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+
+sent 730,579,484 bytes  received 319 bytes  876,520.46 bytes/sec
+total size is 730,400,290  speedup is 1.00
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': 18.2, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.3379e+04
+ Error scaling factor: [[ 92.20659261]
+ [101.12845367]
+ [113.31443321]]
+Elapsed time: 0.89 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 38.2, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -6.1078e+03
+ Error scaling factor: [[751.64549501]
+ [728.42163791]
+ [627.23439005]]
+Elapsed time: 0.86 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 0.95 +- 0.10 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl846/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl846/retrieval_outputs/fc5_no13CO...
+ Succesful copy for gl846!
+
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-26.3, 13.7), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+file_params = config_freechem.py
+run = fc5_no13CO
+prefix = ./retrieval_outputs/fc5_no13CO/test_
+copy_pRT_from = None
+config_data = {'spirou': {'w_set': 'spirou', 'orders': (0, 1, 2), 'lbl_opacity_sampling': 3, 'slit': 'spirou', 'sigma_clip': 5, 'sigma_clip_width': 11, 'Nedge': 30, 'tell_threshold': 0.55, 'tell_n_grow': 10, 'emission_line_threshold': 1.3, 'log_P_range': (-5, 2), 'n_atm_layers': 60, 'T_cutoff': (1800.0, 5000.0), 'P_cutoff': (0.001, 100.0), 'file_target': 'data/spec_orders_46_47_48_mad.npy'}}
+rv_min = -26.3
+rv_max = 13.7
+opacity_params = {'log_12CO': ([(-14, -2), '$\\log\\ \\mathrm{^{12}CO}$'], 'CO_high_Sam'), 'log_C18O': ([(-14, -2), '$\\log\\ \\mathrm{C^{18}O}$'], 'CO_28_high_Sam'), 'log_C17O': ([(-14, -2), '$\\log\\ \\mathrm{C^{17}O}$'], 'CO_27_high_Sam'), 'log_H2O': ([(-14, -2), '$\\log\\ \\mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'), 'log_H2O_181': ([(-14, -2), '$\\log\\ \\mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'), 'log_HF': ([(-14, -2), '$\\log\\ \\mathrm{HF}$'], 'HF_high'), 'log_Na': ([(-14, -2), '$\\log\\ \\mathrm{Na}$'], 'Na_allard_high'), 'log_Ca': ([(-14, -2), '$\\log\\ \\mathrm{Ca}$'], 'Ca_high'), 'log_Ti': ([(-14, -2), '$\\log\\ \\mathrm{Ti}$'], 'Ti_high'), 'log_Mg': ([(-14, -2), '$\\log\\ \\mathrm{Mg}$'], 'Mg_high'), 'log_Fe': ([(-14, -2), '$\\log\\ \\mathrm{Fe}$'], 'Fe_high'), 'log_Sc': ([(-14, -2), '$\\log\\ \\mathrm{Sc}$'], 'Sc_high'), 'log_OH': ([(-14, -2), '$\\log\\ \\mathrm{OH}$'], 'OH_MYTHOS_main_iso'), 'log_CN': ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')}
+ignore_opacity_params = ['log_13CO']
+free_params = {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-26.3, 13.7), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']}
+fc_species_dict = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+species_to_formula = {'H2': 'H2', 'He': 'He', 'e-': 'e-', 'H2O': 'H2O1', '12CO': 'C1O1', 'Na': 'Na', 'K': 'K', 'Fe': 'Fe', 'Mg': 'Mg', 'Ca': 'Ca', 'Si': 'Si', 'Ti': 'Ti', 'OH': 'H1O1', 'CN': 'C1N1', 'HF': 'F1H1'}
+fc_species = ['H2', 'He', 'e-', 'H2O', '12CO', 'Na', 'K', 'Fe', 'Mg', 'Ca', 'Si', 'Ti', 'OH', 'CN', 'HF']
+isotopologues_dict = {'13CO': ['log_12CO/13CO', [(1.0, 3.0), '$\\log\\ \\mathrm{^{12}CO/^{13}CO}$']], 'C18O': ['log_12CO/C18O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$']], 'C17O': ['log_12CO/C17O', [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$']], 'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$']]}
+log_k = log_CN
+v = ([(-14, -2), '$\\log\\ \\mathrm{CN}$'], 'CN_high')
+k = CN
+parallax_mas = 16.88
+d_pc = 59.241706161137444
+PT_interp_mode = linear
+PT_mode = RCE
+N_knots = 25
+constant_params = {'epsilon_limb': 0.2, 'resolution': 69000.0, 'N_knots': 25}
+scale_flux = True
+scale_flux_eps = 0.0
+scale_err = True
+apply_high_pass_filter = False
+cloud_mode = None
+cloud_species = None
+mask_lines = {'telluric_red': (2493.0, 2500.0)}
+chem_mode = fastchem
+rayleigh_species = ['H2', 'He']
+continuum_opacities = ['H2-H2', 'H2-He', 'H-']
+line_species = ['CN_high', 'OH_MYTHOS_main_iso', 'Mg_high', 'CO_high_Sam', 'H2O_pokazatel_main_iso', 'Na_allard_high', 'Ti_high', 'Ca_high', 'CO_28_high_Sam', 'HF_high', 'Fe_high', 'CO_27_high_Sam', 'Sc_high', 'H2O_181_HotWat78']
+line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+chem_kwargs = {'fastchem_grid_file': '../data/fastchem_grid.h5', 'line_species_dict': {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}}
+species_to_plot_VMR = ['H2O', 'OH', '12CO', '13CO', 'C18O', 'Na', 'Ca', 'Ti', 'Mg', 'Fe', 'HF', 'CN']
+species_to_plot_CCF = []
+cov_mode = None
+cov_kwargs = {'trunc_dist': 1, 'scale_GP_amp': True, 'prepare_for_covariance': True}
+PT_kwargs = {'conv_adiabat': True, 'ln_L_penalty_order': 3, 'PT_interp_mode': 'linear', 'enforce_PT_corr': False, 'sonora': {'teff': 2400, 'log_g': 4.0}}
+testing = False
+const_efficiency_mode = True
+sampling_efficiency = 0.05
+evidence_tolerance = 0.5
+n_live_points = 400
+n_iter_before_update = 800
+Wrote /home/dario/phd/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/test_data/config_freechem.txt
+/home/dario/anaconda3/envs/retrieval/lib/python3.11/site-packages/petitRADTRANS/radtrans.py:122: FutureWarning: pRT_input_data_path was set by an environment variable. In a future update, the path to the petitRADTRANS input_data will be set within a .ini file that will be automatically generated into the user home directory (OS agnostic), inside a .petitradtrans directory
+  warnings.warn(f"pRT_input_data_path was set by an environment variable. In a future update, the path to "
+ --> 14 opacity parameters
+ --> {'log_g': [(4.5, 5.5), '$\\log\\ g$'], 'alpha_12CO': [(-4.0, 2.0), '$\\alpha(^{12}$CO)'], 'alpha_H2O': [(-4.0, 2.0), '$\\alpha$(H2O)'], 'alpha_Na': [(-4.0, 2.0), '$\\alpha(Na)$'], 'alpha_Ca': [(-4.0, 2.0), '$\\alpha(Ca)$'], 'alpha_Ti': [(-4.0, 2.0), '$\\alpha(Ti)$'], 'alpha_Mg': [(-4.0, 2.0), '$\\alpha(Mg)$'], 'alpha_Fe': [(-4.0, 2.0), '$\\alpha(Fe)$'], 'alpha_OH': [(-4.0, 2.0), '$\\alpha(OH)$'], 'alpha_HF': [(-4.0, 2.0), '$\\alpha(HF)$'], 'alpha_CN': [(-4.0, 2.0), '$\\alpha(CN)$'], 'vsini': [(0.5, 11.0), '$v\\ \\sin\\ i$'], 'rv': [(-26.3, 13.7), '$v_\\mathrm{rad}$'], 'T_0': [(4000.0, 16000.0), '$T_0$'], 'log_P_RCE': [(-2.0, 1.2), '$\\log\\ P_\\mathrm{RCE}$'], 'dlog_P_1': [(0.2, 1.6), '$\\Delta\\log\\ P_1$'], 'dlog_P_3': [(0.2, 1.6), '$\\Delta\\log\\ P_3$'], 'dlnT_dlnP_0': [(0.04, 0.44), '$\\nabla_{T,0}$'], 'dlnT_dlnP_1': [(0.04, 0.44), '$\\nabla_{T,1}$'], 'dlnT_dlnP_RCE': [(0.04, 0.44), '$\\nabla_{T,RCE}$'], 'dlnT_dlnP_2': [(0.04, 0.44), '$\\nabla_{T,2}$'], 'dlnT_dlnP_3': [(0.0, 0.32), '$\\nabla_{T,3}$'], 'dlnT_dlnP_4': [(0.0, 0.32), '$\\nabla_{T,4}$'], 'dlnT_dlnP_5': [(0.0, 0.32), '$\\nabla_{T,5}$'], 'log_12CO/C18O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{18}O}$'], 'log_12CO/C17O': [(1.5, 4.0), '$\\log\\ \\mathrm{C^{16}O/C^{17}O}$'], 'log_H2O/H2O_181': [(1.5, 4.0), '$\\log\\ \\mathrm{H_2^{16}O/H_2^{18}O}$'], 'log_Sc': [(-14, -2), '$\\log\\ \\mathrm{Sc}$']} free parameters
+ --> line_species_dict = {'12CO': 'CO_high_Sam', 'C18O': 'CO_28_high_Sam', 'C17O': 'CO_27_high_Sam', 'H2O': 'H2O_pokazatel_main_iso', 'H2O_181': 'H2O_181_HotWat78', 'HF': 'HF_high', 'Na': 'Na_allard_high', 'Ca': 'Ca_high', 'Ti': 'Ti_high', 'Mg': 'Mg_high', 'Fe': 'Fe_high', 'Sc': 'Sc_high', 'OH': 'OH_MYTHOS_main_iso', 'CN': 'CN_high'}
+ [load_spectrum_spirou] shape data: (4, 3, 4088)
+ [load_spectrum_spirou] shape wave: (3, 4088), flux: (3, 4088), err: (3, 4088)
+ [load_spectrum_spirou] Wavelength (min, mean, max): 2291.157658899213, 2403.0453841143562, 2515.76375786933
+ [load_spectrum_spirou] Transmission data found!
+ Selecting orders (0, 1, 2)
+ [select_orders]: selected orders [0, 1, 2], reshaped from (3, 4088) to (3, 4088)
+Masking telluric_red: 2493.0 - 2500.0 (n=395)
+ d_spec.transm.shape = (3, 4088)
+ conf_data.tell_threshold = 0.55
+ ** Masking tellurics with threshold 0.55 and growing by 0 pixels...
+ [mask_tellurics] Order 0: masked 97 pixels
+ [mask_tellurics] Order 1: masked 483 pixels
+ [mask_tellurics] Order 2: masked 1839 pixels
+ [mask_tellurics] Saved figure ./retrieval_outputs/fc5_no13CO/test_plots/telluric_masking.pdf
+[reshape]: add detector dimension to flux, err and wave
+[reshape]: reshaped from (3, 4088) to (3, 1, 4088)
+ [sigma_clip] Order 0, Detector 0: 8 pixels clipped
+ [sigma_clip] Order 1, Detector 0: 0 pixels clipped
+ [sigma_clip] Order 2, Detector 0: 0 pixels clipped
+ Figure saved as ./retrieval_outputs/fc5_no13CO/test_plots/sigma_clip.pdf
+ Pixel size = 0.0176 nm
+ log pixel size = -1.7535
+ Creating: ./retrieval_outputs/fc5_no13CO/test_data/pRT_atm_spirou.pkl
+ Loading opacities for wavelength range 2.29-2.36 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Loading opacities for wavelength range 2.36-2.44 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Loading opacities for wavelength range 2.44-2.52 micron
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Number of PT pairs CO_28_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Ca_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs HF_high:
+ -> before = 152 
+ -> after = 102
+ Number of PT pairs Na_allard_high:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs Ti_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs Mg_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs Sc_high:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_27_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs Fe_high:
+ -> before = 72 
+ -> after = 48
+ Number of PT pairs H2O_pokazatel_main_iso:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs H2O_181_HotWat78:
+ -> before = 152 
+ -> after = 48
+ Number of PT pairs OH_MYTHOS_main_iso:
+ -> before = 152 
+ -> after = 85
+ Number of PT pairs CO_high_Sam:
+ -> before = 152 
+ -> after = 40
+ Number of PT pairs CN_high:
+ -> before = 136 
+ -> after = 36
+ Loading interpolator for H2 (H2) from column 0
+ Loading interpolator for He (He) from column 1
+ Loading interpolator for e- (e-) from column 2
+ Loading interpolator for H2O1 (H2O) from column 3
+ Loading interpolator for C1O1 (12CO) from column 4
+ Loading interpolator for Na (Na) from column 5
+ Loading interpolator for Fe (Fe) from column 7
+ Loading interpolator for Mg (Mg) from column 8
+ Loading interpolator for Ca (Ca) from column 9
+ Loading interpolator for Ti (Ti) from column 11
+ Loading interpolator for H1O1 (OH) from column 12
+ Loading interpolator for C1N1 (CN) from column 13
+ Loading interpolator for F1H1 (HF) from column 14
+{'log_g': 4.5, 'alpha_12CO': -4.0, 'alpha_H2O': -4.0, 'alpha_Na': -4.0, 'alpha_Ca': -4.0, 'alpha_Ti': -4.0, 'alpha_Mg': -4.0, 'alpha_Fe': -4.0, 'alpha_OH': -4.0, 'alpha_HF': -4.0, 'alpha_CN': -4.0, 'vsini': 0.5, 'rv': -26.3, 'T_0': 4000.0, 'log_P_RCE': -2.0, 'dlog_P_1': 0.2, 'dlog_P_3': 0.2, 'dlnT_dlnP_0': 0.04, 'dlnT_dlnP_1': 0.04, 'dlnT_dlnP_RCE': 0.04, 'dlnT_dlnP_2': 0.04, 'dlnT_dlnP_3': 0.0, 'dlnT_dlnP_4': 0.0, 'dlnT_dlnP_5': 0.0, 'log_12CO/C18O': 1.5, 'log_12CO/C17O': 1.5, 'log_H2O/H2O_181': 1.5, 'log_Sc': -14.0}
+ln_L = 6.7791e+03
+ Error scaling factor: [[117.57913645]
+ [ 99.11296025]
+ [ 70.83206376]]
+Elapsed time: 1.41 s
+
+ shape data flux = (3, 1, 4088)
+ shape m_spec.flux = (1, 3, 1, 4088)
+ shape LogLike.f = (3, 1, 25)
+ prior rv  = (-26.3, 13.7)
+No mass fraction for 13CO
+sending incremental file list
+created directory /home/dgonzalezpi/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO
+./
+test_data/
+test_data/config_freechem.py
+test_data/config_freechem.txt
+test_data/d_spec_spirou.pkl
+test_data/pRT_atm_spirou.pkl
+test_output/
+test_plots/
+test_plots/prior_check.pdf
+test_plots/prior_check_PT.pdf
+test_plots/prior_check_VMR.pdf
+test_plots/sigma_clip.pdf
+test_plots/spec_to_fit_spirou.pdf
+test_plots/telluric_masking.pdf
+rsync: [receiver] write failed on "/home/dgonzalezpi/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf": Disk quota exceeded (122)
+rsync error: error in file IO (code 11) at receiver.c(378) [receiver=3.2.3]
+rsync error: received SIGINT, SIGTERM, or SIGHUP (code 20) at rsync.c(644) [sender=3.1.3]
+{'log_g': 5.0, 'alpha_12CO': -1.0, 'alpha_H2O': -1.0, 'alpha_Na': -1.0, 'alpha_Ca': -1.0, 'alpha_Ti': -1.0, 'alpha_Mg': -1.0, 'alpha_Fe': -1.0, 'alpha_OH': -1.0, 'alpha_HF': -1.0, 'alpha_CN': -1.0, 'vsini': 5.75, 'rv': -6.300000000000001, 'T_0': 10000.0, 'log_P_RCE': -0.3999999999999999, 'dlog_P_1': 0.9000000000000001, 'dlog_P_3': 0.9000000000000001, 'dlnT_dlnP_0': 0.24000000000000002, 'dlnT_dlnP_1': 0.24000000000000002, 'dlnT_dlnP_RCE': 0.24000000000000002, 'dlnT_dlnP_2': 0.24000000000000002, 'dlnT_dlnP_3': 0.16, 'dlnT_dlnP_4': 0.16, 'dlnT_dlnP_5': 0.16, 'log_12CO/C18O': 2.75, 'log_12CO/C17O': 2.75, 'log_H2O/H2O_181': 2.75, 'log_Sc': -8.0}
+ln_L = 1.2923e+04
+ Error scaling factor: [[58.11002864]
+ [56.73481307]
+ [36.09991391]]
+Elapsed time: 1.63 s
+
+No mass fraction for 13CO
+{'log_g': 5.5, 'alpha_12CO': 2.0, 'alpha_H2O': 2.0, 'alpha_Na': 2.0, 'alpha_Ca': 2.0, 'alpha_Ti': 2.0, 'alpha_Mg': 2.0, 'alpha_Fe': 2.0, 'alpha_OH': 2.0, 'alpha_HF': 2.0, 'alpha_CN': 2.0, 'vsini': 11.0, 'rv': 13.7, 'T_0': 16000.0, 'log_P_RCE': 1.2000000000000002, 'dlog_P_1': 1.6, 'dlog_P_3': 1.6, 'dlnT_dlnP_0': 0.44, 'dlnT_dlnP_1': 0.44, 'dlnT_dlnP_RCE': 0.44, 'dlnT_dlnP_2': 0.44, 'dlnT_dlnP_3': 0.32, 'dlnT_dlnP_4': 0.32, 'dlnT_dlnP_5': 0.32, 'log_12CO/C18O': 4.0, 'log_12CO/C17O': 4.0, 'log_H2O/H2O_181': 4.0, 'log_Sc': -2.0}
+ln_L = -6.0032e+03
+ Error scaling factor: [[437.03799118]
+ [387.48560134]
+ [271.98411162]]
+Elapsed time: 1.28 s
+
+ - Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_PT.pdf
+No mass fraction for 13CO
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check_VMR.pdf
+ --> Time per evaluation: 1.44 +- 0.14 s
+--> Saved ./retrieval_outputs/fc5_no13CO/test_plots/prior_check.pdf
+ Copying /home/dario/phd/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO to /home/dgonzalezpi/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO...
+ Attempting to use RSYNC_RSH with command:
+rsync -av --delete /home/dario/phd/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/ dgonzalezpi@snellius.surf.nl:/home/dgonzalezpi/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/
+Traceback (most recent call last):
+  File "/home/dario/phd/retrieval_base/gl4333/retrieval_script.py", line 68, in <module>
+  File "/home/dario/anaconda3/envs/retrieval/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command 'rsync -av --delete /home/dario/phd/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/ dgonzalezpi@snellius.surf.nl:/home/dgonzalezpi/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/' returned non-zero exit status 11.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/dario/phd/retrieval_base/gl4333/retrieval_script.py", line 80, in <module>
+  File "/home/dario/anaconda3/envs/retrieval/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command 'rsync -av --delete /home/dario/phd/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/ dgonzalezpi@snellius.surf.nl:/home/dgonzalezpi/retrieval_base/gl4333/retrieval_outputs/fc5_no13CO/' returned non-zero exit status 20.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+  Read line opacities of CO_28_high_Sam...
+ Done.
+  Read line opacities of Ca_high...
+ Done.
+  Read line opacities of HF_high...
+ Done.
+  Read line opacities of Na_allard_high...
+ Done.
+  Read line opacities of Ti_high...
+ Done.
+  Read line opacities of Mg_high...
+ Done.
+  Read line opacities of Sc_high...
+ Done.
+  Read line opacities of CO_27_high_Sam...
+ Done.
+  Read line opacities of Fe_high...
+ Done.
+  Read line opacities of H2O_pokazatel_main_iso...
+ Done.
+  Read line opacities of H2O_181_HotWat78...
+ Done.
+  Read line opacities of OH_MYTHOS_main_iso...
+ Done.
+  Read line opacities of CO_high_Sam...
+ Done.
+  Read line opacities of CN_high...
+ Done.
+ len(targets) = 8
+ Ignoring 13CO in retrieval...
+ Updated /home/dario/phd/retrieval_base/gl48/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl48/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = 1.56
+ Updated /home/dario/phd/retrieval_base/gl48/config_freechem.py with new rv_min = -18.4!
+ Updated /home/dario/phd/retrieval_base/gl48/config_freechem.py with new rv_max= 21.6!
+ Updated /home/dario/phd/retrieval_base/gl48/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl48...
+ Updated /home/dario/phd/retrieval_base/gl317/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl317/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = 87.94
+ Updated /home/dario/phd/retrieval_base/gl317/config_freechem.py with new rv_min = 67.9!
+ Updated /home/dario/phd/retrieval_base/gl317/config_freechem.py with new rv_max= 107.9!
+ Updated /home/dario/phd/retrieval_base/gl317/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl317...
+ Updated /home/dario/phd/retrieval_base/gl410/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl410/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = -14.04
+ Updated /home/dario/phd/retrieval_base/gl410/config_freechem.py with new rv_min = -34.0!
+ Updated /home/dario/phd/retrieval_base/gl410/config_freechem.py with new rv_max= 6.0!
+ Updated /home/dario/phd/retrieval_base/gl410/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl410...
+ Updated /home/dario/phd/retrieval_base/gl480/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl480/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = -4.19
+ Updated /home/dario/phd/retrieval_base/gl480/config_freechem.py with new rv_min = -24.2!
+ Updated /home/dario/phd/retrieval_base/gl480/config_freechem.py with new rv_max= 15.8!
+ Updated /home/dario/phd/retrieval_base/gl480/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl480...
+ Updated /home/dario/phd/retrieval_base/gl514/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl514/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = 14.47
+ Updated /home/dario/phd/retrieval_base/gl514/config_freechem.py with new rv_min = -5.5!
+ Updated /home/dario/phd/retrieval_base/gl514/config_freechem.py with new rv_max= 34.5!
+ Updated /home/dario/phd/retrieval_base/gl514/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl514...
+ Updated /home/dario/phd/retrieval_base/gl617B/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl617B/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = -18.36
+ Updated /home/dario/phd/retrieval_base/gl617B/config_freechem.py with new rv_min = -38.4!
+ Updated /home/dario/phd/retrieval_base/gl617B/config_freechem.py with new rv_max= 1.6!
+ Updated /home/dario/phd/retrieval_base/gl617B/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl617B...
+ Updated /home/dario/phd/retrieval_base/gl846/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl846/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = 18.25
+ Updated /home/dario/phd/retrieval_base/gl846/config_freechem.py with new rv_min = -1.8!
+ Updated /home/dario/phd/retrieval_base/gl846/config_freechem.py with new rv_max= 38.2!
+ Updated /home/dario/phd/retrieval_base/gl846/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl846...
+ Updated /home/dario/phd/retrieval_base/gl4333/config_freechem.py with new run = 'fc5_no13CO'!
+ Updated /home/dario/phd/retrieval_base/gl4333/retrieval_script.py with new run = 'fc5_no13CO'!
+ rv = -6.31
+ Updated /home/dario/phd/retrieval_base/gl4333/config_freechem.py with new rv_min = -26.3!
+ Updated /home/dario/phd/retrieval_base/gl4333/config_freechem.py with new rv_max= 13.7!
+ Updated /home/dario/phd/retrieval_base/gl4333/config_freechem.py with new ignore_opacity_params = ['log_13CO']!
+ Running retrieval_script -pc for gl4333...
+ -> Error running gl4333:
+Command 'python retrieval_script.py -t gl4333 -pc -to_snellius --cache_pRT True' returned non-zero exit status 1.

@@ -3,11 +3,11 @@
 # Set job requirements
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-#SBATCH -t 07:00:00
+#SBATCH -t 03:00:00
 #SBATCH -p fat_genoa
 #SBATCH --ntasks=192
 
-#SBATCH --job-name=lbl15_G1_1
+#SBATCH --job-name=lbl15_G1_4_fastchem
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 

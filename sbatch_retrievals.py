@@ -46,14 +46,14 @@ targets_rv = {
  }
 targets = list(targets_rv.keys())
 print(f' len(targets) = {len(targets)}')
-# run = 'fc4_no_C18O'
-run = 'fc5_no13CO'
+run = 'fc5_noC18O'
+# run = 'fc5_no13CO'
 # run = 'fc5'
 resume = False
 fat = True
 genoa_label = 'fat_' if fat else ''
 ignore_targets = []
-sleep = 3 # wait 3 seconds between jobs
+sleep = 2 # wait 3 seconds between jobs
 def update_file(file, old_str, new_str):
     
     with open(file, 'r') as f:

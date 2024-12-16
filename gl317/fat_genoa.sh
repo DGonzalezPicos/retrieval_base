@@ -7,7 +7,7 @@
 #SBATCH --ntasks=192
 
 
-#SBATCH --job-name=gl317_fc5_no13CO
+#SBATCH --job-name=gl317_fc5_noC18O
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
@@ -28,7 +28,7 @@ echo "Starting Python script"
 
 # define variable target
 target=gl317
-run=fc5_no13CO
+run=fc5_noC18O
 resume=0 # 1 = True, 0 = False
 
 mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target -run $run

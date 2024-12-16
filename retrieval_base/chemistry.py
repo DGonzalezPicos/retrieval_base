@@ -205,7 +205,7 @@ class FreeChemistry(Chemistry):
         # Give arguments to the parent class
         self.species_info = self.set_species_info(file=self.species_info_default_file)
         if isinstance(line_species, dict):
-            print(f' Updating species_info with {line_species}')
+            # print(f' Updating species_info with {line_species}')
             self.species_info = self.set_species_info(line_species_dict=line_species)
 
             line_species = list(line_species.values())

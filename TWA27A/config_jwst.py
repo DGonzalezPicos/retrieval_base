@@ -12,7 +12,7 @@ file_params = 'config_jwst.py'
 target = 'TWA27A'
 lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
-run = f'lbl{lbl}_G1_4'
+run = f'lbl{lbl}_G1_4_fastchem'
 prefix = f'./retrieval_outputs/{run}/test_'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
@@ -24,8 +24,8 @@ PT_mode = 'RCE'
 # PT_mode = 'fixed'
 # PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
 
-# chem_mode = 'fastchem'
-chem_mode = 'free'
+chem_mode = 'fastchem'
+# chem_mode = 'free'
 
 
 config_data = {
@@ -153,14 +153,15 @@ opacity_params = {
 }
 
 species_grating = {'g140h': ['12CO', 'H2O',
-                             '13CO','H2O_181',
+                            #  '13CO','H2O_181',
                              'HF',
                              'C2H2',
                              'H2S', 
                              'HCl', 
                             #  'NH',
                              'Na', 'K', 'Ca', 'Ti',
-                             'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V',
+                             'Mn', 'Fe', 
+                            #  'Al', 'Cr', 'Cs', 'Sc','V',
                             #  'Li',
                              'FeH', 
                             #  'AlH', 

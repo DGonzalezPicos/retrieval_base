@@ -142,7 +142,7 @@ if args.prior_check:
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,
-                species_to_plot=['12CO', 'H2O', 'FeH','TiO','VO'],
+                species_to_plot=['12CO', 'H2O', 'FeH','TiO','VO', 'C2H2', 'CrH','HCl','HF','Fe','Na','K','Ca','Ti'],
                 fig_name=figs_path / f'prior_predictive_check{disk_label}{random_label}.pdf')
     
     if args.memory_profiler:

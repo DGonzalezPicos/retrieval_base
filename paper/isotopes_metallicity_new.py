@@ -141,6 +141,24 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
                     
                     color=kwargs.get('color', 'k'),
         )
+    elif sigma > 2.0:
+        ax.errorbar(x, isotope_quantiles[1],
+                    xerr=xerr,
+                    yerr=[[isotope_quantiles[1]-isotope_quantiles[0]], [isotope_quantiles[2]-isotope_quantiles[1]]],
+                    fmt=fmt, 
+                    label=label.replace('gl', 'Gl '),
+                    alpha=0.96,
+                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+                    markeredgecolor='darkorange', # Black edge color
+                    markeredgewidth=0.8,     # Thickness of the edge
+                    capsize=2,               # Size of the cap on error bars
+                    capthick=0.8,             # Thickness of the cap on error bars
+                    ecolor='gray',          # Color of the error bars, set alpha of ecolor to make it transparent
+                    elinewidth=0.8,           # Thickness of the error bars
+                    
+                    
+                    color=kwargs.get('color', 'k'),
+        )
     else:
         # plot lower limit
         fmt = '^'
@@ -177,7 +195,7 @@ ignore_targets = []
 # x_param = '[C/H]'
 x_param = '[M/H]'
 
-sub10pc = True
+sub10pc = False
 sub10pc_label = '_sub10pc' if sub10pc else ''
 # ignore targets with distance greater than 10 pc
 if sub10pc:
@@ -388,7 +406,7 @@ x_param_label = {
     '[C/H]': 'carbon_metallicity'
 }[x_param]
 # fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
-fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}{sub10pc_label}.pdf'
+fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}{sub10pc_label}_2sigma.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

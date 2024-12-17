@@ -14,11 +14,6 @@ base_path = '/home/dario/phd/retrieval_base/'
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-valid = dict(zip(names, df['Valid'].to_list()))
-
-ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
-ignore_more_targets = ['gl3622']
-ignore_targets += ignore_more_targets
 
 def get_evidence(target, run=None, key='global evidence'):
     
@@ -108,14 +103,15 @@ def main(target, run=None, species='C18O', key='global evidence', cache=True):
     
     return lnB, sigma, delta_chi2
 
-ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
-ignore_more_targets = ['gl3622']
-ignore_targets += ignore_more_targets
+# ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
+# ignore_more_targets = ['gl3622']
+ignore_targets = []
 cache = True
 evidence_dict = {}
 
 testing = False
-species = '13CO'
+# species = '13CO'
+species = 'C18O'
 ignore_chi2 = True
 for i, name in enumerate(names):
     target = name.replace('Gl ', 'gl')

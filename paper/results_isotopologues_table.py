@@ -145,7 +145,7 @@ for target in targets:
             tex += f'${med:.2f}' + '^{+' + f'{erru:.2f}' + '}_{-' + f'{errl:.2f}' + '}$'
         else:
             # show lower limit
-            tex += f'$ >{med+erru:.2f}$'
+            tex += f'$ >{med-errl:.2f}$'
         # tex += f'{med:.2f}'
         tex += ' & '
         

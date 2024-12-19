@@ -91,4 +91,7 @@ for i in range(n_orders):
     
 ax.legend()
     
-plt.show()
+# plt.show()
+fig_name = path / 'Hminus_model_diff.pdf'
+plt.savefig(fig_name, bbox_inches='tight')
+print(f' Saved {fig_name}!')

@@ -10,9 +10,9 @@ file_params = 'config_jwst.py'
 # run = 'ck_K_2'
 # run = 'lbl12_KM_2'
 target = 'TWA27A'
-lbl = 15
+lbl = 20
 # run = f'lbl{lbl}_G2G3_8'
-run = f'lbl{lbl}_G1_4_fastchem'
+run = f'lbl{lbl}_G1_5_fastchem'
 # run = f'lbl{lbl}_G1_2_freechem'
 prefix = f'./retrieval_outputs/{run}/test_'
 # grating = 'g235h+g395h'
@@ -46,7 +46,7 @@ config_data = {
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # (2024-10-20): update 35 --> 40
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
-        'T_cutoff': (1200.0, 4000.0), # DGP (2024-10-14): new parameter
+        'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
         }, 
     }
@@ -64,7 +64,8 @@ config_data = {
 # config_data['NIRSpec'].update({'wave_range': gratings_wave_range[grating]})
 
 # distance in pc to parallax
-parallax_mas = 16.87 # Gaia DR3, for TWA 28 (Manjavacas+2024)
+parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
+parallax_mas = parallax_mas_dict[target] # Gaia DR3, for TWA 28 (Manjavacas+2024)
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 
 
@@ -146,6 +147,7 @@ opacity_params = {
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    'log_ZrO': ([(-14,-2), r'$\log\ \mathrm{ZrO}$'], 'ZrO_ZorrO_main_iso'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
@@ -156,12 +158,13 @@ opacity_params = {
 species_grating = {'g140h': ['12CO', 'H2O',
                             #  '13CO','H2O_181',
                              'HF',
-                             'C2H2',
+                            #  'C2H2',
                              'H2S', 
                              'HCl', 
                             #  'NH',
                              'Na', 'K', 'Ca', 'Ti',
-                             'Mn', 'Fe', 
+                            #  'Mn', 
+                             'Fe', 
                             #  'Al', 'Cr', 'Cs', 'Sc','V',
                             #  'Li',
                              'FeH', 
@@ -169,7 +172,9 @@ species_grating = {'g140h': ['12CO', 'H2O',
                             #  'MgH', 
                              'NaH', 'CaH',
                              'TiH', 'CrH',
+                             'ScH',
                              'OH', 'VO', 'TiO', 
+                             'ZrO',
                             #  'MgO',
 ],
                   'g235h': ['12CO',

@@ -25,6 +25,7 @@ MgH,MgH_main_iso,25.31284,C4,MgH,0.0,0.0,1.0
 ScH,ScH_main_iso,45.963748,C5,ScH,0.0,0.0,1.0
 TiO,TiO_48_Exomol_McKemmish,63.866,C13,TiO,0.0,1.0,0.0
 VO,VO_HyVO_main_iso,66.9405,C15,VO,0.0,1.0,0.0
+ZrO,ZrO_ZorrO_main_iso,91.224,C16,ZrO,0.0,1.0,0.0
 MgO,MgO_Sid_main_iso,40.304,C6,MgO,0.0,1.0,0.0
 AlO,AlO_main_iso,42.980539,C14,AlO,0.0,1.0,0.0
 SiO,SiO_SiOUVenIR_main_iso,44.084,C7,SiO,0.0,1.0,0.0

@@ -123,6 +123,7 @@ if args.pre_processing:
             N_mol_range=getattr(conf, 'N_mol_range', None),
             T_cutoff=conf_data.get('T_cutoff', None),
             P_cutoff=conf_data.get('P_cutoff', None),
+            species_wave=getattr(conf, 'species_wave', {}),
             )
         # check parent directory
         # pRT_file.parent.mkdir(parents=True, exist_ok=True)

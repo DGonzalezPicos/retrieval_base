@@ -12,7 +12,7 @@ file_params = 'config_jwst.py'
 target = 'TWA27A'
 lbl = 20
 # run = f'lbl{lbl}_G2G3_8'
-run = f'lbl{lbl}_G1_5_fastchem'
+run = f'lbl{lbl}_G1_6_fastchem'
 # run = f'lbl{lbl}_G1_2_freechem'
 prefix = f'./retrieval_outputs/{run}/test_'
 # grating = 'g235h+g395h'
@@ -154,6 +154,46 @@ opacity_params = {
     'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
+
+species_wave = {
+    '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
+    '13CO': [[2200, 3200], [4200, 5400]],
+    'C18O': [[2200, 3200], [4200, 5400]],
+    'C17O': [[2200, 3200], [4200, 5400]],
+    'HF': [[1200, np.inf]],
+    'HCl': [[1600, np.inf]],
+
+    'CO2': [[1900, 2300], [2600, 3200], [4000, 5400]],
+    
+    'Sc': [[0, 2600]],
+    # 'Mg'
+    'Mn': [[1200, 1600]],
+    'Fe': [[0, 2200]],
+    'Al': [[1000, 1800]],
+    'Cr': [[0, 2200], [3800, 4100]],
+    # 'Cs':
+    'V': [[0, 2300]],
+    'CrH': [[0, 1650]],
+    'TiH': [[0, 2000]],
+    'CaH': [[0, 1400], [3800, 5300]],
+    'AlH': [[1600, np.inf]],
+    # 'MgH': [[0, 2000]],
+    'NaH': [[0, 1400]],
+    # 'ScH'
+    'SiO': [[4000, 5200]],
+    'H2S': [[1800, np.inf]],
+}
+    
+    # 'SiO': [[4900, 5200]],
+    # 'H2O': [[0, np.inf]],
+    
+all_species = [k[4:] for k in opacity_params.keys()]
+# add line_species that are not in species_wave with (0, inf) = full range
+species_wave.update({s: [[0, np.inf]] for s in all_species if s not in species_wave})
+line_species_dict = {k[4:] : v[-1] for k,v in opacity_params.items()}
+# replace keys in species_wave with line_species
+species_wave = {line_species_dict[k]:v for k,v in species_wave.items()}
+# print(species_wave)
 
 species_grating = {'g140h': ['12CO', 'H2O',
                             #  '13CO','H2O_181',
@@ -464,8 +504,8 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 400 if not testing else 100
+evidence_tolerance = 0.5 if not testing else 0.5
+n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

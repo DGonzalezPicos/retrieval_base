@@ -18,7 +18,7 @@ import petitRADTRANS.nat_cst as nc
 
 from .spectrum import Spectrum, ModelSpectrum
 
-from retrieval_base.auxiliary_functions import get_path, apply_extinction, geom_thin_disk_emission, apply_keplerian_profile
+from retrieval_base.auxiliary_functions import get_path, apply_extinction, geom_thin_disk_emission, apply_keplerian_profile, select_species
 from broadpy.utils import load_nirspec_resolution_profile
 path = get_path()
 
@@ -48,6 +48,7 @@ class pRT_model:
                 N_mol_range=None,
                  T_cutoff=None,
                  P_cutoff=None,
+                 species_wave={},
                  ):
         '''
         Create instance of the pRT_model class.
@@ -109,7 +110,7 @@ class pRT_model:
         
         self.T_cutoff = T_cutoff # temperature cutoff for custom line opacities
         self.P_cutoff = P_cutoff # pressure cutoff for custom line opacities
-
+        self.species_wave = species_wave # dictionary containing the wavelength ranges for each species
         # Clouds
         # if self.cloud_species is None:
         #     self.do_scat_emis = False
@@ -187,9 +188,24 @@ class pRT_model:
         self.atm = []            
         for wave_range_i in self.wave_range_micron:
             
+            if len(self.species_wave) > 0:
+                line_species_i = select_species(self.line_species,
+                                                self.species_wave,
+                                                wave_range_i[0]*1e3, # [um] -> [nm]
+                                                wave_range_i[1]*1e3)
+                # print(f' self.line_species = {self.line_species}')
+                # print(f' self.species_wave = {self.species_wave}')
+                # print(f' wave_range_i = {wave_range_i}')
+                
+                
+                assert len(line_species_i) > 0, 'No line species in wavelength range'
+                print(f' --> ({wave_range_i[0]}, {wave_range_i[1]}): {len(line_species_i)} line species')
+            else:
+                line_species_i = self.line_species
             # Make a pRT.Radtrans object
             atm_i = Radtrans(
-                line_species=self.line_species, 
+                # line_species=self.line_species, 
+                line_species=line_species_i,
                 rayleigh_species=self.rayleigh_species, 
                 continuum_opacities=self.continuum_species, 
                 cloud_species=self.cloud_species, 

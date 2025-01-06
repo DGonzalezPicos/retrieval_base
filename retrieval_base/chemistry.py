@@ -402,6 +402,10 @@ class FastChemistry(Chemistry):
         self.VMRs = {k: self.interpolator[k]((temperature, self.pressure)) for k in self.interpolator.keys()}
         self.mass_fractions = {}
         
+        VMR_He = 0.15
+        VMR_wo_H2 = VMR_He * np.ones(self.n_atm_layers)
+        C, O, H = 0, 0, 0
+
         for line_species_i, species_i in zip(self.line_species, self.species):
             
             alpha_i = params.get(f'alpha_{species_i}', 0.0)
@@ -410,6 +414,9 @@ class FastChemistry(Chemistry):
                 continue
             
             mass_i = self.read_species_info(species_i, 'mass')
+            COH_i  = [self.read_species_info(species_i, 'C'), 
+                      self.read_species_info(species_i, 'O'), 
+                      self.read_species_info(species_i, 'H')]
             # print(f' species_i = {species_i}, line_species_i = {line_species_i}, alpha_i = {alpha_i}')
             if species_i in self.isotopologues:
                 main = self.isotopologues_dict_rev[species_i]
@@ -425,12 +432,30 @@ class FastChemistry(Chemistry):
                 # print(f' WARNING: {species_i} not in VMRs, setting to 0')
                 self.VMRs[species_i] = 0.0 * np.ones(self.n_atm_layers)
                 
-            self.mass_fractions[line_species_i] = np.clip(mass_i * (self.VMRs[species_i] * 10.**alpha_i),a_max=1e-1, a_min=1e-14) # VMRs is already an array
-                
-        self.mass_fractions['He'] = self.read_species_info('He', 'mass') * self.VMRs['He']
-        self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * self.VMRs['H2']
-        self.mass_fractions['H']  = self.VMRs['H2']
-        
+            VMR_i = np.clip((self.VMRs[species_i] * 10.**alpha_i),a_max=1e-1, a_min=1e-20) # VMRs is already an array
+            self.mass_fractions[line_species_i] = VMR_i * mass_i
+            VMR_wo_H2 += VMR_i
+            
+            C += COH_i[0] * VMR_i
+            O += COH_i[1] * VMR_i
+            H += COH_i[2] * VMR_i
+            
+            
+        # self.mass_fractions['He'] = self.read_species_info('He', 'mass') * self.VMRs['He']
+        self.mass_fractions['He'] = VMR_He * self.read_species_info('He', 'mass') * np.ones(self.n_atm_layers)
+        # self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * self.VMRs['H2']
+        VMR_wo_H2 = np.clip(VMR_wo_H2, a_max=0.99, a_min=0.001)
+        # print(f' VMR_wo_H2 = {VMR_wo_H2}')
+        self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2) # already an array
+        # self.mass_fractions['H2'] = np.clip(self.mass_fractions['H2'], a_max=0.99, a_min=0.01)
+        # self.mass_fractions['H']  = self.VMRs['H2']
+        # assert all(VMR_wo_H2) <= 1.0, f'VM
+        # R_wo_H2 = {VMR_wo_H2} > 1.0'
+        # print(f' VMR_wo_H2 = {VMR_wo_H2}')
+        # VMR_wo_H2 = np.clip(VMR_wo_H2, a_max=0.99, a_min=0.0)
+        H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
+        self.mass_fractions['H'] = H * self.mass_fractions['H2'] / self.read_species_info('H2', 'mass')
+        # self.mass_fractions['H'] = np.clip(self.mass_fractions['H'], a_max=0.99, a_min=0.01)
         # mass of electron in amu
         mass_e = 5.48579909070e-4
         self.mass_fractions['e-'] = mass_e * self.VMRs['e-']
@@ -441,7 +466,15 @@ class FastChemistry(Chemistry):
             self.mass_fractions['H-'] = 6e-9 * np.ones(self.n_atm_layers)# FIXME: fix to solar value?
         # self.mass_fractions['H-'] = 6e-9 * (self.VMRs['e-'] / 6e-9) # scale with respect to solar using e-
         # self.mass_fractions['e-'] = self.VMRs['e-']
-        MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
+        # MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
+        MMW = np.sum(np.array(list(self.mass_fractions.values())), axis=0)
+        assert len(MMW) == self.n_atm_layers, f'MMW has wrong shape {len(MMW)} != {self.n_atm_layers}'
+        # MMW = 0
+        # for mass_i in self.mass_fractions.values():
+        #     MMW += mass_i
+        # MMW *= np.ones(self.n_atm_layers)
+        # print(f' mmw = {MMW}')
+        # assert all(MMW > 0), f' MMW = {MMW} has negative values'
         # hot fix for OH linelist 
         # print(f' [FastChemistry] self.mass_fractions.keys() = {self.mass_fractions.keys()}')
         # if 'OH_MYTHOS_main_iso' in self.mass_fractions.keys():
@@ -452,6 +485,7 @@ class FastChemistry(Chemistry):
             self.mass_fractions[line_species_i] /= MMW
         # pRT requires MMW in mass fractions dictionary
         self.mass_fractions['MMW'] = MMW
+        # MMW_mean = np.mean( 
         return self.mass_fractions
     
     @property

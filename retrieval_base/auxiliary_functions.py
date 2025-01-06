@@ -759,3 +759,26 @@ def apply_keplerian_profile(
 
     flux_s *= total_flux / np.nansum(flux_s)
     return flux_s
+
+def select_species(line_species, species_wave, wmin, wmax):
+    """
+    Selects relevant species within a given wavelength range.
+    
+    Parameters:
+    - line_species (list): List of species names.
+    - species_wave (dict): Dictionary where keys are species and values are lists of wavelength ranges.
+    - wmin (float): Minimum wavelength of the range.
+    - wmax (float): Maximum wavelength of the range.
+    
+    Returns:
+    - list: List of species with wavelength ranges overlapping with (wmin, wmax).
+    """
+    relevant_species = []
+    for mol in line_species:
+        if mol in species_wave:  # Ensure the species is in the dictionary
+            for rmin, rmax in species_wave[mol]:
+                # Check for overlap
+                if wmin <= rmax and wmax >= rmin:
+                    relevant_species.append(mol)
+                    break  # No need to check further ranges for this molecule
+    return relevant_species

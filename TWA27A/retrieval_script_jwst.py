@@ -58,7 +58,9 @@ if args.pre_processing:
     
     # each grating has two filters, make list [a,b] to [a,a,b,b]
     # gratings_list = [g.split('-')[0] for g in gratings for _ in range(2)]
-    # print(f'--> Loading data for {gratings_list}')
+    print(f'--> Loading data for {gratings_list}')
+    print(conf.constant_params['gratings'])
+    print(f'gratings {gratings}')
     
     files = [f'jwst/{target}_{g}.fits' for g in gratings]
     Nedge = conf_data.get('Nedge', 40)
@@ -87,7 +89,7 @@ if args.pre_processing:
         spec.prepare_for_covariance()
         
     spec.gratings_list = conf.constant_params['gratings']
-
+    print(f' gratings_list = {spec.gratings_list}')
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)
 
 

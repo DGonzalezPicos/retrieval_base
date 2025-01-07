@@ -85,7 +85,7 @@ class pRT_model:
         self.d_mask_isfinite = d_spec.mask_isfinite
         self.d_resolution    = d_spec.resolution
         # self.gratings = np.atleast_1d(set(list(d_spec.gratings)))
-        self.gratings = np.unique(d_spec.gratings)
+        self.gratings = np.unique(d_spec.gratings_list)
         # remove `_f100lp` from 'g140h_f100lp'
         self.gratings = [g.split('_')[0] for g in self.gratings]
         

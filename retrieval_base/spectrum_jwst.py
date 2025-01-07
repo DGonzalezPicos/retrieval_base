@@ -85,15 +85,6 @@ class SpectrumJWST:
             self.err  *= 1e-7
             self.flux_unit = 'erg/s/cm2/nm'
             
-        # drop pixels with nan values in wavelength solution
-        # nans_in = np.isnan(self.wave)
-        # print(f'    Nans in wave: {np.sum(nans_in)}')
-        # print(f' wave.shape = {self.wave.shape}')
-        # self.wave = self.wave[~nans_in]
-        # self.flux = self.flux[~nans_in]
-        # self.err = self.err[~nans_in]
-        # print(f' wave.shape = {self.wave.shape}')
-        
             
         # split into two filters
         split_id = self.flux.shape[0] // 2
@@ -105,6 +96,8 @@ class SpectrumJWST:
         for attr in attrs:
             setattr(self, attr, af.make_array([getattr(self, attr)[:split_id], getattr(self, attr)[split_id:]]))
         print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
+        self.grating = np.array([self.grating]*2)
+        # print(f'[SpectrumJWST.read_data] grating = {self.grating}')
         # change shape into (1, n_pixels)
         # self.wave = self.wave[None, :]
         # self.flux = self.flux[None, :]
@@ -184,7 +177,12 @@ class SpectrumJWST:
                 setattr(self, attr, np.vstack([getattr(spec, attr) for spec in spec_list])[idx])
         # self.set_n_orders()
         assert self.n_orders > 1, 'No data loaded'
-        self.grating = np.array([spec.grating for spec in spec_list])[idx]
+        print(f' len(spec_list) = {len(spec_list)}')
+        print(f' idx = {idx}')
+        # join arrays into single list
+        # self.grating = np.array([spec.grating for spec in spec_list])[idx]
+        # print(f' grating = {self.grating}')
+        # self.grating = np.array([spec.grating for spec in spec_list])[idx]
         # Stack the arrays                    
         return self
     

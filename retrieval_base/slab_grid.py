@@ -14,8 +14,12 @@ from scipy.interpolate import griddata, RegularGridInterpolator
 
 
 from retrieval_base.auxiliary_functions import get_path
-from retrieval_base.slab_model import Disk
 from retrieval_base.spectrum import ModelSpectrum
+
+try:
+    from retrieval_base.slab_model import Disk
+except:
+    pass
 
 class SlabGrid:
     

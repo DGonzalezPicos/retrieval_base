@@ -1,7 +1,10 @@
 import numpy as np
-import iris as iris
-from iris import setup
-from iris import spectrum as sp
+try:
+    import iris as iris
+    from iris import setup
+    from iris import spectrum as sp
+except:
+    pass
 import pathlib
 import time
 

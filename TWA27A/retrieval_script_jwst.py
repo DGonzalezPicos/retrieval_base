@@ -169,7 +169,7 @@ if args.copy_to_snellius:
     # if parent directory does not exist, create it on remote
     # sp.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
     # use rync -av --delete instead of scp -r
-    rsync_command = f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
+    rsync_command = f'rsync -av --progress --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
     try:
         sp.run(rsync_command, shell=True, check=True)
         

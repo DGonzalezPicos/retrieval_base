@@ -3,14 +3,15 @@ try:
     import iris as iris
     from iris import setup
     from iris import spectrum as sp
+    from jax import jit, vmap
+    from jax.scipy.signal import fftconvolve
+    import jax.numpy as jnp
 except:
     pass
 import pathlib
 import time
 
-from jax import jit, vmap
-from jax.scipy.signal import fftconvolve
-import jax.numpy as jnp
+
 
 from spectres import spectres
 

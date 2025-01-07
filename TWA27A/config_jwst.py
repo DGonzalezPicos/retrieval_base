@@ -12,7 +12,7 @@ file_params = 'config_jwst.py'
 target = 'TWA27A'
 lbl = 20
 # run = f'lbl{lbl}_G2G3_8'
-run = f'lbl{lbl}_G1_6_fastchem'
+run = f'lbl{lbl}_G1_7_fastchem'
 # run = f'lbl{lbl}_G1_2_freechem'
 prefix = f'./retrieval_outputs/{run}/test_'
 # grating = 'g235h+g395h'
@@ -196,12 +196,13 @@ species_wave = {line_species_dict[k]:v for k,v in species_wave.items()}
 # print(species_wave)
 
 species_grating = {'g140h': ['12CO', 'H2O',
-                            #  '13CO','H2O_181',
+                            #  '13CO',
+                            'H2O_181',
                              'HF',
                             #  'C2H2',
-                             'H2S', 
-                             'HCl', 
-                            #  'NH',
+                            #  'H2S', 
+                            #  'HCl', 
+                             'HCN','CH','NH','SH',
                              'Na', 'K', 'Ca', 'Ti',
                             #  'Mn', 
                              'Fe', 
@@ -210,11 +211,13 @@ species_grating = {'g140h': ['12CO', 'H2O',
                              'FeH', 
                             #  'AlH', 
                             #  'MgH', 
-                             'NaH', 'CaH',
-                             'TiH', 'CrH',
+                             'NaH', 
+                            #  'CaH',
+                            #  'TiH',   
+                             'CrH',
                              'ScH',
                              'OH', 'VO', 'TiO', 
-                             'ZrO',
+                            #  'ZrO',
                             #  'MgO',
 ],
                   'g235h': ['12CO',

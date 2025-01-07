@@ -64,3 +64,4 @@ prepare_C18O_dec13_2
 requirements_dec24.txt
 retrieval_env.yml
 retrieval_dec24/
+wave_range_species.py

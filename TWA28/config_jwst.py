@@ -1,61 +1,52 @@
 import numpy as np
 import os
-
 file_params = 'config_jwst.py'
 
 ####################################################################################
 # Files and physical parameters
 ####################################################################################
 
-# run = 'ck_K_2'
-# run = 'lbl12_KM_2'
 target = 'TWA28'
-lbl = 20
+lbl = 12
 # run = f'lbl{lbl}_G2G3_8'
-run = f'lbl{lbl}_G1_3'
-prefix = f'./retrieval_outputs/{run}/test_'
+# run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
-grating = 'g140h'
+gratings = ['g140h', 'g235h', 'g395h']
+grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
+chem_mode = 'fastchem'
+
+index = 0
+run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}'
+prefix = f'./retrieval_outputs/{run}/test_'
+
+# Define PT profile
+PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
+PT_mode = 'RCE'
+# PT_mode = 'fixed'
+PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
+
 
 config_data = {
     'NIRSpec': {
-        # 'w_set': 'G395H_F290LP', 'wave_range': (4100, 5300), 
         'w_set': 'NIRSpec',
-        # 'wave_range': (1650, 3200), # g235h-f170lp
-        # 'wave_range': (1630, 5300), 
-        # 'wave_range': (1630, 3250), 
-        
+
         'lbl_opacity_sampling' : lbl,
-        # 'lbl_opacity_sampling' : None,
         'sigma_clip': 3,
         'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
         'Nedge': 40, # (2024-10-18): 20 --> 40
-    
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, # (2024-10-20): update 35 --> 40
+        'n_atm_layers': 60, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
-        'T_cutoff': (1200.0, 4000.0), # DGP (2024-10-14): new parameter
+        'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
         }, 
     }
 
-# update wave_range
-# gratings_wave_range = {
-#                         'g140h':(1700, 1940),
-#                         'g235h': (1630, 3200),
-#                         # 'g235h': (920, 3250),
-#                        'g395h': (2800, 5300),
-#                        'g235h+g395h': (1630, 5300),
-#                     #    'g235h+g395h': (920, 5300),
-#                        }
-# config_data['NIRSpec']['wave_range'] = gratings_wave_range[grating]
-# config_data['NIRSpec'].update({'wave_range': gratings_wave_range[grating]})
-
 # distance in pc to parallax
-parallax_mas = 16.87 # Gaia DR3, for TWA 28 (Manjavacas+2024)
+parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
+parallax_mas = parallax_mas_dict[target] # Gaia DR3, for TWA 28 (Manjavacas+2024)
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
-
 
 N_knots = 1 # spline knots (continuum fitting)
 
@@ -134,6 +125,7 @@ opacity_params = {
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    'log_ZrO': ([(-14,-2), r'$\log\ \mathrm{ZrO}$'], 'ZrO_ZorrO_main_iso'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
     'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
@@ -141,65 +133,67 @@ opacity_params = {
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
 }
 
-species_grating = {'g140h': ['12CO', 'H2O',
-                            #  '13CO','H2O_181', 
-                            #  'HF',
-                            #  'C2H2',
-                            #  'H2S', 
-                            #  'HCl', 'NH',
-                            #  'Na', 'K', 'Ca', 'Ti',
-                            #  'Sc', 
-                            #  'Mn', 'Fe', 'Al', 'Cr', 'Cs', 'Sc','V',
-                            #  'Li',
-                            #  'FeH', 
-                            #  'AlH', 
-                            #  'MgH', 
-                            #  'NaH', 'CaH', 'TiH', 'CrH',
-                            # 'CrH',
-                            #  'OH', 'VO', 'TiO', 
-                            #  'MgO',
-],
-                  'g235h': ['12CO',
-                            '13CO',
-                            'C18O',
-                            'C17O',
-                            'H2O',
-                            'H2O_181',
-                            'HF',
-                            'HCl',
-                            'CO2',
-                            'Na',
-                            'Ca',
-                            'Ti',
-                            'FeH',
-                            'TiH',
-                            'OH',
-                            'VO',
-                            'TiO',
-                            'SiO']
+species_wave = {
+    '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
+    '13CO': [[2200, 3200], [4200, 5400]],
+    'C18O': [[2200, 3200], [4200, 5400]],
+    'C17O': [[4200, 5400]],
+    'H2O': [[0.0, np.inf]],
+    'H2O_181': [[0.0, np.inf]],
+    
+    
+    'HF': [[1200, np.inf]],
+    # 'HCl': [[3050, np.inf]],
+
+    'CO2': [[3700, 5400]],
+    # 'HCN': [[0.0, np.inf]],
+    
+    'Na': [[0, np.inf]],
+    'K': [[0, 1900], [2800, 3100], [3600,4100]],
+    'Ca': [[0, 2400]],
+    'Ti': [[0, np.inf]],
+    # 'Sc': [[0, 2600]],
+    # 'Mg'
+    # 'Mn': [[1200, 1600]], # add this back for final retrieval
+    'Fe': [[0, 2200]],
+    # 'Al': [[1000, 1800]],
+    # 'Cr': [[0, 2200], [3800, 4100]],
+    # 'Cs': [[0, 1200], [1300, 1600],[2850,4000]],
+    'FeH': [[0, 2400]],
+    # 'V': [[0, 2300]],
+    'CrH': [[0, 1650]],
+    # 'TiH': [[0, 2000]], # add this back for final retrieval
+    # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
+    # 'AlH': [[1600, np.inf]],
+    # 'MgH': [[0, 2000]],
+    'NaH': [[0, 1400]],
+    # 'ScH':[[0,1900.0]], # add this back for final retrieval
+    'OH' : [[0, np.inf]],
+    'VO': [[0, 1800],[4800, 5300]],
+    'TiO': [[0,np.inf]],
+    'SiO': [[2650,3100],[4000, 5200]],
+    # 'H2S': [[1800, np.inf]],
 }
+    
+    
+all_species = [k[4:] for k in opacity_params.keys()]
+# add line_species that are not in species_wave with (0, inf) = full range
+# species_wave.update({s: [[0, np.inf]] for s in all_species if s not in species_wave})
 
-if grating == 'g140h':
-    opacity_params = {k:v for k,v in opacity_params.items() if k[4:] in species_grating['g140h']}
-else:
-    opacity_params = {k:v for k,v in opacity_params.items() if k[4:] in species_grating['g235h']}
-
-# exclude_opacity_params = ['C18O', 'C17O', 'CO2', 'SiO','HCl']
-exclude_opacity_params = []
-
-len_opacity_params = len(opacity_params)
-if grating == 'g235h':
-    opacity_params = {k:v for k,v in opacity_params.items() if k[4:] not in exclude_opacity_params}
-    print(f' --> {len(opacity_params)} opacity parameters ({len_opacity_params - len(opacity_params)} excluded)')
-
+opacity_params = {k:v for k,v in opacity_params.items() if k[4:] in species_wave.keys()}
+assert len(opacity_params) > 0, 'No opacity parameters'
 print(f' --> {len(opacity_params)} opacity parameters')
+line_species_dict = {k[4:] : v[-1] for k,v in opacity_params.items()}
+# replace keys in species_wave with line_species
+species_wave = {line_species_dict[k]:v for k,v in species_wave.items()}
+
 # Define the priors of the parameters
 free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-    #  'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-    'R_p': [(3.4, 3.44), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+    # 'R_p': [(2.4, 4.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'log_g': [(2.5,4.5), r'$\log\ g$'], 
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
@@ -207,26 +201,19 @@ free_params = {
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 }
-
-# Define PT profile
-PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
-PT_mode = 'RCE'
-# PT_mode = 'fixed'
-# PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
-
 if PT_mode  == 'RCE':
-    RCE_params = {'T_0': [(2000,8000), r'$T_0$'], 
+    RCE_params = {'T_0': [(3000,8000), r'$T_0$'], 
     'log_P_RCE': [(-3.0,1.0), r'$\log\ P_\mathrm{RCE}$'],
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.34), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_0':   [(0.04, 0.34), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_1':   [(0.04, 0.34), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_2':   [(0.04, 0.34), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.34), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.34), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(0.00, 0.34), r'$\nabla_{T,5}$'], # new points
+    'dlnT_dlnP_RCE': [(0.04, 0.36), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_1':   [(0.04, 0.32), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_0':   [(0.04, 0.32), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_2':   [(0.04, 0.32), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
+    'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
     }
     
     free_params.update(RCE_params)
@@ -244,12 +231,13 @@ else:
     free_params['log_g'] = log_g
     
 
-if grating == 'g235h' or grating==('g235h+g395h'):
+# if grating == 'g235h' or grating==('g235h+g395h'):
+if ('g235h' in gratings) or ('g395h' in gratings):
     # add disk params
     free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
     free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
     
-if grating == 'g140h':
+else:
     # add disk params from best fit of g235h+g395h
     constant_params['R_d'] =  15.66 # from g235h+g395h
     constant_params['T_d'] =  575.35 # from g235h+g395h
@@ -315,31 +303,41 @@ isotopologues_dict = {
                       
 for log_k, v in opacity_params.items():
     k = log_k[4:]
-    if k in fc_species:
-        # pass
-        # add deviation parameter `alpha` for each species: log X = log X_0 + alpha
-        free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
-    elif k in isotopologues_dict.keys():
-        # add isotope ratio as free parameter
-        free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]
-    else:
+    
+    if chem_mode == 'fastchem':
+        if k in fc_species:
+            # pass
+            # add deviation parameter `alpha` for each species: log X = log X_0 + alpha
+            # free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
+            free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
+        elif k in isotopologues_dict.keys():
+            # add isotope ratio as free parameter
+            free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]
+        else:
+            free_params[log_k] = v[0]
+            
+    if chem_mode == 'free':
         free_params[log_k] = v[0]
         
 
 print(f' --> {free_params} free parameters')
-
-
 # free_params.update({k:v[0] for k,v in opacity_params.items()})
 # remove constant params from free_params dictionary
 free_params = {k:v for k,v in free_params.items() if k not in list(constant_params.keys())}
 
 # disk_species = ['H2O', '12CO', '13CO']
-if grating == 'g235h+g395h':
-    constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
+constant_params['gratings'] = []
+gratings_n = {'g140h': 4, 'g235h': 4, 'g395h': 4}
+constant_params['gratings'] += [[g]*gratings_n[g] for g in gratings]
+# flatten list of lists
+constant_params['gratings'] = [item for sublist in constant_params['gratings'] for item in sublist]
+
+if 'g395h' in gratings:
+    # constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
     
     # disk_species = ['12CO', '13CO', 'H2O']
     disk_species = ['12CO']
-    T_ex_range = np.arange(300.0, 800.0+50.0, 50.0).tolist()
+    T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
     N_mol_range = np.logspace(15, 20, 6*2).tolist()
     
     disk_kwargs = dict(nr=20, ntheta=60)
@@ -355,12 +353,6 @@ if grating == 'g235h+g395h':
         free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
         free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
-if grating == 'g140h':
-    constant_params['gratings'] = [grating] * 4
-    
-else:
-    raise ValueError(f'Unknown grating: {grating}')
-
 ####################################################################################
 #
 ####################################################################################
@@ -383,13 +375,14 @@ mask_lines = {}
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
+# add free parameter for H-
+free_params['log_Hminus'] = [(-12.0, -7.0), r'$\log\ H^-$']
 
 line_species =list(set([v[1] for _,v in opacity_params.items()]))
 line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}
 
 #chem_mode  = 'free'
 # chem_mode  = 'free'
-chem_mode = 'fastchem'
 
 chem_kwargs = dict()
 if chem_mode == 'fastchem':
@@ -447,8 +440,8 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 400 if not testing else 100
+evidence_tolerance = 0.5 if not testing else 0.5
+n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

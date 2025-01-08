@@ -58,11 +58,17 @@ if args.pre_processing:
     
     # each grating has two filters, make list [a,b] to [a,a,b,b]
     # gratings_list = [g.split('-')[0] for g in gratings for _ in range(2)]
-    # print(f'--> Loading data for {gratings_list}')
+    print(f'--> Loading data for {gratings_list}')
+    print(conf.constant_params['gratings'])
+    print(f'gratings {gratings}')
     
     files = [f'jwst/{target}_{g}.fits' for g in gratings]
     Nedge = conf_data.get('Nedge', 40)
-    spec = SpectrumJWST(Nedge=Nedge).load_gratings(files)
+    
+    # gratings_n = {'g140h': 2, 'g235h': 4, 'g395h': 4}
+    gratings_n = getattr(conf, 'gratings_n', {'g140h': 2, 'g235h': 4, 'g395h': 4})
+
+    spec = SpectrumJWST(Nedge=Nedge).load_gratings(files, gratings_n=gratings_n)
     print(f' Orders: {spec.n_orders}')
     spec.reshape(spec.n_orders*2, 1)
     # spec.fix_wave_nans() # experimental...
@@ -87,7 +93,7 @@ if args.pre_processing:
         spec.prepare_for_covariance()
         
     spec.gratings_list = conf.constant_params['gratings']
-
+    print(f' gratings_list = {spec.gratings_list}')
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)
 
 
@@ -123,6 +129,7 @@ if args.pre_processing:
             N_mol_range=getattr(conf, 'N_mol_range', None),
             T_cutoff=conf_data.get('T_cutoff', None),
             P_cutoff=conf_data.get('P_cutoff', None),
+            species_wave=getattr(conf, 'species_wave', {}),
             )
         # check parent directory
         # pRT_file.parent.mkdir(parents=True, exist_ok=True)
@@ -134,14 +141,15 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     random_label = '_random' if random else ''
-    disk = False
+    disk = True
     disk_label = '_disk' if disk else ''
     ret = prior_check(conf=conf, n=3, 
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,
+                species_to_plot=['12CO', 'H2O', 'FeH','TiO','VO', 'C2H2', 'CrH','HCl','HF','Fe','Na','K','Ca','Ti'],
                 fig_name=figs_path / f'prior_predictive_check{disk_label}{random_label}.pdf')
     
     if args.memory_profiler:
@@ -165,7 +173,7 @@ if args.copy_to_snellius:
     # if parent directory does not exist, create it on remote
     # sp.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
     # use rync -av --delete instead of scp -r
-    rsync_command = f'rsync -av --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
+    rsync_command = f'rsync -av --progress --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
     try:
         sp.run(rsync_command, shell=True, check=True)
         

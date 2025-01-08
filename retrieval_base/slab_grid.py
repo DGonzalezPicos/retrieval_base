@@ -98,8 +98,10 @@ class SlabGrid:
         flux_disk = disk(self.disk_params, wave=wave_obs)
         
         m_spec = ModelSpectrum(wave_obs, flux_disk)
-        m_spec.flux = m_spec.instr_broadening_nirspec(m_spec.wave, m_spec.flux, grating=grating)
-        print(f' Mean flux (@ {grating}): {m_spec.flux.mean()}')
+        m_spec.gratings = list(np.atleast_1d(self.grating))
+        print(f' Grating: {self.grating}')
+        m_spec.flux = m_spec.instr_broadening_nirspec(m_spec.wave, m_spec.flux, grating=self.grating)
+        print(f' Mean flux (@ {self.grating}): {m_spec.flux.mean()}')
         
         wave_slab = np.array(m_spec.wave)
         flux_slab = np.array(m_spec.flux)
@@ -230,7 +232,7 @@ if __name__ =='__main__':
     
     path = pathlib.Path(get_path())
     grating = 'g395h'
-    T_ex_range = np.arange(300.0, 800.0+50.0, 50.0)
+    T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0)
     N_mol_range = np.logspace(15, 20, 6*2)
     for species in ['12CO', '13CO', 'H2O']:            
     

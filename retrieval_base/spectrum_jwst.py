@@ -15,8 +15,8 @@ import retrieval_base.auxiliary_functions as af
 import retrieval_base.figures as figs
 from retrieval_base.resample import Resample
 
-from broadpy import InstrumentalBroadening
-from broadpy.utils import load_nirspec_resolution_profile
+# from broadpy import InstrumentalBroadening
+# from broadpy.utils import load_nirspec_resolution_profile
 
 class SpectrumJWST:
     
@@ -35,7 +35,7 @@ class SpectrumJWST:
     n_dets = 1 # default
     
     def __init__(self, wave=None, flux=None, err=None, target=None, grating=None, file=None,
-                 Nedge=10):
+                 Nedge=10, split_filters=True):
         self.wave = wave
         self.flux = flux
         self.err = err
@@ -45,13 +45,13 @@ class SpectrumJWST:
         self.Nedge = Nedge
         if self.file is not None:
             print(f'Reading {self.file}')
-            self.read_data(units='erg/s/cm2/nm')
+            self.read_data(units='erg/s/cm2/nm', split_filters=split_filters)
             
         # if self.grating is not None: # deprecated
             # self.split_grating(keep='both')
             
             
-    def read_data(self, grating=None, units='mJy'):
+    def read_data(self, grating=None, units='mJy', split_filters=True):
         with fits.open(self.file) as hdul:
             data = hdul[1].data
             self.wave, self.flux, self.err = data['WAVELENGTH'], data['FLUX'], data['ERR'] # units [um, Jy, Jy]
@@ -65,6 +65,7 @@ class SpectrumJWST:
         # if grating is not None:
             # file name must be in the format 'TWA28_g235h-f170lp.fits'
         self.grating = str(self.file).split('_')[1].split('.fits')[0].replace('-', '_')
+        
         print(f'grating: {self.grating}')
         if units == 'mJy':
             self.flux *= 1e3
@@ -87,16 +88,23 @@ class SpectrumJWST:
             
             
         # split into two filters
-        split_id = self.flux.shape[0] // 2
-        print(f' Splitting data into two filters at {split_id}')
-        # self.wave = np.array([self.wave[:split_id], self.wave[split_id:]])
-        # self.flux = np.array([self.flux[:split_id], self.flux[split_id:]])
-        # self.err = np.array([self.err[:split_id], self.err[split_id:]])
+        # if split_filters:
         attrs = ['wave', 'flux', 'err']
-        for attr in attrs:
-            setattr(self, attr, af.make_array([getattr(self, attr)[:split_id], getattr(self, attr)[split_id:]]))
-        print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
-        self.grating = np.array([self.grating]*2)
+
+        if 'g540h' not in self.grating:
+            print(f' Splitting data into two filters (grating {self.grating})')
+            split_id = self.flux.shape[0] // 2
+            print(f' Splitting data into two filters at {split_id}')
+            # self.wave = np.array([self.wave[:split_id], self.wave[split_id:]])
+            # self.flux = np.array([self.flux[:split_id], self.flux[split_id:]])
+            # self.err = np.array([self.err[:split_id], self.err[split_id:]])
+            for attr in attrs:
+                setattr(self, attr, af.make_array([getattr(self, attr)[:split_id], getattr(self, attr)[split_id:]]))
+            print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
+            self.grating = np.array([self.grating]*2)
+        else:
+            for attr in attrs:
+                setattr(self, attr, getattr(self, attr)[None, :])
         # print(f'[SpectrumJWST.read_data] grating = {self.grating}')
         # change shape into (1, n_pixels)
         # self.wave = self.wave[None, :]
@@ -112,7 +120,7 @@ class SpectrumJWST:
         # self.n_orders = 1
         return self
     
-    def load_gratings(self, files):
+    def load_gratings(self, files, gratings_n=None):
         # self.gratings = [f.split('_')[1].split('-')[0] for f in files]
         
         if len(files) == 1:

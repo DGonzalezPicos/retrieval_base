@@ -19,6 +19,7 @@ import retrieval_base.figures as figs
 from retrieval_base.spline_model import SplineModel
 # from nirspersion import NIRSpec
 from broadpy.instrument import InstrumentalBroadening
+from broadpy.utils import load_nirspec_resolution_profile
 
 class Spectrum:
 
@@ -366,6 +367,16 @@ class Spectrum:
         flux_LSF = np.einsum('ij, ij->i', kernels, flux_matrix)
         return flux_LSF
     
+    def load_nirspec_gratings(self):
+        self.wave_fwhms = {}
+        self.fwhms = {}
+        for g in self.gratings:
+            # print(f' Loading resolution profile for grating {g}')
+            self.wave_fwhms[g], resolution_g = load_nirspec_resolution_profile(grating=g)
+            self.fwhms[g] = 2.998e5 / resolution_g
+            
+        return self
+    
     # @classmethod
     def instr_broadening_nirspec(self, wave, flux, grating='g235h'):
         """
@@ -384,10 +395,14 @@ class Spectrum:
             Flux array after applying instrumental broadening.
         """
         # return NIRSpec()(wave, flux, grating=grating)
-        if not hasattr(self, 'nirspec'):
-            self.nirspec = InstrumentalBroadening()
-        return self.nirspec(grating=grating, x=wave, y=flux)
-    
+        # if not hasattr(self, 'nirspec'):
+        #     self.nirspec = InstrumentalBroadening()
+        # return self.nirspec(grating=grating, x=wave, y=flux)
+        if not hasattr(self, 'wave_fwhms'):
+            self.load_nirspec_gratings()
+        fwhms = np.interp(wave, self.wave_fwhms[grating], self.fwhms[grating])
+        ib = InstrumentalBroadening(self.wave, self.flux)
+        return ib(fwhm=fwhms, kernel='gaussian_variable')    
     @classmethod
     def spectrally_weighted_integration(cls, wave, flux, array):
 

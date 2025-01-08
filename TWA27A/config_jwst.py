@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 target = 'TWA27A'
-lbl = 20
+lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
@@ -35,9 +35,8 @@ config_data = {
         'sigma_clip': 3,
         'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
         'Nedge': 40, # (2024-10-18): 20 --> 40
-    
         'log_P_range': (-5,2),
-        'n_atm_layers': 40, # (2024-10-20): update 35 --> 40
+        'n_atm_layers': 60, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
@@ -146,16 +145,16 @@ species_wave = {
     'HF': [[1200, np.inf]],
     # 'HCl': [[3050, np.inf]],
 
-    'CO2': [[3900, 5400]],
+    'CO2': [[3700, 5400]],
     # 'HCN': [[0.0, np.inf]],
     
     'Na': [[0, np.inf]],
     'K': [[0, 1900], [2800, 3100], [3600,4100]],
     'Ca': [[0, 2400]],
     'Ti': [[0, np.inf]],
-    'Sc': [[0, 2600]],
+    # 'Sc': [[0, 2600]],
     # 'Mg'
-    # 'Mn': [[1200, 1600]],
+    # 'Mn': [[1200, 1600]], # add this back for final retrieval
     'Fe': [[0, 2200]],
     # 'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
@@ -163,12 +162,12 @@ species_wave = {
     'FeH': [[0, 2400]],
     # 'V': [[0, 2300]],
     'CrH': [[0, 1650]],
-    # 'TiH': [[0, 2000]],
-    # 'CaH': [[0, 1400], [3800, 5300]],
+    # 'TiH': [[0, 2000]], # add this back for final retrieval
+    # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
     # 'AlH': [[1600, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
-    'ScH':[[0,np.inf]],
+    # 'ScH':[[0,1900.0]], # add this back for final retrieval
     'OH' : [[0, np.inf]],
     'VO': [[0, 1800],[4800, 5300]],
     'TiO': [[0,np.inf]],
@@ -328,7 +327,8 @@ free_params = {k:v for k,v in free_params.items() if k not in list(constant_para
 
 # disk_species = ['H2O', '12CO', '13CO']
 constant_params['gratings'] = []
-constant_params['gratings'] += [[g]*4 for g in gratings]
+gratings_n = {'g140h': 4, 'g235h': 4, 'g395h': 4}
+constant_params['gratings'] += [[g]*gratings_n[g] for g in gratings]
 # flatten list of lists
 constant_params['gratings'] = [item for sublist in constant_params['gratings'] for item in sublist]
 
@@ -337,7 +337,7 @@ if 'g395h' in gratings:
     
     # disk_species = ['12CO', '13CO', 'H2O']
     disk_species = ['12CO']
-    T_ex_range = np.arange(300.0, 800.0+50.0, 50.0).tolist()
+    T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
     N_mol_range = np.logspace(15, 20, 6*2).tolist()
     
     disk_kwargs = dict(nr=20, ntheta=60)
@@ -376,7 +376,7 @@ mask_lines = {}
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
 # add free parameter for H-
-free_params['log_Hminus'] = [(-12.0, -8.0), r'$\log\ H^-$']
+free_params['log_Hminus'] = [(-12.0, -7.0), r'$\log\ H^-$']
 
 line_species =list(set([v[1] for _,v in opacity_params.items()]))
 line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}

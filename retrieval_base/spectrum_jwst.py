@@ -668,7 +668,13 @@ class SpectrumJWST:
             
             
         
-        
+    def squeeze(self):
+        attrs = ['wave', 'flux', 'err']
+        for attr in attrs:
+            if hasattr(self, attr):
+                setattr(self, attr, getattr(self, attr).squeeze())
+        # self.n_orders = self.flux.shape[0]
+        return self
         
         
 

@@ -337,7 +337,7 @@ class Retrieval:
             ln_L_penalty = self.PT.ln_L_penalty
 
         # Retrieve the chemical abundances
-        if self.Param.chem_mode == 'free':
+        if self.Param.chem_mode in ['free', 'freechem']:
             # assert self.Param.VMR_species is not None, 'No VMR species specified'
             # mass_fractions = self.Chem(self.Param.VMR_species, self.Param.params)
             mass_fractions = self.Chem(self.Param.params)

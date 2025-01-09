@@ -14,7 +14,8 @@ lbl = 12
 # grating = 'g235h'
 gratings = ['g140h', 'g235h', 'g395h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
-chem_mode = 'fastchem'
+# chem_mode = 'fastchem'
+chem_mode = 'freechem'
 
 index = 0
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}'
@@ -38,7 +39,7 @@ config_data = {
         'log_P_range': (-5,2),
         'n_atm_layers': 60, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
-        'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
+        'T_cutoff': (1000.0, 3600.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
         }, 
     }
@@ -79,7 +80,7 @@ opacity_params = {
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
     'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
     
-    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso_Sam'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso_new'), # DGP (2024-07-16): accidentally removed 
@@ -97,8 +98,8 @@ opacity_params = {
     'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
     
     
-    'log_Na': ([(-14,-4), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    'log_K':  ([(-14,-4), r'$\log\ \mathrm{K}$'],  'K_high'),
+    'log_Na': ([(-14,-4), r'$\log\ \mathrm{Na}$'], 'Na_Sam'),
+    'log_K':  ([(-14,-4), r'$\log\ \mathrm{K}$'],  'K_static'),
     'log_Ca': ([(-14,-4), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     'log_Ti': ([(-14,-4), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
     'log_Sc': ([(-14,-5), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
@@ -167,7 +168,7 @@ species_wave = {
     # 'AlH': [[1600, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
-    # 'ScH':[[0,1900.0]], # add this back for final retrieval
+    'ScH':[[0,1900.0]], # add this back for final retrieval
     'OH' : [[0, np.inf]],
     'VO': [[0, 1800],[4800, 5300]],
     'TiO': [[0,np.inf]],
@@ -316,7 +317,7 @@ for log_k, v in opacity_params.items():
         else:
             free_params[log_k] = v[0]
             
-    if chem_mode == 'free':
+    if chem_mode == 'free' or chem_mode == 'freechem':
         free_params[log_k] = v[0]
         
 

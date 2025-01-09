@@ -250,6 +250,7 @@ class CallBack:
             try:
                 figs.fig_VMR(self.Chem, 
                              ax=None,
+                             pressure=self.Chem.pressure,
                              xlim=(1e-10, 5e-2),
                              showlegend=True,
                             fig_name=self.prefix+'plots/VMRs.pdf',

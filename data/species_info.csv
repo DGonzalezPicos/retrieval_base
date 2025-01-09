@@ -3,7 +3,7 @@ name,pRT_name,mass,color,mathtext_name,C,O,H
 13CO,CO_36_high_Sam,29.002355,#e30b5d,$^{13}$CO,1.0,1.0,0.0
 C18O,CO_28_high_Sam,30.010161,C6,C$^{18}$O,1.0,1.0,0.0
 C17O,CO_27_high_Sam,29.010130999999998,C7,C$^{17}$O,1.0,1.0,0.0
-H2O,H2O_pokazatel_main_iso,18.014680000000002,#3881bb,H$_2$O,0.0,1.0,2.0
+H2O,H2O_pokazatel_main_iso_Sam,18.014680000000002,#3881bb,H$_2$O,0.0,1.0,2.0
 H2O_181,H2O_181_HotWat78,20.014841,C7,H$_2^{18}$O,0.0,1.0,2.0
 HDO,HDO_voronin,19.02084,b,HDO,0.0,1.0,2.0
 CH4,CH4_MM_main_iso,16.04236,#ff71ce,CH$_4$,1.0,0.0,4.0
@@ -36,8 +36,8 @@ HCl,HCl_main_iso,36.460840000000005,C15,HCl,0.0,0.0,1.0
 C2H2,C2H2_main_iso,26.037679999999998,#50FF45,C$_2$H$_2$,2.0,0.0,2.0
 H2,H2_main_iso,2.01568,C8,H2,0.0,0.0,2.0
 OH,OH_MYTHOS_main_iso,17.00684,#FF7B0D,OH,0.0,1.0,1.0
-K,K_high,39.0983,C18,K,0.0,0.0,0.0
-Na,Na_allard_high,22.989769,#daa520,Na,0.0,0.0,0.0
+K,K_static,39.0983,C18,K,0.0,0.0,0.0
+Na,Na_Sam,22.989769,#daa520,Na,0.0,0.0,0.0
 Ti,Ti_high,47.867,#ff8e56,Ti,0.0,0.0,0.0
 Fe,Fe_high,55.845,C21,Fe,0.0,0.0,0.0
 Ca,Ca_high,40.078,#984ea3,Ca,0.0,0.0,0.0

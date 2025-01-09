@@ -65,7 +65,7 @@ class Parameters:
 
         # Check the used chemistry type
         self.chem_mode = chem_mode
-        assert(self.chem_mode in ['eqchem', 'free', 'fastchem', 'SONORAchem'])
+        assert(self.chem_mode in ['eqchem', 'free', 'fastchem', 'SONORAchem', 'freechem'])
         
         # Check the used cloud type
         self.cloud_mode = cloud_mode

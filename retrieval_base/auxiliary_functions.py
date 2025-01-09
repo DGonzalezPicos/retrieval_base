@@ -667,7 +667,8 @@ def geom_thin_disk_emission(wave_nm, T_star, R_p, R_cav, R_out, i=0.785, d_pc=1.
     # print(f' mean flux: {np.mean(flux)}')
     return flux
 
-def apply_PT_cutoff(atm, T_min, T_max, P_min=1e-4, P_max=1e2):
+def apply_PT_cutoff(atm, T_min, T_max, P_min=1e-4, P_max=1e2,
+                    ignore_species=[]):
     """ Apply a cutoff to the PT grid of the custom line opacities to reduce memory usage and speed up the retrieval.
     
     `atm` is a petitRADTRANS.Radtrans object
@@ -679,6 +680,8 @@ def apply_PT_cutoff(atm, T_min, T_max, P_min=1e-4, P_max=1e2):
     P_max_cgs = P_max * 1e6
     
     for i, species in enumerate(atm.line_species):
+        if species in ignore_species:
+            continue
         if atm.custom_grid[species]:
             new_custom_line_TP_grid = [] # old has shape (152, 2) for each PT pair
             new_custom_line_paths = []

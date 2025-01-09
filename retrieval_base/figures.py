@@ -674,13 +674,15 @@ def fig_VMR(Chem,
         is_new_fig = True
     
     MMW = Chem.mass_fractions['MMW']
-    for species_i in species_to_plot:
+    for i, species_i in enumerate(species_to_plot):
         mass_i  = Chem.read_species_info(species_i, info_key='mass')
         color_i = Chem.read_species_info(species_i, info_key='color')
         label_i = Chem.read_species_info(species_i, info_key='label')
         line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
         ls_i = ':' if line_species_i.endswith('_high') else '-'
         lw_i = 2.5 if line_species_i.endswith('_high') else 1.5
+        if ls == '-' and i>8:
+            ls_i = '--'
         if line_species_i not in Chem.mass_fractions.keys():
             print(f'No mass fraction for {species_i}')
             continue

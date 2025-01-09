@@ -251,7 +251,9 @@ class pRT_model:
             atm_i.setup_opa_structure(self.pressure)
             if self.T_cutoff is not None:
                 self.P_cutoff = getattr(self, 'P_cutoff', (np.min(self.pressure), np.max(self.pressure)))
-                atm_i = apply_PT_cutoff(atm_i, *self.T_cutoff, *self.P_cutoff)
+                atm_i = apply_PT_cutoff(atm_i, *self.T_cutoff, *self.P_cutoff, 
+                                        ignore_species=['Na_Sam', 'K_static'], # NEW 2025-01-09: avoid Na and K for low pressure contribution
+                                        )
                 
             self.atm.append(atm_i)
          

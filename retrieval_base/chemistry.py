@@ -12,7 +12,7 @@ path = get_path()
 
 def get_Chemistry_class(line_species, pressure, mode, **kwargs):
 
-    if mode == 'free':
+    if mode == 'free' or mode == 'freechem':
         return FreeChemistry(line_species, pressure, **kwargs)
     if mode == 'eqchem':
         return EqChemistry(line_species, pressure, **kwargs)

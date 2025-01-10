@@ -269,9 +269,9 @@ class FreeChemistry(Chemistry):
             # print(f' self.VMRs.keys() = {self.VMRs.keys()}')
                 
             # if self.VMRs.get(species_i) is not None:
-            if params.get(species_i, None) is None:
-                print(f' params[{species_i}] = {params[species_i]}')
-                continue
+            # if params.get(species_i, None) is None:
+            #     print(f' params[{species_i}] = {params[species_i]}')
+            #     continue
             
             # Single value given: constant, vertical profile
             if params.get(f'log_{species_i}_P', None) is not None:

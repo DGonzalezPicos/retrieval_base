@@ -301,7 +301,7 @@ isotopologues_dict = {
 }
 
 
-                      
+two_point_species = ['K']
 for log_k, v in opacity_params.items():
     k = log_k[4:]
     
@@ -318,7 +318,15 @@ for log_k, v in opacity_params.items():
             free_params[log_k] = v[0]
             
     if chem_mode == 'free' or chem_mode == 'freechem':
-        free_params[log_k] = v[0]
+        
+        if k in two_point_species:
+            free_params[log_k+'_1'] = [v[0][0], v[0][1][:-1] + '_1$']
+            free_params[log_k+'_2'] = [v[0][0], v[0][1][:-1] + '_2$']
+            free_params[log_k+'_P'] = [(-3.0, 1.0), r'$\log\ P$'+f'({k})$']
+        else:
+            free_params[log_k] = v[0]
+        
+        
         
 
 print(f' --> {free_params} free parameters')

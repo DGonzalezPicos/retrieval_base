@@ -25,15 +25,16 @@ target = 'TWA28'
 run = 'lbl12_G1G2G3_fastchem_0'
 w_set='NIRSpec'
 
-runs = dict(TWA28='lbl12_G1G2G3_fastchem_0',
-            TWA27A='lbl15_G1G2G3_fastchem_0',
+runs = dict(
+    TWA27A='lbl15_G1G2G3_fastchem_0',
+    TWA28='lbl12_G1G2G3_fastchem_0',
             )
 
 dw = 90
 xc = [1110, 2290, 4510]
-inset_regions = [[(xc[0]-dw, xc[0]+dw), (8e-15, 2.30e-14)],
+inset_regions = [[(xc[0]-dw, xc[0]+dw), (7.1e-15, 2.30e-14)],
                  [(xc[1]-dw, xc[1]+dw), (4.5e-15, 8.3e-15)],
-                 [(xc[2]-dw, xc[2]+dw), (8e-16, 1.35e-15)]]
+                 [(xc[2]-dw, xc[2]+dw), (8e-16, 1.42e-15)]]
 fig, ax, axins = create_insets(inset_regions)
 
 
@@ -60,7 +61,7 @@ for target in runs.keys():
     d_specs[target], m_specs[target] = load_data(target, runs[target])
 
 colors = dict(TWA28={'data':'k', 'model':'orange'},
-              TWA27A={'data':'brown', 'model':'green'})
+              TWA27A={'data':'#733b27', 'model':'#0a74da'})
 
 lw = 0.9
 def plot_chunk(d_spec, m_spec, idx=0, relative_residuals=False, colors=None, ls='-',
@@ -112,32 +113,25 @@ axins_disk.set_xlabel(r'Wavelength / nm')
 # add common xlabel 
 fig.text(0.5, -0.53, r'Wavelength / nm', ha='center', va='center')
 
-# create custom legend with names of the targets and disk contribution as dashed lines
-# legend_elements = [Line2D([0], [0], color=colors['TWA28']['data'], lw=lw, label='TWA28 data'),
-#                     Line2D([0], [0], color=colors['TWA28']['model'], lw=lw, label='TWA28 model', ls='-'),
-#                     Line2D([0], [0], color=colors['TWA28']['model'], lw=lw*1.7, label='TWA28 blackbody', ls='--'),
-#                     Line2D([0], [0], color=colors['TWA27A']['data'], lw=lw, label='TWA27A data'),
-#                     Line2D([0], [0], color=colors['TWA27A']['model'], lw=lw, label='TWA27A model', ls='-'),
-#                     Line2D([0], [0], color=colors['TWA27A']['model'], lw=lw*1.7, label='TWA27A blackbody', ls='--')]
-# ax[0].legend(handles=legend_elements, ncol=2, loc=(0.15, 0.7), fontsize=10)
 
 legend_elements_twa28 = [
-    Line2D([0], [0], color=colors['TWA28']['data'], lw=lw, label='Data'),
-    Line2D([0], [0], color=colors['TWA28']['model'], lw=lw, label='Model', ls='-'),
-    Line2D([0], [0], color=colors['TWA28']['model'], lw=lw*1.7, label='BB', ls='--')
+    Line2D([0], [0], color=colors['TWA28']['data'], lw=lw*1.6, label='Data', markevery=10, markersize=0.5),
+    Line2D([0], [0], color=colors['TWA28']['model'], lw=lw*1.6, label='Model', ls='-', markevery=10, markersize=0.5),
+    Line2D([0], [0], color=colors['TWA28']['model'], lw=lw*2.0, label='BB', ls='--', markevery=10, markersize=0.5)
 ]
 
 legend_elements_twa27a = [
-    Line2D([0], [0], color=colors['TWA27A']['data'], lw=lw, label='Data'),
-    Line2D([0], [0], color=colors['TWA27A']['model'], lw=lw, label='Model', ls='-'),
-    Line2D([0], [0], color=colors['TWA27A']['model'], lw=lw*1.7, label='BB', ls='--')
+    Line2D([0], [0], color=colors['TWA27A']['data'], lw=lw*1.6, label='Data', markevery=10, markersize=0.5),
+    Line2D([0], [0], color=colors['TWA27A']['model'], lw=lw*1.6, label='Model', ls='-', markevery=10, markersize=0.5),
+    Line2D([0], [0], color=colors['TWA27A']['model'], lw=lw*2.0, label='BB', ls='--', markevery=10, markersize=0.5)
 ]
 
-# Add legends to the plot, make title bold
-legend1 = ax[0].legend(handles=legend_elements_twa28, title='TWA 28', loc=(0.13, 0.64), fontsize=10, frameon=False,
-                       title_fontproperties={'weight': 'bold', 'size': 11})
-legend2 = ax[0].legend(handles=legend_elements_twa27a, title='TWA 27A', loc=(0.26, 0.64), fontsize=10, frameon=False,
-                       title_fontproperties={'weight': 'bold', 'size': 11})
+# Add legends to the plot with shorter handles
+
+legend1 = ax[0].legend(handles=legend_elements_twa27a, title='TWA 27A', loc=(0.13, 0.64), fontsize=10, frameon=False,
+                       title_fontproperties={'weight': 'bold', 'size': 11}, handlelength=1.3)
+legend2 = ax[0].legend(handles=legend_elements_twa28, title='TWA 28', loc=(0.26, 0.64), fontsize=10, frameon=False,
+                       title_fontproperties={'weight': 'bold', 'size': 11}, handlelength=1.3)
 
 # Add the legends to the axes
 ax[0].add_artist(legend1)
@@ -149,6 +143,155 @@ mark_inset(ax[0], axins[0], loc1=1, loc2=2, fc="none", ec="0.5", zorder=-1)
 mark_inset(ax[0], axins[1], loc1=1, loc2=2, fc="none", ec="0.5", zorder=-1)
 mark_inset(ax[0], axins[2], loc1=1, loc2=2, fc="none", ec="0.5", zorder=-1)
 
+# add text indicating position of lines in each axins
+lines = {'Na': [(1141, 1144, 1.08e-14, 9e-15, 'Na', 0)],
+         'K': [(1177, 1190, 8.8e-15, 7.7e-15, 'Na', 0)],
+        #  'CO': [(2294, 2362, 5.3e-15, 4.65e-15, 'CO', 1)],
+         '12CO': [(2294, 2298, 5.3e-15, 4.69e-15, 'Na', 1)],
+         '13CO': [(2345, 2349, 6.9e-15, 7.4e-15, 'Na', 1)],
+
+         }  # x-position, y-position for text
+
+# Function to create L-shaped annotation
+def add_arrow(ax, x, y, x_text, y_text, text, lw=1.0, alpha=0.4, fontsize=10,
+              style='Na'):
+    assert style in ['Na', 'CO'], f'style must be Na or CO, not {style}'
+    
+    if style == 'Na':
+        # Vertical line
+        ax.annotate(
+            text,  # Text label
+            xy=(x, y),  # Point to annotate
+            xytext=(x_text, y_text),
+            arrowprops=dict(
+                arrowstyle='-[',
+                color='black',
+                lw=lw,
+                alpha=alpha,
+                connectionstyle='angle,angleA=0,angleB=90,rad=0'
+            ),
+            ha='center',  # Horizontal alignment of text
+            va='center',  # Vertical alignment of text
+            fontsize=fontsize,
+            color='black'
+        )
+    elif style == 'CO':
+        
+        ax.annotate(
+        '',  # Text label
+        xy=(x, y),  # Point to annotate
+        xytext=(x_text, y_text), 
+        arrowprops=dict(arrowstyle='-', color='black', lw=lw,
+                        alpha=alpha,
+                        connectionstyle='bar,angle=0,fraction=0'),
+        
+        ha='center',  # Horizontal alignment of text
+        va='center',  # Vertical alignment of text
+        fontsize=10,
+        color='black'
+    )
+        ax.text(x*0.995, y_text*1.05, text, fontsize=fontsize, color='black', ha='center', va='center')
+            
+def draw_L(ax, x_start, y_start, x_mid, y_mid, x_end, y_end, close=False,
+           text=None, text_loc='left', line_args={}, text_args={}):
+    
+    color = line_args.pop('color', 'black')
+    linewidth = line_args.pop('linewidth', 2)
+    alpha = line_args.pop('alpha', 0.8)
+    ax.plot([x_start, x_mid], [y_start, y_mid], color=color, linewidth=linewidth, alpha=alpha)  # Horizontal segment
+    ax.plot([x_mid, x_end], [y_mid, y_end], color=color, linewidth=linewidth, alpha=alpha)      # Vertical segment
+    if close:
+        # add another vertical segment to complete [
+        ax.plot([x_end, x_end], [y_end, y_start], color=color, linewidth=linewidth, alpha=alpha)
+        
+    if text is not None:
+        assert text_loc in ['left', 'center', 'right']
+        x_text = {'left': x_start, 'center': x_mid + (x_end-x_mid)/2, 'right': x_end}[text_loc]
+        y_text = y_mid
+        xpad = text_args.pop('xpad', 0.01)
+        ypad = text_args.pop('ypad', 0.01)
+        ax.text(x_text+xpad, y_text+ypad, text, color='black', ha='center', va='center', 
+                transform=ax.transData, **text_args)
+    return ax
+
+def add_underline(ax, text, x, y, width=None, pad=0.1, **text_kwargs):
+    """Add text with a solid line below it
+    
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The axes to draw to
+    text : str
+        The text to draw
+    x : float
+        The x position of the text
+    y : float
+        The y position of the text
+    width : float, optional
+        The width of the line. If None, uses the text width
+    pad : float, optional
+        The padding between text and line in points
+    **text_kwargs
+        Additional arguments passed to ax.text()
+    """
+    # Draw the text
+    text_obj = ax.text(x, y, text, ha='center', va='bottom', **text_kwargs)
+    
+    # Get the bbox
+    fig = ax.get_figure()
+    fig.canvas.draw()
+    bbox = text_obj.get_window_extent()
+    
+    # Convert bbox to data coordinates
+    bbox_data = bbox.transformed(ax.transData.inverted())
+    
+    # Draw the line
+    line_y = bbox_data.y0 - pad * (bbox_data.y1 - bbox_data.y0)
+    if width is None:
+        x0 = bbox_data.x0
+        x1 = bbox_data.x1
+    else:
+        x0 = x - width/2
+        x1 = x + width/2
+    
+    ax.plot([x0, x1], [line_y, line_y], color=text_kwargs.get('color', 'black'),
+            linewidth=text_kwargs.get('linewidth', 1.0),
+            alpha=text_kwargs.get('alpha', 1.0))
+    
+    return text_obj
+
+draw_L(axins[0], 1135, 1.075e-14, 1135, 1.05e-14, 1146, 1.05e-14,close=True,
+       text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 0.00, 'ypad': -1e-15},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+draw_L(axins[0], 1168, 8.80e-15, 1168, 8.5e-15, 1183, 8.5e-15,close=True,
+       text='K', text_loc='center', text_args={'fontsize': 10, 'xpad': 0, 'ypad': -8e-16},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+
+draw_L(axins[1], (2203+2212)/2, 6.5e-15, (2203+2212)/2, 6e-15, 2214, 6e-15,close=False,
+       text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 11, 'ypad': 0.0},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+draw_L(axins[1], 2203, 6.53e-15, 2203, 6.5e-15, 2212, 6.5e-15,close=True,
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+
+draw_L(axins[1], 2293, 5.3e-15, 2293, 4.65e-15, 2370, 4.65e-15,close=False,
+       text=r'$^{12}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -23, 'ypad': 1.5e-16},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+
+draw_L(axins[1], 2344.5, 6.9e-15, 2344.5, 7.4e-15, 2376, 7.4e-15,close=False,
+       text=r'$^{13}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -10, 'ypad': 1.4e-16},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+
+draw_L(axins[2], 4440, 1.38e-15, 4450, 1.38e-15, 4500, 1.38e-15,close=False,
+       text='CO', text_loc='center', text_args={'fontsize': 10, 'xpad': 40, 'ypad': -5e-18},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+draw_L(axins[2], 4530, 1.38e-15, 4530, 1.38e-15, 4590, 1.38e-15,close=False,
+       text='',
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+# Add annotations for each line
+# for line in lines:
+#     for x1, x2, y1, y2, style, axins_id in lines[line]:
+#         # Parameters for the L-shaped arrow
+#         add_arrow(axins[axins_id], x1, y1, x2, y2, line, style=style)
 
 axins_disk.set_yscale('log')
 axins_disk.set_ylim(1e-16, 4e-14)
@@ -170,10 +313,14 @@ for band, color in zip(gratings.keys(), colors):
     xc = gratings[band][0] + (gratings[band][1] - gratings[band][0])/2
     if band == 'g140h':
         xc -= 90
-    axins_disk.text(xc, gratings_text[band], band.upper(), color=color, fontsize=10,
-                    ha='center', va='center', fontweight='bold')
+        add_underline(axins_disk, band.upper(), xc, gratings_text[band], 
+                     color=color, fontsize=10, fontweight='bold', width=100)
+    else:
+        axins_disk.text(xc, gratings_text[band], band.upper(), color=color, fontsize=10,
+                        ha='center', va='center', fontweight='bold')
 
 
+# axins[1].axvline(2345, color='red', lw=0.5)
 fig_name = path / 'twx_figs/fig1_spec.pdf'
 fig.savefig(fig_name, bbox_inches='tight')
 plt.close()

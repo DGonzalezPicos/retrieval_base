@@ -592,7 +592,7 @@ class pRT_model:
             # assert nans_wave == 0, f'[pRT_model.get_model_spectrum] line 573: {nans_wave} NaNs in self.d_wave[i,:]'
             # m_spec_i.flux = np.interp(self.d_wave[i,:], m_spec_i.wave, m_spec_i.flux)
             # m_spec_i.wave = self.d_wave[i,:]
-            m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True) # UNCOMMENT THIS AAFTER TESTING
+            m_spec_i.rebin_spectres(d_wave=self.d_wave[i,:], replace_wave_flux=True, numba=True)
             
             # end_sbr = time.time()   
             # print(f'Order {i} took {end_sbr-start_sbr:.3f} s to shift, broaden and rebin')

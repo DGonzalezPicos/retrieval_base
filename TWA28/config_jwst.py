@@ -17,7 +17,7 @@ grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 # chem_mode = 'fastchem'
 chem_mode = 'freechem'
 
-index = 0
+index = 1
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -208,13 +208,13 @@ if PT_mode  == 'RCE':
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.36), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_1':   [(0.04, 0.32), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_0':   [(0.04, 0.32), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_2':   [(0.04, 0.32), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
+    'dlnT_dlnP_RCE': [(0.04, 0.38), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_1':   [(0.04, 0.38), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_0':   [(0.04, 0.38), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_2':   [(0.04, 0.38), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_3':   [(0.00, 0.38), r'$\nabla_{T,3}$'],
+    'dlnT_dlnP_4':   [(0.00, 0.38), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(0.00, 0.38), r'$\nabla_{T,5}$'], # new points
     }
     
     free_params.update(RCE_params)
@@ -224,7 +224,7 @@ if PT_mode == 'fixed':
     constant_params['PT_target'] = target
     
 # Surface gravity
-log_g = [(2.5,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
+log_g = [(3.0,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
 # log_g = 4.49 # from PT_run
 if isinstance(log_g, float):
     constant_params['log_g'] = log_g
@@ -439,9 +439,9 @@ if PT_mode == 'fixed':
 ####################################################################################
 testing = True
 const_efficiency_mode = True
-sampling_efficiency = 0.05 if not testing else 0.10
+sampling_efficiency = 0.05 if not testing else 0.20
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 0.5
+evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1

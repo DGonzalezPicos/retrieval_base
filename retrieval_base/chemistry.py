@@ -191,6 +191,26 @@ class Chemistry:
             np.save(file_labels, np.array(list(self.VMRs_posterior.keys())))
             print(f'[Chemistry.get_VMRs_posterior] Saved VMRs posterior and envelopes to:\n {file_posterior}\n {file_envelopes}\n {file_labels}')
         return self
+    
+    
+    def two_point_profile(self, log_K_1, log_K_2, log_K_P):
+        """
+        Create a two-point profile for a given species
+        log_K_1: log(K) at the bottom of the atmosphere
+        log_K_2: log(K) at the top of the atmosphere
+        log_K_P: log(K) at the pressure where the profile changes
+        log_p: log(pressure)
+        """
+        log_p = np.log10(self.pressure)
+        assert log_p[0] < log_p[-1], 'Pressure must be in ascending order'
+        assert log_K_P < log_p.max(), f'log_K_P = {log_K_P} must be smaller than the bottom of the atmosphere ({log_p.max()})'
+        assert log_K_P > log_p.min(), f'log_K_P = {log_K_P} must be larger than the top of the atmosphere ({log_p.min()})'
+        top = log_p <= log_K_P
+        log_K_slope = (log_K_1 - log_K_2) / (log_K_P - log_p[0])
+        log_K = log_K_1 * np.ones(len(log_p))
+        log_K[top] = log_K_1 + log_K_slope * (log_p[top] - log_K_P)
+        K = 10**log_K
+        return K
 
 
 class FreeChemistry(Chemistry):
@@ -254,7 +274,19 @@ class FreeChemistry(Chemistry):
                 continue
             
             # Single value given: constant, vertical profile
-            VMR_i = params[species_i] * np.ones(self.n_atm_layers)
+            if params.get(f'log_{species_i}_P', None) is not None:
+                assert params.get(f'log_{species_i}_1', None) is not None, f'log_{species_i}_1 not given'
+                assert params.get(f'log_{species_i}_2', None) is not None, f'log_{species_i}_2 not given'
+                assert params.get(f'log_{species_i}_P', None) is not None, f'log_{species_i}_P not given'
+                # print(f' Creating two-point profile for {species_i}')
+                VMR_i = self.two_point_profile(params[f'log_{species_i}_1'], 
+                                               params[f'log_{species_i}_2'], 
+                                               params[f'log_{species_i}_P'])
+                
+                assert len(VMR_i) == self.n_atm_layers, f'len(VMR_i) = {len(VMR_i)} != len(pressure) = {self.n_atm_layers}'
+            else:
+                # print(f' Using constant profile for {species_i}')
+                VMR_i = params[species_i] * np.ones(self.n_atm_layers)
 
             # self.VMRs[species_i] = VMR_i
 
@@ -277,16 +309,18 @@ class FreeChemistry(Chemistry):
             self.mass_fractions[self.read_species_info('H2', 'pRT_name')] = self.mass_fractions['H2']
         
     
-        # self.mass_fractions['H-'] = 6e-9 # solar
-        self.mass_fractions['H-'] = params.get('H-', 6e-9) * np.ones(self.n_atm_layers)
-        # self.mass_fractions['e-'] = 1e-10# solar
-        self.mass_fractions['e-'] = 1e-10 * (self.mass_fractions['H-'] / 6e-9) * np.ones(self.n_atm_layers)
-        
-    
         # Add to the H-bearing species
         H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
         self.mass_fractions['H'] = H * self.mass_fractions['H2'] / self.read_species_info('H2', 'mass')
-
+        
+        if 'Hminus' in params.keys():
+            # print(f' [FastChemistry] params["Hminus"] = {params["Hminus"]}')
+            self.mass_fractions['H-'] = params['Hminus'] * np.ones(self.n_atm_layers)
+        else:
+            self.mass_fractions['H-'] = 6e-9 * np.ones(self.n_atm_layers)# FIXME: fix to solar value?
+            
+            
+        self.mass_fractions['e-'] = 5.48579909070e-4 * self.mass_fractions['H-']
         # print('[FreeChemistry.__call__] VMR_wo_H2 =', VMR_wo_H2)
         if VMR_wo_H2.any() > 1:
             # Other species are too abundant

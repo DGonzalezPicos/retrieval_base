@@ -766,6 +766,7 @@ class Retrieval:
     
     def evaluate_model(self, bestfit_params):
         # Evaluate the model with best-fitting parameters
+            
         for i, key_i in enumerate(self.Param.param_keys):
             # Update the Parameters instance
             self.Param.params[key_i] = bestfit_params[i]

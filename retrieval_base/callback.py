@@ -193,7 +193,7 @@ class CallBack:
             # xlim=(0, 3000),
         )
 
-        # Make a summary figure
+        # Make a summary figure #FIXME: uncomment this
         if self.plot_summary:
             self.fig_summary()
 
@@ -251,6 +251,7 @@ class CallBack:
                 figs.fig_VMR(self.Chem, 
                              ax=None,
                              pressure=self.Chem.pressure,
+                            species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species],
                              xlim=(1e-10, 5e-2),
                              showlegend=True,
                             fig_name=self.prefix+'plots/VMRs.pdf',
@@ -262,7 +263,7 @@ class CallBack:
             try: # FIXME: plotting C/O, Fe/H runs into issues...
                 figs.fig_chemistry(Chem=self.Chem,
                                         fig=None,
-                                        species_to_plot=None,
+                                        # species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species],
                                         color=self.bestfit_color,
                                         smooth=None,
                                         fontsize=14,

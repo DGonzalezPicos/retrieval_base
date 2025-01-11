@@ -100,7 +100,7 @@ for target in runs.keys():
     d_specs[target], m_specs[target] = load_data(target, runs[target])
 
 fig, ax = plt.subplots(4,1, figsize=(6, 5), gridspec_kw={'height_ratios': [2, 1, 0.6, 0.6]}, sharex=True)
-
+lw = 0.6
 def plot_chunk(d_spec, m_spec, idx=0, colors=None, ls='-', lw=1.0):
     
         
@@ -130,7 +130,7 @@ for target in runs.keys():
     residuals_no_slab = 0.0
     residuals_with_slab = 0.0
     for idx in [-2, -1]:
-        residuals_list = plot_chunk(d_spec, m_spec, idx=idx, colors=colors[target])
+        residuals_list = plot_chunk(d_spec, m_spec, idx=idx, colors=colors[target], lw=lw)
         residuals_no_slab += residuals_list[0]
         residuals_with_slab += residuals_list[1]
     MAD_dict[target] = [np.nanmedian(np.abs(residuals_no_slab)), np.nanmedian(np.abs(residuals_with_slab))]

@@ -736,7 +736,7 @@ class Retrieval:
 
             return flux_envelope
         
-    def PMN_analyze(self):
+    def PMN_analyze(self, map=True):
         
         # Set-up analyzer object
         try:
@@ -760,7 +760,10 @@ class Retrieval:
         posterior = posterior[:,:-1]
 
         # Read the parameters of the best-fitting model
-        bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+        if map:
+            bestfit_params = np.array(stats['modes'][0]['maximum a posterior'])
+        else:
+            bestfit_params = np.median(posterior, axis=0)
         # print(f' bestfit_params.shape = {bestfit_params.shape}')
         return bestfit_params, posterior
     

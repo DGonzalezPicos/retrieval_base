@@ -527,7 +527,7 @@ class Retrieval:
                 unquenched_mass_fractions_i = self.Chem.unquenched_mass_fractions
 
             # Return the temperature, mass fractions, unquenched, C/O ratio and Fe/H
-            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, self.Chem.CO, self.Chem.FeH
+            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, self.Chem.ratios['C/O'], self.Chem.ratios['[C/H]']
         
         # Compute the mass fractions posterior in parallel
         returned = self.parallel_for_loop(func, posterior)

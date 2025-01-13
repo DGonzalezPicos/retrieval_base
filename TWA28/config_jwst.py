@@ -14,8 +14,8 @@ lbl = 12
 # grating = 'g235h'
 gratings = ['g140h', 'g235h', 'g395h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
-# chem_mode = 'fastchem'
-chem_mode = 'freechem'
+chem_mode = 'fastchem'
+# chem_mode = 'freechem'
 
 index = 1
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}'
@@ -46,6 +46,7 @@ config_data = {
 
 # distance in pc to parallax
 parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
+Teff_dict = dict(TWA28=2382.0, TWA27A=2430.0)
 parallax_mas = parallax_mas_dict[target] # Gaia DR3, for TWA 28 (Manjavacas+2024)
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 
@@ -58,7 +59,7 @@ constant_params = {
     'epsilon_limb': 0.5, 
     # 'log_g': 3.5,
     'vsini':0.,
-    'T_star': 2430.0, # effective temperature in K, Cooper+2024 (Gaia DR3)
+    'T_star': Teff_dict[target], # effective temperature in K, Cooper+2024 (Gaia DR3)
     'M_star_Mjup': 20.0, # mass in Mjup, Manjavacas+2024
 
     # PT profile
@@ -155,7 +156,7 @@ species_wave = {
     'Ti': [[0, np.inf]],
     # 'Sc': [[0, 2600]],
     # 'Mg'
-    # 'Mn': [[1200, 1600]], # add this back for final retrieval
+    'Mn': [[1200, 1600]], # add this back for final retrieval
     'Fe': [[0, 2200]],
     # 'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
@@ -163,7 +164,7 @@ species_wave = {
     'FeH': [[0, 2400]],
     # 'V': [[0, 2300]],
     'CrH': [[0, 1650]],
-    # 'TiH': [[0, 2000]], # add this back for final retrieval
+    'TiH': [[0, 2000]], # add this back for final retrieval
     # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
     # 'AlH': [[1600, np.inf]],
     # 'MgH': [[0, 2000]],
@@ -246,6 +247,7 @@ else:
 fc_species_dict={
     'H2': 'H2',
     'He': 'He',
+    'H': 'H',
     'e-': 'e-',
     'H2O': 'H2O1',
     '12CO': 'C1O1',
@@ -301,7 +303,8 @@ isotopologues_dict = {
 }
 
 
-two_point_species = ['K']
+# two_point_species = ['K']
+two_point_species = []
 for log_k, v in opacity_params.items():
     k = log_k[4:]
     

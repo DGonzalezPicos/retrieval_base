@@ -211,6 +211,33 @@ class Chemistry:
         log_K[top] = log_K_1 + log_K_slope * (log_p[top] - log_K_P)
         K = 10**log_K
         return K
+    
+    def get_carbon_oxygen_ratio(self):
+        """
+        Get the C/O ratio from the mass fractions
+        """
+        
+        assert hasattr(self, 'mass_fractions'), 'Mass fractions not yet evaluated'
+        C, O, H = 0, 0, 0
+        MMW = self.mass_fractions['MMW']
+        for line_species_i in self.line_species:
+            species_i = self.pRT_name_dict.get(line_species_i, None)
+            mass_i = self.read_species_info(species_i, 'mass')
+            C_i, O_i, H_i = self.read_species_info(species_i, 'C'), self.read_species_info(species_i, 'O'), self.read_species_info(species_i, 'H')
+            VMR_i = self.mass_fractions[line_species_i] * (MMW / mass_i)
+            C += C_i * VMR_i
+            O += O_i * VMR_i
+            H += H_i * VMR_i
+            
+        H += 2. * self.mass_fractions['H2'] * (MMW / self.read_species_info('H2', 'mass'))
+        # H += 1. * self.mass_fractions['H'] * (MMW / self.read_species_info('H', 'mass'))
+        
+            
+        self.ratios = {'C/O': np.nanmean(C / O), 
+                    #    'C/H': np.mean(C / H), 
+                       '[C/H]': np.nanmean(np.log10(C/H)) - (8.46 - 12) # Asplund et al. (2021)
+                       }
+        return self.ratios
 
 
 class FreeChemistry(Chemistry):
@@ -311,7 +338,7 @@ class FreeChemistry(Chemistry):
     
         # Add to the H-bearing species
         H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
-        self.mass_fractions['H'] = H * self.mass_fractions['H2'] / self.read_species_info('H2', 'mass')
+        # self.mass_fractions['H'] = H * self.mass_fractions['H2'] / self.read_species_info('H2', 'mass')
         
         if 'Hminus' in params.keys():
             # print(f' [FastChemistry] params["Hminus"] = {params["Hminus"]}')
@@ -341,19 +368,24 @@ class FreeChemistry(Chemistry):
         self.mass_fractions['MMW'] = MMW
 
         # Compute the C/O ratio and metallicity
-        self.CO = C/O
+        # self.CO = C/O
 
-        log_CH_solar = 8.43 - 12 # Asplund et al. (2009)
-        # log_CH_solar = 8.46 - 12 # Asplund et al. (2021)
-        self.FeH = np.log10(C/H) - log_CH_solar
-        self.CH  = self.FeH
+        # log_CH_solar = 8.43 - 12 # Asplund et al. (2009)
+        # # log_CH_solar = 8.46 - 12 # Asplund et al. (2021)
+        # self.FeH = np.log10(C/H) - log_CH_solar
+        # self.CH  = self.FeH
 
-        self.CO = np.mean(self.CO)
-        self.FeH = np.mean(self.FeH)
-        self.CH = np.mean(self.CH)
+        # self.CO = np.mean(self.CO)
+        # self.FeH = np.mean(self.FeH)
+        # self.CH = np.mean(self.CH)
 
         # Remove certain species
         self.remove_species()
+        
+        self.ratios = {'C/O': np.nanmean(C / O), 
+                    #    'C/H': np.mean(C / H), 
+                       '[C/H]': np.nanmean(np.log10(C/H)) - (8.46 - 12) # Asplund et al. (2021)
+                       }
 
         return self.mass_fractions
     
@@ -481,23 +513,25 @@ class FastChemistry(Chemistry):
         VMR_wo_H2 = np.clip(VMR_wo_H2, a_max=0.99, a_min=0.001)
         # print(f' VMR_wo_H2 = {VMR_wo_H2}')
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2) # already an array
-        # self.mass_fractions['H2'] = np.clip(self.mass_fractions['H2'], a_max=0.99, a_min=0.01)
-        # self.mass_fractions['H']  = self.VMRs['H2']
-        # assert all(VMR_wo_H2) <= 1.0, f'VM
-        # R_wo_H2 = {VMR_wo_H2} > 1.0'
-        # print(f' VMR_wo_H2 = {VMR_wo_H2}')
-        # VMR_wo_H2 = np.clip(VMR_wo_H2, a_max=0.99, a_min=0.0)
-        H += self.read_species_info('H2', 'H') * (1 - VMR_wo_H2)
-        self.mass_fractions['H'] = H * self.mass_fractions['H2'] / self.read_species_info('H2', 'mass')
-        # self.mass_fractions['H'] = np.clip(self.mass_fractions['H'], a_max=0.99, a_min=0.01)
-        # mass of electron in amu
-        mass_e = 5.48579909070e-4
-        self.mass_fractions['e-'] = mass_e * self.VMRs['e-']
-        if 'Hminus' in params.keys():
-            # print(f' [FastChemistry] params["Hminus"] = {params["Hminus"]}')
-            self.mass_fractions['H-'] = params['Hminus'] * np.ones(self.n_atm_layers)
-        else:
-            self.mass_fractions['H-'] = 6e-9 * np.ones(self.n_atm_layers)# FIXME: fix to solar value?
+        self.mass_fractions['H'] = self.VMRs.get('H', 1e-20 * np.ones(self.n_atm_layers))
+        
+        # Add number density (=vmr) of hydrogen atoms from H2 and H
+        H += 2.0 * (1 - VMR_wo_H2)
+        H += self.mass_fractions['H']
+        
+        # H- and electron density
+        self.mass_fractions['e-'] = 5.485799e-4 * self.VMRs.get('e-', 1e-20 * np.ones(self.n_atm_layers))
+        self.mass_fractions['H-'] = params.get('Hminus', 1e-20) * np.ones(self.n_atm_layers)
+        
+        
+        # # mass of electron in amu
+        # mass_e = 5.48579909070e-4
+        # self.mass_fractions['e-'] = mass_e * self.VMRs['e-']
+        # if 'Hminus' in params.keys():
+        #     # print(f' [FastChemistry] params["Hminus"] = {params["Hminus"]}')
+        #     self.mass_fractions['H-'] = params['Hminus'] * np.ones(self.n_atm_layers)
+        # else:
+        #     self.mass_fractions['H-'] = 6e-9 * np.ones(self.n_atm_layers)# FIXME: fix to solar value?
         # self.mass_fractions['H-'] = 6e-9 * (self.VMRs['e-'] / 6e-9) # scale with respect to solar using e-
         # self.mass_fractions['e-'] = self.VMRs['e-']
         # MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
@@ -519,6 +553,11 @@ class FastChemistry(Chemistry):
             self.mass_fractions[line_species_i] /= MMW
         # pRT requires MMW in mass fractions dictionary
         self.mass_fractions['MMW'] = MMW
+        
+        self.ratios = {'C/O': np.nanmean(C / O), 
+                    #    'C/H': np.mean(C / H), 
+                       '[C/H]': np.nanmean(np.log10(C/H)) - (8.46 - 12) # Asplund et al. (2021)
+                       }
         # MMW_mean = np.mean( 
         return self.mass_fractions
     

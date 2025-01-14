@@ -401,7 +401,8 @@ class FreeChemistry(Chemistry):
     
 class FastChemistry(Chemistry):
     isotopologues_dict = {'12CO': ['13CO', 'C18O', 'C17O'], 
-                    'H2O': ['H2O_181', 'H2O_171']}
+                    'H2O': ['H2O_181', 'H2O_171'],
+                    'TiO': ['46TiO', '47TiO', '49TiO']}
     # reverse dictionary so every value is a key
     isotopologues_dict_rev = {value: key for key, values in isotopologues_dict.items() for value in values}
     isotopologues = list(isotopologues_dict_rev.keys())

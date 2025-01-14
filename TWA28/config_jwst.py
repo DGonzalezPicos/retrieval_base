@@ -118,6 +118,7 @@ opacity_params = {
     'log_Li': ([(-14,-5), r'$\log\ \mathrm{Li}$'], 'Li_high'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso_Sam'),
+    # 'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
     'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
@@ -131,6 +132,7 @@ opacity_params = {
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
     'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    'log_46TiO': ([(-14,-2), r'$\log\ \mathrm{46TiO}$'], 'TiO_46_Exomol_McKemmish'),
     'log_ZrO': ([(-14,-2), r'$\log\ \mathrm{ZrO}$'], 'ZrO_ZorrO_main_iso'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
@@ -149,7 +151,7 @@ species_wave = {
     
     
     'HF': [[1200, np.inf]],
-    # 'HCl': [[3050, np.inf]],
+    'HCl': [[0, np.inf]], # FIXME: check this
 
     'CO2': [[3700, 5400]],
     # 'HCN': [[0.0, np.inf]],
@@ -167,12 +169,13 @@ species_wave = {
     'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
     # 'Cs': [[0, 1200], [1300, 1600],[2850,4000]],
+    'SH': [[0, np.inf]], # FIXME: check this
     'FeH': [[0, 2400]],
     # 'V': [[0, 2300]],
     'CrH': [[0, 1650]],
     'TiH': [[0, 2000]], # add this back for final retrieval
     'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
-    'AlH': [[1600, np.inf]],
+    'AlH': [[1400, np.inf]],
     'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     'ScH':[[0,1900.0]], # add this back for final retrieval
@@ -181,8 +184,12 @@ species_wave = {
     'TiO': [[0,np.inf]],
     '46TiO': [[0, np.inf]],
     'SiO': [[2650,3100],[3900, 5200]],
-    # 'H2S': [[1800, np.inf]],
+    'H2S': [[1250, np.inf]],
 }
+
+# include_only = ['FeH', 'H2O'] # FIXME: manually add species here
+# if len(include_only) > 0:
+#     species_wave = {k:v for k,v in species_wave.items() if k in include_only}
     
     
 all_species = [k[4:] for k in opacity_params.keys()]
@@ -307,9 +314,9 @@ isotopologues_dict = {
                         'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
                         'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
                         'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.), r'$\log\ \mathrm{H_2^{16}O/H_2^{18}O}$']],
-                        '46TiO': ['log_TiO/46TiO', [(1.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{46}TiO}$']],
-                        '47TiO': ['log_TiO/47TiO', [(1.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{47}TiO}$']],
-                        '49TiO': ['log_TiO/49TiO', [(1.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{49}TiO}$']],
+                        '46TiO': ['log_TiO/46TiO', [(0.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{46}TiO}$']],
+                        '47TiO': ['log_TiO/47TiO', [(0.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{47}TiO}$']],
+                        '49TiO': ['log_TiO/49TiO', [(0.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{49}TiO}$']],
 }
 
 # two_point_species = ['K']

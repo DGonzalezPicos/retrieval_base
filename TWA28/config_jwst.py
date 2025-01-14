@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 target = 'TWA28'
-lbl = 10
+lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
@@ -40,8 +40,8 @@ config_data = {
         'log_P_range': (-5,2),
         'n_atm_layers': 60, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
-        'T_cutoff': (1000.0, 3600.0), # DGP (2024-10-14): new parameter
-        'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
+        'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
+        'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
         }, 
     }
 
@@ -149,16 +149,16 @@ species_wave = {
     'H2O_181': [[0.0, np.inf]],
     
     
-    'HF': [[1200, np.inf]],
+    'HF': [[1200, 3550.0]],
     # 'HCl': [[0, np.inf]], # FIXME: check this
 
     'CO2': [[3700, 5400]],
     # 'HCN': [[0.0, np.inf]],
     
-    'Na': [[0, np.inf]],
+    'Na': [[0, 2400.0], [3500, 4100.0]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
-    'K': [[0, np.inf]],
-    'Ca': [[0, 2400]],
+    'K': [[0, 1900.0], [2440, 4100]],
+    'Ca': [[0, 2400.0]],
     'Ti': [[0, 2500.0]],
     # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
     # 'Mg': [[0, 2600]],
@@ -178,9 +178,9 @@ species_wave = {
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # add this back for final retrieval
-    'OH' : [[0, np.inf]],
-    'VO': [[0, 1800],[4800, 5300]],
-    'TiO': [[0,np.inf]],
+    'OH' : [[0, 4730.0]],
+    'VO': [[0, 1450.0]],
+    'TiO': [[0,1450]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,3100],[3900, 5200]],
     'H2S': [[1250, np.inf]],

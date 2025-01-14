@@ -7,25 +7,25 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 target = 'TWA28'
-lbl = 12
+lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
-# gratings = ['g140h', 'g235h', 'g395h']
-gratings = ['g140h']
+gratings = ['g140h', 'g235h', 'g395h']
+# gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
 
-index = 1
+index = 0
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 # Define PT profile
 PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
-# PT_mode = 'RCE'
-PT_mode = 'fixed'
+PT_mode = 'RCE'
+# PT_mode = 'fixed'
 PT_run = 'lbl12_G1G2G3_fastchem_1' # ignored if PT_mode != 'fixed'
 
 
@@ -40,8 +40,8 @@ config_data = {
         'log_P_range': (-5,2),
         'n_atm_layers': 60, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
-        'T_cutoff': (1000.0, 3600.0), # DGP (2024-10-14): new parameter
-        'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
+        'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
+        'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
         }, 
     }
 
@@ -70,8 +70,6 @@ constant_params = {
     # 'log_12CO': -3.52,
     # 'log_H2O': -3.63,
     # 'rv': 12.16,
-    'rv': 11.52, # FIXME: only keep it fixed for G140 retrieval
-    'alpha_12CO': 0.69, # FIXME: only keep it fixed for G140 retrieval
     # 'alpha_H2O': 0.85,
 }
 
@@ -131,8 +129,9 @@ opacity_params = {
     'log_H2': ([(-12,-0.01), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
-    'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
-    'log_46TiO': ([(-14,-2), r'$\log\ \mathrm{46TiO}$'], 'TiO_46_Exomol_McKemmish'),
+    # 'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'), # (2025-01-14): change to ALL_ISO
+    'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_all_iso_Exomol_McKemmish'), # (2025-01-14): change to ALL_ISO
+    # 'log_46TiO': ([(-14,-2), r'$\log\ \mathrm{46TiO}$'], 'TiO_46_Exomol_McKemmish'),
     'log_ZrO': ([(-14,-2), r'$\log\ \mathrm{ZrO}$'], 'ZrO_ZorrO_main_iso'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
@@ -150,39 +149,39 @@ species_wave = {
     'H2O_181': [[0.0, np.inf]],
     
     
-    'HF': [[1200, np.inf]],
-    'HCl': [[0, np.inf]], # FIXME: check this
+    'HF': [[1200, 3550.0]],
+    # 'HCl': [[0, np.inf]], # FIXME: check this
 
     'CO2': [[3700, 5400]],
     # 'HCN': [[0.0, np.inf]],
     
-    'Na': [[0, np.inf]],
+    'Na': [[0, 2400.0], [3500, 4100.0]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
-    'K': [[0, np.inf]],
-    'Ca': [[0, 2400]],
-    'Ti': [[0, np.inf]],
+    'K': [[0, 1900.0], [2440, 4100]],
+    'Ca': [[0, 2400.0]],
+    'Ti': [[0, 2500.0]],
     # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
-    'Mg': [[0, 2600]],
+    # 'Mg': [[0, 2600]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
-    'Mn': [[0, np.inf]],
+    'Mn': [[0, 2400.0]],
     'Fe': [[0, 2200]],
     'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
     # 'Cs': [[0, 1200], [1300, 1600],[2850,4000]],
-    'SH': [[0, np.inf]], # FIXME: check this
-    'FeH': [[0, 2400]],
+    # 'SH': [[0, np.inf]],
+    'FeH': [[0, 1850]],
     # 'V': [[0, 2300]],
     'CrH': [[0, 1650]],
-    'TiH': [[0, 2000]], # add this back for final retrieval
-    'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
-    'AlH': [[1400, np.inf]],
-    'MgH': [[0, 2000]],
+    # 'TiH': [[0, 2000]], # add this back for final retrieval
+    # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
+    # 'AlH': [[1400, np.inf]],
+    # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
-    'ScH':[[0,1900.0]], # add this back for final retrieval
-    'OH' : [[0, np.inf]],
-    'VO': [[0, 1800],[4800, 5300]],
-    'TiO': [[0,np.inf]],
-    '46TiO': [[0, np.inf]],
+    # 'ScH':[[0,1900.0]], # add this back for final retrieval
+    'OH' : [[0, 4730.0]],
+    'VO': [[0, 1450.0]],
+    'TiO': [[0,1450]],
+    # '46TiO': [[0, np.inf]],
     'SiO': [[2650,3100],[3900, 5200]],
     'H2S': [[1250, np.inf]],
 }
@@ -466,9 +465,9 @@ if PT_mode == 'fixed':
 ####################################################################################
 testing = True
 const_efficiency_mode = True
-sampling_efficiency = 0.05 if not testing else 0.20
+sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
+evidence_tolerance = 0.5 if not testing else 0.5
 n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1

@@ -12,7 +12,8 @@ lbl = 12
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
-gratings = ['g140h', 'g235h', 'g395h']
+# gratings = ['g140h', 'g235h', 'g395h']
+gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
@@ -23,9 +24,9 @@ prefix = f'./retrieval_outputs/{run}/test_'
 
 # Define PT profile
 PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
-PT_mode = 'RCE'
-# PT_mode = 'fixed'
-PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
+# PT_mode = 'RCE'
+PT_mode = 'fixed'
+PT_run = 'lbl12_G1G2G3_fastchem_1' # ignored if PT_mode != 'fixed'
 
 
 config_data = {
@@ -69,6 +70,9 @@ constant_params = {
     # 'log_12CO': -3.52,
     # 'log_H2O': -3.63,
     # 'rv': 12.16,
+    'rv': 11.52, # FIXME: only keep it fixed for G140 retrieval
+    'alpha_12CO': 0.69, # FIXME: only keep it fixed for G140 retrieval
+    # 'alpha_H2O': 0.85,
 }
 
 
@@ -113,7 +117,7 @@ opacity_params = {
     'log_V':  ([(-14,-5), r'$\log\ \mathrm{V}$'],  'V_high'),
     'log_Li': ([(-14,-5), r'$\log\ \mathrm{Li}$'], 'Li_high'),
     
-    'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
+    'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso_Sam'),
     'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
     'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
@@ -151,29 +155,32 @@ species_wave = {
     # 'HCN': [[0.0, np.inf]],
     
     'Na': [[0, np.inf]],
-    'K': [[0, 1900], [2800, 3100], [3600,4100]],
+    # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
+    'K': [[0, np.inf]],
     'Ca': [[0, 2400]],
     'Ti': [[0, np.inf]],
-    # 'Sc': [[0, 2600]],
-    # 'Mg'
-    'Mn': [[1200, 1600]], # add this back for final retrieval
+    # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
+    'Mg': [[0, 2600]],
+    # 'Mn': [[1200, 1600]], # add this back for final retrieval
+    'Mn': [[0, np.inf]],
     'Fe': [[0, 2200]],
-    # 'Al': [[1000, 1800]],
+    'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
     # 'Cs': [[0, 1200], [1300, 1600],[2850,4000]],
     'FeH': [[0, 2400]],
     # 'V': [[0, 2300]],
     'CrH': [[0, 1650]],
     'TiH': [[0, 2000]], # add this back for final retrieval
-    # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
-    # 'AlH': [[1600, np.inf]],
-    # 'MgH': [[0, 2000]],
+    'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
+    'AlH': [[1600, np.inf]],
+    'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     'ScH':[[0,1900.0]], # add this back for final retrieval
     'OH' : [[0, np.inf]],
     'VO': [[0, 1800],[4800, 5300]],
     'TiO': [[0,np.inf]],
-    'SiO': [[2650,3100],[4000, 5200]],
+    '46TiO': [[0, np.inf]],
+    'SiO': [[2650,3100],[3900, 5200]],
     # 'H2S': [[1800, np.inf]],
 }
     
@@ -241,8 +248,8 @@ if ('g235h' in gratings) or ('g395h' in gratings):
     
 else:
     # add disk params from best fit of g235h+g395h
-    constant_params['R_d'] =  15.66 # from g235h+g395h
-    constant_params['T_d'] =  575.35 # from g235h+g395h
+    constant_params['R_d'] =  15.87 # from lbl12_G1G2G3_fastchem_1
+    constant_params['T_d'] =  605.77 # from lbl12_G1G2G3_fastchem_1
 
 fc_species_dict={
     'H2': 'H2',
@@ -300,8 +307,10 @@ isotopologues_dict = {
                         'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
                         'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
                         'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.), r'$\log\ \mathrm{H_2^{16}O/H_2^{18}O}$']],
+                        '46TiO': ['log_TiO/46TiO', [(1.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{46}TiO}$']],
+                        '47TiO': ['log_TiO/47TiO', [(1.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{47}TiO}$']],
+                        '49TiO': ['log_TiO/49TiO', [(1.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{49}TiO}$']],
 }
-
 
 # two_point_species = ['K']
 two_point_species = []

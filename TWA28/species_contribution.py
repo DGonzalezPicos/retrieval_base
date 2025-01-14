@@ -16,7 +16,8 @@ config_file = 'config_jwst.txt'
 target = 'TWA28'
 # run = None
 # run = 'lbl15_G2_4'
-run = 'lbl12_G1G2G3_fastchem_1'
+# run = 'lbl12_G1G2G3_fastchem_1'
+run = 'lbl12_G1_fastchem_1'
 w_set='NIRSpec'
 
 cwd = os.getcwd()

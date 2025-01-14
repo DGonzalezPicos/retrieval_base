@@ -24,7 +24,7 @@ TiH,TiH_main_iso,48.87484,C2,TiH,0.0,0.0,1.0
 AlH,AlH_AloHa_main_iso,27.989379000000003,C3,AlH,0.0,0.0,1.0
 MgH,MgH_main_iso,25.31284,C4,MgH,0.0,0.0,1.0
 ScH,ScH_main_iso,45.963748,C5,ScH,0.0,0.0,1.0
-TiO,TiO_48_Exomol_McKemmish,63.866,C13,$^{48}$TiO,0.0,1.0,0.0
+TiO,TiO_all_iso_Exomol_McKemmish,63.866,C13,TiO,0.0,1.0,0.0
 46TiO,TiO_46_Exomol_McKemmish,61.866,C14,$^{46}$TiO,0.0,1.0,0.0
 47TiO,TiO_47_Exomol_McKemmish,62.866,C15,$^{47}$TiO,0.0,1.0,0.0
 49TiO,TiO_49_Exomol_McKemmish,64.866,C16,$^{49}$TiO,0.0,1.0,0.0

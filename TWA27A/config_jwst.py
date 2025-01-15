@@ -7,14 +7,16 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 target = 'TWA27A'
-lbl = 15
+lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
 # grating = 'g235h'
 gratings = ['g140h', 'g235h', 'g395h']
+# gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
+# chem_mode = 'freechem'
 
 index = 0
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}'
@@ -24,7 +26,7 @@ prefix = f'./retrieval_outputs/{run}/test_'
 PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
 PT_mode = 'RCE'
 # PT_mode = 'fixed'
-PT_run = 'lbl15_G2G3_8' # ignored if PT_mode != 'fixed'
+PT_run = 'lbl12_G1G2G3_fastchem_1' # ignored if PT_mode != 'fixed'
 
 
 config_data = {
@@ -39,12 +41,13 @@ config_data = {
         'n_atm_layers': 60, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
-        'P_cutoff': (1e-4, 1e1), # DGP (2024-10-14): new parameter
+        'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
         }, 
     }
 
 # distance in pc to parallax
 parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
+Teff_dict = dict(TWA28=2382.0, TWA27A=2430.0)
 parallax_mas = parallax_mas_dict[target] # Gaia DR3, for TWA 28 (Manjavacas+2024)
 d_pc = 1e3 / parallax_mas # ~ 59.17 pc
 
@@ -57,7 +60,7 @@ constant_params = {
     'epsilon_limb': 0.5, 
     # 'log_g': 3.5,
     'vsini':0.,
-    'T_star': 2430.0, # effective temperature in K, Cooper+2024 (Gaia DR3)
+    'T_star': Teff_dict[target], # effective temperature in K, Cooper+2024 (Gaia DR3)
     'M_star_Mjup': 20.0, # mass in Mjup, Manjavacas+2024
 
     # PT profile
@@ -67,6 +70,7 @@ constant_params = {
     # 'log_12CO': -3.52,
     # 'log_H2O': -3.63,
     # 'rv': 12.16,
+    # 'alpha_H2O': 0.85,
 }
 
 
@@ -79,7 +83,7 @@ opacity_params = {
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
     'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
     
-    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso_Sam'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     # 'log_HDO': ([(-14,-2), r'$\log\ \mathrm{HDO}$'], 'HDO_voronin'),
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_main_iso_new'), # DGP (2024-07-16): accidentally removed 
@@ -97,8 +101,8 @@ opacity_params = {
     'log_SH': ([(-14,-2), r'$\log\ \mathrm{SH}$'], 'SH_main_iso'),
     
     
-    'log_Na': ([(-14,-4), r'$\log\ \mathrm{Na}$'], 'Na_allard_high'),
-    'log_K':  ([(-14,-4), r'$\log\ \mathrm{K}$'],  'K_high'),
+    'log_Na': ([(-14,-4), r'$\log\ \mathrm{Na}$'], 'Na_Sam'),
+    'log_K':  ([(-14,-4), r'$\log\ \mathrm{K}$'],  'K_static'),
     'log_Ca': ([(-14,-4), r'$\log\ \mathrm{Ca}$'], 'Ca_high'),
     'log_Ti': ([(-14,-4), r'$\log\ \mathrm{Ti}$'], 'Ti_high'),
     'log_Sc': ([(-14,-5), r'$\log\ \mathrm{Sc}$'], 'Sc_high'),
@@ -112,6 +116,7 @@ opacity_params = {
     'log_Li': ([(-14,-5), r'$\log\ \mathrm{Li}$'], 'Li_high'),
     
     'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso_Sam'),
+    # 'log_FeH': ([(-14,-2), r'$\log\ \mathrm{FeH}$'], 'FeH_main_iso'),
     'log_CrH': ([(-14,-2), r'$\log\ \mathrm{CrH}$'], 'CrH_main_iso'),
     'log_TiH': ([(-14,-2), r'$\log\ \mathrm{TiH}$'], 'TiH_main_iso'),
     'log_CaH': ([(-14,-2), r'$\log\ \mathrm{CaH}$'], 'CaH_XAB_main_iso'),
@@ -124,7 +129,9 @@ opacity_params = {
     'log_H2': ([(-12,-0.01), r'$\log\ \mathrm{H_2}$'], 'H2_main_iso'),
     
     'log_VO': ([(-14,-2), r'$\log\ \mathrm{VO}$'], 'VO_HyVO_main_iso'), # DGP (2024-07-16): 3.4 um bump?
-    'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'),
+    # 'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish'), # (2025-01-14): change to ALL_ISO
+    'log_TiO': ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_all_iso_Exomol_McKemmish'), # (2025-01-14): change to ALL_ISO
+    # 'log_46TiO': ([(-14,-2), r'$\log\ \mathrm{46TiO}$'], 'TiO_46_Exomol_McKemmish'),
     'log_ZrO': ([(-14,-2), r'$\log\ \mathrm{ZrO}$'], 'ZrO_ZorrO_main_iso'),
     'log_SiO': ([(-14,-2), r'$\log\ \mathrm{SiO}$'], 'SiO_SiOUVenIR_main_iso'),
     'log_C2H2': ([(-14,-2), r'$\log\ \mathrm{C_2H_2}$'], 'C2H2_main_iso'),
@@ -142,38 +149,46 @@ species_wave = {
     'H2O_181': [[0.0, np.inf]],
     
     
-    'HF': [[1200, np.inf]],
-    # 'HCl': [[3050, np.inf]],
+    'HF': [[1200, 3550.0]],
+    # 'HCl': [[0, np.inf]], # FIXME: check this
 
     'CO2': [[3700, 5400]],
     # 'HCN': [[0.0, np.inf]],
     
-    'Na': [[0, np.inf]],
-    'K': [[0, 1900], [2800, 3100], [3600,4100]],
-    'Ca': [[0, 2400]],
-    'Ti': [[0, np.inf]],
-    # 'Sc': [[0, 2600]],
-    # 'Mg'
+    'Na': [[0, 2400.0], [3500, 4100.0]],
+    # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
+    'K': [[0, 1900.0], [2440, 4100]],
+    'Ca': [[0, 2400.0]],
+    'Ti': [[0, 2500.0]],
+    # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
+    # 'Mg': [[0, 2600]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
+    # 'Mn': [[0, 2400.0]],
     'Fe': [[0, 2200]],
-    # 'Al': [[1000, 1800]],
+    'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
     # 'Cs': [[0, 1200], [1300, 1600],[2850,4000]],
-    'FeH': [[0, 2400]],
+    # 'SH': [[0, np.inf]],
+    'FeH': [[0, 1850]],
     # 'V': [[0, 2300]],
     'CrH': [[0, 1650]],
     # 'TiH': [[0, 2000]], # add this back for final retrieval
     # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
-    # 'AlH': [[1600, np.inf]],
+    # 'AlH': [[1400, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # add this back for final retrieval
-    'OH' : [[0, np.inf]],
-    'VO': [[0, 1800],[4800, 5300]],
-    'TiO': [[0,np.inf]],
-    'SiO': [[2650,3100],[4000, 5200]],
-    # 'H2S': [[1800, np.inf]],
+    'OH' : [[0, 4730.0]],
+    'VO': [[0, 1450.0]],
+    'TiO': [[0,1450]],
+    # '46TiO': [[0, np.inf]],
+    'SiO': [[2650,3100],[3900, 5200]],
+    'H2S': [[1250, np.inf]],
 }
+
+# include_only = ['FeH', 'H2O'] # FIXME: manually add species here
+# if len(include_only) > 0:
+#     species_wave = {k:v for k,v in species_wave.items() if k in include_only}
     
     
 all_species = [k[4:] for k in opacity_params.keys()]
@@ -207,13 +222,13 @@ if PT_mode  == 'RCE':
     # 'dlog_P' : [(0.2, 1.6), r'$\Delta\log\ P$'],
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.36), r'$\nabla_{T,RCE}$'],
-    'dlnT_dlnP_1':   [(0.04, 0.32), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_0':   [(0.04, 0.32), r'$\nabla_{T,0}$'],
-    'dlnT_dlnP_2':   [(0.04, 0.32), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
-    'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
+    'dlnT_dlnP_RCE': [(0.04, 0.38), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_1':   [(0.04, 0.38), r'$\nabla_{T,1}$'],
+    'dlnT_dlnP_0':   [(0.04, 0.38), r'$\nabla_{T,0}$'],
+    'dlnT_dlnP_2':   [(0.04, 0.38), r'$\nabla_{T,2}$'],
+    'dlnT_dlnP_3':   [(0.00, 0.38), r'$\nabla_{T,3}$'],
+    'dlnT_dlnP_4':   [(0.00, 0.38), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_5':   [(0.00, 0.38), r'$\nabla_{T,5}$'], # new points
     }
     
     free_params.update(RCE_params)
@@ -223,7 +238,7 @@ if PT_mode == 'fixed':
     constant_params['PT_target'] = target
     
 # Surface gravity
-log_g = [(2.5,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
+log_g = [(3.0,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
 # log_g = 4.49 # from PT_run
 if isinstance(log_g, float):
     constant_params['log_g'] = log_g
@@ -239,12 +254,13 @@ if ('g235h' in gratings) or ('g395h' in gratings):
     
 else:
     # add disk params from best fit of g235h+g395h
-    constant_params['R_d'] =  15.66 # from g235h+g395h
-    constant_params['T_d'] =  575.35 # from g235h+g395h
+    constant_params['R_d'] =  15.87 # from lbl12_G1G2G3_fastchem_1
+    constant_params['T_d'] =  605.77 # from lbl12_G1G2G3_fastchem_1
 
 fc_species_dict={
     'H2': 'H2',
     'He': 'He',
+    'H': 'H',
     'e-': 'e-',
     'H2O': 'H2O1',
     '12CO': 'C1O1',
@@ -297,10 +313,13 @@ isotopologues_dict = {
                         'C18O': ['log_12CO/C18O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{18}O}$']],
                         'C17O': ['log_12CO/C17O', [(1.5, 4.), r'$\log\ \mathrm{C^{16}O/C^{17}O}$']],
                         'H2O_181': ['log_H2O/H2O_181', [(1.5, 4.), r'$\log\ \mathrm{H_2^{16}O/H_2^{18}O}$']],
+                        '46TiO': ['log_TiO/46TiO', [(0.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{46}TiO}$']],
+                        '47TiO': ['log_TiO/47TiO', [(0.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{47}TiO}$']],
+                        '49TiO': ['log_TiO/49TiO', [(0.0, 2.5), r'$\log\ \mathrm{^{48}TiO/^{49}TiO}$']],
 }
 
-
-                      
+# two_point_species = ['K']
+two_point_species = []
 for log_k, v in opacity_params.items():
     k = log_k[4:]
     
@@ -316,8 +335,16 @@ for log_k, v in opacity_params.items():
         else:
             free_params[log_k] = v[0]
             
-    if chem_mode == 'free':
-        free_params[log_k] = v[0]
+    if chem_mode == 'free' or chem_mode == 'freechem':
+        
+        if k in two_point_species:
+            free_params[log_k+'_1'] = [v[0][0], v[0][1][:-1] + '_1$']
+            free_params[log_k+'_2'] = [v[0][0], v[0][1][:-1] + '_2$']
+            free_params[log_k+'_P'] = [(-3.0, 1.0), r'$\log\ P$'+f'({k})$']
+        else:
+            free_params[log_k] = v[0]
+        
+        
         
 
 print(f' --> {free_params} free parameters')

@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 
 import os
 import matplotlib.pyplot as plt
-
+import pathlib
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
 
 path = af.get_path(return_pathlib=True)
+path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 w_set='NIRSpec'
@@ -71,18 +72,21 @@ def load_data(target, run, cache=True):
 # three columns, one row, histograms with only the bottom axis
 fig, ax = plt.subplots(1, 3, figsize=(10, 3), sharex='col')
 axes = ax.flatten()
+axes_dict = {'C/O': ax[0], '[C/H]': ax[1], '12C/13C': ax[2]}
 # plot the histograms
 bins = 20
 alpha = 0.65
 
-def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, edge=True, density=True):
+def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, edge=True, density=True, label=None):
     
     htypes = ['stepfilled', 'step']
     for ht in htypes:
-        ec = 'k' if ht=='step' else None
-        ax[0].hist(CO_posterior, bins=bins, alpha=alpha, label='CO', color=color, density=density, histtype=ht, edgecolor=ec)
-        ax[1].hist(CH_posterior, bins=bins, alpha=alpha, label='CH', color=color, density=density, histtype=ht, edgecolor=ec)
-        ax[2].hist(isotope_ratios['12C/13C'], bins=bins, alpha=alpha, label='12C/13C', color=color, density=density, histtype=ht, edgecolor=ec)
+        # ec = 'k' if ht=='step' else None
+        ec = 'k'
+        label = label if ht == 'stepfilled' else None
+        ax[0].hist(CO_posterior, bins=bins, alpha=alpha, color=color, density=density, histtype=ht, edgecolor=ec)
+        ax[1].hist(CH_posterior, bins=bins, alpha=alpha, color=color, density=density, histtype=ht, edgecolor=ec)
+        ax[2].hist(isotope_ratios['12C/13C'], bins=bins, alpha=alpha, color=color, label=label, density=density, histtype=ht, edgecolor=ec)
 
 for t, target in enumerate(runs.keys()):
     CO_posterior, CH_posterior, VMRs_posterior = load_data(target, runs[target], cache=True)
@@ -90,11 +94,74 @@ for t, target in enumerate(runs.keys()):
     isotope_ratios = {'12C/13C': VMRs_posterior['12CO'] / VMRs_posterior['13CO'],
     }
 
-    plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'], edge=True, density=True)
+    plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'], edge=True, density=True,
+              label='TWA '+target.replace('TWA', ''))
+    
+# load CRIRES posteriors
+file_crires = path / target / f'retrieval_outputs/final_full/test_data/bestfit_Chem.pkl'
+chem_crires = af.pickle_load(file_crires)
+crires = {
+    'C/O' : chem_crires.VMRs_posterior['C/O'],
+    '[C/H]' : chem_crires.VMRs_posterior['Fe/H'],
+    '12C/13C' : chem_crires.VMRs_posterior['12_13CO']
+    }
+
+for key, axi in axes_dict.items():
+    # plot hist
+    axi.hist(crires[key], 
+             bins=bins, 
+             alpha=0.5, 
+            #  label='CRIRES',
+             density=True, 
+             color=colors['TWA28']['model'],
+             histtype='stepfilled', 
+             edgecolor='k',
+             ls='--',
+             label='TWA 28 (CRIRES' + r'$\mathrm{^{+}}$)',
+             )
+    
+    axi.hist(crires[key], 
+             bins=bins, 
+             alpha=0.7, 
+            #  label='TWA 28 (CRIRES+)',
+             density=True, 
+             color=colors['TWA28']['model'],
+             histtype='step', 
+             edgecolor='k',
+             ls='--',
+             )
+
+
+
+# solar value
+solar = {'C/O':(0.59, 0.08),
+        #  'CH':(0.0,
+         '12C/13C':(93.5, 3.1),
+         'color': 'magenta',
+         'label': 'Solar'}
+ism = {'12C/13C':(68, 14),
+       'color': 'mediumseagreen',
+       'label': 'ISM'}
+# ax[0].errorbar(solar['C/O'][0], 0, xerr=solar['C/O'][1], color='k', linestyle='--', label='Solar')
+# ax[1].axvline(solar['CH'][0], color='k', linestyle='--', label='Solar')
+
+eb_args = dict(fmt='o', markersize=6, markeredgecolor='k', markeredgewidth=1.2)
+for value in [solar, ism]:
+    eb_args['color'] = value['color']
+    eb_args['label'] = value['label']
+
+    if value.get('C/O') is not None:
+        ax[0].errorbar(value['C/O'][0], 55, xerr=value['C/O'][1], **eb_args)
+    
+    if value.get('12C/13C') is not None:
+        ax[2].errorbar(value['12C/13C'][0], 0.05, xerr=value['12C/13C'][1], **eb_args)
 
 axes[0].set_xlabel('C/O')
 axes[1].set_xlabel('[C/H]')
-axes[2].set_xlabel('12C/13C')
+axes[2].set_xlabel(r'$\mathrm{^{12}C}/\mathrm{^{13}C}$')
+# add separation between columns of legend
+leg = axes[2].legend(loc='upper right', ncol=2, frameon=False,
+                     columnspacing=24)
 
 # remove the top, right and left spines
 
@@ -107,12 +174,13 @@ def remove_spines(ax):
 
 [remove_spines(axi) for axi in axes]
 
-xlims = [(0.44, 0.58), (0.5, 0.8), (50, 130)]
+xlims = [(0.44, 0.69), (0.0, 1.0), (30, 150)]
 for axi, xlim in zip(axes, xlims):
     axi.set_xlim(xlim)
 # TODO: plot each target on a separate row, compare freechem and fastchem??
 # plt.show()
 
-fig_name = path / 'twx_figs' / 'metallicity_CO_C_ratio.pdf'
+# fig_name = path / 'twx_figs' / 'metallicity_CO_C_ratio.pdf'
+fig_name = path_figures / 'metallicity_CO_C_ratio.pdf'
 fig.savefig(fig_name, bbox_inches='tight')
 print(f'Saved {fig_name}')

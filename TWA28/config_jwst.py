@@ -163,7 +163,7 @@ species_wave = {
     # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
     # 'Mg': [[0, 2600]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
-    'Mn': [[0, 2400.0]],
+    # 'Mn': [[0, 2400.0]],
     'Fe': [[0, 2200]],
     'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],

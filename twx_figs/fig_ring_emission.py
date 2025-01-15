@@ -11,7 +11,7 @@ from matplotlib.lines import Line2D
 
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
-
+import pathlib
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
@@ -19,6 +19,7 @@ from retrieval_base.config import Config
 from fig1_insets import create_insets
 
 path = af.get_path(return_pathlib=True)
+path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 # run = None
@@ -171,7 +172,8 @@ for t, target in enumerate(runs.keys()):
 fig.text(-0.14, 0.12, r'$F_{\lambda}$' + r' / $\mathrm{erg\,s^{-1}\,cm^{-2}}$', transform=ax[0].transAxes, fontsize=11, ha='left', va='center', rotation='vertical')
 fig.text(0.5, -0.92, r'Wavelength / nm', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom')
 fig.text(-0.14, 0.12, r'Residuals / %', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom', rotation='vertical')
-fig_name = path / 'twx_figs' / 'fig_ring_emission.pdf'
+# fig_name = path / 'twx_figs' / 'fig_ring_emission.pdf'
+fig_name = path_figures / 'fig_ring_emission.pdf'
 fig.savefig(fig_name, bbox_inches='tight')
 print(f'Saved figure to {fig_name}')
 plt.close()

@@ -17,7 +17,8 @@ target = 'TWA28'
 # run = None
 # run = 'lbl15_G2_4'
 # run = 'lbl12_G1G2G3_fastchem_1'
-run = 'lbl12_G1_fastchem_1'
+# run = 'lbl12_G1_fastchem_1'
+run = 'lbl11_G1G2G3_fastchem_0'
 w_set='NIRSpec'
 
 cwd = os.getcwd()

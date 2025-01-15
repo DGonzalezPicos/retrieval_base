@@ -11,7 +11,7 @@ from matplotlib.lines import Line2D
 
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
-
+import pathlib
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
@@ -19,6 +19,7 @@ from retrieval_base.config import Config
 from fig1_insets import create_insets
 
 path = af.get_path(return_pathlib=True)
+path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 # run = None
@@ -321,7 +322,9 @@ for band, color in zip(gratings.keys(), colors):
 
 
 # axins[1].axvline(2345, color='red', lw=0.5)
-fig_name = path / 'twx_figs/fig1_spec.pdf'
+# fig_name = path / 'twx_figs/fig1_spec.pdf'
+fig_name = path_figures / 'fig1_spec_full_range.pdf'
+
 fig.savefig(fig_name, bbox_inches='tight')
 plt.close()
 # close all

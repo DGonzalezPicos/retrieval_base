@@ -9,7 +9,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 # increase font size
-plt.style.use('/home/dario/phd/retsupjup/GQLupB/paper/gqlupb.mplstyle')
+# plt.style.use('/home/dario/phd/retsupjup/GQLupB/paper/gqlupb.mplstyle')
 # pdf pages
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
@@ -21,19 +21,24 @@ import seaborn as sns
 # import config_jwst as conf
 
 path = pathlib.Path(af.get_path())
-path_figures = pathlib.Path('/home/dario/phd/retrieval_base/twx_figs')
+# path_figures = pathlib.Path('/home/dario/phd/retrieval_base/twx_figs')
+path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
+
 config_file = 'config_jwst.txt'
-target = 'TWA28'
+# target = 'TWA28'
 w_set='NIRSpec'
 
-cwd = os.getcwd()
-if target not in cwd:
-    nwd = os.path.join(cwd, target)
-    print(f'Changing directory to {nwd}')
-    os.chdir(nwd)
 
+def check_dir(target):
+    cwd = os.getcwd()
+    if target not in cwd:
+        os.chdir(f'{path}/{target}')
+        print(f'Changed directory to {target}')
 
-def get_bestfit_params(run):
+def get_bestfit_params(target,run):
+    
+    check_dir(target)
+    
     conf = Config(path=path, target=target, run=run)(config_file)        
         
     ret = Retrieval(
@@ -41,13 +46,16 @@ def get_bestfit_params(run):
         evaluation=False
         )
 
-    bestfit_params, posterior = ret.PMN_analyze()
+    bestfit_params, _ = ret.PMN_analyze()
     bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
     return bestfit_params_dict
 # run with both gratings
 # run = 'lbl15_K2'
 # run = 'lbl15_G2G3_3'
-run = 'lbl12_G1G2G3_fastchem_1'
+# run = 'lbl12_G1G2G3_fastchem_1'
+
+targets = dict(TWA28={'run': 'lbl12_G1G2G3_fastchem_1', 'teff': (2382, 42)},
+                TWA27A={'run': 'lbl15_G1G2G3_fastchem_0', 'teff': (2430, 20)})
 
 
 def get_PT(path, target, run):
@@ -66,6 +74,7 @@ def get_PT(path, target, run):
         print(f' --> Loaded PT_envelopes.npy with shape {temperature.shape}')
     else:
         print(f' Calculating PT envelopes for {run}')
+        check_dir(target)
         conf = Config(path=path, target=target, run=run)(config_file)        
             
         ret = Retrieval(
@@ -106,56 +115,85 @@ def plot_envelopes(p, t_env, ax=None, cf=None, **kwargs):
     for i in range(3):
         ax.fill_betweenx(p, 
                             t_env[i,:],
-                            t_env[-i,:], color=color, alpha=alpha, lw=0, 
+                            t_env[-(i+1),:], color=color, alpha=alpha, lw=0, 
                             label=label if i ==0 else '',
-        )
-    ax.plot(t_env[3,:], p, color=color, lw=0.5)
-    
+                            # ls='--',
+                            )
+    ax.plot(t_env[3,:], p, color=color, lw=0.5, ls=kwargs.pop('ls', '-'), alpha=0.75)
+
     if cf is not None:
         fill_cf = kwargs.pop('fill_cf', False)
         ax_cf = ax.twiny()
-        ax_cf.plot(cf, p, color=color, lw=2.5, ls=':')
+        ls = kwargs.pop('ls_cf', ':')
+        lw = kwargs.pop('lw_cf', 2.5)
+        ax_cf.plot(cf, p, color=color, lw=lw, ls=ls, alpha=0.75)
         ax_cf.set_xticks([])
         ax_cf.set_yticks([])
         # ax_cf.set_yticks([], minor=True)
-        ax_cf.set_xlim(0, np.max(cf)*4.0)
+        ax_cf.set_xlim(0, np.max(cf)*4.5)
         if fill_cf:
             ax_cf.fill_between(cf, p, color=color, alpha=0.05)
         
     return ax
 
-colors = {'CRIRES': 'green', 'G235': 'navy', 'G235+G395': 'brown'}
+# colors = {'CRIRES': 'green', 'G235': 'navy', 'G235+G395': 'brown'}
+colors = dict(TWA28={'data':'k', 'model':'darkorange', 'crires': 'orange'},
+              TWA27A={'data':'#733b27', 'model':'#0a74da'})
 
-fig, ax = plt.subplots(1,1,figsize=(5,5), tight_layout=True)
-run_full = 'final_full'
-p, t, cf = get_PT(path, target, run=run_full)
-ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors['CRIRES'] , alpha=0.3, label=r'CRIRES$^{+}$', fill_cf=True)
+fig, ax = plt.subplots(1,1,figsize=(4,4), tight_layout=True)
+
+def plot_crires(ax):
+    run_full = 'final_full'
+    p, t, cf = get_PT(path, 'TWA28', run=run_full)
+    ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors['TWA28']['crires'] , alpha=0.2, label='TWA 28\n' + r'(CRIRES$^{+}$)', fill_cf=True,
+                        ls='--', ls_cf='--', lw_cf=1.0)
 
 
-# p, t, cf = get_PT(path, target, run='lbl10_G2_3')
-# ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors['G235'], alpha=0.3, label='G235', fill_cf=True)
+for target in ['TWA28', 'TWA27A']:
+    Teff = targets[target]['teff']
+    # label_teff = r'T$_{\rm eff}$' + f' = {Teff[0]} K'
+    label_teff = f'{Teff[0]:.0f} K'
+    # ax.axvspan(Teff[0]-Teff[1], Teff[0]+Teff[1], color=colors[target]['model'], alpha=0.3, label=label_teff, lw=0, zorder=-1)
+    ax.axvline(Teff[0], color=colors[target]['model'], ls=':', lw=2, zorder=-10, alpha=0.6, label=label_teff)
+    
+    if target == 'TWA28':
+        plot_crires(ax)
+    
+    p, t, cf = get_PT(path, target, targets[target]['run'])
+    ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'], alpha=0.3, fill_cf=True,
+                        label='TWA ' + target.replace('TWA', ''),
+                        ls_cf='-', lw_cf=1.0)
+    
+    
 
-p, t, cf = get_PT(path, target, run)
-ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors['G235+G395'], alpha=0.3, label='G235+G395', fill_cf=True)
 
-Teff = (2382, 42) # Cooper+2024
-label_teff = r'T$_{\rm eff}$' + f' = {Teff[0]} K'
-ax.axvspan(Teff[0]-Teff[1], Teff[0]+Teff[1], color='k', alpha=0.1, label=label_teff, lw=0, zorder=-1)
-# path_full = path / target / f'retrieval_outputs/{run_full}/test_data'
-# PT = af.pickle_load(path_full / 'bestfit_PT.pkl')
-# PT_file = path_full / 'envelopes/PT_envelopes.npy'
-# np.save(PT_file, np.vstack([PT.pressure, PT.temperature_envelopes, PT.int_contr_em]))
-# print(f' --> Saved {PT_file}')
 
 ax.set(yscale='log', ylim=(np.max(p), np.min(p)), ylabel='Pressure / bar', xlabel='Temperature / K')
 ax.set_xlim(None, 5000)
 # make legend labels bold
 # ax.legend(fontsize=8, 
 ax.legend(prop={'size': 14, 'weight': 'bold'}, loc='upper right')
+# make the order of legend reverse
+handles, labels = ax.get_legend_handles_labels()
+leg = ax.legend(handles[::-1], labels[::-1], prop={'size': 10, 'weight': 'bold'}, loc='upper right',
+          frameon=False, ncol=1)
+
+# for lh in leg.get_lines():
+#     lh.set_alpha(1.0)
+    
+for p, patch in enumerate(leg.get_patches()):
+    # print(patch)
+    patch.set_alpha(0.55)
+    # add edge to patch
+    if p == 2:
+        patch.set_edgecolor('orange')
+        patch.set_linewidth(0.95)
+        patch.set_linestyle('dashed')
+
 # plt.show()
-fig_name = path_figures / f'{target}_PT_envelopes.pdf'
-fig.savefig(fig_name, dpi=300)
+fig_name = path_figures / f'fig_PTs.pdf'
+fig.savefig(fig_name, bbox_inches='tight')
 # also save as transparent png
-fig.savefig(fig_name.with_suffix('.png'), dpi=300, transparent=True)
+# fig.savefig(fig_name.with_suffix('.png'), dpi=300, transparent=True)
 print(f' --> Saved {fig_name}')
 plt.close(fig)

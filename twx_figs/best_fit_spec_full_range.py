@@ -11,12 +11,14 @@ from matplotlib.lines import Line2D
 
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
-
+import pathlib
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
 
 path = af.get_path(return_pathlib=True)
+path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
+
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 # run = None
@@ -111,7 +113,8 @@ offsets = dict(TWA28=np.zeros(d_specs['TWA28'].n_orders),
                                       0.5, 0.5, 0.5, 0.5,
                                       0.0, 0.0, 0.0, 0.0]))
 
-pdf_name = path / 'twx_figs/fig1_spec_full_range.pdf'
+# pdf_name = path / 'twx_figs/fig1_spec_full_range.pdf'
+pdf_name = path_figures / 'fig1_spec_full_range.pdf'
 n_orders = d_specs['TWA28'].n_orders
 
 fig, ax = plt.subplots(3,1, figsize=(14,4), sharex=True, gridspec_kw={'height_ratios':[3,3,1]})
@@ -167,6 +170,7 @@ ax[1].set_ylim(1e-16, None)
 
 fig.tight_layout()
 plt.savefig(pdf_name)
+
 plt.close(fig)
 plt.close()
 print(f'Saved to {pdf_name}')

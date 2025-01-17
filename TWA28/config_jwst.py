@@ -11,8 +11,8 @@ lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-# grating = 'g235h'
-gratings = ['g140h', 'g235h', 'g395h']
+gratings = ['g235h']
+# gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -247,15 +247,16 @@ else:
     
 
 # if grating == 'g235h' or grating==('g235h+g395h'):
-if ('g235h' in gratings) or ('g395h' in gratings):
+# if ('g235h' in gratings) or ('g395h' in gratings):
+if 'g395h' in gratings:
     # add disk params
     free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
     free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
     
 else:
-    # add disk params from best fit of g235h+g395h
-    constant_params['R_d'] =  15.87 # from lbl12_G1G2G3_fastchem_1
-    constant_params['T_d'] =  605.77 # from lbl12_G1G2G3_fastchem_1
+    # add disk params from best fit of g140h+g235h+g395h
+    constant_params['R_d'] =  15.79 # from lbl11_G1G2G3_fastchem_0
+    constant_params['T_d'] =  607.32 # from lbl11_G1G2G3_fastchem_0
 
 fc_species_dict={
     'H2': 'H2',

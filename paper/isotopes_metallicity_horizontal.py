@@ -1,7 +1,7 @@
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
-from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, find_run, load_romano_models
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, find_run, load_romano_models, axhspan_gradient
 # import config_freechem as conf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +9,8 @@ import os
 import pathlib
 import matplotlib.patheffects as pe
 import scienceplots
+import matplotlib.patches as mpatches
+from matplotlib.legend_handler import HandlerPatch
 
 # reset to default
 plt.style.use('default')
@@ -23,12 +25,29 @@ plt.rcParams.update({
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
 
+df = read_spirou_sample_csv()
+flip_rows = True
+if flip_rows:
+    df = df.iloc[::-1]
+names = df['Star'].to_list()
+teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
+spt = dict(zip(names, [t.split('+-')[0] for t in df['SpT'].to_list()]))
+# dist = dict(zip(names, [float(t) for t in df['Distance (pc)'].to_list()]))
+norm = plt.Normalize(3000.0, 3900.0)
+cmap = plt.cm.coolwarm_r
+
 water = False # take isotope ratio from H2O
 main_label = 'H2O' if water else 'CO'
 isotope = 'oxygen' 
 assert isotope in ['carbon', 'oxygen'], f'Isotope {isotope} not recognized (choose from oxygen, carbon)'
 y_labels = {'oxygen': r'$^{16}$O/$^{18}$O', 'carbon': r'$^{12}$C/$^{13}$C'}
 y_lims = {'oxygen': (30, 4000), 'carbon': (20, 400)}
+
+sigma_colors = {
+                '3':'k',
+                '2': '#0C823E',
+                '1': '#ff6a90'
+                }
 
 def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None,**kwargs):
     if target not in os.getcwd():
@@ -149,7 +168,25 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
                     label=label.replace('gl', 'Gl '),
                     alpha=0.96,
                         # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='darkorange', # Black edge color
+                    markeredgecolor=sigma_colors['2'], # Black edge color
+                    markeredgewidth=0.8,     # Thickness of the edge
+                    capsize=2,               # Size of the cap on error bars
+                    capthick=0.8,             # Thickness of the cap on error bars
+                    ecolor='gray',          # Color of the error bars, set alpha of ecolor to make it transparent
+                    elinewidth=0.8,           # Thickness of the error bars
+                    
+                    
+                    color=kwargs.get('color', 'k'),
+        )
+    elif sigma > 1.0:
+        ax.errorbar(x, isotope_quantiles[1],
+                    xerr=xerr,
+                    yerr=[[isotope_quantiles[1]-isotope_quantiles[0]], [isotope_quantiles[2]-isotope_quantiles[1]]],
+                    fmt=fmt, 
+                    label=label.replace('gl', 'Gl '),
+                    alpha=0.96,
+                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+                    markeredgecolor=sigma_colors['1'], # Black edge color
                     markeredgewidth=0.8,     # Thickness of the edge
                     capsize=2,               # Size of the cap on error bars
                     capthick=0.8,             # Thickness of the cap on error bars
@@ -160,40 +197,39 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
                     color=kwargs.get('color', 'k'),
         )
     else:
-        # plot lower limit
-        fmt = '^'
-        ax.errorbar(x, isotope_quantiles[0],
-                    xerr=xerr,
-                    yerr=[[0.0], [0.4*(isotope_quantiles[2]-isotope_quantiles[1])]],
-                    lolims=True,
-                    fmt=fmt, 
-                    label=label.replace('gl', 'Gl '),
-                    alpha=0.9,
-                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='k', # Black edge color
-                    markeredgewidth=0.8,     # Thickness of the edge
-                    color=kwargs.get('color', 'k'),
-        )
+        # # plot lower limit
+        # fmt = '^'
+        # ax.errorbar(x, isotope_quantiles[0],
+        #             xerr=xerr,
+        #             yerr=[[0.0], [0.4*(isotope_quantiles[2]-isotope_quantiles[1])]],
+        #             lolims=True,
+        #             fmt=fmt, 
+        #             label=label.replace('gl', 'Gl '),
+        #             alpha=0.9,
+        #                 # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+        #             markeredgecolor='k', # Black edge color
+        #             markeredgewidth=0.8,     # Thickness of the edge
+        #             color=kwargs.get('color', 'k'),
+        # )
+        print(f' {target} not plotted... sigma = {sigma:.2f}')
+        pass
         
-    return np.append(isotope_quantiles, sigma)
+        
+    if xytext is not None:
+        # add text with target name next to point, offset text from point
+        ax.annotate(label.replace('gl', 'Gl '), (x, isotope_quantiles[1]), textcoords="offset points", xytext=xytext, ha='left',
+                    fontsize=8, color=kwargs.get('color', 'k'), alpha=0.9)
+        
+    return isotope_quantiles
         
 
 
-df = read_spirou_sample_csv()
-names = df['Star'].to_list()
-teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-dist = dict(zip(names, [float(t) for t in df['Distance (pc)'].to_list()]))
+
 # valid = dict(zip(names, df['Valid'].to_list()))
 ignore_targets = []
 
 # x_param = '[C/H]'
 x_param = '[M/H]'
-
-sub10pc = False
-sub10pc_label = '_sub10pc' if sub10pc else ''
-# ignore targets with distance greater than 10 pc
-if sub10pc:
-    ignore_targets += [name for name in names if dist[name] > 10.0]
 
 table_id_label = ''
 
@@ -223,9 +259,7 @@ if x_param == '[M/H]':
 
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
-# create colormap with teff in K
-norm = plt.Normalize(3000.0, 3900.0)
-cmap = plt.cm.coolwarm_r
+
 # add Crossfield+2019 values for Gl 745 AB: isotope ratio, teff and metallicity, with errors
 crossfield_dict = {'oxygen': {'Gl 745 A': [(1220, 260), (3454, 31), (-0.43, 0.05)],
                         'Gl 745 B': [(1550, 360), (3440, 31), (-0.39, 0.05)]},
@@ -237,19 +271,58 @@ sun_dict = {'oxygen': (529.7, 1.7),# solar wind McKeegan et al. 2011
 ism_dict = {'oxygen': (557, 30), # ISM value from Wilson et al. 1999
             'carbon': (68.0, 14.0)}
 
-plot_crossfield = False
+plot_crossfield = True
 
 top = 0.92
-fig, axes = plt.subplots(1,3, figsize=(10,3), sharex=False, gridspec_kw={'hspace': 0.1, 
-                                                                       'wspace': 0.1,
-                                                                        'left': 0.15, 
-                                                                        'right': 0.78, 
-                                                                        'top': top, 
-                                                                        'bottom': 0.07})
+# fig, axes = plt.subplots(1,3, figsize=(10,3), sharex=True, gridspec_kw={'hspace': 0.1, 
+#                                                                        'wspace': 0.1,
+#                                                                         'left': 0.15, 
+#                                                                         'right': 0.78, 
+#                                                                         'top': top, 
+#           
+# 'bottom': 0.07})
+fig = plt.figure(figsize=(6, 6))  # Adjust the figure size as needed
+gs = fig.add_gridspec(10, 12, hspace=0.20, wspace=0.0)
 
+ax_spectrum = fig.add_subplot(gs[0:3, :])
+ax_residuals = fig.add_subplot(gs[3, :])
+
+
+
+ax_carbon = fig.add_subplot(gs[5:, :5])  # Last 7 rows, half the width
+ax_oxygen = fig.add_subplot(gs[5:, 7:])  # Last 7 rows, half the width
+axes = [ax_carbon, ax_oxygen]
+
+from bestfit_model_nat import plot
+my_targets_id = ['338B', '205', '411', '436','699', '1286']
+my_targets = ['gl'+t for t in my_targets_id]
+xlim = (2285, 2364)
+text_x = (xlim[0]+1., xlim[1]-3)
+    
+plot(0, names, my_targets, text_x=text_x, xlim=xlim, add_cbar=False, teff=teff, spt=spt,
+     axes=[ax_spectrum, ax_residuals],
+      cmap=cmap, norm=norm, lw=0.6)
+
+# add handles for subplots: a, b, c
+thandles = ['a', 'b', 'c']
+fig.text(-0.11, 1.05, thandles[0], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
+fig.text(0.35, -0.85, thandles[1], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
+fig.text(0.95, -0.85, thandles[2], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
+# for i, ax in enumerate(axes):
+#     ax.text(0.01, 0.95, thandles[i], transform=ax.transAxes, fontsize=12, ha='left', va='top')
+
+
+
+# ylim_min = 50.0
+# ylim_max = 3000.0
+
+xytext = {'Gl 699' : (-28,5),
+        #   'Gl 411' : (3,3),
+        #   'Gl 382': (-20,-12),
+        #   'Gl 1286': (2,-12),
+          
+}
 isotopes = ['carbon', 'oxygen']
-# create empty dictionary with keys matching targets
-targets_isotopes = {name.replace('Gl ', 'gl') : {isotope: [] for isotope in isotopes} for name in names}
 for i, isotope in enumerate(isotopes):
     print(f' ** Isotope {isotope} **')
     ax = axes[i]
@@ -296,18 +369,21 @@ for i, isotope in enumerate(isotopes):
                             label='',
                             run=None,
                             color=color,
-                            xytext=None,)
-            
-            targets_isotopes[target][isotope] = ratio_t
-
+                            xytext=xytext.get(name, None))
         except Exception as e:
             print(e)
             print(f'---> Skipping {name}')
             continue
-        
 
 
-    ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label='ISM')
+    # ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label='ISM')
+    x_span = np.linspace(-0.4, 0.6, 100)
+    rgb_color = np.array([10, 191, 134]) / 255.0 # light green
+    rgb_color *= 0.7
+    
+    poly, ism_label = axhspan_gradient(ax, x_span, y_range=(ism[0]-ism[1], ism[0]+ism[1]), rgb_color=rgb_color, gamma=3, n=120,
+                            label='ISM')
+    
     # ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
    
 
@@ -319,7 +395,7 @@ for i, isotope in enumerate(isotopes):
             x_cf = v[1][0] if x_param == 'Teff (K)' else v[2][0]
             x_err_cf = v[1][1] if x_param == 'Teff (K)' else v[2][1]
             fmt = 's' if cross_i == 0 else 'D'
-            ax.errorbar(x_cf, v[0][0], xerr=x_err_cf, yerr=v[0][1], fmt=fmt, label=k+' (C19)', color=color, markeredgecolor='black', markeredgewidth=0.8)
+            ax.errorbar(x_cf, v[0][0], xerr=x_err_cf, yerr=v[0][1], fmt=fmt, label=k.replace('Gl ', 'GJ '), color=color, markeredgecolor='black', markeredgewidth=0.8)
 
             # add thin arrow pointing to the marker with the name of the target
             annotate = False
@@ -335,14 +411,18 @@ for i, isotope in enumerate(isotopes):
         ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-10)
 
     # if i == 0:
-        
+    ax.set_xlabel(x_param)
     if i == 1:
-        ax.set_xlabel(x_param)
+        
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])  # Only needed for color bar
         
         # define cbar_ax for colorbar
-        cbar_ax = fig.add_axes([0.80, 0.06, 0.027, top-0.06])
+        # x, y = 0.912, 0.11
+        x, y = 0.912, 0.659
+        # w, h = 0.027, top-y*1.36
+        w, h = 0.027,top-y*1.06
+        cbar_ax = fig.add_axes([x, y, w, h])
         cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=1)
         cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
@@ -359,91 +439,51 @@ path_effects = [pe.Stroke(linewidth=2.5, foreground='white'), pe.Normal()]
 
 for i, mass_range in enumerate(mass_ranges):
     Z, c12c13, o16o18 = load_romano_models(Z_min=-0.7, mass_range=mass_range)
-    mass_range_label = 'R22 (' + mass_range.replace('_', '-') + r' M$_\odot$)'
+    # mass_range_label = 'R22 (' + mass_range.replace('_', '-') + r' M$_\odot$)'
+    mass_range_label = mass_range.replace('_', '-') + r' M$_\odot$'
     axes[0].plot(Z, c12c13, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
+    axes[1].plot(Z, o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
     
-    # axes[-1].plot(c12c13, o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
-    axes[-1].plot(Z, c12c13 / o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
-    if i == 1:
-        axes[1].plot(Z, o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
 
-# plot the 13C/18O ratio in the last subplot
-carbon_oxygen_ratio = {}
-for target in targets_isotopes.keys():
-    name = target.replace('gl', 'Gl ')
-    c = targets_isotopes[target]['carbon']
-    o = targets_isotopes[target]['oxygen']
-    
-    # value and error via error propagation
-    ratio = c[1]/o[1]
-    # ratio_err_low = ratio*np.sqrt((o[1]/o[0])**2 + (c[1]/c[0])**2)
-    # ratio_err_high = ratio*np.sqrt((o[2]/o[0])**2 + (c[2]/c[0])**2)
-    # carbon_oxygen_ratio[target] = [ratio, ratio_err_low, ratio_err_high]
-    
-    c_err = [[c[1] - c[0]], [c[2] - c[1]]]
-    o_err = [[o[1] - o[0]], [o[2] - o[1]]]
-    ratio_err = [ratio*np.sqrt((o_err[0]/o[0])**2 + (c_err[0]/c[0])**2),
-                 ratio*np.sqrt((o_err[1]/o[0])**2 + (c_err[1]/c[0])**2)]
-    sigma_c = c[-1]
-    sigma_o = o[-1]
-    # sigma = np.min([sigma_c, sigma_o])
-    # carbon_oxygen_ratio[target] = [ratio, ratio_err]
-    
-    # use metallicity as x-axis
-    # x = x[name]
-    # x_err = x_err[name]
-    # use ratio of isotope ratios as y-axis: 
-    y = ratio
-    y_err = ratio_err
-    
-    # scatter plot
-    if (sigma_o > 3.0) and (sigma_c > 3.0):
-        print(f' {target}: sigma_c = {sigma_c}, sigma_o = {sigma_o}')
-        print(f' {target}: c = {c}, o = {o}')
-        print(f' {target}: c_err = {c_err}, o_err = {o_err}')
-        # axes[-1].errorbar(c[1], o[1], xerr=c_err, yerr=o_err, fmt='o', label=name, color=cmap(norm(teff[name])), markeredgecolor='black', markeredgewidth=0.8)
-        axes[-1].errorbar(x[name], ratio, xerr=x_err[name], yerr=ratio_err, fmt='o', label=name, color=cmap(norm(teff[name])), markeredgecolor='black', markeredgewidth=0.8)
-    if (sigma_c > 3.0) and (sigma_o < 3.0):
-        # plot lower limit
-        fmt = '^'
-        axes[-1].errorbar(
-                    x[name],
-                    ratio,
-                    xerr=x_err[name],
-                    # yerr=[[0.0], [0.4*(y[2]-y[1])]],
-                    yerr=[[0.0], [0.4*(ratio_err[1])]],
-                    lolims=True,
-                    fmt=fmt, 
-                    # label=label.replace('gl', 'Gl '),
-                    alpha=0.9,
-                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='k', # Black edge color
-                    markeredgewidth=0.8,     # Thickness of the edge
-                    color=cmap(norm(teff[name]))
-        )
-    if (sigma_c < 3.0) and (sigma_o < 3.0):
-        fmt = '^'
-        axes[-1].errorbar(x[name],
-                    y,
-                    # xerr=[[0.0], [0.4*(x[name][2]-x[name][1])]],
-                    # yerr=[[0.0], [0.4*(y[2]-y[1])]],
-                    xerr=x_err[name],
-                    yerr=ratio_err,
-                    lolims=True,
-                    fmt=fmt, 
-                    # label=label.replace('gl', 'Gl '),
-                    alpha=0.9,
-                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='k', # Black edge color
-                    markeredgewidth=0.8,     # Thickness of the edge
-                    color=cmap(norm(teff[name]))
-        )
-axes[-1].set(yscale='log')
-# axes[-1].set_xlim(axes[0].get_xlim())
-# axes[-1].set_xlim(40, 400)
-axes[-1].set_ylim(0.005, 0.4)
+axes[0].legend(ncol=3)
+# add handle of ism_label to existing legend
+handles, labels = axes[0].get_legend_handles_labels()
+# change alpha of ism_label
+ism_label.set_alpha(0.65)
+# change edgecolor of ism_label
+# ism_label.set_edgecolor('')
+# change edgewidth of ism_label
+ism_label.set_linewidth(0.0)
+# introdduce item in index 1 instead of append
+handles.insert(1, ism_label)
+labels.insert(1, 'ISM')
+# axes[0].legend(handles, labels, ncol=3, frameon=False, fontsize=8, loc=(0.32, 1.01)) # longcbar
+axes[0].legend(handles, labels, ncol=1, frameon=False, fontsize=8, loc=(2.42, 0.5)) # shortcbar
 
-axes[0].legend(ncol=3, frameon=False, fontsize=8, loc=(-0.12, 1.01))
+# create another legend for the sigma values with circles
+
+sigma_handles = []
+sigma_labels = []
+from matplotlib.lines import Line2D
+for sigma in ['3', '2', '1']:
+    # Create a circle patch for the legend
+    sigma_handles.append(Line2D([0], [0], marker='o', color='w', markeredgecolor=sigma_colors[sigma], markersize=6, markeredgewidth=0.9))
+    if sigma == '3':
+        sigma_labels.append(f'$\geq${int(sigma)}$\sigma$')
+    else:
+        sigma_labels.append(f'{int(sigma)}$\sigma$ - {int(sigma)+1}$\sigma$')
+
+# Create legend with custom handler map to ensure circles are drawn properly
+legend = axes[-1].legend(sigma_handles, sigma_labels, 
+                         framealpha=0.4,
+                         fontsize=7,
+                        #  title='$\sigma$-level',
+                        #  loc=(0.32, 1.01)
+                         )
+
+# Make sure the circles appear round in the legend
+legend.get_frame().set_linewidth(0.5)
+
 loglog = True
 loglog_label = '_loglog' if loglog else ''
 if loglog:
@@ -462,7 +502,8 @@ if loglog:
         ax.set_yticklabels([str(t) for t in yticks[isotope]])
         
 xlims = (-0.6, 0.6)
-axes[1].set_xlim(*xlims)
+for ax in axes:
+    ax.set_xlim(*xlims)
 # x_param_label = x_param.split('(')[0].strip()
 x_param_label = {
     'Teff (K)': 'Teff',
@@ -470,7 +511,7 @@ x_param_label = {
     '[C/H]': 'carbon_metallicity'
 }[x_param]
 # fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
-fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}{sub10pc_label}_isoratio.pdf'
-fig.savefig(fig_name)
+fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}_horizontal.pdf'
+fig.savefig(fig_name, bbox_inches='tight')
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

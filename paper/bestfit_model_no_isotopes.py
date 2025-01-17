@@ -383,21 +383,22 @@ def plot(orders, name, text_x=None, xlim=None, **kwargs):
     else:
         plt.close(fig)
   
-order = 0
-orders = [0,1,2]
-cenwaves = [2347.4, 2376.5, 2467.5]
-dwave = 3.02
-xlim_list = [(cenwave-dwave, cenwave+dwave) for cenwave in cenwaves]
-# xlim = (2343, 2358.0)
+if __name__ == '__main__':
+    order = 0
+    orders = [0,1,2]
+    cenwaves = [2347.4, 2376.5, 2467.5]
+    dwave = 3.02
+    xlim_list = [(cenwave-dwave, cenwave+dwave) for cenwave in cenwaves]
+    # xlim = (2343, 2358.0)
 
-# xlim = xlim_list[order]
-# text_x = (xlim[0]+0.1, xlim[1]-2)
-text_x = [(xlim[0]+0.3, xlim[1]-2) for xlim in xlim_list]
-species_labels = {
-    '13CO': r'$^{13}$CO',
-    'C18O': r'C$^{18}$O',
-}
-name = 'Gl 205'
-temperature = teff[name]
-colors = [cmap(norm(temperature)), 'orange', 'seagreen']
-plot(orders, name=name, text_x=text_x, xlim=xlim_list, text_y=1.07)
+    # xlim = xlim_list[order]
+    # text_x = (xlim[0]+0.1, xlim[1]-2)
+    text_x = [(xlim[0]+0.3, xlim[1]-2) for xlim in xlim_list]
+    species_labels = {
+        '13CO': r'$^{13}$CO',
+        'C18O': r'C$^{18}$O',
+    }
+    name = 'Gl 205'
+    temperature = teff[name]
+    colors = [cmap(norm(temperature)), 'orange', 'seagreen']
+    plot(orders, name=name, text_x=text_x, xlim=xlim_list, text_y=1.07)

@@ -537,3 +537,34 @@ def find_run(base_path='/home/dario/phd/retrieval_base/',
 
     run = 'fc'+str(max(runs))
     return run
+
+def axhspan_gradient(ax, x, y_range=(0,10), rgb_color=(0,1,0), gamma=3, n=100, label=''):
+    """
+    Add a gradient effect to the y-axis of an ax.
+    
+    Parameters:
+    ax: matplotlib.axes.Axes
+        The axis to add the gradient to.
+    x: numpy.ndarray
+        The x-coordinates of the gradient.
+    y_range: tuple of float
+        The y-coordinates of the gradient.
+    rgb_color: tuple of float
+        The RGB color of the gradient.
+    gamma: float
+        The gamma value for the gradient.
+        n = 1 linear gradient
+        n > 1 exponential gradient
+    n: int
+        The number of points in the gradient.
+    """
+    from matplotlib.collections import PolyCollection
+    import matplotlib.patches as mpatches
+    gradient = np.linspace(0, 1, n)**gamma  # Alpha gradient from 0 to 1
+    gradient /= gradient.max()
+    verts = [((x[i], y_range[0]), (x[i], y_range[1]), (x[i+1], y_range[1]), (x[i+1], y_range[0])) for i in range(len(x)-1)]
+    colors = [(rgb_color[0], rgb_color[1], rgb_color[2], alpha) for alpha in gradient]  # Green color with varying alpha
+    label = mpatches.Patch(color=rgb_color, label=label)
+    poly = PolyCollection(verts, facecolors=colors, edgecolor='none')
+    ax.add_collection(poly)
+    return poly, label

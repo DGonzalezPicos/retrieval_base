@@ -11,24 +11,13 @@ import pathlib
 # plt.style.use('/home/dario/phd/retrieval_base/HBDs/my_science.mplstyle')
 import scienceplots
 
-# reset to default
-plt.style.use('default')
-# plt.style.use(['latex-sans'])
-plt.style.use(['sans'])
-# enable latex
-# plt.rcParams['text.usetex'] = True
-plt.rcParams.update({
-    "font.size": 8,
-})
 
-# change font to sans-serif
-# plt.rcParams['font.family'] = 'sans-serif'
-# patheffects
+
 import matplotlib.patheffects as path_effects
-
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
-def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, offset_x=0.0, **kwargs):
+
+def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, **kwargs):
     
     
     assert len(ax) == 2, f'Lenght of ax must be 2, not {len(ax)}'
@@ -124,8 +113,8 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, offset_x=0.0
     # np.save(ret.conf_output + 'residuals.npy', np.array([wave, flux-m, ret.Cov['spirou'][0].err * s[0]]))
     
     
-    lw = kwargs.get('lw', 1.0)
-    color = kwargs.get('color', 'orange')
+    lw = kwargs.pop('lw', 0.4)
+    color = kwargs.pop('color', 'orange')
     # for i, order in enumerate(orders):
 
     
@@ -171,41 +160,29 @@ def main(target, ax, orders=[0], offset=0.0, run=None, text_x=None, offset_x=0.0
     return None
 
 
-df = read_spirou_sample_csv()
-# flip order of all columns
-flip_rows = True
-if flip_rows:
-    df = df.iloc[::-1]
-
-names = df['Star'].to_list()
-teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-spt = dict(zip(names, [t.split('+-')[0] for t in df['SpT'].to_list()]))
-# prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
-# prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
-runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
-
-# norm = plt.Normalize(min(temperature_dict.values()), max(temperature_dict.values()))
-# norm = plt.Normalize(min(teff.values()), 4000.0)
-norm = plt.Normalize(3000, 3900.0)
-cmap = plt.cm.coolwarm_r
-
-my_targets_id = ['338B', '205', '411', '436','699', '1286']
-my_targets = ['gl'+t for t in my_targets_id]
-
-def plot(orders, text_x=None, xlim=None, **kwargs):
-    fig, ax = plt.subplots(2,1, figsize=(3.35,3.35/2), sharex=True, gridspec_kw={'height_ratios': [4, 1],
-                                                                        'hspace': 0.08,
-                                                                        'top': 0.97,
-                                                                        'bottom': 0.13,
-                                                                        'left': 0.10,
-                                                                        'right': 0.99})
+def plot(order, names, my_targets, 
+         teff, spt,
+         cmap, norm,
+         text_x=None, xlim=None, axes=None, add_cbar=True, **kwargs):
+    
+    fig = None
+    if axes is None:
+        fig, ax = plt.subplots(2,1, figsize=(3.35,3.35/2), sharex=True, gridspec_kw={'height_ratios': [4, 1],
+                                                                            'hspace': 0.08,
+                                                                            'top': 0.97,
+                                                                            'bottom': 0.13,
+                                                                            'left': 0.10,
+                                                                            'right': 0.99})
+    else:
+        assert len(axes) == 2, f'Axes must have length 2, not {len(axes)}'
+        ax = axes
     
 
     # orders = [0]
-    orders_str = [str(o) for o in orders]
+    orders_str = [str(order)]
     # colors = plt.cm.
     count = 0
-    for t, name in enumerate(names):
+    for name in names:
         target = name.replace('Gl ', 'gl')
         if target not in my_targets:
             continue
@@ -215,9 +192,9 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         
         # offset = 0.42*(len(names)-t)
         offset = 0.54*(len(my_targets)-my_targets.index(target)-1)
-        ret = main(target, ax=ax, offset=offset, orders=orders,
+        ret = main(target, ax=ax, offset=offset, order=order,
                 run=None, 
-                lw=0.4, color=color,
+                color=color,
                 text_x=text_x, divide_spline=True,
                 offset_x=-0.7*count,
                 **kwargs)
@@ -228,17 +205,18 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         
     ax[-1].axhline(0.0, color='k', lw=0.5, zorder=-1)
     
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])  # Only needed for color bar
-    # cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=40, location='right')
-    cbar_ax = fig.add_axes([1.002, 0.325, 0.015, 0.648])
-    cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', location='right')
-    cbar.set_label('Temperature (K)')
+    if add_cbar:
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])  # Only needed for color bar
+        # cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=40, location='right')
+        cbar_ax = fig.add_axes([1.002, 0.325, 0.015, 0.648])
+        cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', location='right')
+        cbar.set_label('Temperature (K)')
 
-    # set ticks of colorbar
-    cbar_ticks = np.linspace(3000, 3900, 7)
-    cbar.set_ticks(cbar_ticks)
-    cbar.set_ticklabels([str(int(t)) for t in cbar_ticks])
+        # set ticks of colorbar
+        cbar_ticks = np.linspace(3000, 3900, 7)
+        cbar.set_ticks(cbar_ticks)
+        cbar.set_ticklabels([str(int(t)) for t in cbar_ticks])
 
     if xlim is not None:
         ax[0].set_xlim(xlim)
@@ -256,21 +234,50 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     ax[0].set_ylabel('Flux + offset')
     ax[1].set_ylabel('Residuals', labelpad=0)
     # fig_name = base_path + 'paper/latex/figures/best_fit_model' + "-".join(orders_str) + ".pdf"
-    fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
-    fig.savefig(fig_name, bbox_inches='tight')
-    print(f'Figure saved as {fig_name}')
-
-    show = False
-    if show:
-        plt.show()
-    else:
+    if fig is not None:
+        fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
+        fig.savefig(fig_name, bbox_inches='tight')
+        print(f'Figure saved as {fig_name}')    
         plt.close(fig)
+        
+    return fig, ax
+
+
+if __name__ == '__main__':
+    # reset to default
+    plt.style.use('default')
+    # plt.style.use(['latex-sans'])
+    plt.style.use(['sans'])
+    # enable latex
+    # plt.rcParams['text.usetex'] = True
+    plt.rcParams.update({
+        "font.size": 8,
+    })
     
-# text_x = [(2285.5, 2364.),
-#           (2358.0, 2438.),
-#           (2435.0, 2510.0),
-# ]
-order = 0
-xlim = (2282, 2364)
-text_x = (xlim[0]+1., xlim[1]-3)
-plot([order], text_x=text_x, xlim=xlim)
+    df = read_spirou_sample_csv()
+    # flip order of all columns
+    flip_rows = True
+    if flip_rows:
+        df = df.iloc[::-1]
+
+    names = df['Star'].to_list()
+    teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
+    spt = dict(zip(names, [t.split('+-')[0] for t in df['SpT'].to_list()]))
+    # prot = dict(zip(names, [float(t.split('+-')[0]) for t in df['Period (days)'].to_list()]))
+    # prot_err = dict(zip(names, [float(t.split('+-')[1]) for t in df['Period (days)'].to_list()]))
+    runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
+
+
+    norm = plt.Normalize(3000, 3900.0)
+    cmap = plt.cm.coolwarm_r
+
+    my_targets_id = ['338B', '205', '411', '436','699', '1286']
+    my_targets = ['gl'+t for t in my_targets_id]
+
+    order = 0
+    xlim = (2282, 2364)
+    text_x = (xlim[0]+1., xlim[1]-3)
+    plot(order, names, my_targets, 
+         teff=teff, spt=spt,
+         cmap=cmap, norm=norm,
+         text_x=text_x, xlim=xlim, add_cbar=True)

@@ -20,7 +20,7 @@ class CallBack:
     plot_residual_ACF = False
     plot_ccf = False
     plot_summary = True
-
+    plot_contr_em = False
     def __init__(self, 
                  d_spec, 
                  evaluation=False, 
@@ -149,7 +149,7 @@ class CallBack:
             if hasattr(self.m_spec[w_set], 'int_contr_em'):
                 self.PT.int_contr_em[w_set] = np.copy(self.m_spec[w_set].int_contr_em)
                 
-            if hasattr(self.pRT_atm[w_set], 'contr_em'):
+            if hasattr(self.pRT_atm[w_set], 'contr_em') and self.plot_contr_em:
                 figs.fig_contr_em(
                     contr_em=self.pRT_atm[w_set].contr_em,
                     wave=self.d_spec[w_set].wave,
@@ -251,7 +251,7 @@ class CallBack:
                 figs.fig_VMR(self.Chem, 
                              ax=None,
                              pressure=self.Chem.pressure,
-                            species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species],
+                            species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species]+['H-'],
                              xlim=(1e-10, 5e-2),
                              showlegend=True,
                             fig_name=self.prefix+'plots/VMRs.pdf',
@@ -261,15 +261,20 @@ class CallBack:
                 
                  
             try: # FIXME: plotting C/O, Fe/H runs into issues...
-                figs.fig_chemistry(Chem=self.Chem,
-                                        fig=None,
-                                        # species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species],
-                                        color=self.bestfit_color,
-                                        smooth=None,
-                                        fontsize=14,
-                                        fig_name=self.prefix+f'plots/chemistry.pdf',
-                                        fig_size=(24,24),
-                )
+                
+                # if hasattr(self.Chem, 'VMRs_posterior'):
+                if hasattr(self.Chem, 'mass_fractions_posterior'):
+                    print(f'[CallBack] plotting figs.fig_chemistry')
+                    self.Chem.get_VMRs_posterior()
+                    figs.fig_chemistry(Chem=self.Chem,
+                                            fig=None,
+                                            # species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species],
+                                            color=self.bestfit_color,
+                                            smooth=None,
+                                            fontsize=14,
+                                            fig_name=self.prefix+f'plots/chemistry.pdf',
+                                            fig_size=(24,24),
+                    )
             except Exception as e:
                 print(f'Error in fig_chemistry: {e}')
 

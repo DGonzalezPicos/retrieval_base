@@ -675,10 +675,16 @@ def fig_VMR(Chem,
     
     MMW = Chem.mass_fractions['MMW']
     for i, species_i in enumerate(species_to_plot):
-        mass_i  = Chem.read_species_info(species_i, info_key='mass')
-        color_i = Chem.read_species_info(species_i, info_key='color')
-        label_i = Chem.read_species_info(species_i, info_key='label')
-        line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
+        if species_i == 'H-':
+            mass_i = 1.00794
+            color_i = 'red'
+            label_i = 'H-'
+            line_species_i = 'H-'
+        else:
+            mass_i  = Chem.read_species_info(species_i, info_key='mass')
+            color_i = Chem.read_species_info(species_i, info_key='color')
+            label_i = Chem.read_species_info(species_i, info_key='label')
+            line_species_i = Chem.read_species_info(species_i, info_key='pRT_name')
         ls_i = ':' if line_species_i.endswith('_high') else '-'
         lw_i = 2.5 if line_species_i.endswith('_high') else 1.5
         if ls == '-' and i>8:

@@ -54,8 +54,8 @@ def get_bestfit_params(target,run):
 # run = 'lbl15_G2G3_3'
 # run = 'lbl12_G1G2G3_fastchem_1'
 
-targets = dict(TWA28={'run': 'lbl12_G1G2G3_fastchem_1', 'teff': (2382, 42)},
-                TWA27A={'run': 'lbl15_G1G2G3_fastchem_0', 'teff': (2430, 20)})
+targets = dict(TWA28={'run': 'lbl11_G1G2G3_fastchem_0', 'teff': (2382, 42)},
+                TWA27A={'run': 'lbl11_G1G2G3_fastchem_0', 'teff': (2430, 20)})
 
 
 def get_PT(path, target, run):

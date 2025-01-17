@@ -13,12 +13,11 @@ from retrieval_base.config import Config
 path = af.get_path(return_pathlib=True)
 path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
-target = 'TWA28'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A='lbl15_G1G2G3_fastchem_0',
-    TWA28='lbl12_G1G2G3_freechem_1',
+    TWA27A='lbl11_G1G2G3_fastchem_0',
+    TWA28='lbl11_G1G2G3_fastchem_0',
             )
 colors = dict(TWA28={'data':'k', 'model':'orange'},
               TWA27A={'data':'#733b27', 'model':'#0a74da'})
@@ -73,7 +72,7 @@ def load_data(target, run, cache=True):
 fig, ax = plt.subplots(1, 3, figsize=(10, 3), sharex='col')
 axes = ax.flatten()
 axes_dict = {'C/O': ax[0], '[C/H]': ax[1], '12C/13C': ax[2]}
-# plot the histograms
+# plot the histograms 
 bins = 20
 alpha = 0.65
 

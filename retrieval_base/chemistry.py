@@ -192,6 +192,17 @@ class Chemistry:
             print(f'[Chemistry.get_VMRs_posterior] Saved VMRs posterior and envelopes to:\n {file_posterior}\n {file_envelopes}\n {file_labels}')
         return self
     
+    def calculate_posterior_ratios(self):
+        """
+        Calculate the ratios of the posterior distributions by selecting
+        the keys in the posterior_dict that are in the VMRs_posterior dictionary
+        """
+        
+        assert hasattr(self, 'VMRs_posterior'), 'VMRs_posterior not yet calculated'
+        self.ratios_posterior = {}
+        
+        
+    
     
     def two_point_profile(self, log_K_1, log_K_2, log_K_P):
         """

@@ -27,8 +27,8 @@ run = 'lbl12_G1G2G3_fastchem_0'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A='lbl15_G1G2G3_fastchem_0',
-    TWA28='lbl12_G1G2G3_fastchem_0',
+    TWA27A='lbl11_G1G2G3_fastchem_0',
+    TWA28='lbl11_G1G2G3_fastchem_0',
             )
 
 dw = 90

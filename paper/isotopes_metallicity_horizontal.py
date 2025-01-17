@@ -407,8 +407,8 @@ for i, isotope in enumerate(isotopes):
                             horizontalalignment='right', verticalalignment='top')
                     
         
-    if x_param == '[M/H]':
-        ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-10)
+    # if x_param == '[M/H]':
+    #     ax.axvline(0.0, color='k', lw=0.5, ls='--', zorder=-10)
 
     # if i == 0:
     ax.set_xlabel(x_param)

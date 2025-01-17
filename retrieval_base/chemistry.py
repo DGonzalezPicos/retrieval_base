@@ -126,30 +126,6 @@ class Chemistry:
                 self.mass_fractions[line_species_i] *= 0
 
     # @classmethod
-    # def read_species_info(cls, species, info_key):
-        
-    #     if info_key == 'pRT_name':
-    #         return cls.species_info[species][0]
-    #     if info_key == 'pyfc_name':
-    #         return cls.species_info[species][1]
-        
-    #     if info_key == 'mass':
-    #         return cls.species_info[species][2]
-        
-    #     if info_key == 'COH':
-    #         return cls.species_info[species][3]
-    #     if info_key == 'C':
-    #         return cls.species_info[species][3][0]
-    #     if info_key == 'O':
-    #         return cls.species_info[species][3][1]
-    #     if info_key == 'H':
-    #         return cls.species_info[species][3][2]
-
-    #     if info_key == 'c' or info_key == 'color':
-    #         return cls.species_plot_info[species][0]
-    #     if info_key == 'label':
-    #         return cls.species_plot_info[species][1]
-    # @classmethod
     def read_species_info(self, species, info_key):
         assert species in self.species_info['name'].values, f'species = {species} not in species_info'
         assert info_key in self.species_info.columns, f'info_key = {info_key} not in species_info.columns'

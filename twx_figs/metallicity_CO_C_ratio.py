@@ -17,7 +17,7 @@ w_set='NIRSpec'
 
 runs = dict(
     TWA27A='lbl11_G1G2G3_fastchem_0',
-    TWA28='lbl11_G1G2G3_fastchem_0',
+    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
             )
 colors = dict(TWA28={'data':'k', 'model':'orange'},
               TWA27A={'data':'#733b27', 'model':'#0a74da'})
@@ -76,9 +76,14 @@ axes_dict = {'C/O': ax[0], '[C/H]': ax[1], '12C/13C': ax[2]}
 bins = 20
 alpha = 0.65
 
-def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, edge=True, density=True, label=None):
+def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, edge=True, density=True, label=None,
+              fill=True):
     
-    htypes = ['stepfilled', 'step']
+    htypes = ['step']
+    if fill:
+        htypes.append('stepfilled')
+        htypes = htypes[::-1]
+        
     for ht in htypes:
         # ec = 'k' if ht=='step' else None
         ec = 'k'
@@ -88,13 +93,14 @@ def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, edge=True, 
         ax[2].hist(isotope_ratios['12C/13C'], bins=bins, alpha=alpha, color=color, label=label, density=density, histtype=ht, edgecolor=ec)
 
 for t, target in enumerate(runs.keys()):
-    CO_posterior, CH_posterior, VMRs_posterior = load_data(target, runs[target], cache=True)
+    target_runs = list(np.atleast_1d(runs[target]))
+    for r, run in enumerate(target_runs):
+        CO_posterior, CH_posterior, VMRs_posterior = load_data(target, run, cache=True)
 
-    isotope_ratios = {'12C/13C': VMRs_posterior['12CO'] / VMRs_posterior['13CO'],
-    }
-
-    plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'], edge=True, density=True,
-              label='TWA '+target.replace('TWA', ''))
+        isotope_ratios = {'12C/13C': VMRs_posterior['12CO'] / VMRs_posterior['13CO'],
+        }
+        plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'], edge=True, density=True,
+                label='TWA '+target.replace('TWA', ''), fill=(r==0))
     
 # load CRIRES posteriors
 file_crires = path / target / f'retrieval_outputs/final_full/test_data/bestfit_Chem.pkl'

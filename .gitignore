@@ -67,3 +67,4 @@ retrieval_dec24/
 wave_range_species.py
 twx_figs/test_marker_annotate.py
 paper/test_gridspec_fig1.py
+TWA28/check_free_params_wave_range.py

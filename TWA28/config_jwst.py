@@ -11,7 +11,7 @@ lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h']
+gratings = ['g235h', 'g395h']
 # gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
@@ -44,6 +44,15 @@ config_data = {
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
         }, 
     }
+
+wave_range_gratings = dict(g140h= (900.0, 1900.0),
+                   g235h= (1650.0, 3200.0),
+                   g395h= (2850.0, 5300.0),
+                   )
+
+wave_range_list = [wave_range_gratings[grating] for grating in gratings]
+wave_range = [float(np.min(wave_range_list)), float(np.max(wave_range_list))]
+del wave_range_gratings, wave_range_list
 
 # distance in pc to parallax
 parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
@@ -159,7 +168,7 @@ species_wave = {
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
     'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
-    'Ti': [[0, 2500.0]],
+    'Ti': [[0, 2400.0]],
     # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
     # 'Mg': [[0, 2600]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
@@ -171,7 +180,7 @@ species_wave = {
     # 'SH': [[0, np.inf]],
     'FeH': [[0, 1850]],
     # 'V': [[0, 2300]],
-    'CrH': [[0, 1650]],
+    'CrH': [[0, 1400]],
     # 'TiH': [[0, 2000]], # add this back for final retrieval
     # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
     # 'AlH': [[1400, np.inf]],
@@ -182,18 +191,25 @@ species_wave = {
     'VO': [[0, 1450.0]],
     'TiO': [[0,1450]],
     # '46TiO': [[0, np.inf]],
-    'SiO': [[2650,3100],[3900, 5200]],
-    'H2S': [[1250, np.inf]],
+    'SiO': [[2650,5300]],
+    # 'H2S': [[1250, np.inf]],
 }
 
 # include_only = ['FeH', 'H2O'] # FIXME: manually add species here
 # if len(include_only) > 0:
 #     species_wave = {k:v for k,v in species_wave.items() if k in include_only}
+ignore_species = []
+for species in species_wave:
+    wmin = np.min(species_wave[species])
+    wmax = np.max(species_wave[species])
+    # print(f'{species}: {wmin} - {wmax}')
+    if wmax < wave_range[0] or wmin > wave_range[1]:
+        # print(f'{species} is not covered by {gratings[0]}')
+        ignore_species.append(species)
     
-    
-all_species = [k[4:] for k in opacity_params.keys()]
-# add line_species that are not in species_wave with (0, inf) = full range
-# species_wave.update({s: [[0, np.inf]] for s in all_species if s not in species_wave})
+del wmin, wmax
+print(f' --> {len(ignore_species)} species ignored: {ignore_species}')
+species_wave = {k:v for k,v in species_wave.items() if k not in ignore_species}
 
 opacity_params = {k:v for k,v in opacity_params.items() if k[4:] in species_wave.keys()}
 assert len(opacity_params) > 0, 'No opacity parameters'

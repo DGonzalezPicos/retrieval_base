@@ -54,9 +54,10 @@ def get_bestfit_params(target,run):
 # run = 'lbl15_G2G3_3'
 # run = 'lbl12_G1G2G3_fastchem_1'
 
-targets = dict(TWA28={'run': 'lbl11_G1G2G3_fastchem_0', 'teff': (2382, 42)},
-                TWA27A={'run': 'lbl11_G1G2G3_fastchem_0', 'teff': (2430, 20)})
-
+runs = dict(
+    TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+            )
 
 def get_PT(path, target, run):
     
@@ -137,10 +138,16 @@ def plot_envelopes(p, t_env, ax=None, cf=None, **kwargs):
     return ax
 
 # colors = {'CRIRES': 'green', 'G235': 'navy', 'G235+G395': 'brown'}
-colors = dict(TWA28={'data':'k', 'model':'darkorange', 'crires': 'orange'},
-              TWA27A={'data':'#733b27', 'model':'#0a74da'})
+colors = dict(TWA28={'data':'k', 
+                     'model':['darkorange', 'darkgreen'], 
+                     'model_labels':['G140+G235+G395', 'G235'],
+                     'crires': 'orange'},
+              TWA27A={'data':'#733b27',
+                      'model':['#0a74da'],
+                      'model_labels':['G140+G235+G395'],
+                      })
 
-fig, ax = plt.subplots(1,1,figsize=(4,4), tight_layout=True)
+fig, ax = plt.subplots(1,1,figsize=(6,4), tight_layout=True)
 
 def plot_crires(ax):
     run_full = 'final_full'
@@ -149,20 +156,26 @@ def plot_crires(ax):
                         ls='--', ls_cf='--', lw_cf=1.0)
 
 
-for target in ['TWA28', 'TWA27A']:
-    Teff = targets[target]['teff']
+targets_params = dict(
+    TWA27A={'teff': (2430, 20)},
+    TWA28={'teff': (2382, 42)},
+            )
+
+for t, target in enumerate(runs.keys()):
+    Teff = targets_params[target]['teff']
     # label_teff = r'T$_{\rm eff}$' + f' = {Teff[0]} K'
     label_teff = f'{Teff[0]:.0f} K'
     # ax.axvspan(Teff[0]-Teff[1], Teff[0]+Teff[1], color=colors[target]['model'], alpha=0.3, label=label_teff, lw=0, zorder=-1)
-    ax.axvline(Teff[0], color=colors[target]['model'], ls=':', lw=2, zorder=-10, alpha=0.6, label=label_teff)
+    ax.axvline(Teff[0], color=colors[target]['model'][0], ls=':', lw=2, zorder=-10, alpha=0.6, label=label_teff)
     
     if target == 'TWA28':
         plot_crires(ax)
-    
-    p, t, cf = get_PT(path, target, targets[target]['run'])
-    ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'], alpha=0.3, fill_cf=True,
-                        label='TWA ' + target.replace('TWA', ''),
-                        ls_cf='-', lw_cf=1.0)
+        
+    for r, run in enumerate(runs[target]):
+        p, t, cf = get_PT(path, target, run)
+        ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'][r], alpha=0.3, fill_cf=True,
+                            label='TWA ' + target.replace('TWA', '') + f"\n({colors[target]['model_labels'][r]})",
+                            ls_cf='-', lw_cf=1.0)
     
     
 
@@ -175,8 +188,10 @@ ax.set_xlim(None, 5000)
 ax.legend(prop={'size': 14, 'weight': 'bold'}, loc='upper right')
 # make the order of legend reverse
 handles, labels = ax.get_legend_handles_labels()
-leg = ax.legend(handles[::-1], labels[::-1], prop={'size': 10, 'weight': 'bold'}, loc='upper right',
-          frameon=False, ncol=1)
+leg = ax.legend(handles[::-1], labels[::-1], 
+                prop={'size': 10, 'weight': 'bold'}, 
+                loc=(1.01, 0.0),
+                frameon=False, ncol=1)
 
 # for lh in leg.get_lines():
 #     lh.set_alpha(1.0)

@@ -274,18 +274,12 @@ ism_dict = {'oxygen': (557, 30), # ISM value from Wilson et al. 1999
 plot_crossfield = True
 
 top = 0.92
-# fig, axes = plt.subplots(1,3, figsize=(10,3), sharex=True, gridspec_kw={'hspace': 0.1, 
-#                                                                        'wspace': 0.1,
-#                                                                         'left': 0.15, 
-#                                                                         'right': 0.78, 
-#                                                                         'top': top, 
-#           
-# 'bottom': 0.07})
+
 fig = plt.figure(figsize=(6, 6))  # Adjust the figure size as needed
 gs = fig.add_gridspec(10, 12, hspace=0.20, wspace=0.0)
 
 ax_spectrum = fig.add_subplot(gs[0:3, :])
-ax_residuals = fig.add_subplot(gs[3, :])
+ax_residuals = fig.add_subplot(gs[3, :], sharex=ax_spectrum)
 
 
 
@@ -308,13 +302,6 @@ thandles = ['a', 'b', 'c']
 fig.text(-0.11, 1.05, thandles[0], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
 fig.text(0.35, -0.85, thandles[1], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
 fig.text(0.95, -0.85, thandles[2], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
-# for i, ax in enumerate(axes):
-#     ax.text(0.01, 0.95, thandles[i], transform=ax.transAxes, fontsize=12, ha='left', va='top')
-
-
-
-# ylim_min = 50.0
-# ylim_max = 3000.0
 
 xytext = {'Gl 699' : (-28,5),
         #   'Gl 411' : (3,3),

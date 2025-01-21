@@ -206,8 +206,8 @@ my_targets = [s.replace('Gl ', 'gl') for s in names if s not in ignore_names][::
 
 
 def plot(orders, text_x=None, xlim=None, **kwargs):
-    fig, ax = plt.subplots(2,1, figsize=(5,9), sharex=True, gridspec_kw={'height_ratios': [9, 1],
-                                                                        'hspace': 0.08,
+    fig, ax = plt.subplots(2,1, figsize=(5,9), sharex=True, gridspec_kw={'height_ratios': [15, 1],
+                                                                        'hspace': 0.03,
                                                                         'top': 0.97,
                                                                         'bottom': 0.13,
                                                                         'left': 0.10,
@@ -249,7 +249,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     sm.set_array([])  # Only needed for color bar
     
     # create ax for colorbar
-    cbar_ax = fig.add_axes([1.005, 0.242, 0.02, 0.728])
+    cbar_ax = fig.add_axes([1.005, 0.1932, 0.02, 0.777])
     cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', pad=0.01, aspect=80, location='right')
     # cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=80, location='right')
     cbar.set_label('Temperature (K)')

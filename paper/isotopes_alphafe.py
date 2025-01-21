@@ -1,7 +1,7 @@
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
-from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, find_run, load_romano_models
+from retrieval_base.auxiliary_functions import spirou_sample, read_spirou_sample_csv, find_run, load_romano_models, axhspan_gradient
 # import config_freechem as conf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,6 +29,12 @@ isotope = 'oxygen'
 assert isotope in ['carbon', 'oxygen'], f'Isotope {isotope} not recognized (choose from oxygen, carbon)'
 y_labels = {'oxygen': r'$^{16}$O/$^{18}$O', 'carbon': r'$^{12}$C/$^{13}$C'}
 y_lims = {'oxygen': (30, 4000), 'carbon': (20, 400)}
+
+sigma_colors = {
+                '3':'k',
+                '2': '#0C823E',
+                '1': '#ff6a90'
+                }
 
 def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None,**kwargs):
     if target not in os.getcwd():
@@ -131,7 +137,7 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
                     label=label.replace('gl', 'Gl '),
                     alpha=0.96,
                         # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='black', # Black edge color
+                    markeredgecolor=sigma_colors['3'], # Black edge color
                     markeredgewidth=0.8,     # Thickness of the edge
                     capsize=2,               # Size of the cap on error bars
                     capthick=0.8,             # Thickness of the cap on error bars
@@ -149,7 +155,26 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
                     label=label.replace('gl', 'Gl '),
                     alpha=0.96,
                         # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='darkorange', # Black edge color
+                    markeredgecolor=sigma_colors['2'], # Black edge color
+                    markeredgewidth=0.8,     # Thickness of the edge
+                    capsize=2,               # Size of the cap on error bars
+                    capthick=0.8,             # Thickness of the cap on error bars
+                    ecolor='gray',          # Color of the error bars, set alpha of ecolor to make it transparent
+                    elinewidth=0.8,           # Thickness of the error bars
+                    
+                    
+                    color=kwargs.get('color', 'k'),
+        )
+        
+    elif sigma > 1.0:
+        ax.errorbar(x, isotope_quantiles[1],
+                    xerr=xerr,
+                    yerr=[[isotope_quantiles[1]-isotope_quantiles[0]], [isotope_quantiles[2]-isotope_quantiles[1]]],
+                    fmt=fmt, 
+                    label=label.replace('gl', 'Gl '),
+                    alpha=0.96,
+                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+                    markeredgecolor=sigma_colors['1'], # Black edge color
                     markeredgewidth=0.8,     # Thickness of the edge
                     capsize=2,               # Size of the cap on error bars
                     capthick=0.8,             # Thickness of the cap on error bars
@@ -161,19 +186,22 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
         )
     else:
         # plot lower limit
-        fmt = '^'
-        ax.errorbar(x, isotope_quantiles[0],
-                    xerr=xerr,
-                    yerr=[[0.0], [0.4*(isotope_quantiles[2]-isotope_quantiles[1])]],
-                    lolims=True,
-                    fmt=fmt, 
-                    label=label.replace('gl', 'Gl '),
-                    alpha=0.9,
-                        # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
-                    markeredgecolor='k', # Black edge color
-                    markeredgewidth=0.8,     # Thickness of the edge
-                    color=kwargs.get('color', 'k'),
-        )
+        # fmt = '^'
+        # ax.errorbar(x, isotope_quantiles[0],
+        #             xerr=xerr,
+        #             yerr=[[0.0], [0.4*(isotope_quantiles[2]-isotope_quantiles[1])]],
+        #             lolims=True,
+        #             fmt=fmt, 
+        #             label=label.replace('gl', 'Gl '),
+        #             alpha=0.9,
+        #                 # markerfacecolor='none',  # Make the inside of the marker transparent (optional)
+        #             markeredgecolor='k', # Black edge color
+        #             markeredgewidth=0.8,     # Thickness of the edge
+        #             color=kwargs.get('color', 'k'),
+        # )
+        print(f' {target} not plotted... sigma = {sigma:.2f}')
+        pass
+        
         
         
     if xytext is not None:
@@ -360,8 +388,18 @@ for i, isotope in enumerate(isotopes):
             print(f'---> Skipping {name}')
             continue
 
-
-    ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label='ISM')
+    x_span = np.linspace(-0.3, 0.3, 100)
+    rgb_color = np.array([10, 191, 134]) / 255.0 # light green
+    rgb_color *= 0.7
+    # for x_span in x_spans:
+        
+    for ii in range(2):
+        if ii == 1:
+            x_span = x_span[::-1]
+        poly, ism_label = axhspan_gradient(ax, x_span, y_range=(ism[0]-ism[1], ism[0]+ism[1]), rgb_color=rgb_color, gamma=3, n=120,
+                            label='ISM', reverse=False)
+    
+    # ax.axhspan(ism[0]-ism[1], ism[0]+ism[1], color='green', alpha=0.2,lw=0, zorder=-1, label='ISM')
     # ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
    
 
@@ -423,7 +461,23 @@ if x_param == '[M/H]':
         axes[1].plot(Z, o16o18, color=gce_colors[i], lw=1.5, label=mass_range_label, alpha=0.8, path_effects=path_effects)
         
 
-axes[0].legend(ncol=3, frameon=False, fontsize=8, loc=(0.00, 1.01))
+axes[0].legend(ncol=3, )
+axes[0].legend(ncol=3)
+# add handle of ism_label to existing legend
+handles, labels = axes[0].get_legend_handles_labels()
+# change alpha of ism_label
+ism_label.set_alpha(0.65)
+# change edgecolor of ism_label
+# ism_label.set_edgecolor('')
+# change edgewidth of ism_label
+ism_label.set_linewidth(0.0)
+# introdduce item in index 1 instead of append
+handles.insert(1, ism_label)
+labels.insert(1, 'ISM')
+# axes[0].legend(handles, labels, ncol=3, frameon=False, fontsize=8, loc=(0.32, 1.01)) # longcbar
+axes[0].legend(handles, labels, ncol=2, frameon=False, fontsize=8, loc=(0.00, 1.01)) # shortcbar
+
+
 loglog = True
 loglog_label = '_loglog' if loglog else ''
 if loglog:
@@ -443,6 +497,33 @@ if loglog:
         
 xlims_dict = {'[M/H]': (-0.6, 0.6), '[C/H]': (-0.6, 0.6), '[alpha/Fe]': (-0.20, 0.30)}
 xlims = xlims_dict[x_param]
+
+# add handles for subplots: a, b
+thandles = ['a', 'b']
+fig.text(0.04, 0.97, thandles[0], transform=axes[0].transAxes, fontsize=12, ha='left', va='top', weight='bold')
+fig.text(0.04, 0.97, thandles[1], transform=axes[1].transAxes, fontsize=12, ha='left', va='top', weight='bold')
+
+sigma_handles = []
+sigma_labels = []
+from matplotlib.lines import Line2D
+for sigma in ['3', '2', '1']:
+    # Create a circle patch for the legend
+    sigma_handles.append(Line2D([0], [0], marker='o', color='w', markeredgecolor=sigma_colors[sigma], markersize=6, markeredgewidth=0.9))
+    if sigma == '3':
+        sigma_labels.append(f'$\geq${int(sigma)}$\sigma$')
+    else:
+        sigma_labels.append(f'{int(sigma)}$\sigma$ - {int(sigma)+1}$\sigma$')
+
+# Create legend with custom handler map to ensure circles are drawn properly
+legend = axes[-1].legend(sigma_handles, sigma_labels, 
+                         framealpha=0.4,
+                         fontsize=7,
+                        #  title='$\sigma$-level',
+                        #  loc=(0.32, 1.01)
+                         )
+
+# Make sure the circles appear round in the legend
+legend.get_frame().set_linewidth(0.5)
 
 axes[1].set_xlim(*xlims)
 # x_param_label = x_param.split('(')[0].strip()

@@ -33,16 +33,16 @@ def generate_latex_table(csv_file, output_file):
 \centering
 '''
     latex_table += "\\caption{"
-    latex_table += "Fundamental Parameters of the Stars in the Sample. "
-    latex_table += "The spectral types, effective temperatures and masses are from \citep{"
-    latex_table += f"{refs['Cristofari2022']}"
-    latex_table += "} and references therein. "
-    latex_table += "The distances from Gaia EDR3 \citep{"
-    latex_table += f"{refs['GaiaEDR3']}"
-    latex_table += "}. "
-    latex_table += "The metallicities are from \citep{"
-    latex_table += f"{refs['Cristofari2023']}"
-    latex_table += "}}."                                                    
+    latex_table += "Fundamental parameters of the stars in the sample. "
+    # latex_table += "The spectral types, effective temperatures and masses are from \citep{"
+    # latex_table += f"{refs['Cristofari2022']}"
+    # latex_table += "} and references therein. "
+    # latex_table += "The distances from Gaia EDR3 \citep{"
+    # latex_table += f"{refs['GaiaEDR3']}"
+    # latex_table += "}. "
+    # latex_table += "The metallicities are from \citep{"
+    # latex_table += f"{refs['Cristofari2023']}"
+    latex_table += "}."                                                    
     #   {refs['Cristofari2022']}} and references therein. \
             # The distances from  Gaia EDR3 \citep{refs['GaiaEDR3']}. \
             #     The metallicities are from \citep{refs['Cristofari2023']}."
@@ -63,22 +63,26 @@ def generate_latex_table(csv_file, output_file):
         #     continue
         for attr in attrs:
             # check if it exists
+            sign = ''
             if attr in row:
                 if isinstance(row[attr], str) and "+-" in row[attr]:
-                    print(f' row[attr] = {row[attr]}')
+                    print(f'[{attr}] row[attr] = {row[attr]}')
                     v, err = row[attr].split('+-')
                     v = float(v)
+                    if attr == '[M/H]': 
+                        sign = '+' if v > 0 else '-'
+                        v = abs(v)
                     err = float(err)
                     print(f' v = {v}, err = {err}')
                     # latex_table += "$" + row[attr].replace('+-', '\pm') + '$ & '
                     if attr == 'Teff (K)':
                         latex_table += "$" + f"{v:.0f} \pm {err:.0f}" + '$ & '
                     else:
-                        latex_table += "$" + f"{v:.2f} \pm {err:.2f}" + '$ & '
+                        latex_table += "$" + f"{sign}{v:.2f} \pm {err:.2f}" + '$ & '
                 else:
                     try:
                         v = float(row[attr])
-                        latex_table += "$" + f"{v:.2f}" + '$ & '
+                        latex_table += "$" + f"{sign}{v:.2f}" + '$ & '
                     except:
                         latex_table += f"{row[attr]}" + ' & '
                     
@@ -92,6 +96,14 @@ def generate_latex_table(csv_file, output_file):
     # End the LaTeX table
     latex_table += r'''\hline
 \end{tabular}
+\\
+\footnotesize{\textbf{Notes:} The spectral types, effective temperatures and masses are from \citep{'''
+    latex_table += f"{refs['Cristofari2022']}"
+    latex_table += r'''}. Distances are from Gaia EDR3, with typical uncertainties of 0.002 pc \citep{'''
+    latex_table += f"{refs['GaiaEDR3']}"
+    latex_table += r'''}. Metallicities were measured on the same dataset as the one used for the present work by \cite{'''
+    latex_table += f"{refs['Cristofari2023']}"
+    latex_table += r'''}.}
 \end{table*}
 '''
 

@@ -42,7 +42,7 @@ def main(target, ax=None, fig=None, offset=0, order=0, run=None, lw=1.0, color=N
     output_dir = conf.prefix + 'output'
     print(f'output_dir = {output_dir}')
     
-    wave, residuals, err = np.load(output_dir + f'/test_residuals_{order}.npy')
+    wave, residuals, err = np.load(output_dir + f'/residuals_{order}.npy')
     print(f'wave.shape = {wave.shape}')
     
     ax.plot(wave, residuals + offset, color=color, lw=lw)
@@ -71,8 +71,10 @@ teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
 # create colormap with teff in K
-norm = plt.Normalize(min(teff.values()), 4000.0)
-cmap = plt.cm.plasma
+# norm = plt.Normalize(min(teff.values()), 4000.0)
+# cmap = plt.cm.plasma
+norm = plt.Normalize(3000.0, 3900.0)
+cmap = plt.cm.coolwarm_r
 
 fig, ax = plt.subplots(1,1, figsize=(14,8), tight_layout=True)
 
@@ -81,7 +83,7 @@ text_x = [(2287.0, 2364.),
           (2435.0, 2510.0),
 ]
           
-order = 0
+order = 2
 for i, name in enumerate(names):
     target = name.replace('Gl ', 'gl')
     color = cmap(norm(teff[name]))

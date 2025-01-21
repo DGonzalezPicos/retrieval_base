@@ -16,12 +16,17 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A='lbl11_G1G2G3_fastchem_0',
-    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+    TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
             )
-colors = dict(TWA28={'data':'k', 'model':'orange'},
-              TWA27A={'data':'#733b27', 'model':'#0a74da'})
-
+colors = dict(TWA28={'data':'k', 
+                     'model':['darkorange', 'darkgreen'], 
+                     'model_labels':['G140+G235+G395', 'G235'],
+                     'crires': 'orange'},
+              TWA27A={'data':'#733b27',
+                      'model':['#0a74da'],
+                      'model_labels':['G140+G235+G395'],
+                      })
 
 def load_data(target, run, cache=True):
     cwd = os.getcwd()
@@ -99,8 +104,10 @@ for t, target in enumerate(runs.keys()):
 
         isotope_ratios = {'12C/13C': VMRs_posterior['12CO'] / VMRs_posterior['13CO'],
         }
-        plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'], edge=True, density=True,
-                label='TWA '+target.replace('TWA', ''), fill=(r==0))
+        plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'][r], edge=True, density=True,
+                # label=colors[target]['model_labels'][r], fill=(r==0))
+                label='TWA ' + target.replace('TWA', '') + f"\n({colors[target]['model_labels'][r]})",
+                fill=(r==0))
     
 # load CRIRES posteriors
 file_crires = path / target / f'retrieval_outputs/final_full/test_data/bestfit_Chem.pkl'

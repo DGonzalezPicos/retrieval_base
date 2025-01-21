@@ -200,6 +200,7 @@ class Chemistry:
         
         assert hasattr(self, 'VMRs_posterior'), 'VMRs_posterior not yet calculated'
         self.ratios_posterior = {}
+        # FIXME
         
         
     
@@ -249,6 +250,16 @@ class Chemistry:
                        '[C/H]': np.nanmean(np.log10(C/H)) - (8.46 - 12) # Asplund et al. (2021)
                        }
         return self.ratios
+    
+    def get_VMRs_envelopes(self):
+        
+        # assert hasattr(self, 'mass_fractions_envelopes'), 'Mass fractions not yet evaluated.'
+        assert hasattr(self, 'VMRs_posterior'), 'Mass fractions not yet evaluated.'
+        q = [0.5-0.997/2, 0.5-0.95/2, 0.5-0.68/2, 0.5, 
+             0.5+0.68/2, 0.5+0.95/2, 0.5+0.997/2
+             ]   
+        self.VMRs_envelopes = {key:quantiles(self.VMRs_posterior[key], q) for key in self.VMRs_posterior.keys()}
+        return self
 
 
 class FreeChemistry(Chemistry):
@@ -400,15 +411,7 @@ class FreeChemistry(Chemistry):
 
         return self.mass_fractions
     
-    def get_VMRs_envelopes(self):
-        
-        # assert hasattr(self, 'mass_fractions_envelopes'), 'Mass fractions not yet evaluated.'
-        assert hasattr(self, 'VMRs_posterior'), 'Mass fractions not yet evaluated.'
-        q = [0.5-0.997/2, 0.5-0.95/2, 0.5-0.68/2, 0.5, 
-             0.5+0.68/2, 0.5+0.95/2, 0.5+0.997/2
-             ]   
-        self.VMRs_envelopes = {key:quantiles(self.VMRs_posterior[key], q) for key in self.VMRs_posterior.keys()}
-        return self
+    
     
 class FastChemistry(Chemistry):
     isotopologues_dict = {'12CO': ['13CO', 'C18O', 'C17O'], 

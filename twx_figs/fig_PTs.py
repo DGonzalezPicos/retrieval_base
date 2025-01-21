@@ -56,7 +56,7 @@ def get_bestfit_params(target,run):
 
 runs = dict(
     TWA27A=['lbl11_G1G2G3_fastchem_0'],
-    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
             )
 
 def get_PT(path, target, run):
@@ -65,7 +65,8 @@ def get_PT(path, target, run):
     envelopes_dir.mkdir(parents=True, exist_ok=True)
 
     PT_envelopes_file = envelopes_dir / 'PT_envelopes.npy'
-    
+    VMR_envelopes_file = envelopes_dir / 'VMR_envelopes.npy'
+
     if PT_envelopes_file.exists():
         print(f' --> Found {PT_envelopes_file}')
         PT_envelopes_data = np.load(PT_envelopes_file)
@@ -98,6 +99,7 @@ def get_PT(path, target, run):
         ret.copy_integrated_contribution_emission()
         np.save(PT_envelopes_file, np.vstack([ret.PT.pressure, ret.PT.temperature_envelopes, ret.PT.int_contr_em['NIRSpec']]))
         print(f' --> Saved {PT_envelopes_file}')
+        ret.Chem.get_VMRs_posterior(save_to=envelopes_dir)
         return ret.PT.pressure, ret.PT.temperature_envelopes, ret.PT.int_contr_em['NIRSpec']
         
     return pressure, temperature, icf

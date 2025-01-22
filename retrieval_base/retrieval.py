@@ -255,7 +255,7 @@ class Retrieval:
                 
         self.Chem = get_Chemistry_class(
             # self.pRT_atm[w_set].line_species, 
-            self.conf.line_species_dict,
+            getattr(self.conf, 'line_species_dict', None),
             self.pRT_atm[w_set].pressure, 
             self.Param.chem_mode, 
             **self.conf.chem_kwargs, 
@@ -299,6 +299,18 @@ class Retrieval:
         self.m_spec_species  = None
         self.pRT_atm_species = None
         self.LogLike_species = None
+        
+    def eval_PT_chemistry(self, sample):
+        """sample is a vector of parameters"""
+        
+        # Update the parameters
+        self.evaluate_model(sample)
+        
+        # Retrieve the temperature and mass fractions
+        temperature = self.PT(self.Param.params)
+        mass_fractions = self.Chem(self.Param.params, temperature)
+        
+        return temperature, mass_fractions, self.Chem.COH
 
     def PMN_lnL_func(self, cube=None, ndim=None, nparams=None):
 
@@ -478,15 +490,13 @@ class Retrieval:
 
         return flat_all_returned
 
-    def get_PT_mf_envelopes(self, posterior):
+    def get_PT_mf_envelopes_old(self, posterior):
 
         # Return the PT profile and mass fractions
         self.CB.return_PT_mf = True
 
         # Objects to store the envelopes in
         self.Chem.mass_fractions_posterior = {}
-        self.Chem.unquenched_mass_fractions_posterior = {}
-
         self.Chem.CO_posterior  = []
         self.Chem.FeH_posterior = []
 
@@ -522,12 +532,10 @@ class Retrieval:
 
             # Store the temperatures and mass fractions
             temperature_i, mass_fractions_i = returned
-            unquenched_mass_fractions_i = None
-            if hasattr(self.Chem, 'unquenched_mass_fractions'):
-                unquenched_mass_fractions_i = self.Chem.unquenched_mass_fractions
+            
 
-            # Return the temperature, mass fractions, unquenched, C/O ratio and Fe/H
-            return temperature_i, mass_fractions_i, unquenched_mass_fractions_i, self.Chem.ratios['C/O'], self.Chem.ratios['[C/H]']
+            # Return the temperature, mass fractions, C/O ratio and Fe/H
+            return temperature_i, mass_fractions_i, self.Chem.ratios['C/O'], self.Chem.ratios['[C/H]']
         
         # Compute the mass fractions posterior in parallel
         returned = self.parallel_for_loop(func, posterior)
@@ -537,7 +545,6 @@ class Retrieval:
         
         self.PT.temperature_posterior, \
         mass_fractions_posterior, \
-        unquenched_mass_fractions_posterior, \
         self.Chem.CO_posterior, \
         self.Chem.FeH_posterior \
             = returned
@@ -551,12 +558,8 @@ class Retrieval:
 
             self.Chem.mass_fractions_posterior[line_species_i] = []
 
-            if unquenched_mass_fractions_posterior[0] is None:
-                continue
-            self.Chem.unquenched_mass_fractions_posterior[line_species_i] = []
-
         # Store the mass fractions posterior in the correct order
-        for mf_i, unquenched_mf_i in zip(mass_fractions_posterior, unquenched_mass_fractions_posterior):
+        for mf_i in mass_fractions_posterior:
             
             # Loop over the line species
             for line_species_i in mf_i.keys():
@@ -564,13 +567,10 @@ class Retrieval:
                 self.Chem.mass_fractions_posterior[line_species_i].append(
                     mf_i[line_species_i]
                     )
-
-                if unquenched_mf_i is None:
-                    continue
-                # Store the unquenched mass fractions
-                self.Chem.unquenched_mass_fractions_posterior[line_species_i].append(
-                    unquenched_mf_i[line_species_i]
-                    )
+                
+        # Add H- to the mass fractions
+        if 'H-' in list(self.Chem.mass_fractions.keys()):
+            self.Chem.mass_fractions_posterior['H-'] = np.array([mf_i['H-'] for mf_i in mass_fractions_posterior])
 
 
         # Convert profiles to 1, 2, 3-sigma equivalent and median
@@ -595,22 +595,82 @@ class Retrieval:
                 self.Chem.mass_fractions_posterior[line_species_i], q=q, axis=0
                 )
             
-            if unquenched_mass_fractions_posterior[0] is None:
-                continue
-
-        # Store the unquenched mass fractions
-        if hasattr(self.Chem, 'unquenched_mass_fractions'):
-
-            for line_species_i in self.Chem.unquenched_mass_fractions.keys():
-                self.Chem.unquenched_mass_fractions_posterior[line_species_i] = \
-                    np.array(self.Chem.unquenched_mass_fractions_posterior[line_species_i])
-
-                self.Chem.unquenched_mass_fractions_envelopes[line_species_i] = af.quantiles(
-                    self.Chem.unquenched_mass_fractions_posterior[line_species_i], q=q, axis=0
-                    )
 
         self.CB.return_PT_mf = False
+        
+    def get_PT_mf_envelopes(self, posterior, n_samples=None, cache=True):
 
+        if n_samples is not None:
+            print(f' Using first {n_samples} samples')
+            posterior = posterior[:n_samples]
+            
+        file = f'{self.conf.prefix}data/temperature_VMRs_COH.npy'
+        file_line_species = f'{self.conf.prefix}data/line_species.npy'
+        if (not cache) or (not os.path.exists(file)):
+            temperature_list, mass_fractions_list, C_list, O_list, H_list = [], [], [], [], []
+            
+            for i, sample in enumerate(posterior):
+                print(f'Sample {i}/{len(posterior)}', end='\r', flush=True)
+                temperature, mass_fractions, COH = self.eval_PT_chemistry(sample)
+                temperature_list.append(temperature)
+                mass_fractions_list.append(mass_fractions)
+                C_list.append(COH['C'])
+                O_list.append(COH['O'])
+                H_list.append(COH['H'])
+                
+            # save as npy file with columns temperature, mass_fractions, C, O, H
+            mass_fractions_values = np.array([np.array(list(x.values())) for x in mass_fractions_list])
+            mass_fractions_array = np.swapaxes(mass_fractions_values, 0, 1)
+            print(f'mass_fractions_array.shape = {mass_fractions_array.shape}')
+            
+            VMRs_list = []
+            MMW = mass_fractions_array[list(self.Chem.mass_fractions.keys()).index('MMW')]
+            line_species_list = []
+            for i, line_species_i in enumerate(mass_fractions_list[0].keys()):
+                if line_species_i == 'MMW':
+                    continue
+                species_i = self.Chem.pRT_name_dict.get(line_species_i, line_species_i)
+                mass_i = self.Chem.read_species_info(species_i, 'mass')
+                VMRs_list.append(mass_fractions_array[i,] * MMW / mass_i)
+                line_species_list.append(line_species_i)
+            VMRs_array = np.array(VMRs_list)
+            # create array with shape (n_samples, n_layers, n_cols) where n_cols = (temperature, mass_fractions, C, O, H)
+
+            temperature_array = np.array(temperature_list)[np.newaxis,:,:]
+
+
+            COH_array = np.array([np.array(C_list), np.array(O_list), np.array(H_list)])
+            
+            
+            stack_array = np.vstack((temperature_array, VMRs_array, COH_array))
+            print(f'Stacked array shape: {stack_array.shape}')
+            np.save(file, stack_array)
+            print(f'Saved {file}!')
+            
+            # save file with line species list
+            np.save(file_line_species, np.array(line_species_list))
+            print(f'Saved {file_line_species}!')
+            
+        stack_array = np.load(file)
+        line_species_list = np.load(file_line_species)
+        self.PT.temperature_posterior = stack_array[0,:,:]
+       
+        self.Chem.VMRs_posterior = {k:stack_array[1:,:,:] for k in line_species_list}
+       
+            
+        self.Chem.COH_posterior = {k:stack_array[-3:,:,:] for k in ['C', 'O', 'H']}
+            
+        # calculate envelopes and store
+        q = [0.5-0.997/2, 0.5-0.95/2, 0.5-0.68/2, 0.5, 
+             0.5+0.68/2, 0.5+0.95/2, 0.5+0.997/2
+             ]
+        self.PT.temperature_envelopes = af.quantiles(self.PT.temperature_posterior, q=q, axis=0)
+        # self.Chem.mass_fractions_envelopes = {k:af.quantiles(self.Chem.mass_fractions_posterior[k], q=q, axis=0) for k in self.Chem.mass_fractions.keys()}
+        self.Chem.COH_envelopes = {k:af.quantiles(self.Chem.COH_posterior[k], q=q, axis=0) for k in ['C', 'O', 'H']}
+        self.Chem.VMRs_envelopes = {k:af.quantiles(self.Chem.VMRs_posterior[k], q=q, axis=0) for k in self.Chem.VMRs.keys()}
+        
+        return self.PT.temperature_envelopes, self.Chem.VMRs_envelopes, self.Chem.COH_envelopes
+    
     def get_species_contribution(self):
 
         #self.m_spec_species, self.pRT_atm_species = {}, {}
@@ -767,12 +827,12 @@ class Retrieval:
         # print(f' bestfit_params.shape = {bestfit_params.shape}')
         return bestfit_params, posterior
     
-    def evaluate_model(self, bestfit_params):
-        # Evaluate the model with best-fitting parameters
-            
+    def evaluate_model(self, sample):
+        # Evaluate the model with a set of parameters
+        # sample is a vector of parameters
         for i, key_i in enumerate(self.Param.param_keys):
             # Update the Parameters instance
-            self.Param.params[key_i] = bestfit_params[i]
+            self.Param.params[key_i] = sample[i]
             # print(f' {key_i}: {bestfit_params[i]}')
             if key_i.startswith('log_'):
                 self.Param.params = self.Param.log_to_linear(self.Param.params, key_i)

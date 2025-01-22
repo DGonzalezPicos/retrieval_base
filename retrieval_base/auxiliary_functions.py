@@ -785,3 +785,10 @@ def select_species(line_species, species_wave, wmin, wmax):
                     relevant_species.append(mol)
                     break  # No need to check further ranges for this molecule
     return relevant_species
+
+
+def solar_metallicity(C, H, asplund_year=2021):
+    """Calculate solar metallicity from ****carbon**** C/H ratio"""
+    
+    asplund = {2021: 8.46, 2009: 8.43}
+    return np.log10(C/H) - (asplund[asplund_year] - 12.0)

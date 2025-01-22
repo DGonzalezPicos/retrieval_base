@@ -55,9 +55,17 @@ def get_bestfit_params(target,run):
 # run = 'lbl12_G1G2G3_fastchem_1'
 
 runs = dict(
-    TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    # TWA27A=['lbl11_G1G2G3_fastchem_0'],
     TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
             )
+colors = dict(TWA28={'data':'k', 
+                     'model':['brown', 'darkgreen', 'darkblue'], 
+                     'model_labels':['G1+G2+G3', 'G2+G3', 'G2'],
+                     'crires': 'orange'},
+              TWA27A={'data':'#733b27',
+                      'model':['#0a74da'],
+                      'model_labels':['G1+G2+G3']
+                      })
 
 def get_PT(path, target, run):
     
@@ -138,16 +146,6 @@ def plot_envelopes(p, t_env, ax=None, cf=None, **kwargs):
             ax_cf.fill_between(cf, p, color=color, alpha=0.05)
         
     return ax
-
-# colors = {'CRIRES': 'green', 'G235': 'navy', 'G235+G395': 'brown'}
-colors = dict(TWA28={'data':'k', 
-                     'model':['darkorange', 'darkgreen'], 
-                     'model_labels':['G140+G235+G395', 'G235'],
-                     'crires': 'orange'},
-              TWA27A={'data':'#733b27',
-                      'model':['#0a74da'],
-                      'model_labels':['G140+G235+G395'],
-                      })
 
 fig, ax = plt.subplots(1,1,figsize=(6,4), tight_layout=True)
 

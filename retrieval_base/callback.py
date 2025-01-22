@@ -194,6 +194,7 @@ class CallBack:
         )
 
         # Make a summary figure #FIXME: uncomment this
+        # self.plot_summary = False
         if self.plot_summary:
             self.fig_summary()
 

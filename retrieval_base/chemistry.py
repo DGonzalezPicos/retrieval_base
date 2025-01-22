@@ -174,6 +174,9 @@ class Chemistry:
         if "H2O_181" in list(self.VMRs_posterior.keys()) and "H2O" in list(self.VMRs_posterior.keys()):
             self.VMRs_posterior["H2_16_18O"] = self.VMRs_posterior["H2O"] / self.VMRs_posterior["H2O_181"]
             
+        if 'H-' in list(self.mass_fractions_posterior.keys()):
+            self.VMRs_posterior["H-"] = self.mass_fractions_posterior["H-"]
+            
         if hasattr(self, 'CO_posterior'):
             self.VMRs_posterior["C/O"] = self.CO_posterior
         if hasattr(self, 'FeH_posterior'):
@@ -191,6 +194,8 @@ class Chemistry:
             np.save(file_labels, np.array(list(self.VMRs_posterior.keys())))
             print(f'[Chemistry.get_VMRs_posterior] Saved VMRs posterior and envelopes to:\n {file_posterior}\n {file_envelopes}\n {file_labels}')
         return self
+    
+    
     
     def calculate_posterior_ratios(self):
         """
@@ -403,6 +408,7 @@ class FreeChemistry(Chemistry):
 
         # Remove certain species
         self.remove_species()
+        # self.mass_fractions_keys = list(self.mass_fractions.keys()) # store for analysis purposes....
         
         self.ratios = {'C/O': np.nanmean(C / O), 
                     #    'C/H': np.mean(C / H), 
@@ -525,7 +531,7 @@ class FastChemistry(Chemistry):
         # self.mass_fractions['He'] = self.read_species_info('He', 'mass') * self.VMRs['He']
         self.mass_fractions['He'] = VMR_He * self.read_species_info('He', 'mass') * np.ones(self.n_atm_layers)
         # self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * self.VMRs['H2']
-        VMR_wo_H2 = np.clip(VMR_wo_H2, a_max=0.99, a_min=0.001)
+        VMR_wo_H2 = np.clip(VMR_wo_H2, a_max=0.999, a_min=1e-20)
         # print(f' VMR_wo_H2 = {VMR_wo_H2}')
         self.mass_fractions['H2'] = self.read_species_info('H2', 'mass') * (1 - VMR_wo_H2) # already an array
         self.mass_fractions['H'] = self.VMRs.get('H', 1e-20 * np.ones(self.n_atm_layers))
@@ -538,30 +544,9 @@ class FastChemistry(Chemistry):
         self.mass_fractions['e-'] = 5.485799e-4 * self.VMRs.get('e-', 1e-20 * np.ones(self.n_atm_layers))
         self.mass_fractions['H-'] = params.get('Hminus', 1e-20) * np.ones(self.n_atm_layers)
         
-        
-        # # mass of electron in amu
-        # mass_e = 5.48579909070e-4
-        # self.mass_fractions['e-'] = mass_e * self.VMRs['e-']
-        # if 'Hminus' in params.keys():
-        #     # print(f' [FastChemistry] params["Hminus"] = {params["Hminus"]}')
-        #     self.mass_fractions['H-'] = params['Hminus'] * np.ones(self.n_atm_layers)
-        # else:
-        #     self.mass_fractions['H-'] = 6e-9 * np.ones(self.n_atm_layers)# FIXME: fix to solar value?
-        # self.mass_fractions['H-'] = 6e-9 * (self.VMRs['e-'] / 6e-9) # scale with respect to solar using e-
-        # self.mass_fractions['e-'] = self.VMRs['e-']
-        # MMW = np.sum([mass_i for mass_i in self.mass_fractions.values()], axis=0)
+    
         MMW = np.sum(np.array(list(self.mass_fractions.values())), axis=0)
         assert len(MMW) == self.n_atm_layers, f'MMW has wrong shape {len(MMW)} != {self.n_atm_layers}'
-        # MMW = 0
-        # for mass_i in self.mass_fractions.values():
-        #     MMW += mass_i
-        # MMW *= np.ones(self.n_atm_layers)
-        # print(f' mmw = {MMW}')
-        # assert all(MMW > 0), f' MMW = {MMW} has negative values'
-        # hot fix for OH linelist 
-        # print(f' [FastChemistry] self.mass_fractions.keys() = {self.mass_fractions.keys()}')
-        # if 'OH_MYTHOS_main_iso' in self.mass_fractions.keys():
-            # self.mass_fractions['OH_MoLLIST_main_iso'] = self.mass_fractions['OH_MYTHOS_main_iso']
         
         # Turn the molecular masses into mass fractions
         for line_species_i in self.mass_fractions.keys():
@@ -569,11 +554,12 @@ class FastChemistry(Chemistry):
         # pRT requires MMW in mass fractions dictionary
         self.mass_fractions['MMW'] = MMW
         
-        self.ratios = {'C/O': np.nanmean(C / O), 
+        self.ratios = {
+                        'C/O': np.nanmean(C / O), 
                     #    'C/H': np.mean(C / H), 
-                       '[C/H]': np.nanmean(np.log10(C/H)) - (8.46 - 12) # Asplund et al. (2021)
-                       }
-        # MMW_mean = np.mean( 
+                       '[C/H]': np.nanmean(np.log10(C/H)) - (8.46 - 12), # Asplund et al. (2021)
+        }
+        self.COH = {'C': C, 'O': O, 'H': H}
         return self.mass_fractions
     
     @property

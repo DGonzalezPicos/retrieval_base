@@ -701,12 +701,17 @@ def fig_VMR(Chem,
 
         label_i = label_i if showlegend else None
         if hasattr(Chem, 'VMRs_envelopes'):
-            ax.fill_betweenx(
-                y=pressure, x1=Chem.VMRs_envelopes[species_i][0], 
-                x2=Chem.VMRs_envelopes[species_i][-1], 
-                color=color_i, ec='none', alpha=0.4,
-                )
-            ax.plot(Chem.VMRs_envelopes[species_i][1], pressure, label=label_i, ls=ls_i, color=color_i, lw=lw_i)
+            try:
+                ax.fill_betweenx(
+                    y=pressure, x1=Chem.VMRs_envelopes[species_i][0], 
+                    x2=Chem.VMRs_envelopes[species_i][-1], 
+                    color=color_i, ec='none', alpha=0.4,
+                    )
+                ax.plot(Chem.VMRs_envelopes[species_i][1], pressure, label=label_i, ls=ls_i, color=color_i, lw=lw_i)
+            except:
+                print(f'No VMRs_envelopes for {species_i}')
+                ax.plot(vmr_i, pressure, label=label_i, ls=ls_i, color=color_i, lw=lw_i)
+                
         else:
             ax.plot(vmr_i, pressure, label=label_i, ls=ls_i, color=color_i, lw=lw_i)
         

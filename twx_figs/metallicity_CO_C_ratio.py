@@ -17,15 +17,15 @@ w_set='NIRSpec'
 
 runs = dict(
     TWA27A=['lbl11_G1G2G3_fastchem_0'],
-    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+    # TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
             )
 colors = dict(TWA28={'data':'k', 
-                     'model':['darkorange', 'darkgreen'], 
-                     'model_labels':['G140+G235+G395', 'G235'],
+                     'model':['brown', 'darkgreen', 'darkblue'], 
+                     'model_labels':['G1+G2+G3', 'G2+G3', 'G2'],
                      'crires': 'orange'},
               TWA27A={'data':'#733b27',
                       'model':['#0a74da'],
-                      'model_labels':['G140+G235+G395'],
+                      'model_labels':['G1+G2+G3']
                       })
 
 def load_data(target, run, cache=True):
@@ -35,53 +35,47 @@ def load_data(target, run, cache=True):
         print(f'Changed directory to {target}')
         
     conf = Config(path=path, target=target, run=run)(config_file) 
-    CO_file = f'{conf.prefix}data/CO_posterior.npy'
-    CH_file = f'{conf.prefix}data/CH_posterior.npy'
-    # mass_fractions_posterior_file = f'{conf.prefix}data/mass_fractions_posterior.npy'
-    VMRs_posterior_file = f'{conf.prefix}data/VMRs_posterior.npy'
-    files = [CO_file, CH_file, VMRs_posterior_file]
     
-    if cache and all(os.path.exists(file) for file in files):
-        CO_posterior = np.load(CO_file)
-        CH_posterior = np.load(CH_file)
-        VMRs_posterior = np.load(VMRs_posterior_file, allow_pickle=True).item()
-    else:
-        
+    PT_VMRs_COH_file = f'{path}/{target}/retrieval_outputs/{run}/test_data/temperature_VMRs_COH.npy'
+
+    log_g_posterior_file = f'{conf.prefix}data/log_g_posterior.npy'
+    files = [PT_VMRs_COH_file, log_g_posterior_file]
+    
+    if not cache or not all(os.path.exists(file) for file in files):
         ret = Retrieval(
                 conf=conf, 
                 evaluation=False
                 )
         
         _, posterior = ret.PMN_analyze()
-        ret.get_PT_mf_envelopes(posterior=posterior)
-        CO_posterior = ret.Chem.CO_posterior
-        CH_posterior = ret.Chem.FeH_posterior
+        log_g_index = list(ret.Param.param_keys).index('log_g')
+        log_g_posterior = posterior[:,log_g_index]
+        np.save(log_g_posterior_file, log_g_posterior)
+        print(f'Saved {log_g_posterior_file}')
         
-        ret.Chem.get_VMRs_posterior()
-        VMRs_posterior = ret.Chem.VMRs_posterior
-        # mass_fractions_posterior_raw = ret.Chem.mass_fractions_posterior # keys are line species e.g. 'CO_high
-        # mass_fractions_posterior = {k: mass_fractions_posterior_raw[v] for k, v in conf.line_species_dict.items()}  # rename keys to species names e.g. '12CO'
-        
-        
-        np.save(CO_file, CO_posterior)
-        np.save(CH_file, CH_posterior)
-        np.save(VMRs_posterior_file, VMRs_posterior)
-        for file in files:
-            print(f'Saved {file}')
-        
-    return CO_posterior, CH_posterior, VMRs_posterior
+        # _, VMRs_envelopesret.get_PT_mf_envelopes(posterior=posterior, n_samples=10, cache=cache)
+        #FIXME: get correct output from here
+            
+    # stack_array = np.load(PT_VMRs_COH_file)
+    # temperature_posterior = stack_array[0,:,:]
+    # VMRs_posterior = stack_array[1:,:,:]
+    # COH_posterior = stack_array[-3:,:,:]
+    # log_g_posterior = np.load(log_g_posterior_file)
+            
+    # return CO_posterior, CH_posterior, VMRs_posterior, log_g_posterior
+    return VMRs_posterior, COH_posterior, log_g_posterior
 
 # CO, CH are the MEAN values of the atmosphere
 
 # three columns, one row, histograms with only the bottom axis
-fig, ax = plt.subplots(1, 3, figsize=(10, 3), sharex='col')
+fig, ax = plt.subplots(1, 4, figsize=(10, 3), sharex='col')
 axes = ax.flatten()
-axes_dict = {'C/O': ax[0], '[C/H]': ax[1], '12C/13C': ax[2]}
+axes_dict = {'C/O': ax[0], '[C/H]': ax[1], '12C/13C': ax[2], 'log_g': ax[3]}
 # plot the histograms 
 bins = 20
 alpha = 0.65
 
-def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, edge=True, density=True, label=None,
+def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, log_g_posterior=None, edge=True, density=True, label=None,
               fill=True):
     
     htypes = ['step']
@@ -96,36 +90,62 @@ def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, edge=True, 
         ax[0].hist(CO_posterior, bins=bins, alpha=alpha, color=color, density=density, histtype=ht, edgecolor=ec)
         ax[1].hist(CH_posterior, bins=bins, alpha=alpha, color=color, density=density, histtype=ht, edgecolor=ec)
         ax[2].hist(isotope_ratios['12C/13C'], bins=bins, alpha=alpha, color=color, label=label, density=density, histtype=ht, edgecolor=ec)
+        
+        if len(ax) > 3:
+            assert log_g_posterior is not None, 'log_g_posterior is required'
+            ax[3].hist(log_g_posterior, bins=bins, alpha=alpha, color=color, label=label, density=density, histtype=ht, edgecolor=ec)
 
 for t, target in enumerate(runs.keys()):
     target_runs = list(np.atleast_1d(runs[target]))
     for r, run in enumerate(target_runs):
-        CO_posterior, CH_posterior, VMRs_posterior = load_data(target, run, cache=True)
+        VMRs_posterior, COH_posterior, log_g_posterior = load_data(target, run, cache=False)
 
         isotope_ratios = {'12C/13C': VMRs_posterior['12CO'] / VMRs_posterior['13CO'],
         }
-        plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'][r], edge=True, density=True,
+        plot_hist(ax, COH_posterior, VMRs_posterior, isotope_ratios, colors[target]['model'][r], log_g_posterior=log_g_posterior, edge=True, density=True,
                 # label=colors[target]['model_labels'][r], fill=(r==0))
                 label='TWA ' + target.replace('TWA', '') + f"\n({colors[target]['model_labels'][r]})",
-                fill=(r==0))
+                fill=True)
     
 # load CRIRES posteriors
 file_crires = path / target / f'retrieval_outputs/final_full/test_data/bestfit_Chem.pkl'
 chem_crires = af.pickle_load(file_crires)
+
+log_g_crires_file = path / target / f'retrieval_outputs/final_full/test_data/log_g_posterior.npy'
+if os.path.exists(log_g_crires_file):
+    log_g_crires = np.load(log_g_crires_file)
+else:
+    import pymultinest
+
+    conf = Config(path=path, target=target, run='final_full')('config_freechem.txt')
+    analyzer = pymultinest.Analyzer(
+                n_params=len(conf.free_params), 
+                outputfiles_basename=conf.prefix
+                )
+    posterior = analyzer.get_equal_weighted_posterior()
+    posterior = posterior[:,:-1]
+    log_g_index = list(conf.free_params).index('log_g')
+    log_g_crires = posterior[:,log_g_index]
+    print(f'log_g_crires shape: {log_g_crires.shape}')
+    np.save(log_g_crires_file, log_g_crires)
+    print(f'Saved {log_g_crires_file}')
 crires = {
     'C/O' : chem_crires.VMRs_posterior['C/O'],
     '[C/H]' : chem_crires.VMRs_posterior['Fe/H'],
-    '12C/13C' : chem_crires.VMRs_posterior['12_13CO']
+    '12C/13C' : chem_crires.VMRs_posterior['12_13CO'],
+    'log_g' : log_g_crires
     }
 
 for key, axi in axes_dict.items():
+    # if key == 'log_g':
+    #     continue
     # plot hist
     axi.hist(crires[key], 
              bins=bins, 
              alpha=0.5, 
             #  label='CRIRES',
              density=True, 
-             color=colors['TWA28']['model'],
+             color=colors['TWA28']['crires'],
              histtype='stepfilled', 
              edgecolor='k',
              ls='--',
@@ -137,7 +157,7 @@ for key, axi in axes_dict.items():
              alpha=0.7, 
             #  label='TWA 28 (CRIRES+)',
              density=True, 
-             color=colors['TWA28']['model'],
+             color=colors['TWA28']['crires'],
              histtype='step', 
              edgecolor='k',
              ls='--',
@@ -186,7 +206,7 @@ def remove_spines(ax):
 
 [remove_spines(axi) for axi in axes]
 
-xlims = [(0.44, 0.69), (0.0, 1.0), (30, 150)]
+xlims = [(0.40, 0.69), (-1, 1.0), (30, 150), (2.8, 4.5)]
 for axi, xlim in zip(axes, xlims):
     axi.set_xlim(xlim)
 # TODO: plot each target on a separate row, compare freechem and fastchem??
@@ -196,3 +216,4 @@ for axi, xlim in zip(axes, xlims):
 fig_name = path_figures / 'metallicity_CO_C_ratio.pdf'
 fig.savefig(fig_name, bbox_inches='tight')
 print(f'Saved {fig_name}')
+plt.close('all')

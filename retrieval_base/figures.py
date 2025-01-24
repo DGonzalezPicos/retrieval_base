@@ -297,6 +297,11 @@ def fig_bestfit_model(
                     d_spec.wave[i,j], d_spec.flux[i,j], 
                     c='k', lw=0.5, label='Observation'
                     )
+                err_ij = d_spec.err[i,j] * LogLike.beta[i,j]
+                ax_spec.fill_between(
+                    d_spec.wave[i,j], y1=d_spec.flux[i,j]-err_ij, y2=d_spec.flux[i,j]+err_ij, 
+                    color='k', alpha=0.2, lw=0,
+                )
 
             label = 'Best-fit model ' + \
                     r'$(\chi^2_\mathrm{red}$$=' + \

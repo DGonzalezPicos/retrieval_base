@@ -9,6 +9,7 @@ import pathlib
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
+from tabulate import tabulate
 
 path = af.get_path(return_pathlib=True)
 path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
@@ -16,8 +17,8 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A=['lbl11_G1G2G3_fastchem_0'],
-    # TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+    # TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
             )
 colors = dict(TWA28={'data':'k', 
                      'model':['brown', 'darkgreen', 'darkblue'], 
@@ -41,11 +42,13 @@ def load_data(target, run, cache=True):
     log_g_posterior_file = f'{conf.prefix}data/log_g_posterior.npy'
     files = [PT_VMRs_COH_file, log_g_posterior_file]
     
-    if not cache or not all(os.path.exists(file) for file in files):
-        ret = Retrieval(
+    posterior = None
+    ret = Retrieval(
                 conf=conf, 
                 evaluation=False
                 )
+    if not cache or not all(os.path.exists(file) for file in files):
+        
         
         _, posterior = ret.PMN_analyze()
         log_g_index = list(ret.Param.param_keys).index('log_g')
@@ -53,19 +56,12 @@ def load_data(target, run, cache=True):
         np.save(log_g_posterior_file, log_g_posterior)
         print(f'Saved {log_g_posterior_file}')
         
-        # _, VMRs_envelopesret.get_PT_mf_envelopes(posterior=posterior, n_samples=10, cache=cache)
-        #FIXME: get correct output from here
-            
-    # stack_array = np.load(PT_VMRs_COH_file)
-    # temperature_posterior = stack_array[0,:,:]
-    # VMRs_posterior = stack_array[1:,:,:]
-    # COH_posterior = stack_array[-3:,:,:]
-    # log_g_posterior = np.load(log_g_posterior_file)
-            
-    # return CO_posterior, CH_posterior, VMRs_posterior, log_g_posterior
-    return VMRs_posterior, COH_posterior, log_g_posterior
-
-# CO, CH are the MEAN values of the atmosphere
+    
+    log_g_posterior = np.load(log_g_posterior_file)
+        
+    _ = ret.get_PT_mf_envelopes(posterior=posterior, n_samples=None, cache=cache)
+        
+    return ret.Chem, log_g_posterior
 
 # three columns, one row, histograms with only the bottom axis
 fig, ax = plt.subplots(1, 4, figsize=(10, 3), sharex='col')
@@ -95,73 +91,102 @@ def plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, color, log_g_poste
             assert log_g_posterior is not None, 'log_g_posterior is required'
             ax[3].hist(log_g_posterior, bins=bins, alpha=alpha, color=color, label=label, density=density, histtype=ht, edgecolor=ec)
 
+def print_quantiles(target, run, log_g_posterior, CO_posterior, CH_posterior, isotope_ratios, q):
+    headers = ["Parameter", "3σ Lower", "1σ Lower", "Median", "1σ Upper", "3σ Upper"]
+    
+    # Format quantiles to two decimal places
+    def format_quantiles(quantiles):
+        return [f"{q:.2f}" for q in quantiles]
+    
+    data = [
+        ["log_g", *format_quantiles(af.quantiles(log_g_posterior, q=q))],
+        ["C/O", *format_quantiles(af.quantiles(CO_posterior, q=q))],
+        ["[C/H]", *format_quantiles(af.quantiles(CH_posterior, q=q))],
+        ["12C/13C", *format_quantiles(af.quantiles(isotope_ratios["12C/13C"], q=q))]
+    ]
+    print(f' ** {target} {run} **')
+    print(tabulate(data, headers=headers, tablefmt="pretty"))
+
 for t, target in enumerate(runs.keys()):
     target_runs = list(np.atleast_1d(runs[target]))
     for r, run in enumerate(target_runs):
-        VMRs_posterior, COH_posterior, log_g_posterior = load_data(target, run, cache=False)
-
-        isotope_ratios = {'12C/13C': VMRs_posterior['12CO'] / VMRs_posterior['13CO'],
+        chem, log_g_posterior = load_data(target, run, cache=False)
+        
+        CO_posterior = np.mean(chem.COH_posterior['C'] / chem.COH_posterior['O'], axis=-1)
+        CH_posterior = af.solar_metallicity(np.mean(chem.COH_posterior['C'], axis=-1), 
+                                            np.mean(chem.COH_posterior['H'], axis=-1))
+        isotope_ratios = {'12C/13C': np.mean(chem.VMRs_posterior['12CO'] / chem.VMRs_posterior['13CO'], axis=-1),
         }
-        plot_hist(ax, COH_posterior, VMRs_posterior, isotope_ratios, colors[target]['model'][r], log_g_posterior=log_g_posterior, edge=True, density=True,
+        
+        # Define quantiles
+        q = [0.5-0.997/2, 0.5-0.68/2, 0.5, 
+             0.5+0.68/2, 0.5+0.997/2
+             ]
+        
+        # Print quantiles in a formatted table
+        print_quantiles(target, run, log_g_posterior, CO_posterior, CH_posterior, isotope_ratios, q)
+        
+        plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'][r], log_g_posterior=log_g_posterior, edge=True, density=True,
                 # label=colors[target]['model_labels'][r], fill=(r==0))
                 label='TWA ' + target.replace('TWA', '') + f"\n({colors[target]['model_labels'][r]})",
                 fill=True)
     
 # load CRIRES posteriors
-file_crires = path / target / f'retrieval_outputs/final_full/test_data/bestfit_Chem.pkl'
-chem_crires = af.pickle_load(file_crires)
+if target == 'TWA28':
+    file_crires = path / target / f'retrieval_outputs/final_full/test_data/bestfit_Chem.pkl'
+    chem_crires = af.pickle_load(file_crires)
 
-log_g_crires_file = path / target / f'retrieval_outputs/final_full/test_data/log_g_posterior.npy'
-if os.path.exists(log_g_crires_file):
-    log_g_crires = np.load(log_g_crires_file)
-else:
-    import pymultinest
+    log_g_crires_file = path / target / f'retrieval_outputs/final_full/test_data/log_g_posterior.npy'
+    if os.path.exists(log_g_crires_file):
+        log_g_crires = np.load(log_g_crires_file)
+    else:
+        import pymultinest
 
-    conf = Config(path=path, target=target, run='final_full')('config_freechem.txt')
-    analyzer = pymultinest.Analyzer(
-                n_params=len(conf.free_params), 
-                outputfiles_basename=conf.prefix
+        conf = Config(path=path, target=target, run='final_full')('config_freechem.txt')
+        analyzer = pymultinest.Analyzer(
+                    n_params=len(conf.free_params), 
+                    outputfiles_basename=conf.prefix
+                    )
+        posterior = analyzer.get_equal_weighted_posterior()
+        posterior = posterior[:,:-1]
+        log_g_index = list(conf.free_params).index('log_g')
+        log_g_crires = posterior[:,log_g_index]
+        print(f'log_g_crires shape: {log_g_crires.shape}')
+        np.save(log_g_crires_file, log_g_crires)
+        print(f'Saved {log_g_crires_file}')
+    crires = {
+        'C/O' : chem_crires.VMRs_posterior['C/O'],
+        '[C/H]' : chem_crires.VMRs_posterior['Fe/H'],
+        '12C/13C' : chem_crires.VMRs_posterior['12_13CO'],
+        'log_g' : log_g_crires
+        }
+
+    for key, axi in axes_dict.items():
+        # if key == 'log_g':
+        #     continue
+        # plot hist
+        axi.hist(crires[key], 
+                bins=bins, 
+                alpha=0.5, 
+                #  label='CRIRES',
+                density=True, 
+                color=colors['TWA28']['crires'],
+                histtype='stepfilled', 
+                edgecolor='k',
+                ls='--',
+                label='TWA 28 (CRIRES' + r'$\mathrm{^{+}}$)',
                 )
-    posterior = analyzer.get_equal_weighted_posterior()
-    posterior = posterior[:,:-1]
-    log_g_index = list(conf.free_params).index('log_g')
-    log_g_crires = posterior[:,log_g_index]
-    print(f'log_g_crires shape: {log_g_crires.shape}')
-    np.save(log_g_crires_file, log_g_crires)
-    print(f'Saved {log_g_crires_file}')
-crires = {
-    'C/O' : chem_crires.VMRs_posterior['C/O'],
-    '[C/H]' : chem_crires.VMRs_posterior['Fe/H'],
-    '12C/13C' : chem_crires.VMRs_posterior['12_13CO'],
-    'log_g' : log_g_crires
-    }
-
-for key, axi in axes_dict.items():
-    # if key == 'log_g':
-    #     continue
-    # plot hist
-    axi.hist(crires[key], 
-             bins=bins, 
-             alpha=0.5, 
-            #  label='CRIRES',
-             density=True, 
-             color=colors['TWA28']['crires'],
-             histtype='stepfilled', 
-             edgecolor='k',
-             ls='--',
-             label='TWA 28 (CRIRES' + r'$\mathrm{^{+}}$)',
-             )
-    
-    axi.hist(crires[key], 
-             bins=bins, 
-             alpha=0.7, 
-            #  label='TWA 28 (CRIRES+)',
-             density=True, 
-             color=colors['TWA28']['crires'],
-             histtype='step', 
-             edgecolor='k',
-             ls='--',
-             )
+        
+        axi.hist(crires[key], 
+                bins=bins, 
+                alpha=0.7, 
+                #  label='TWA 28 (CRIRES+)',
+                density=True, 
+                color=colors['TWA28']['crires'],
+                histtype='step', 
+                edgecolor='k',
+                ls='--',
+                )
 
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import nnls
 
+from retrieval_base.local_covariance_kernel import LocalCovarianceKernel
 
 class LogLikelihood:
 
@@ -10,6 +11,9 @@ class LogLikelihood:
                  scale_flux=False, 
                  scale_err=False, 
                  scale_flux_eps=0.05,
+                 use_lck=False,
+                 lck_width=4,
+                 n_max_regions=5,
                  ):
 
         # Observed spectrum is constant
@@ -24,6 +28,10 @@ class LogLikelihood:
         self.scale_err    = scale_err
         
         self.scale_flux_all = False # WARNING: this overrides the previous setting
+        
+        self.use_lck = use_lck
+        self.lck_width = lck_width
+        self.n_max_regions = n_max_regions
         
     def __call__(self, m_spec, Cov, 
                  is_first_w_set=False, 
@@ -138,19 +146,34 @@ class LogLikelihood:
                     self.ln_L = -np.inf
                     return self.ln_L
                 
-                # Chi-squared for the optimal linear scaling
-                inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
-                chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
-                
-                if self.scale_err:
-                    # Scale the flux uncertainty that maximizes the log-likelihood
-                    beta_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)
-                else:
-                    # No additional uncertainty scaling
-                    beta_ij = 1
+                if self.use_lck:
+                    assert not Cov[i,j].is_matrix, 'Covariance matrix not implemented for LCK'
 
-                # Chi-squared for optimal linear scaling and uncertainty scaling
-                chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
+                    lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
+                                                d_flux_ij,
+                                                d_err_ij,
+                                                lck_width=self.lck_width)
+                    s_ij = lck(m_flux_ij_scaled, n_max_regions=self.n_max_regions)
+                    chi2_squared_ij_pp = res_ij**2 / Cov[i,j].cov
+                
+                else: 
+                    # Chi-squared for the optimal linear scaling
+                    inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
+                    
+                    chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
+                    
+                    if self.scale_err:
+                        # Scale the flux uncertainty that maximizes the log-likelihood
+                        
+                            
+                            
+                        beta_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)
+                    else:
+                        # No additional uncertainty scaling
+                        beta_ij = 1
+
+                    # Chi-squared for optimal linear scaling and uncertainty scaling
+                    chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
 
                 # Add chi-squared and optimal uncertainty scaling terms to log-likelihood
                 ln_L_ij += -0.5 * N_ij*np.log(beta_ij**2) 

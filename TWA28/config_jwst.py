@@ -452,6 +452,13 @@ cov_kwargs = dict(
     # in memory
     prepare_for_covariance = True
 )
+
+lck_kwargs = dict(
+    use_lck=True,
+    lck_width=4,
+    n_max_regions=5,
+)
+
 if free_params.get('log_l') is not None:
     cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']
     cov_kwargs['max_separation'] *= 10**free_params['log_l'][0][1]

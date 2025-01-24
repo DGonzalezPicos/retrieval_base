@@ -241,6 +241,7 @@ class Retrieval:
                 scale_flux=self.conf.scale_flux, 
                 scale_err=self.conf.scale_err, 
                 scale_flux_eps=getattr(self.conf, 'scale_flux_eps', 0.05),
+                **self.conf.lck_kwargs
                 )
 
         self.PT = get_PT_profile_class(
@@ -653,12 +654,13 @@ class Retrieval:
             
         stack_array = np.load(file)
         line_species_list = np.load(file_line_species)
+        # print(f'line_species_list = {line_species_list}')
         self.PT.temperature_posterior = stack_array[0,:,:]
        
-        self.Chem.VMRs_posterior = {k:stack_array[1:,:,:] for k in line_species_list}
+        self.Chem.VMRs_posterior = {self.Chem.pRT_name_dict.get(k, k):stack_array[1+i,:,:] for i, k in enumerate(line_species_list)}
        
             
-        self.Chem.COH_posterior = {k:stack_array[-3:,:,:] for k in ['C', 'O', 'H']}
+        self.Chem.COH_posterior = {k:stack_array[-3+i,:,:] for i, k in enumerate(['C', 'O', 'H'])}
             
         # calculate envelopes and store
         q = [0.5-0.997/2, 0.5-0.95/2, 0.5-0.68/2, 0.5, 
@@ -667,7 +669,8 @@ class Retrieval:
         self.PT.temperature_envelopes = af.quantiles(self.PT.temperature_posterior, q=q, axis=0)
         # self.Chem.mass_fractions_envelopes = {k:af.quantiles(self.Chem.mass_fractions_posterior[k], q=q, axis=0) for k in self.Chem.mass_fractions.keys()}
         self.Chem.COH_envelopes = {k:af.quantiles(self.Chem.COH_posterior[k], q=q, axis=0) for k in ['C', 'O', 'H']}
-        self.Chem.VMRs_envelopes = {k:af.quantiles(self.Chem.VMRs_posterior[k], q=q, axis=0) for k in self.Chem.VMRs.keys()}
+        
+        self.Chem.VMRs_envelopes = {k:af.quantiles(self.Chem.VMRs_posterior[k], q=q, axis=0) for k in self.Chem.VMRs_posterior.keys()}
         
         return self.PT.temperature_envelopes, self.Chem.VMRs_envelopes, self.Chem.COH_envelopes
     

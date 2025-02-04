@@ -3,6 +3,7 @@ import numpy as np
 class LocalCovarianceKernel:
     def __init__(self, wave, flux, err, lck_width=2):
         self.wave = wave
+        self.separation = (wave[None,:] - wave[:,None])
         self.flux = flux
         self.err = err
         self.err[self.err == 0] = np.nan
@@ -23,7 +24,7 @@ class LocalCovarianceKernel:
         def add_region(merged, chi2_region, region):
             merged.append(region)
             mask_region = (self.wave >= region[0]) & (self.wave <= region[1])
-            chi2_region.append(np.nanmax(chi2_pp[mask_region]))
+            chi2_region.append(np.nanmax(chi2_pp[mask_region]) / np.sum(mask_region))
             return merged, chi2_region
 
         for i, region in enumerate(regions):
@@ -56,22 +57,47 @@ class LocalCovarianceKernel:
             mask_region = (self.wave >= region[0]) & (self.wave <= region[1])
             s_lck[mask_region] = np.sqrt(chi2_region) * self.gaussian_kernel(self.wave[mask_region], np.median(self.wave[mask_region]), self.lck_width_wavelength / 2.355)
         return s_lck
+    
+    def correlated_kernel(self, trunc_dist=4.0):
+        
+        kernels = np.zeros((self.wave.shape[0], self.wave.shape[0]))
+        for region, chi2_region in zip(self.regions, self.chi2_regions):
+            
+            kernel = np.zeros((self.wave.shape[0], self.wave.shape[0]))
 
-    def __call__(self, m_flux, n_max_regions=None):
+            r_0 = np.median(region)
+            r_i = np.abs(self.wave[None,:] - r_0)
+            r_j = np.abs(self.wave[:,None] - r_0)
+            r2 = r_i**2 + r_j**2
+            # print(f' r2.shape {r2.shape}')
+            w_ij = (self.separation < trunc_dist * self.lck_width_wavelength / 2.355)
+            print(f' w_ij.shape {w_ij.shape}')
+            
+            # print(f' self.s.shape {self.s.shape}')
+            kernel[w_ij] = chi2_region * np.exp(-0.5 * r2[w_ij] / (self.lck_width_wavelength / 2.355)**2)
+            kernels += kernel
+            
+        
+        return kernels
+            
+
+    def __call__(self, m_flux, sigma_threshold=5.0, n_max_regions=None):
         self.n_max_regions = n_max_regions
         res = self.flux - m_flux
-        nans = np.isnan(res)
+        # nans = np.isnan(res)
 
         chi2_pp = res**2 * self.err2_inv
     
         mean_chi2_pp = np.nanmean(chi2_pp)
         std_chi2_pp = np.nanstd(chi2_pp)
 
-        self.mask = chi2_pp > (5 * std_chi2_pp) + mean_chi2_pp
+        self.mask = chi2_pp > (sigma_threshold * std_chi2_pp) + mean_chi2_pp
         lck_center = self.wave[self.mask]
         self.regions = np.array([lck_center - self.lck_width_wavelength / 2, lck_center + self.lck_width_wavelength / 2]).T
         if len(self.regions) == 0:
             return np.ones(self.wave.shape)
+        
+        print(f' Number of regions: {len(self.regions)}')
         self.regions, self.chi2_regions = self.merge_regions(self.regions, chi2_pp)
 
         if self.n_max_regions is not None:
@@ -85,6 +111,8 @@ class LocalCovarianceKernel:
         self.s_rest = np.sqrt(chi2_rest)
 
         self.s = np.where(self.mask, self.s_regions, self.s_rest)
+        
+        # self.kernel = self.correlated_kernel()
         return self.s
     
 if __name__ == '__main__':
@@ -118,7 +146,7 @@ if __name__ == '__main__':
     
     
     lck = LocalCovarianceKernel(wave, flux, err, lck_width=4)
-    lck.s = lck(model, n_max_regions=5)
+    lck.s = lck(model, sigma_threshold=3.0, n_max_regions=5)
     print(f' Scaling factors:')
     print(f' Outliers: {lck.s_regions[lck.mask]}')
     print(f' Rest: {lck.s_rest:.2f}')

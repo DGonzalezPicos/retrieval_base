@@ -172,14 +172,38 @@ class GaussianProcesses(Covariance):
         #     self.add_data_err_scaling(
         #         params[f'beta_{w_set}'][order,det]
         #         )
-
-        if params[f'a_{w_set}'][order,det] != 0:
+        
+        if params.get(f'a_{w_set}_G', None) is not None:
+            if isinstance(params[f'a_{w_set}_G'][order,det], float):
+                self.add_RBF_kernel(
+                    a=params[f'a_{w_set}_G'][order,det], 
+                    l=params[f'l_{w_set}_G'][order,det], 
+                    array=self.err_eff, 
+                    **kwargs
+                    )
+        if params.get(f'a_{w_set}_K', None) is not None:
+            # a = self.get_banded(np.diag(params[f'a_{w_set}'][order,det]))[:self.separation.shape[0]]
+            # a = np.tile(params[f'a_{w_set}'][order,det], (self.separation.shape[0], 1))
+            a = self.get_banded(params[f'a_{w_set}_K'][order,det])[:self.separation.shape[0]]
+            
+            if a.shape[0] < self.separation.shape[0]:
+                # fill with zeros along axis 0
+                a = np.concatenate((a, np.zeros((self.separation.shape[0] - a.shape[0], a.shape[1]))), axis=0)
+            
+            assert a.shape[0] == self.separation.shape[0], f'a.shape {a.shape} != self.separation.shape {self.separation.shape}'
             self.add_RBF_kernel(
-                a=params[f'a_{w_set}'][order,det], 
-                l=params[f'l_{w_set}'][order,det], 
-                array=self.err_eff, 
+                a=a, 
+                l=params[f'l_{w_set}_K'][order,det], 
+                array=self.err_eff, # FIXME: check whether we use the mean error or what
                 **kwargs
                 )
+        # if params[f'a_{w_set}'][order,det] != 0:
+        #     self.add_RBF_kernel(
+        #         a=params[f'a_{w_set}'][order,det], 
+        #         l=params[f'l_{w_set}'][order,det], 
+        #         array=self.err_eff, 
+        #         **kwargs
+        #         )
             
         # if params[f'a_f_{w_set}'][order,det] != 0:
         #     self.add_RBF_kernel(
@@ -228,7 +252,7 @@ class GaussianProcesses(Covariance):
 
         # Hann window function to ensure sparsity
         w_ij = (self.separation < trunc_dist*l)
-
+        print(f' w_ij.shape {w_ij.shape}')
         # GP amplitude
         GP_amp = a**2
         if scale_GP_amp:
@@ -243,10 +267,19 @@ class GaussianProcesses(Covariance):
                 GP_amp *= array**2
             else:
                 GP_amp *= array[w_ij]**2
+                
+        if GP_amp.shape == self.separation.shape:
+            GP_amp = GP_amp[w_ij]
 
         # Gaussian radial-basis function kernel
         self.cov[w_ij] += GP_amp * np.exp(-(self.separation[w_ij])**2/(2*l**2))
-
+        
+    # def add_local_kernel(self, mus, sigmas, amplitudes, trunc_dist=4):
+    #     '''
+    #     Add a local kernel to the covariance matrix.
+    #     '''
+    #     # apply hanning window to the covariance matrix
+    #     w_ij = (self.separation < trunc_dist*l)
     def get_cholesky(self, max_attempts=10, epsilon=1e-2):
         '''
         Get the Cholesky decomposition. Employs a banded 
@@ -255,7 +288,7 @@ class GaussianProcesses(Covariance):
         self.cov = self.cov[(self.cov!=0).any(axis=1),:]
 
         # Compute banded Cholesky decomposition
-        for i in range(max_attempts):
+        for _ in range(max_attempts):
             try:
                 self.cov_cholesky = cholesky_banded(
                     self.cov, lower=True, check_finite=False,
@@ -322,3 +355,106 @@ class GaussianProcesses(Covariance):
                 cov_full += np.diag(diag_i, k=-i)
 
         return cov_full
+    
+if __name__ == '__main__':
+    # test GP covariance matrix with off-diagonal elements
+    
+    import matplotlib.pyplot as plt
+    # plot imshow in logscale
+    from matplotlib.colors import LogNorm
+    from retrieval_base.local_covariance_kernel import LocalCovarianceKernel
+    
+    np.random.seed(1234)
+    wave = np.linspace(2300, 2350, 200)
+    p = 5
+    flux = 5.0 + np.sin(wave / p)
+    snr = 10.0
+    
+    model = flux.copy()
+    
+    noise = np.random.normal(0, 1/snr, wave.shape)
+    flux += noise
+    err = 1 * np.sqrt(flux.mean()) / snr * np.ones(wave.shape)
+    
+    # add outliers
+    def add_random_outlier(flux, amplitude=1.0, width=2, n_outliers=2):
+        n_outliers = np.random.randint(1, n_outliers)
+        for i in range(n_outliers):
+            i = np.random.randint(0, len(flux))
+            flux[i:i+width] += np.random.normal(amplitude, amplitude/2)
+        return flux
+    flux = add_random_outlier(flux, 1.0, 2, 4)
+    # flux[1008:1016] += 1.0
+    
+    res = flux - model
+    chi2_pp = res**2 * err**-2
+    
+    
+    lck = LocalCovarianceKernel(wave, flux, err, lck_width=4)
+    lck.s = lck(model, sigma_threshold=2.0, n_max_regions=5)
+    
+    kernel = lck.correlated_kernel()
+    
+    # print(stop)
+    print(f' Scaling factors:')
+    print(f' Outliers: {lck.s_regions[lck.mask]}')
+    print(f' Rest: {lck.s_rest:.2f}')
+
+    # create a 1D array of wavelength
+    separation = np.abs(wave[None,:] - wave[:,None])
+    # create a 1D array of uncertainties
+    err = np.ones_like(wave) + 0.1*np.random.randn(len(wave))
+    # create a 1D array of flux uncertainties
+    err_eff = np.mean(err)
+    
+    w_set = 'NIRSpec'
+    order = 0
+    det = 0
+    
+    a_G =1e0 * np.ones((1,1))
+    l_G = 1 * np.ones((1,1))
+    params = {
+        f'a_{w_set}_G': a_G,
+        f'l_{w_set}_G': l_G,
+        
+        f'a_{w_set}_K': np.sqrt(kernel[None,None,...]),
+        f'l_{w_set}_K': 2 * l_G,
+        
+        
+    }
+    # create a GP covariance matrix
+    cov = GaussianProcesses(err, separation, err_eff, max_separation=5)
+    cov(params, w_set, order, det, scale_GP_amp=True)
+    # get the Cholesky decomposition
+    cov.get_cholesky()
+    print(f' cov_cholesky.shape {cov.cov_cholesky.shape}')
+    
+    cov_full = cov.get_dense_cov()
+    cov_err = np.sqrt(np.diag(cov_full))
+
+    # create gridspec with 5 rows and 5 columns
+    from matplotlib.gridspec import GridSpec
+    fig = plt.figure(figsize=(14,10))
+    gs = GridSpec(5, 5)
+    ax_spec = fig.add_subplot(gs[0:3,0:3])
+    ax_cov = fig.add_subplot(gs[0:3,3:5])
+    ax_res = fig.add_subplot(gs[3:5,0:3])
+    
+    ax_spec.plot(wave, flux, label='flux')
+    ax_spec.fill_between(wave, flux - cov_err, flux + cov_err, alpha=0.2, color='k', lw=0)
+    ax_spec.fill_between(wave, flux - err, flux + err, alpha=0.2, color='k', lw=0)
+    ax_spec.plot(wave, model, label='model')
+    ax_spec.legend()
+    ax_spec.set_title('Spectrum')
+    ax_res.plot(wave, res, label='residuals')
+    ax_res.fill_between(wave, -cov_err, cov_err, alpha=0.2, color='k', lw=0)
+    ax_res.fill_between(wave, -err, err, alpha=0.2, color='k', lw=0)
+    ax_res.legend()
+    
+    extent = [wave[0], wave[-1], wave[0], wave[-1]]
+    ax_cov.imshow(cov_full, origin='lower', aspect='auto', norm=LogNorm(), extent=extent)
+    ax_cov.set_title('Covariance')
+    
+    for region in lck.regions:
+        ax_res.axvspan(region[0], region[1], alpha=0.1, color='r', lw=0, zorder=-1)
+    plt.show()

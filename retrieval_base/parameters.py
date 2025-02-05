@@ -89,8 +89,8 @@ class Parameters:
                 self.params['d_pc'] = 1 / (self.params[p] * 1e-3)
             
             
+        # self.gaussian_priors = {k:norm(loc=v[0], scale=v[1]) for k, v in self.param_priors.items() if k in gaussian_params}
         self.gaussian_params = gaussian_params
-        
     def __str__(self):
         out = '** Parameters **\n'
         # add line of dashes
@@ -129,8 +129,9 @@ class Parameters:
 
             if key_i in self.gaussian_params:
                 # sample from a Gaussian distribution
+                # cube[i] = self.gaussian_priors[key_i].rvs()
                 mu, sigma = self.param_priors[key_i]
-                cube[i] = norm(loc=mu, scale=sigma).rvs()
+                cube[i] = np.clip(norm.ppf(cube[i], loc=mu, scale=sigma), mu-3*sigma, mu+3*sigma)
             
             else:
                 # Sample within the boundaries

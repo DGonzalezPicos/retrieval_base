@@ -235,6 +235,7 @@ class Retrieval:
             cloud_mode=self.conf.cloud_mode, 
             cov_mode=self.conf.cov_mode, 
             wlen_settings=param_wlen_settings, 
+            gaussian_params=getattr(self.conf, 'gaussian_params', [])
             )
         
         self.Cov     = {}

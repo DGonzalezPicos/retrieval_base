@@ -32,7 +32,8 @@ class Parameters:
             cov_mode=None, 
             wlen_settings={
                 'J1226': [9,3], 'K2166': [7,3], 
-                }
+                },
+            gaussian_params = [],
             ):
 
         # Separate the prior range from the mathtext label
@@ -88,6 +89,7 @@ class Parameters:
                 self.params['d_pc'] = 1 / (self.params[p] * 1e-3)
             
             
+        self.gaussian_params = gaussian_params
         
     def __str__(self):
         out = '** Parameters **\n'
@@ -124,22 +126,31 @@ class Parameters:
         # Loop over all parameters
         for i, key_i in enumerate(self.param_keys):
 
-            # Sample within the boundaries
-            low, high = self.param_priors[key_i]
+
+            if key_i in self.gaussian_params:
+                # sample from a Gaussian distribution
+                mu, sigma = self.param_priors[key_i]
+                cube[i] = norm(loc=mu, scale=sigma).rvs()
             
-            cond = (self.PT_mode == 'RCE') and (key_i.startswith('dlnT_dlnP_')) and (key_i != 'dlnT_dlnP_RCE')
-            cond = cond and (self.PT_adiabatic) # default is True
-            
-            if cond:
-                high = min(self.params['dlnT_dlnP_RCE'], high)
-                low =  min(self.params['dlnT_dlnP_RCE'], low)
+            else:
+                # Sample within the boundaries
+                low, high = self.param_priors[key_i]
                 
-            if key_i == 'R_out':
-                low = max(self.params['R_cav'] * 1.01, low)
+                cond = (self.PT_mode == 'RCE') and (key_i.startswith('dlnT_dlnP_')) and (key_i != 'dlnT_dlnP_RCE')
+                cond = cond and (self.PT_adiabatic) # default is True
                 
-            # print(f' [Parameters.__call__]: key_i = {key_i}, low = {low}, high = {high}')
-            cube[i] = low + (high-low)*cube[i]
-            # new_cube[i] = low + (high-low)*cube[i]
+                if cond:
+                    high = min(self.params['dlnT_dlnP_RCE'], high)
+                    low =  min(self.params['dlnT_dlnP_RCE'], low)
+                    
+                if key_i == 'R_out':
+                    low = max(self.params['R_cav'] * 1.01, low)
+                    
+                    
+                
+                # print(f' [Parameters.__call__]: key_i = {key_i}, low = {low}, high = {high}')
+                cube[i] = low + (high-low)*cube[i]
+                # new_cube[i] = low + (high-low)*cube[i]
 
             self.params[key_i] = cube[i]
 

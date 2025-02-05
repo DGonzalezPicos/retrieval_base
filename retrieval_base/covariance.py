@@ -99,6 +99,19 @@ class Covariance:
             return self.cov
         
         return np.diag(self.cov)
+    
+    def get_err(self, mask=None):
+        
+        if mask is None:
+            mask = np.ones(self.cov.shape[-1])
+        err = np.nan * np.ones_like(mask)
+
+        if not self.is_matrix:
+            err[mask] = np.sqrt(self.cov)
+        
+        else: # diagonal elements
+            err[mask] = np.sqrt(np.diag(self.get_dense_cov()))
+        return err
 
 class GaussianProcesses(Covariance):
 
@@ -359,12 +372,7 @@ class GaussianProcesses(Covariance):
 
         return cov_full
     
-    def get_err(self, mask=None):
-        if mask is None:
-            mask = np.ones(self.cov.shape[-1])
-        err = np.nan * np.ones_like(mask)
-        err[mask] = np.sqrt(np.diag(self.get_dense_cov()))
-        return err
+    
     
 if __name__ == '__main__':
     # test GP covariance matrix with off-diagonal elements

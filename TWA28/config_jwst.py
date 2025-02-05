@@ -18,8 +18,8 @@ gratings = ['g235h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
-cov_mode = None
-# cov_mode = 'GP'
+# cov_mode = None
+cov_mode = 'GP'
 cov_mode_label = '_GP' if cov_mode == 'GP' else ''
 
 index = 0
@@ -227,9 +227,9 @@ free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(1.8, 4.4), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(1.8, 4.2), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(5.72, 5.73), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-     'mass': [(10.0, 30.0), r'$\log\ M_\mathrm{p}$'],
+     'mass': [(10.0, 40.0), r'$M [M_\mathrm{Jup}]$'],
     # 'R_p': [(2.4, 4.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'log_g': [(2.5,4.5), r'$\log\ g$'], 
@@ -450,13 +450,13 @@ if cov_mode == 'GP':
     free_params['log_l_G'] = [(-1.0, 1.0), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-2.0, 0.8), r'$\log\ a_{G}$']
+        free_params[f'log_a_{grating}_G'] = [(-2.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
 
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 10,
+    max_separation = 11,
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 

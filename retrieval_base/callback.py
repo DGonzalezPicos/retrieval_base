@@ -194,7 +194,7 @@ class CallBack:
         )
 
         # Make a summary figure #FIXME: uncomment this
-        self.plot_summary = False
+        self.plot_summary = True
         if self.plot_summary:
             self.fig_summary()
 
@@ -307,7 +307,7 @@ class CallBack:
             'pressure': self.PT.pressure.tolist(), 
         }
         for w_set in self.LogLike.keys():
-            dict_to_save[f'f_{w_set}'] = self.LogLike[w_set].f.tolist()
+            # dict_to_save[f'f_{w_set}'] = self.LogLike[w_set].f.tolist()
             dict_to_save[f'beta_{w_set}'] = self.LogLike[w_set].beta.tolist()
 
         with open(self.prefix+'data/bestfit.json', 'w') as fp:

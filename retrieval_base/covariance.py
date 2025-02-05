@@ -21,16 +21,16 @@ class Covariance:
         # Set to None initially
         self.cov_cholesky = None
 
-    def __call__(self, params, w_set, order, det, **kwargs):
+    def __call__(self, params, grating, order, det, **kwargs):
 
         # Reset the covariance matrix
         self.cov_reset()
         # check there's no zeros in cov
         assert not np.any(self.cov == 0), f'Covariance matrix has {np.sum(self.cov == 0)} zeros'
         
-        if params[f'beta_{w_set}'][order,det] != 1:
+        if params[f'beta_{grating}'][order,det] != 1:
             self.add_data_err_scaling(
-                params[f'beta_{w_set}'][order,det]
+                params[f'beta_{grating}'][order,det]
                 )
         return self
 
@@ -163,28 +163,29 @@ class GaussianProcesses(Covariance):
         # Give arguments to the parent class
         super().__init__(err)
 
-    def __call__(self, params, w_set, order, det, **kwargs):
+    def __call__(self, params, grating, **kwargs): # remove order, det as arguments
 
         # Reset the covariance matrix
         self.cov_reset()
 
-        # if params[f'beta_{w_set}'][order,det] != 1:
+        # if params[f'beta_{grating}'][order,det] != 1:
         #     self.add_data_err_scaling(
-        #         params[f'beta_{w_set}'][order,det]
+        #         params[f'beta_{grating}'][order,det]
         #         )
         
-        if params.get(f'a_{w_set}_G', None) is not None:
-            if isinstance(params[f'a_{w_set}_G'][order,det], float):
+        if params.get(f'a_{grating}_G', None) is not None:
+            if isinstance(params[f'a_{grating}_G'], float):
                 self.add_RBF_kernel(
-                    a=params[f'a_{w_set}_G'][order,det], 
-                    l=params[f'l_{w_set}_G'][order,det], 
+                    a=params[f'a_{grating}_G'], 
+                    # l=params[f'l_{grating}_G'], 
+                    l = params['l_G'],
                     array=self.err_eff, 
                     **kwargs
                     )
-        if params.get(f'a_{w_set}_K', None) is not None:
-            # a = self.get_banded(np.diag(params[f'a_{w_set}'][order,det]))[:self.separation.shape[0]]
-            # a = np.tile(params[f'a_{w_set}'][order,det], (self.separation.shape[0], 1))
-            a = self.get_banded(params[f'a_{w_set}_K'][order,det])[:self.separation.shape[0]]
+        if params.get(f'a_{grating}_K', None) is not None:
+            # a = self.get_banded(np.diag(params[f'a_{grating}'][order,det]))[:self.separation.shape[0]]
+            # a = np.tile(params[f'a_{grating}'][order,det], (self.separation.shape[0], 1))
+            a = self.get_banded(params[f'a_{grating}_K'])[:self.separation.shape[0]]
             
             if a.shape[0] < self.separation.shape[0]:
                 # fill with zeros along axis 0
@@ -193,22 +194,23 @@ class GaussianProcesses(Covariance):
             assert a.shape[0] == self.separation.shape[0], f'a.shape {a.shape} != self.separation.shape {self.separation.shape}'
             self.add_RBF_kernel(
                 a=a, 
-                l=params[f'l_{w_set}_K'][order,det], 
+                # l=params[f'l_{grating}_K'], 
+                l = params.get('l_K', params['l_G']),
                 array=self.err_eff, # FIXME: check whether we use the mean error or what
                 **kwargs
                 )
-        # if params[f'a_{w_set}'][order,det] != 0:
+        # if params[f'a_{grating}'][order,det] != 0:
         #     self.add_RBF_kernel(
-        #         a=params[f'a_{w_set}'][order,det], 
-        #         l=params[f'l_{w_set}'][order,det], 
+        #         a=params[f'a_{grating}'][order,det], 
+        #         l=params[f'l_{grating}'][order,det], 
         #         array=self.err_eff, 
         #         **kwargs
         #         )
             
-        # if params[f'a_f_{w_set}'][order,det] != 0:
+        # if params[f'a_f_{grating}'][order,det] != 0:
         #     self.add_RBF_kernel(
-        #         a=params[f'a_f_{w_set}'][order,det], 
-        #         l=params[f'l_f_{w_set}'][order,det], 
+        #         a=params[f'a_f_{grating}'][order,det], 
+        #         l=params[f'l_f_{grating}'][order,det], 
         #         array=self.flux_eff, 
         #         **kwargs
         #         )
@@ -252,7 +254,7 @@ class GaussianProcesses(Covariance):
 
         # Hann window function to ensure sparsity
         w_ij = (self.separation < trunc_dist*l)
-        print(f' w_ij.shape {w_ij.shape}')
+        # print(f' w_ij.shape {w_ij.shape}')
         # GP amplitude
         GP_amp = a**2
         if scale_GP_amp:
@@ -280,12 +282,14 @@ class GaussianProcesses(Covariance):
     #     '''
     #     # apply hanning window to the covariance matrix
     #     w_ij = (self.separation < trunc_dist*l)
-    def get_cholesky(self, max_attempts=10, epsilon=1e-2):
+    def get_cholesky(self, max_attempts=10, epsilon=1e-2, debug=False):
         '''
         Get the Cholesky decomposition. Employs a banded 
         decomposition with scipy. 
         '''        
         self.cov = self.cov[(self.cov!=0).any(axis=1),:]
+        mean_cov = np.nanmean(self.cov)
+        self.cov /= mean_cov
 
         # Compute banded Cholesky decomposition
         for _ in range(max_attempts):
@@ -293,22 +297,22 @@ class GaussianProcesses(Covariance):
                 self.cov_cholesky = cholesky_banded(
                     self.cov, lower=True, check_finite=False,
                     )
-                # print(f' self.cov_chol.shape {self.cov_cholesky.shape}')
+                if debug:
+                    print(f' self.cov_chol.shape {self.cov_cholesky.shape}')
 
                 return self
             except np.linalg.LinAlgError:
                 # Add a small number to the diagonal
-                # print(f'Cholesky decomposition failed, retrying with epsilon={epsilon}')
-                # print(f' self.cov.shape {self.cov.shape}')
-                # print(f' Min: {np.min(self.cov)} Max: {np.max(self.cov)} Median: {np.median(self.cov)}')
-                self.cov[0] *= (1 + epsilon)
+                if debug:
+                    print(f' Cholesky decomposition failed...')
+                    print(f' epsilon={epsilon}')
+                    print(f' self.cov.shape {self.cov.shape}')
+                    print(f' Min: {np.min(self.cov)} Max: {np.max(self.cov)} Median: {np.median(self.cov)}')
+                # self.cov[0] *= (1 + epsilon)
+                self.cov[0] += epsilon
                 epsilon *= 10
-                
-        self.cov_cholesky = cholesky_banded(
-            self.cov, lower=True, 
-            overwrite_ab=False,
-            check_finite=False,
-            )
+        
+        self.cov_cholesky *= mean_cov
         delattr(self, 'cov')
         return self
 
@@ -365,10 +369,10 @@ if __name__ == '__main__':
     from retrieval_base.local_covariance_kernel import LocalCovarianceKernel
     
     np.random.seed(1234)
-    wave = np.linspace(2300, 2350, 200)
-    p = 5
+    wave = np.linspace(2300, 2350, 400)
+    p = 20
     flux = 5.0 + np.sin(wave / p)
-    snr = 10.0
+    snr = 20.0
     
     model = flux.copy()
     
@@ -383,7 +387,7 @@ if __name__ == '__main__':
             i = np.random.randint(0, len(flux))
             flux[i:i+width] += np.random.normal(amplitude, amplitude/2)
         return flux
-    flux = add_random_outlier(flux, 1.0, 2, 4)
+    flux = add_random_outlier(flux, 0.4, 2, 4)
     # flux[1008:1016] += 1.0
     
     res = flux - model
@@ -403,28 +407,28 @@ if __name__ == '__main__':
     # create a 1D array of wavelength
     separation = np.abs(wave[None,:] - wave[:,None])
     # create a 1D array of uncertainties
-    err = np.ones_like(wave) + 0.1*np.random.randn(len(wave))
+    # err = np.ones_like(wave) + 0.1*np.random.randn(len(wave))
     # create a 1D array of flux uncertainties
     err_eff = np.mean(err)
     
-    w_set = 'NIRSpec'
+    grating = 'NIRSpec'
     order = 0
     det = 0
     
-    a_G =1e0 * np.ones((1,1))
-    l_G = 1 * np.ones((1,1))
+    a_G = 0.4 * np.ones((1,1))
+    l_G = 0.5 * np.ones((1,1))
     params = {
-        f'a_{w_set}_G': a_G,
-        f'l_{w_set}_G': l_G,
+        f'a_{grating}_G': a_G,
+        f'l_{grating}_G': l_G,
         
-        f'a_{w_set}_K': np.sqrt(kernel[None,None,...]),
-        f'l_{w_set}_K': 2 * l_G,
+        f'a_{grating}_K': np.sqrt(kernel[None,None,...]),
+        f'l_{grating}_K': 5 * l_G,
         
         
     }
     # create a GP covariance matrix
-    cov = GaussianProcesses(err, separation, err_eff, max_separation=5)
-    cov(params, w_set, order, det, scale_GP_amp=True)
+    cov = GaussianProcesses(err, separation, err_eff, max_separation=2)
+    cov(params, grating, order, det, scale_GP_amp=True)
     # get the Cholesky decomposition
     cov.get_cholesky()
     print(f' cov_cholesky.shape {cov.cov_cholesky.shape}')
@@ -440,14 +444,15 @@ if __name__ == '__main__':
     ax_cov = fig.add_subplot(gs[0:3,3:5])
     ax_res = fig.add_subplot(gs[3:5,0:3])
     
-    ax_spec.plot(wave, flux, label='flux')
-    ax_spec.fill_between(wave, flux - cov_err, flux + cov_err, alpha=0.2, color='k', lw=0)
+    ax_spec.plot(wave, flux, label='flux', color='k')
     ax_spec.fill_between(wave, flux - err, flux + err, alpha=0.2, color='k', lw=0)
-    ax_spec.plot(wave, model, label='model')
+
+    ax_spec.fill_between(wave, flux - cov_err, flux + cov_err, alpha=0.2, color='red', lw=0)
+    ax_spec.plot(wave, model, label='model', color='orange')
     ax_spec.legend()
     ax_spec.set_title('Spectrum')
-    ax_res.plot(wave, res, label='residuals')
-    ax_res.fill_between(wave, -cov_err, cov_err, alpha=0.2, color='k', lw=0)
+    ax_res.plot(wave, res, '.', label='residuals', color='k')
+    ax_res.fill_between(wave, -cov_err, cov_err, alpha=0.2, color='red', lw=0)
     ax_res.fill_between(wave, -err, err, alpha=0.2, color='k', lw=0)
     ax_res.legend()
     
@@ -456,5 +461,7 @@ if __name__ == '__main__':
     ax_cov.set_title('Covariance')
     
     for region in lck.regions:
-        ax_res.axvspan(region[0], region[1], alpha=0.1, color='r', lw=0, zorder=-1)
+        ax_res.axvspan(region[0], region[1], alpha=0.1, color='k', lw=0, zorder=-1)
+        # draw a vertical arrow at the bottom of the plot pointing down from the top of the plot
+        # ax_res.arrow(region[0], np.min(res), 0, np.max(res) - np.min(res), head_width=0.1, head_length=0.1, fc='r', ec='r')
     plt.show()

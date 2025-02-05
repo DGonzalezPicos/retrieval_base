@@ -81,7 +81,7 @@ class Parameters:
         assert isinstance(self.wlen_settings, dict), 'wlen_settings must be a dictionary'
         # check that the keys are in ['K2166', 'NIRSpec']
         assert all([key in ['K2166', 'NIRSpec'] for key in self.wlen_settings.keys()]), 'wlen_settings keys must be in [K2166, NIRSpec]'
-        
+        # print(f' [Parameters.__init__]: wlen_settings = {self.wlen_settings}')
         # check distance / parallax parameters
         for p in ['parallax', 'parallax_mas']:
             if p in self.params.keys():
@@ -263,8 +263,18 @@ class Parameters:
             self.params['dlnT_dlnP_knots'] = np.insert(self.params['dlnT_dlnP_knots'], len(dlnT_dlnP_keys)//2, self.params['dlnT_dlnP_RCE'])
             
         return cube
-
+    
     def read_uncertainty_params(self):
+        
+        if self.cov_mode == 'GP':
+            assert 'l_G' in self.params.keys(), ' [Parameters.read_uncertainty_params]: l_G parameter not found in the parameter keys'
+            for grating in self.params['gratings']:
+                assert f'a_{grating}_G' in self.params.keys(), f' [Parameters.read_uncertainty_params]: a_{grating}_G parameter not found in the parameter keys'
+            
+        # for grating in self.gratings:
+            
+
+    def read_uncertainty_params_old(self):
         
         # cov_keys = ['beta', 'a', 'l', 'a_f', 'l_f']
         cov_keys = ['a', 'l']

@@ -217,7 +217,8 @@ class Retrieval:
                         continue
                     
                     separation_ij, err_eff_ij = None, None
-                    if hasattr(self.d_spec[w_set], 'flux_eff'):
+                    # if hasattr(self.d_spec[w_set], 'flux_eff'):
+                    if self.conf.cov_mode == 'GP':
                         separation_ij = self.d_spec[w_set].separation[i,j]
                         err_eff_ij = self.d_spec[w_set].err_eff[i,j]
                         
@@ -241,7 +242,7 @@ class Retrieval:
                 scale_flux=self.conf.scale_flux, 
                 scale_err=self.conf.scale_err, 
                 scale_flux_eps=getattr(self.conf, 'scale_flux_eps', 0.05),
-                **self.conf.lck_kwargs
+                lck_kwargs=self.conf.lck_kwargs
                 )
 
         self.PT = get_PT_profile_class(
@@ -415,10 +416,14 @@ class Retrieval:
                         if not self.d_spec[w_set].mask_isfinite[i,j].any():
                             continue
 
+                        grating = self.d_spec[w_set].gratings_list[i]
+                        # print(f' [Retrieval.PMN_lnL_func] (i,j) = ({i}, {j}), grating = {grating}')
                         # Update the covariance matrix
                         self.Cov[w_set][i,j](
-                            self.Param.params, w_set, 
-                            order=i, det=j, 
+                            self.Param.params, 
+                            # w_set, 
+                            # order=i, det=j, 
+                            grating=self.d_spec[w_set].gratings_list[i],
                             **self.conf.cov_kwargs, 
                             )
 
@@ -430,7 +435,7 @@ class Retrieval:
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 
                 self.Cov[w_set], 
-                is_first_w_set=(h==0), 
+                # is_first_w_set=(h==0), 
                 #ln_L_penalty=ln_L_penalty, 
                 evaluation=self.evaluation, 
                 )

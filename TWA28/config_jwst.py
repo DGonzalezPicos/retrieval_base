@@ -7,11 +7,12 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 target = 'TWA28'
-lbl = 11
+# lbl = 11
+lbl = 20
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h', 'g395h']
+gratings = ['g235h']
 # gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
@@ -19,7 +20,7 @@ chem_mode = 'fastchem'
 # chem_mode = 'freechem'
 
 index = 0
-run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}'
+run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}_GP'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 # Define PT profile
@@ -440,12 +441,19 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 
-cov_mode = None
+# cov_mode = None
+cov_mode = 'GP'
+
+
+if cov_mode == 'GP':
+    free_params['log_l_G'] = [(0.0, 2.0), r'$\log\ l_G$']
+    for grating in gratings:
+        free_params[f'log_a_{grating}_G'] = [(-2.0, 1.0), r'$\log\ a_{G}$']
 
 cov_kwargs = dict(
-    trunc_dist   = 1, # set to 3 for accuracy, 2 for speed
+    # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    # max_separation = 20, 
+    max_separation = 9,
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
@@ -457,6 +465,8 @@ lck_kwargs = dict(
     use_lck=True,
     lck_width=4,
     n_max_regions=5,
+    sigma_threshold=3.0,
+    scale_GP_amp=True,
 )
 
 if free_params.get('log_l') is not None:
@@ -491,8 +501,8 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 400 if not testing else 200
+evidence_tolerance = 0.5 if not testing else 1.0
+n_live_points = 400 if not testing else 100
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

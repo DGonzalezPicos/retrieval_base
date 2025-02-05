@@ -11,9 +11,7 @@ class LogLikelihood:
                  scale_flux=False, 
                  scale_err=False, 
                  scale_flux_eps=0.05,
-                 use_lck=False,
-                 lck_width=4,
-                 n_max_regions=5,
+                 lck_kwargs={},
                  ):
 
         # Observed spectrum is constant
@@ -29,13 +27,12 @@ class LogLikelihood:
         
         self.scale_flux_all = False # WARNING: this overrides the previous setting
         
-        self.use_lck = use_lck
-        self.lck_width = lck_width
-        self.n_max_regions = n_max_regions
+        self.use_lck = (len(lck_kwargs) > 0)
+        self.lck_kwargs = lck_kwargs
         
-    def __call__(self, m_spec, Cov, 
-                 is_first_w_set=False, 
-                 ln_L_penalty=0, 
+    def __call__(self, 
+                 m_spec, 
+                 Cov, 
                  evaluation=False):
         '''
         Evaluate the total log-likelihood given the model spectrum and parameters.
@@ -76,14 +73,50 @@ class LogLikelihood:
                 m_flux_ij = m_spec.flux[:,i,j,mask_ij] # shape must be (n_knots, n_orders, n_dets, n_pixels)
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err
-                
-                # print(f'[LogLikelihood] Number of data points in order {i}, detector {j} = {N_ij}')
-                # print(f'[LogLikelihood] Mean(m_flux) = {np.nanmean(m_flux_ij)}')
-                # print(f'[LogLikelihood] Mean(d_flux) = {np.nanmean(d_flux_ij)}')
-                # print(f'[LogLikelihood] Mean(d_err)  = {np.nanmean(d_err_ij)}')
-
+            
                 res_ij = (d_flux_ij - m_flux_ij)
+                                
+                 # Without linear scaling of detectors
+                f_ij = 1
                 
+                # simply take the first knot, no spline model implemented here
+                m_flux_ij_scaled = m_flux_ij[0]
+                        
+                
+                # print(f'FLux scaling {f_ij}')
+                res_ij = (d_flux_ij - m_flux_ij_scaled)
+                if np.sum(np.isnan(res_ij)) > 0: 
+                    print(f'NaNs in residuals: {np.sum(np.isnan(res_ij))}')
+                    self.ln_L = -np.inf
+                    return self.ln_L
+                
+                if self.use_lck:
+
+                    lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
+                                                d_flux_ij,
+                                                d_err_ij,
+                                                lck_width=self.lck_kwargs.get('lck_width', 4))
+                    lck.s = lck(m_flux_ij_scaled, 
+                        sigma_threshold=self.lck_kwargs.get('sigma_threshold', 5.0),
+                        n_max_regions=self.lck_kwargs.get('n_max_regions', 5))
+
+                    if  hasattr(lck, 'chi2_regions'):
+                        
+                        kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4)) # a_k**2
+                        a_k = np.sqrt(Cov[i,j].get_banded(kernel)[:Cov[i,j].separation.shape[0]])
+                        del lck
+
+                        if a_k.shape[0] < Cov[i,j].separation.shape[0]:
+                            # fill with zeros along axis 0
+                            a_k = np.concatenate((a_k, np.zeros((Cov[i,j].separation.shape[0] - a_k.shape[0], a_k.shape[1]))), axis=0)
+                        assert a_k.shape[0] == Cov[i,j].separation.shape[0], f'a_k.shape {a_k.shape} != Cov[i,j].separation.shape {Cov[i,j].separation.shape}'
+                        Cov[i,j].add_RBF_kernel(a=a_k,
+                                                l=self.lck_kwargs.get('lck_width', 4),
+                                                array=Cov[i,j].err_eff,
+                                                scale=self.lck_kwargs.get('scale_GP_amp', True),
+                                                trunc_dist=self.lck_kwargs.get('trunc_dist', 4))
+                        del kernel, a_k
+                    
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky()
@@ -95,85 +128,22 @@ class LogLikelihood:
                 # Set up the log-likelihood for this order/detector
                 # Chi-squared and optimal uncertainty scaling terms still need to be added
                 ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
-                
-                
-                 # Without linear scaling of detectors
-                f_ij = 1
-                if N_knots > 1:
-                    f_ij = self.solve_linear(d_flux_ij, m_flux_ij, Cov[i,j])
-                    if ((i+j) == 0 and m_spec.fit_radius) or (not self.scale_flux):
-                        # NEW 2024-05-26: recover the absolute scaling by dividing by the central value
-                        f_ij_ref = f_ij[len(f_ij)//2]
-                        if f_ij_ref == 0:
-                            print(f'Zero scaling factor in order {i}, detector {j}')
-                            self.ln_L = -np.inf
-                            return self.ln_L
-                        
-                        f_ij /= f_ij_ref
-                        if (i+j) > 0:
-                            # allow a 5% maximum deviation from the reference scaling
-                            eps = min(self.scale_flux_eps, f_ij_ref-1.0) if f_ij_ref > 1.0 else max(-self.scale_flux_eps, f_ij_ref-1.0)
-                            f_ij *= (1.0 + eps)
-                        
-                    m_flux_ij_scaled = f_ij @ m_flux_ij
                     
+                
+                # Chi-squared for the optimal linear scaling
+                inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
+                
+                chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
+                
+                if self.scale_err:
+                    # Scale the flux uncertainty that maximizes the log-likelihood
+                    beta_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)
                 else:
-                    # Without linear scaling of detectors
-                    apply_flux_scaling = self.scale_flux and (not (i==0 and j==0) or not is_first_w_set)
-                    if self.scale_flux_all: # override previous setting
-                        apply_flux_scaling = True
-                    # if self.scale_flux and (not (i==0 and j==0) or not is_first_w_set):
-                    if apply_flux_scaling:
-                        # Only scale the flux relative to the first order/detector
+                    # No additional uncertainty scaling
+                    beta_ij = 1
 
-                        # Scale the model flux to minimize the chi-squared error
-                        m_flux_ij_scaled, f_ij = self.get_flux_scaling(d_flux_ij, m_flux_ij[0], Cov[i,j])
-                        if (i+j) == 0 and self.fit_radius:
-                            # NEW 2024-05-26: recover the absolute scaling by dividing by the central value
-                            f_ij_ref = f_ij[len(f_ij)//2]
-                            f_ij /= f_ij_ref
-                            m_flux_ij_scaled /= f_ij_ref
-                        # print(f' FLux scaling {f_ij}')
-                    else:
-                        # No additional flux scaling
-                        m_flux_ij_scaled = m_flux_ij[0]
-                        
-                
-                # print(f'FLux scaling {f_ij}')
-                res_ij = (d_flux_ij - m_flux_ij_scaled)
-                if np.sum(np.isnan(res_ij)) > 0: 
-                    print(f'NaNs in residuals: {np.sum(np.isnan(res_ij))}')
-                    self.ln_L = -np.inf
-                    return self.ln_L
-                
-                if self.use_lck:
-                    assert not Cov[i,j].is_matrix, 'Covariance matrix not implemented for LCK'
-
-                    lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
-                                                d_flux_ij,
-                                                d_err_ij,
-                                                lck_width=self.lck_width)
-                    s_ij = lck(m_flux_ij_scaled, n_max_regions=self.n_max_regions)
-                    chi2_squared_ij_pp = res_ij**2 / Cov[i,j].cov
-                
-                else: 
-                    # Chi-squared for the optimal linear scaling
-                    inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
-                    
-                    chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
-                    
-                    if self.scale_err:
-                        # Scale the flux uncertainty that maximizes the log-likelihood
-                        
-                            
-                            
-                        beta_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)
-                    else:
-                        # No additional uncertainty scaling
-                        beta_ij = 1
-
-                    # Chi-squared for optimal linear scaling and uncertainty scaling
-                    chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
+                # Chi-squared for optimal linear scaling and uncertainty scaling
+                chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
 
                 # Add chi-squared and optimal uncertainty scaling terms to log-likelihood
                 ln_L_ij += -0.5 * N_ij*np.log(beta_ij**2) 

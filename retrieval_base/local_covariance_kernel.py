@@ -24,7 +24,8 @@ class LocalCovarianceKernel:
         def add_region(merged, chi2_region, region):
             merged.append(region)
             mask_region = (self.wave >= region[0]) & (self.wave <= region[1])
-            chi2_region.append(np.nanmax(chi2_pp[mask_region]) / np.sum(mask_region))
+            # chi2_region.append(np.nanmax(chi2_pp[mask_region]) / np.sum(mask_region))
+            chi2_region.append(np.nanmax(chi2_pp[mask_region]))
             return merged, chi2_region
 
         for i, region in enumerate(regions):
@@ -65,13 +66,13 @@ class LocalCovarianceKernel:
             
             kernel = np.zeros((self.wave.shape[0], self.wave.shape[0]))
 
-            r_0 = np.median(region)
+            r_0 = np.mean(region)
             r_i = np.abs(self.wave[None,:] - r_0)
             r_j = np.abs(self.wave[:,None] - r_0)
             r2 = r_i**2 + r_j**2
             # print(f' r2.shape {r2.shape}')
             w_ij = (self.separation < trunc_dist * self.lck_width_wavelength / 2.355)
-            print(f' w_ij.shape {w_ij.shape}')
+            # print(f' w_ij.shape {w_ij.shape}')
             
             # print(f' self.s.shape {self.s.shape}')
             kernel[w_ij] = chi2_region * np.exp(-0.5 * r2[w_ij] / (self.lck_width_wavelength / 2.355)**2)
@@ -95,17 +96,19 @@ class LocalCovarianceKernel:
         lck_center = self.wave[self.mask]
         self.regions = np.array([lck_center - self.lck_width_wavelength / 2, lck_center + self.lck_width_wavelength / 2]).T
         if len(self.regions) == 0:
-            return np.ones(self.wave.shape)
+            # print(' No regions found')
+            self.s = np.ones(self.wave.shape)
+            return self.s
         
-        print(f' Number of regions: {len(self.regions)}')
+        # print(f' Number of regions: {len(self.regions)}')
         self.regions, self.chi2_regions = self.merge_regions(self.regions, chi2_pp)
 
         if self.n_max_regions is not None:
             self.regions, self.chi2_regions = self.select_max_regions(self.regions, self.chi2_regions, self.n_max_regions)
         self.s_regions = self.scale_factors_regions(self.regions, self.chi2_regions)
-        print(f' Regions: {self.regions}')
-        print(f' Chi2 regions: {self.chi2_regions}')
-        print(f' Scaling factors: {self.s_regions[self.mask]}')
+        # print(f' Regions: {self.regions}')
+        # print(f' Chi2 regions: {self.chi2_regions}')
+        # print(f' Scaling factors: {self.s_regions[self.mask]}')
         mask_rest = ~self.mask
         chi2_rest = np.nansum(chi2_pp[mask_rest]) / np.sum(mask_rest)
         self.s_rest = np.sqrt(chi2_rest)

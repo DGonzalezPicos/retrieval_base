@@ -20,7 +20,7 @@ chem_mode = 'fastchem'
 # chem_mode = 'freechem'
 cov_mode = None
 # cov_mode = 'GP'
-cov_mode_label = '_GP' if cov_mode == 'GP' else '_'
+cov_mode_label = '_GP' if cov_mode == 'GP' else ''
 
 index = 0
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
@@ -450,7 +450,7 @@ if cov_mode == 'GP':
     free_params['log_l_G'] = [(-1.0, 1.0), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-2.0, 0.5), r'$\log\ a_{G}$']
+        free_params[f'log_a_{grating}_G'] = [(-2.0, 0.8), r'$\log\ a_{G}$']
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
 
 cov_kwargs = dict(

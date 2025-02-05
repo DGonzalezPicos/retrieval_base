@@ -24,8 +24,10 @@ from .callback import CallBack
 import retrieval_base.figures as figs
 import retrieval_base.auxiliary_functions as af
 from matplotlib.backends.backend_pdf import PdfPages
-from tabulate import tabulate
-    
+try:
+    from tabulate import tabulate
+except:
+    pass
 def prior_check(conf, n=3, random=False,
                 get_contr=False, 
                 remove_disk=False, 

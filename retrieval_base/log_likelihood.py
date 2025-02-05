@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import nnls
-
+import copy
 from retrieval_base.local_covariance_kernel import LocalCovarianceKernel
 
 class LogLikelihood:
@@ -46,6 +46,7 @@ class LogLikelihood:
         ln_L_penalty : float
             Penalty term to be added to the total log-likelihood. Default is 0.       
         '''
+        # Cov = copy.deepcopy(Cov)
         self.ln_L = 0
         self.chi_squared = 0
 
@@ -91,7 +92,8 @@ class LogLikelihood:
                     return self.ln_L
                 
                 if self.use_lck:
-
+                    # print(f' [LogLikelihood.__call__]: using LCK')
+                    debug_lck = False
                     lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
                                                 d_flux_ij,
                                                 d_err_ij,
@@ -99,8 +101,11 @@ class LogLikelihood:
                     lck.s = lck(m_flux_ij_scaled, 
                         sigma_threshold=self.lck_kwargs.get('sigma_threshold', 5.0),
                         n_max_regions=self.lck_kwargs.get('n_max_regions', 5))
-
-                    if  hasattr(lck, 'chi2_regions'):
+                    if debug_lck:
+                        print(f' [LogLikelihood.__call__]: lck.s.shape {lck.s.shape}')
+                        print(f' [LogLikelihood.__call__]: lck.s.min() {lck.s.min():.2e} lck.s.max() {lck.s.max():.2e} lck.s.mean() {lck.s.mean():.2e}')
+                        print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
+                    if len(getattr(lck, 'chi2_regions', [])) > 0:
                         
                         kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4)) # a_k**2
                         a_k = np.sqrt(Cov[i,j].get_banded(kernel)[:Cov[i,j].separation.shape[0]])
@@ -124,7 +129,8 @@ class LogLikelihood:
 
                 # Get the log of the determinant (log prevents over/under-flow)
                 Cov[i,j].get_logdet()
-                
+                # check logdet
+                # print(f' logdet {Cov[i,j].logdet:.2e}')
                 # Set up the log-likelihood for this order/detector
                 # Chi-squared and optimal uncertainty scaling terms still need to be added
                 ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
@@ -132,9 +138,15 @@ class LogLikelihood:
                 
                 # Chi-squared for the optimal linear scaling
                 inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
+                # check there's no inf or nan
+                assert np.all(np.isfinite(inv_cov_ij_res_ij)), 'There are inf or nan in the inverse covariance matrix'
+                # print(f' [LogLikelihood.__call__]: mean(res_ij) {np.mean(res_ij):.2e}')
+                # print(f' [LogLikelihood.__call__]: std(res_ij) {np.std(res_ij):.2e}')
+                # print(f' [LogLikelihood.__call__]: mean(inv_cov_ij_res_ij) {np.mean(inv_cov_ij_res_ij):.2e}')
+                # print(f' [LogLikelihood.__call__]: std(inv_cov_ij_res_ij) {np.std(inv_cov_ij_res_ij):.2e}')
                 
                 chi_squared_ij_scaled = np.dot(res_ij, inv_cov_ij_res_ij)
-                
+                # print(f' chi_squared_ij_scaled {chi_squared_ij_scaled:.2e}')
                 if self.scale_err:
                     # Scale the flux uncertainty that maximizes the log-likelihood
                     beta_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)

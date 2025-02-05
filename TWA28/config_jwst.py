@@ -365,7 +365,6 @@ for log_k, v in opacity_params.items():
         
         
 
-print(f' --> {free_params} free parameters')
 # free_params.update({k:v[0] for k,v in opacity_params.items()})
 # remove constant params from free_params dictionary
 free_params = {k:v for k,v in free_params.items() if k not in list(constant_params.keys())}
@@ -446,9 +445,11 @@ cov_mode = 'GP'
 
 
 if cov_mode == 'GP':
-    free_params['log_l_G'] = [(0.0, 2.0), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-1.0, 1.0), r'$\log\ l_G$']
+    # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-2.0, 1.0), r'$\log\ a_{G}$']
+        free_params[f'log_a_{grating}_G'] = [(-2.0, 0.5), r'$\log\ a_{G}$']
+        # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
 
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
@@ -469,9 +470,9 @@ lck_kwargs = dict(
     scale_GP_amp=True,
 )
 
-if free_params.get('log_l') is not None:
-    cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']
-    cov_kwargs['max_separation'] *= 10**free_params['log_l'][0][1]
+# if free_params.get('log_l') is not None:
+#     cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']
+#     cov_kwargs['max_separation'] *= 10**free_params['log_l'][0][1]
     
 ####################################################################################
 # PT parameters
@@ -506,6 +507,7 @@ n_live_points = 400 if not testing else 100
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file
+print(f' --> {free_params} free parameters')
 
 if __name__ == '__main__':
     from retrieval_base.config import Config

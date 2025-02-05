@@ -48,7 +48,8 @@ def prior_check(conf, n=3, random=False,
     # plot PT
     fig_PT, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
     fig_chem, ax_chem = plt.subplots(1,n, figsize=(8 + 2*n, 5), sharey=True, sharex=True)
-    
+    if n == 1:
+        ax_chem = [ax_chem]
     # chem_list = []
     time_list = []
     for i, theta_i in enumerate(theta):
@@ -416,7 +417,7 @@ class Retrieval:
                         if not self.d_spec[w_set].mask_isfinite[i,j].any():
                             continue
 
-                        grating = self.d_spec[w_set].gratings_list[i]
+                        # grating = self.d_spec[w_set].gratings_list[i]
                         # print(f' [Retrieval.PMN_lnL_func] (i,j) = ({i}, {j}), grating = {grating}')
                         # Update the covariance matrix
                         self.Cov[w_set][i,j](

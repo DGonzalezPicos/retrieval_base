@@ -14,8 +14,10 @@ class Covariance:
      
     def __init__(self, err, **kwargs):
 
-        # Set-up the covariance matrix
-        self.err = err
+        # Set-up the covariance matrix, manage the case where err is negative or zero
+        self.err = np.where(err > 0, err, np.inf)
+        # print(f' [Covariance.__init__]: err.shape {self.err.shape}')
+        # print(f' [Covariance.__init__]: err.min {self.err.min():.2e} err.max {self.err.max():.2e} err.mean {self.err.mean():.2e}')
         self.cov_reset()
 
         # Set to None initially
@@ -182,38 +184,23 @@ class GaussianProcesses(Covariance):
                     array=self.err_eff, 
                     **kwargs
                     )
-        if params.get(f'a_{grating}_K', None) is not None:
-            # a = self.get_banded(np.diag(params[f'a_{grating}'][order,det]))[:self.separation.shape[0]]
-            # a = np.tile(params[f'a_{grating}'][order,det], (self.separation.shape[0], 1))
-            a = self.get_banded(params[f'a_{grating}_K'])[:self.separation.shape[0]]
+        # if params.get(f'a_{grating}_K', None) is not None:
+        #     # a = self.get_banded(np.diag(params[f'a_{grating}'][order,det]))[:self.separation.shape[0]]
+        #     # a = np.tile(params[f'a_{grating}'][order,det], (self.separation.shape[0], 1))
+        #     a = self.get_banded(params[f'a_{grating}_K'])[:self.separation.shape[0]]
             
-            if a.shape[0] < self.separation.shape[0]:
-                # fill with zeros along axis 0
-                a = np.concatenate((a, np.zeros((self.separation.shape[0] - a.shape[0], a.shape[1]))), axis=0)
+        #     if a.shape[0] < self.separation.shape[0]:
+        #         # fill with zeros along axis 0
+        #         a = np.concatenate((a, np.zeros((self.separation.shape[0] - a.shape[0], a.shape[1]))), axis=0)
             
-            assert a.shape[0] == self.separation.shape[0], f'a.shape {a.shape} != self.separation.shape {self.separation.shape}'
-            self.add_RBF_kernel(
-                a=a, 
-                # l=params[f'l_{grating}_K'], 
-                l = params.get('l_K', params['l_G']),
-                array=self.err_eff, # FIXME: check whether we use the mean error or what
-                **kwargs
-                )
-        # if params[f'a_{grating}'][order,det] != 0:
+        #     assert a.shape[0] == self.separation.shape[0], f'a.shape {a.shape} != self.separation.shape {self.separation.shape}'
         #     self.add_RBF_kernel(
-        #         a=params[f'a_{grating}'][order,det], 
-        #         l=params[f'l_{grating}'][order,det], 
-        #         array=self.err_eff, 
+        #         a=a, 
+        #         # l=params[f'l_{grating}_K'], 
+        #         l = params.get('l_K', params['l_G']),
+        #         array=self.err_eff, # FIXME: check whether we use the mean error or what
         #         **kwargs
-        #         )
-            
-        # if params[f'a_f_{grating}'][order,det] != 0:
-        #     self.add_RBF_kernel(
-        #         a=params[f'a_f_{grating}'][order,det], 
-        #         l=params[f'l_f_{grating}'][order,det], 
-        #         array=self.flux_eff, 
-        #         **kwargs
-        #         )
+        #     )
 
 
     def cov_reset(self):
@@ -223,6 +210,7 @@ class GaussianProcesses(Covariance):
         self.cov[0] = self.err**2
 
         self.is_matrix = True
+        return self
         
     def add_data_err_scaling(self, beta):
         # Scale the uncertainty with a (beta) factor
@@ -259,12 +247,6 @@ class GaussianProcesses(Covariance):
         GP_amp = a**2
         if scale_GP_amp:
             # Use amplitude as fraction of flux uncertainty
-            '''
-            if isinstance(self.err_eff, float):
-                GP_amp *= self.err_eff**2
-            else:
-                GP_amp *= self.err_eff[w_ij]**2
-            '''
             if isinstance(array, float):
                 GP_amp *= array**2
             else:
@@ -276,21 +258,38 @@ class GaussianProcesses(Covariance):
         # Gaussian radial-basis function kernel
         self.cov[w_ij] += GP_amp * np.exp(-(self.separation[w_ij])**2/(2*l**2))
         
-    # def add_local_kernel(self, mus, sigmas, amplitudes, trunc_dist=4):
-    #     '''
-    #     Add a local kernel to the covariance matrix.
-    #     '''
-    #     # apply hanning window to the covariance matrix
-    #     w_ij = (self.separation < trunc_dist*l)
+        return self
+        
     def get_cholesky(self, max_attempts=10, epsilon=1e-2, debug=False):
         '''
         Get the Cholesky decomposition. Employs a banded 
         decomposition with scipy. 
         '''        
-        self.cov = self.cov[(self.cov!=0).any(axis=1),:]
-        mean_cov = np.nanmean(self.cov)
-        self.cov /= mean_cov
-
+        
+        mask_nonzero_diag = (self.cov != 0).any(axis=1)
+        self.cov = self.cov[mask_nonzero_diag,:]
+        
+        # print(f' [GaussianProcesses.get_cholesky]: mask_nonzero_diag.sum() {mask_nonzero_diag.sum()}'
+        #       )
+        # print(f' [GaussianProcesses.get_cholesky]: self.cov.shape {self.cov.shape}')
+        # print(f' [GaussianProcesses.get_cholesky]: self.cov.min() {self.cov.min():.2e} self.cov.max() {self.cov.max():.2e} self.cov.mean() {self.cov.mean():.2e}')
+        
+        if mask_nonzero_diag.sum() == 1:
+            # Only the diagonal is non-zero
+            self.cov = self.cov[0]
+            self.cov_cholesky = np.sqrt(self.cov)
+            
+            return 
+        
+        # mean_cov = np.nanmean(self.cov)
+        # self.cov /= mean_cov
+        self.cov = self.cov[mask_nonzero_diag,:]
+        try:
+            self.cov_cholesky = cholesky_banded(self.cov, lower=True, check_finite=False)
+        except np.linalg.LinAlgError:
+            # print(f' !!!!!! Cholesky decomposition failed...')
+            self.cov_cholesky = np.sqrt(self.cov)
+        '''
         # Compute banded Cholesky decomposition
         for _ in range(max_attempts):
             try:
@@ -311,8 +310,8 @@ class GaussianProcesses(Covariance):
                 # self.cov[0] *= (1 + epsilon)
                 self.cov[0] += epsilon
                 epsilon *= 10
-        
-        self.cov_cholesky *= mean_cov
+        '''
+        # self.cov_cholesky *= mean_cov
         delattr(self, 'cov')
         return self
 

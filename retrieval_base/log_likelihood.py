@@ -50,9 +50,6 @@ class LogLikelihood:
         self.ln_L = 0
         self.chi_squared = 0
 
-        N_knots = m_spec.flux.shape[0]
-        # Array to store the linear flux-scaling terms
-        self.f    = np.ones((N_knots, self.d_spec.n_orders, self.d_spec.n_dets))
         # Array to store the uncertainty-scaling terms
         self.beta = np.ones((self.d_spec.n_orders, self.d_spec.n_dets))
         
@@ -71,21 +68,12 @@ class LogLikelihood:
                     print(f'No data points in order {i}, detector {j}')
                     continue
                 
-                m_flux_ij = m_spec.flux[:,i,j,mask_ij] # shape must be (n_knots, n_orders, n_dets, n_pixels)
+                m_flux_ij = m_spec.flux[i,j,mask_ij] # shape must be (n_orders, n_dets, n_pixels)
                 d_flux_ij = self.d_spec.flux[i,j,mask_ij]
                 d_err_ij  = Cov[i,j].err
             
                 res_ij = (d_flux_ij - m_flux_ij)
-                                
-                 # Without linear scaling of detectors
-                f_ij = 1
-                
-                # simply take the first knot, no spline model implemented here
-                m_flux_ij_scaled = m_flux_ij[0]
-                        
-                
-                # print(f'FLux scaling {f_ij}')
-                res_ij = (d_flux_ij - m_flux_ij_scaled)
+                                   
                 if np.sum(np.isnan(res_ij)) > 0: 
                     print(f'NaNs in residuals: {np.sum(np.isnan(res_ij))}')
                     self.ln_L = -np.inf
@@ -98,7 +86,7 @@ class LogLikelihood:
                                                 d_flux_ij,
                                                 d_err_ij,
                                                 lck_width=self.lck_kwargs.get('lck_width', 4))
-                    lck.s = lck(m_flux_ij_scaled, 
+                    lck.s = lck(m_flux_ij, 
                         sigma_threshold=self.lck_kwargs.get('sigma_threshold', 5.0),
                         n_max_regions=self.lck_kwargs.get('n_max_regions', 5))
                     if debug_lck:
@@ -165,12 +153,9 @@ class LogLikelihood:
                 self.ln_L += ln_L_ij
                 #self.chi_squared += chi_squared_ij
                 self.chi_squared += np.nansum((res_ij/d_err_ij)**2)
-
-                # Store in the arrays
-                self.f[:,i,j] = f_ij
             
                 self.beta[i,j] = beta_ij
-                self.m_flux[i,j,mask_ij] = m_flux_ij_scaled
+                self.m_flux[i,j,mask_ij] = m_flux_ij
 
         # Reduced chi-squared
         self.chi_squared_red = self.chi_squared / self.n_dof

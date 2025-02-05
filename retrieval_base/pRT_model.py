@@ -447,7 +447,9 @@ class pRT_model:
                 atm_i.calc_flux_fast(
                     self.temperature, 
                     self.mass_fractions, 
-                    gravity=10.0**self.params['log_g'], 
+                    # gravity=10.0**self.params['log_g'], 
+                    # gravity=self.params.get('g', 10.0**self.params['log_g']),
+                    gravity=self.params['g'],
                     mmw=self.mass_fractions['MMW'], 
                     Kzz=self.K_zz, 
                     fsed=self.f_sed, 

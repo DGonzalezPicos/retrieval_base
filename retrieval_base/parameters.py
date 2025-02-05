@@ -404,6 +404,19 @@ class Parameters:
             self.params['res'] = [self.params[key] for key in res_keys]
             
         self.params['gratings'] = self.params.get('gratings', ['g235h', 'g235h', 'g395h', 'g395h'])
+        
+    def read_surface_gravity(self):
+        
+        if 'mass' in self.param_keys and 'R_p' in self.param_keys:
+            # print(f' [Parameters.read_surface_gravity]: mass = {self.params["mass"]}, R_p = {self.params["R_p"]}')
+            mass_g = self.params['mass'] * 1.898e30
+            radius_cm = self.params['R_p'] * 7.1492e9
+            # G_cgs = 6.67430e-8
+            self.params['g'] = 6.67430e-8 * mass_g / radius_cm**2
+            # print(f' [Parameters.read_surface_gravity]: g = {self.params["g"]:.2e}')
+            # print(f' [Parameters.read_surface_gravity]: log_g = {np.log10(self.params["g"]):.2f}')
+            
+        return self
             
             
     @classmethod
@@ -516,6 +529,7 @@ class Parameters:
         self.read_PT_params()
         self.read_uncertainty_params()
         self.read_chemistry_params()
+        self.read_surface_gravity()
         # self.read_cloud_params()
         self.read_resolution_params() # new 2024-05-27: read resolution parameters of each grating
         self.read_disk_params()

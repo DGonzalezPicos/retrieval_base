@@ -312,7 +312,7 @@ class GaussianProcesses(Covariance):
                 epsilon *= 10
         '''
         # self.cov_cholesky *= mean_cov
-        delattr(self, 'cov')
+        # delattr(self, 'cov')
         return self
 
     def get_logdet(self):
@@ -358,6 +358,13 @@ class GaussianProcesses(Covariance):
                 cov_full += np.diag(diag_i, k=-i)
 
         return cov_full
+    
+    def get_err(self, mask=None):
+        if mask is None:
+            mask = np.ones(self.cov.shape[-1])
+        err = np.nan * np.ones_like(mask)
+        err[mask] = np.sqrt(np.diag(self.get_dense_cov()))
+        return err
     
 if __name__ == '__main__':
     # test GP covariance matrix with off-diagonal elements

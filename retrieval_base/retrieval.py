@@ -24,6 +24,7 @@ from .callback import CallBack
 import retrieval_base.figures as figs
 import retrieval_base.auxiliary_functions as af
 from matplotlib.backends.backend_pdf import PdfPages
+from tabulate import tabulate
     
 def prior_check(conf, n=3, random=False,
                 get_contr=False, 
@@ -52,6 +53,8 @@ def prior_check(conf, n=3, random=False,
         ax_chem = [ax_chem]
     # chem_list = []
     time_list = []
+    samples = []
+    error_scaling_factors = []
     for i, theta_i in enumerate(theta):
         start = time.time()
 
@@ -61,7 +64,7 @@ def prior_check(conf, n=3, random=False,
             print(f' Setting R_d = 0.0 (no disk)')
             sample['R_d'] = 0.0
             
-        print(sample)
+        # print(sample)
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
         # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
@@ -74,8 +77,12 @@ def prior_check(conf, n=3, random=False,
             print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
             print(f' shape m_spec.flux = {ret.m_spec[w_set].flux.shape}')
             print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m_flux.shape}')
-            print(f' shape LogLike.f = {ret.LogLike[w_set].f.shape}')
-            # print(f' shape.ret.Cov.cov_cholesky = {ret.Cov[w_set].cov_cholesky.shape}')
+            if hasattr(ret.Cov[w_set], 'cov_cholesky'):
+                print(f' shape.ret.Cov.cov_cholesky = {ret.Cov[w_set].cov_cholesky.shape}')
+                
+                
+        samples.append(sample)
+            
             
         # if i == len(theta)-1:
         #     if 'T_ex_12CO' in ret.Param.param_keys:
@@ -108,7 +115,24 @@ def prior_check(conf, n=3, random=False,
             fig_name=str(fig_name).replace('.pdf', '_VMR.pdf') if i==(len(theta)-1) else None
             )
         
-
+        # Collect error scaling factors for each order and model
+        order_error_scaling = []
+        for j in range(ret.d_spec[w_set].n_orders):
+            order_error_scaling.append([beta_list[i][j, k] for k in range(ret.d_spec[w_set].n_dets)])
+        error_scaling_factors.append(order_error_scaling)
+        
+    # convert the list of dictionary into a dictionary with a list for every key
+    samples_dict = {k: [sample[k] for sample in samples] for k in samples[0].keys()}
+    
+    # Prepare headers for the table
+    headers = ['Name'] + [f'Model {i+1}' for i in range(n)]
+    
+    # Prepare data for the table
+    table_data = [[key] + [f'{value:.3e}' for value in values] for key, values in samples_dict.items()]
+    
+    # Print the table
+    print(tabulate(table_data, headers=headers, tablefmt='grid'))
+    
     print(f' --> Time per evaluation: {np.mean(time_list):.2f} +- {np.std(time_list):.2f} s')
     # use PDF pages to save multiple plots for each order into one PDF
     with PdfPages(fig_name) as pdf:
@@ -127,7 +151,7 @@ def prior_check(conf, n=3, random=False,
                 if N_ij == 0:
                     print(f'No data points in order {i}, detector {j}')
                     continue
-                print(f' order {i}, detector {j}: N = {N_ij}')
+                # print(f' order {i}, detector {j}: N = {N_ij}')
 
 
                 wave_ij = ret.d_spec[w_set].wave[i,j,:]
@@ -140,12 +164,26 @@ def prior_check(conf, n=3, random=False,
                     ax[0].plot(wave_ij, m_flux_ij, lw=1, ls='--', label=f'logL = {logL:.3e}')
                     ax[-1].plot(wave_ij, flux_ij - m_flux_ij, lw=1, ls='--', 
                                 color=ax[0].get_lines()[-1].get_color())
-                    print(f' error scaling factor = {beta_list[k][i,j]:.1f}')
+                    # print(f' error scaling factor = {beta_list[k][i,j]:.1f}')
                     
             ax[0].legend()
             pdf.savefig(fig)
             plt.close(fig)
         print(f'--> Saved {fig_name}')
+        
+        # Prepare headers for the error scaling factor table
+        error_headers = ['Order'] + [f'Model {i+1}' for i in range(n)]
+
+        # Prepare data for the error scaling factor table
+        error_table_data = []
+        for order_idx in range(len(error_scaling_factors[0])):
+            row = [f'Order {order_idx+1}']
+            for model_idx in range(n):
+                row.append(', '.join(f'{factor:.1f}' for factor in error_scaling_factors[model_idx][order_idx]))
+            error_table_data.append(row)
+
+        # Print the error scaling factor table
+        print(tabulate(error_table_data, headers=error_headers, tablefmt='grid'))
         
         return ret
                        
@@ -190,7 +228,7 @@ class Retrieval:
             PT_mode=self.conf.PT_mode, 
             PT_adiabatic=self.conf.PT_kwargs.get('adiabatic', False),
             n_T_knots=self.conf.PT_kwargs.get('n_T_knots', 6),
-            enforce_PT_corr=self.conf.PT_kwargs['enforce_PT_corr'], 
+            # enforce_PT_corr=self.conf.PT_kwargs['enforce_PT_corr'], 
             chem_mode=self.conf.chem_mode, 
             cloud_mode=self.conf.cloud_mode, 
             cov_mode=self.conf.cov_mode, 
@@ -400,15 +438,17 @@ class Retrieval:
                                                     wave_cm=self.d_spec[w_set].wave*1e-7)
   
             # Spline decomposition
-            self.N_knots = self.Param.params.get('N_knots', 1)
-            if self.N_knots > 1:
-                # print(f'Performing spline decomposition with {self.N_knots} knots...')
-                # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
-                self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
-                # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')
-            else:
-                # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
-                self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
+            # self.N_knots = self.Param.params.get('N_knots', 1)
+            # if self.N_knots > 1:
+            #     # print(f'Performing spline decomposition with {self.N_knots} knots...')
+            #     # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
+            #     self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
+            #     # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')
+            # else:
+            #     # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
+            #     self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
+                
+                
             
             if self.conf.cov_mode == 'GP': # New, 2024-07-25
                 for i in range(self.d_spec[w_set].n_orders):
@@ -890,7 +930,7 @@ class Retrieval:
 
             # Get the PT and mass-fraction envelopes
             self.get_PT_mf_envelopes(posterior)
-            self.Chem.get_VMRs_posterior()
+            # self.Chem.get_VMRs_posterior()
             
             # Get the model flux envelope
             #flux_envelope = self.get_all_spectra(posterior, save_spectra=False)

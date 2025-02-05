@@ -194,7 +194,7 @@ class CallBack:
         )
 
         # Make a summary figure #FIXME: uncomment this
-        # self.plot_summary = False
+        self.plot_summary = False
         if self.plot_summary:
             self.fig_summary()
 
@@ -231,14 +231,14 @@ class CallBack:
                 #     )
 
                 # Plot the covariance matrices --> Disable for now...
-                # all_cov = figs.fig_cov(
-                #     LogLike=self.LogLike[w_set], 
-                #     Cov=self.Cov[w_set], 
-                #     d_spec=self.d_spec[w_set], 
-                #     cmap=self.envelope_cmap, 
-                #     prefix=self.prefix, 
-                #     w_set=w_set, 
-                #     )
+                all_cov = figs.fig_cov(
+                    LogLike=self.LogLike[w_set], 
+                    Cov=self.Cov[w_set], 
+                    d_spec=self.d_spec[w_set], 
+                    cmap=self.envelope_cmap, 
+                    prefix=self.prefix, 
+                    w_set=w_set, 
+                    )
 
             # Plot the abundances in a corner-plot
             

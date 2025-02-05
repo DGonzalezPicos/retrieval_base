@@ -297,11 +297,16 @@ def fig_bestfit_model(
                     d_spec.wave[i,j], d_spec.flux[i,j], 
                     c='k', lw=0.5, label='Observation'
                     )
-                err_ij = d_spec.err[i,j] * LogLike.beta[i,j]
+                if hasattr(d_spec, 'err'):
+                    err_ij = d_spec.err[i,j] * LogLike.beta[i,j]
+                
+                else:
+                    err_ij = Cov[i,j].get_err(mask=mask_ij)
+                    
                 ax_spec.fill_between(
                     d_spec.wave[i,j], y1=d_spec.flux[i,j]-err_ij, y2=d_spec.flux[i,j]+err_ij, 
-                    color='k', alpha=0.2, lw=0,
-                )
+                color='k', alpha=0.2, lw=0,
+            )
 
             label = 'Best-fit model ' + \
                     r'$(\chi^2_\mathrm{red}$$=' + \
@@ -328,6 +333,10 @@ def fig_bestfit_model(
                 ax_res.plot(
                     [np.nanmin(d_spec.wave[i,j]), np.nanmax(d_spec.wave[i,j])], 
                     [0,0], c=bestfit_color, lw=1
+                )
+                ax_res.fill_between(
+                    d_spec.wave[i,j], y1=-err_ij, y2=err_ij, 
+                    color='k', alpha=0.2, lw=0,
                 )
 
                 if m_spec.flux_envelope is not None:
@@ -390,10 +399,11 @@ def fig_bestfit_model(
 
 def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
 
-    all_cov = np.zeros(
-        (d_spec.n_orders, d_spec.n_dets, 
-         d_spec.n_pixels, d_spec.n_pixels)
-        )
+    # all_cov = np.zeros(
+    #     (d_spec.n_orders, d_spec.n_dets, 
+    #      d_spec.n_pixels, d_spec.n_pixels)
+    #     )
+    all_cov = []
     vmax = np.zeros((d_spec.n_orders, d_spec.n_dets))
     for i in range(d_spec.n_orders):
         for j in range(d_spec.n_dets):
@@ -408,14 +418,15 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
             cov *= LogLike.beta[i,j]**2
 
             # Insert the masked rows into the covariance matrix
-            indices = np.arange(0, d_spec.n_pixels, 1)[~mask_ij]
-            for idx in indices:
-                cov = np.insert(cov, idx, np.zeros(mask_ij.sum()), axis=0)
-            for idx in indices:
-                cov = np.insert(cov, idx, np.zeros(d_spec.n_pixels), axis=1)
+            # n_pixels = len(mask_ij)
+            # indices = np.arange(0, n_pixels, 1)[~mask_ij]
+            # for idx in indices:
+            #     cov = np.insert(cov, idx, np.zeros(n_pixels), axis=0)
+            # for idx in indices:
+            #     cov = np.insert(cov, idx, np.zeros(n_pixels), axis=1)
 
             # Add to the complete array
-            all_cov[i,j,:,:] = cov
+            all_cov.append(cov)
 
             # Store the median of the diagonal
             vmax[i,j] = np.median(np.diag(cov))
@@ -435,6 +446,8 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
         )
     if d_spec.n_orders == 1:
         ax = np.array([ax])
+        
+    assert d_spec.n_dets == 1, 'Only one detector is supported for now'
 
     for i in range(d_spec.n_orders):
         for j in range(d_spec.n_dets):
@@ -443,25 +456,25 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
                 np.nanmin(d_spec.wave[i,j]), np.nanmax(d_spec.wave[i,j]), 
                 np.nanmax(d_spec.wave[i,j]), np.nanmin(d_spec.wave[i,j]), 
                 ]
-            ax[i,j].matshow(
-                all_cov[i,j], aspect=1, extent=extent, cmap=cmap, 
+            ax[i].matshow(
+                all_cov[i*d_spec.n_dets+j], aspect=1, extent=extent, cmap=cmap, 
                 interpolation='none', vmin=vmin, vmax=vmax
                 )
             ticks = np.linspace(np.nanmin(d_spec.wave[i,j])+0.5, np.nanmax(d_spec.wave[i,j])-0.5, num=4)
-            ax[i,j].set_xticks(
+            ax[i].set_xticks(
                 ticks, labels=['{:.0f}'.format(t_i) for t_i in ticks]
                 )
-            ax[i,j].set_yticks(
+            ax[i].set_yticks(
                 ticks, labels=['{:.0f}'.format(t_i) for t_i in ticks], 
                 rotation=90, va='center'
                 )
-            ax[i,j].tick_params(
+            ax[i].tick_params(
                 axis='x', which='both', bottom=False, top=True, labelbottom=False
                 )
-            ax[i,j].grid(True, alpha=0.1)
+            ax[i].grid(True, alpha=0.1)
 
-    ax[-1,1].set(xlabel='Wavelength / nm')
-    ax[d_spec.n_orders//2,0].set(ylabel='Wavelength / nm')
+    ax[-1].set(xlabel='Wavelength / nm')
+    ax[d_spec.n_orders//2].set(ylabel='Wavelength / nm')
 
     if prefix is not None:
         plt.savefig(prefix+f'plots/cov_matrices_{w_set}.pdf')

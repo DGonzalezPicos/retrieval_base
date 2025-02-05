@@ -18,9 +18,12 @@ gratings = ['g235h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
+cov_mode = None
+# cov_mode = 'GP'
+cov_mode_label = '_GP' if cov_mode == 'GP' else '_'
 
 index = 0
-run = f'lbl{lbl}_{grating_suffix}_{chem_mode}_{index}_GP'
+run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 # Define PT profile
@@ -224,7 +227,9 @@ free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(1.8, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(1.8, 4.4), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+    # 'R_p': [(5.72, 5.73), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'mass': [(10.0, 30.0), r'$\log\ M_\mathrm{p}$'],
     # 'R_p': [(2.4, 4.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'log_g': [(2.5,4.5), r'$\log\ g$'], 
@@ -255,12 +260,14 @@ if PT_mode == 'fixed':
     constant_params['PT_target'] = target
     
 # Surface gravity
-log_g = [(3.0,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
-# log_g = 4.49 # from PT_run
-if isinstance(log_g, float):
-    constant_params['log_g'] = log_g
-else:
-    free_params['log_g'] = log_g
+if 'mass' not in free_params.keys():
+    log_g = [(3.0,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
+    # log_g = 4.49 # from PT_run
+    if isinstance(log_g, float):
+        constant_params['log_g'] = log_g
+    else:
+        free_params['log_g'] = log_g
+
     
 
 # if grating == 'g235h' or grating==('g235h+g395h'):
@@ -439,11 +446,6 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 ####################################################################################
 # Covariance parameters
 ####################################################################################
-
-# cov_mode = None
-cov_mode = 'GP'
-
-
 if cov_mode == 'GP':
     free_params['log_l_G'] = [(-1.0, 1.0), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
@@ -454,7 +456,7 @@ if cov_mode == 'GP':
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 9,
+    max_separation = 10,
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
@@ -463,11 +465,11 @@ cov_kwargs = dict(
 )
 
 lck_kwargs = dict(
-    use_lck=True,
-    lck_width=4,
-    n_max_regions=5,
-    sigma_threshold=3.0,
-    scale_GP_amp=True,
+    # use_lck=True,
+    # lck_width=5,
+    # n_max_regions=5,
+    # sigma_threshold=3.0,
+    # scale_GP_amp=True,
 )
 
 # if free_params.get('log_l') is not None:
@@ -481,13 +483,8 @@ lck_kwargs = dict(
 
 PT_kwargs = dict(
     conv_adiabat = False, 
-
-    ln_L_penalty_order = 3, 
     PT_interp_mode = PT_interp_mode, 
-
-    enforce_PT_corr = False, 
-    # n_T_knots = N_PT_knots,
-    sonora=dict(teff=2400, log_g=4.0),
+    # sonora=dict(teff=2400, log_g=4.0),
 )
 if PT_mode == 'fixed':
     PT_kwargs['PT_target'] = target
@@ -503,7 +500,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.10
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 400 if not testing else 100
+n_live_points = 400 if not testing else 200
 n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

@@ -457,10 +457,10 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 if cov_mode == 'GP':
-    free_params['log_l_G'] = [(0.0, 1.0), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.4, 0.8), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-2.0, 1.4), r'$\log\ a_{G}$' + f'({grating})']
+        free_params[f'log_a_{grating}_G'] = [(-2.0, 1.0), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
 
 cov_kwargs = dict(

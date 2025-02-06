@@ -297,11 +297,17 @@ def fig_bestfit_model(
                     d_spec.wave[i,j], d_spec.flux[i,j], 
                     c='k', lw=0.5, label='Observation'
                     )
-                if hasattr(d_spec, 'err'):
-                    err_ij = d_spec.err[i,j] * LogLike.beta[i,j]
+                # if hasattr(d_spec, 'err'):
+                #     err_ij = d_spec.err[i,j] * LogLike.beta[i,j]
                 
-                else:
+                # else:
+                if Cov is not None:
                     err_ij = Cov[i,j].get_err(mask=mask_ij)
+                else:
+                    err_ij = d_spec.err[i,j]
+                    
+                beta_ij = LogLike.beta[i,j]
+                err_ij *= beta_ij # optimal uncertainty scaling
                     
                 ax_spec.fill_between(
                     d_spec.wave[i,j], y1=d_spec.flux[i,j]-err_ij, y2=d_spec.flux[i,j]+err_ij, 

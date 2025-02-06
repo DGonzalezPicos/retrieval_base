@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = '_GP' if cov_mode == 'GP' else ''
 
-index = 1
+index = 2
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -46,6 +46,7 @@ config_data = {
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
+        'flux_unit_factor': 1e14, # DGP (2025-02-06): new parameter
         }, 
     }
 
@@ -231,8 +232,8 @@ free_params = {
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
      'R_p': [(1.8, 4.2), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(5.72, 5.73), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-    #  'mass': [(10.0, 40.0), r'$M [M_\mathrm{Jup}]$'],
-    'mass': [mass_dict[target], r'$M [M_\mathrm{Jup}]$'],
+     'mass': [(10.0, 40.0), r'$M [M_\mathrm{Jup}]$'],
+    # 'mass': [mass_dict[target], r'$M [M_\mathrm{Jup}]$'],
     # 'R_p': [(2.4, 4.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'log_g': [(2.5,4.5), r'$\log\ g$'], 
@@ -265,11 +266,11 @@ if PT_mode == 'fixed':
 # Surface gravity
 
 gaussian_params = []
-if 'mass' in free_params.keys():
-    gaussian_params = ['mass']
+# if 'mass' in free_params.keys():
+#     gaussian_params = ['mass']
     
     
-else:
+if 'mass' not in free_params.keys():
     log_g = [(3.0,4.5), r'$\log\ g$'] # uncomment this to fit log_g as a free parameter
     # log_g = 4.49 # from PT_run
     if isinstance(log_g, float):
@@ -456,7 +457,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 if cov_mode == 'GP':
-    free_params['log_l_G'] = [(-1.0, 1.0), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(0.0, 1.0), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
         free_params[f'log_a_{grating}_G'] = [(-2.0, 1.4), r'$\log\ a_{G}$' + f'({grating})']
@@ -465,7 +466,7 @@ if cov_mode == 'GP':
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 11,
+    max_separation = 3,
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
@@ -477,7 +478,7 @@ lck_kwargs = dict(
     # use_lck=True,
     # lck_width=5,
     # n_max_regions=5,
-    # sigma_threshold=3.0,
+    # sigma_threshold=4.0,
     # scale_GP_amp=True,
 )
 
@@ -506,7 +507,7 @@ if PT_mode == 'fixed':
 ####################################################################################
 testing = True
 const_efficiency_mode = True
-sampling_efficiency = 0.05 if not testing else 0.10
+sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 1.0
 n_live_points = 400 if not testing else 200

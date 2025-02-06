@@ -32,6 +32,7 @@ class SpectrumJWST:
     # expected units to work with
     wave_unit = 'nm'
     flux_unit = 'Jy'
+    flux_unit_factor = 1.0
     n_dets = 1 # default
     
     def __init__(self, wave=None, flux=None, err=None, target=None, grating=None, file=None,
@@ -50,7 +51,7 @@ class SpectrumJWST:
         # if self.grating is not None: # deprecated
             # self.split_grating(keep='both')
             
-            
+        
     def read_data(self, grating=None, units='mJy', split_filters=True):
         with fits.open(self.file) as hdul:
             data = hdul[1].data
@@ -674,6 +675,13 @@ class SpectrumJWST:
             if hasattr(self, attr):
                 setattr(self, attr, getattr(self, attr).squeeze())
         # self.n_orders = self.flux.shape[0]
+        return self
+    
+    
+    def apply_flux_unit_factor(self, factor):
+        self.flux_unit_factor = factor
+        self.flux *= factor
+        self.err *= factor
         return self
         
         

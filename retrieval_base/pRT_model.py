@@ -84,6 +84,7 @@ class pRT_model:
         self.d_wave          = d_spec.wave
         self.d_mask_isfinite = d_spec.mask_isfinite
         self.d_resolution    = d_spec.resolution
+        self.flux_unit_factor = getattr(d_spec, 'flux_unit_factor', 1.0)
         # self.gratings = np.atleast_1d(set(list(d_spec.gratings)))
         self.gratings = np.unique(d_spec.gratings_list)
         # remove `_f100lp` from 'g140h_f100lp'
@@ -620,7 +621,7 @@ class pRT_model:
         # Create a new ModelSpectrum instance with all orders
         m_spec = ModelSpectrum(
             wave=wave, 
-            flux=flux, 
+            flux=flux * self.flux_unit_factor,
             lbl_opacity_sampling=self.lbl_opacity_sampling, 
             multiple_orders=True, 
             high_pass_filtered=self.apply_high_pass_filter, 

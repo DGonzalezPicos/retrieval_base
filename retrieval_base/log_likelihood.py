@@ -89,12 +89,13 @@ class LogLikelihood:
                     lck.s = lck(m_flux_ij, 
                         sigma_threshold=self.lck_kwargs.get('sigma_threshold', 5.0),
                         n_max_regions=self.lck_kwargs.get('n_max_regions', 5))
-                    if debug_lck:
-                        print(f' [LogLikelihood.__call__]: lck.s.shape {lck.s.shape}')
-                        print(f' [LogLikelihood.__call__]: lck.s.min() {lck.s.min():.2e} lck.s.max() {lck.s.max():.2e} lck.s.mean() {lck.s.mean():.2e}')
-                        print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
+                   
                     if len(getattr(lck, 'chi2_regions', [])) > 0:
-                        
+                        if debug_lck:
+                            print(f' [LogLikelihood.__call__]: lck.s.shape {lck.s.shape}')
+                            print(f' [LogLikelihood.__call__]: lck.s.min() {lck.s.min():.2e} lck.s.max() {lck.s.max():.2e} lck.s.mean() {lck.s.mean():.2e}')
+                            print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
+                            
                         kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4)) # a_k**2
                         a_k = np.sqrt(Cov[i,j].get_banded(kernel)[:Cov[i,j].separation.shape[0]])
                         del lck
@@ -113,16 +114,16 @@ class LogLikelihood:
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky()
+                    if np.all(Cov[i,j].cov_cholesky == 0):
+                        print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j}')
+                        self.ln_L = -np.inf
+                        return self.ln_L
                     # print(f' Cholesky shape {Cov[i,j].cov_cholesky.shape}')
 
                 # Get the log of the determinant (log prevents over/under-flow)
                 Cov[i,j].get_logdet()
                 # check logdet
                 # print(f' logdet {Cov[i,j].logdet:.2e}')
-                # Set up the log-likelihood for this order/detector
-                # Chi-squared and optimal uncertainty scaling terms still need to be added
-                ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
-                    
                 
                 # Chi-squared for the optimal linear scaling
                 inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
@@ -146,6 +147,7 @@ class LogLikelihood:
                 chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
 
                 # Add chi-squared and optimal uncertainty scaling terms to log-likelihood
+                ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
                 ln_L_ij += -0.5 * N_ij*np.log(beta_ij**2) 
                 ln_L_ij += -0.5 * chi_squared_ij
 

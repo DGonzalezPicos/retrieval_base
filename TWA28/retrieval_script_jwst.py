@@ -86,7 +86,7 @@ if args.pre_processing:
                                     fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
-    
+    spec.apply_flux_unit_factor(conf_data.get('flux_unit_factor', 1.0)) # NEW 2025-02-06
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     
     if conf.cov_mode == 'GP':
@@ -141,11 +141,11 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     random_label = '_random' if random else ''
     disk = True
     disk_label = '_disk' if disk else ''
-    ret = prior_check(conf=conf, n=8, 
+    ret = prior_check(conf=conf, n=7, 
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,

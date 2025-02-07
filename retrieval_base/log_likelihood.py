@@ -145,8 +145,10 @@ class LogLikelihood:
                     beta_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)
                 else:
                     # No additional uncertainty scaling
-                    beta_ij = 1
+                    beta_ij = 1.0
 
+                # ensure beta_ij is larger than 1 (NEW 2025-02-07)
+                beta_ij = max(beta_ij, 1.0)
                 # Chi-squared for optimal linear scaling and uncertainty scaling
                 chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
 

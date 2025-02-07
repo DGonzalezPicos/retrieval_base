@@ -12,7 +12,7 @@ lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h']
+gratings = ['g235h', 'g395h']
 # gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
@@ -42,7 +42,7 @@ config_data = {
         'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
         'Nedge': 40, # (2024-10-18): 20 --> 40
         'log_P_range': (-5,2),
-        'n_atm_layers': 60, # (2025-01-08): update 40 --> 60
+        'n_atm_layers': 50, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
@@ -457,16 +457,16 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 if cov_mode == 'GP':
-    free_params['log_l_G'] = [(-0.4, 0.8), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.4, 0.5), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-2.0, 1.0), r'$\log\ a_{G}$' + f'({grating})']
+        free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
 
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 3,
+    max_separation = 6,
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
@@ -477,8 +477,8 @@ cov_kwargs = dict(
 lck_kwargs = dict(
     use_lck=True,
     lck_width=3,
-    n_max_regions=5,
-    sigma_threshold=4.0,
+    n_max_regions=6,
+    sigma_threshold=5.0,
     scale_GP_amp=True,
 )
 

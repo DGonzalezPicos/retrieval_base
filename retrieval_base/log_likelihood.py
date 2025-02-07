@@ -81,7 +81,7 @@ class LogLikelihood:
                 
                 if self.use_lck:
                     # print(f' [LogLikelihood.__call__]: using LCK')
-                    debug_lck = True
+                    debug_lck = False
                     lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
                                                 d_flux_ij,
                                                 d_err_ij,

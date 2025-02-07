@@ -714,7 +714,7 @@ def fig_VMR(Chem,
         if ls == '-' and i>8:
             ls_i = '--'
         if line_species_i not in Chem.mass_fractions.keys():
-            print(f'No mass fraction for {species_i}')
+            # print(f'No mass fraction for {species_i}')
             continue
         vmr_i = Chem.mass_fractions[line_species_i] * (MMW / mass_i)
         # vmr_i = Chem.VMRs[line_species_i]

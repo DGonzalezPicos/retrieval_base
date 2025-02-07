@@ -8,7 +8,7 @@ file_params = 'config_jwst.py'
 
 target = 'TWA28'
 # lbl = 11
-lbl = 20
+lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = '_GP' if cov_mode == 'GP' else ''
 
-index = 2
+index = 0
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -232,7 +232,7 @@ free_params = {
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
      'R_p': [(1.8, 4.2), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(5.72, 5.73), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
-     'mass': [(10.0, 40.0), r'$M [M_\mathrm{Jup}]$'],
+    #  'mass': [(10.0, 40.0), r'$M [M_\mathrm{Jup}]$'],
     # 'mass': [mass_dict[target], r'$M [M_\mathrm{Jup}]$'],
     # 'R_p': [(2.4, 4.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(2.72, 2.72), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
@@ -475,11 +475,11 @@ cov_kwargs = dict(
 )
 
 lck_kwargs = dict(
-    # use_lck=True,
-    # lck_width=5,
-    # n_max_regions=5,
-    # sigma_threshold=4.0,
-    # scale_GP_amp=True,
+    use_lck=True,
+    lck_width=3,
+    n_max_regions=5,
+    sigma_threshold=4.0,
+    scale_GP_amp=True,
 )
 
 # if free_params.get('log_l') is not None:

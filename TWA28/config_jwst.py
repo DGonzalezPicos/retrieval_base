@@ -512,8 +512,8 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 1.0
-n_live_points = 400 if not testing else 200
-n_iter_before_update = n_live_points * 3 if not testing else n_live_points * 2
+n_live_points = 800 if not testing else 400
+n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file
 print(f' --> {free_params} free parameters')

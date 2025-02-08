@@ -230,7 +230,7 @@ free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(1.8, 4.2), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(2.2, 3.6), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(5.72, 5.73), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     #  'mass': [(10.0, 40.0), r'$M [M_\mathrm{Jup}]$'],
     # 'mass': [mass_dict[target], r'$M [M_\mathrm{Jup}]$'],
@@ -285,8 +285,10 @@ if 'mass' not in free_params.keys():
 # if ('g235h' in gratings) or ('g395h' in gratings):
 if 'g395h' in gratings:
     # add disk params
-    free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
-    free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
+    # free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
+    free_params['log_R_d'] = [(0.0, 2.0), r'$R_d [R_{Jup}]$']
+    # free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
+    free_params['log_T_d'] = [(2.0, 3.2), r'$T_d$']
     
 else:
     # add disk params from best fit of g140h+g235h+g395h
@@ -410,8 +412,10 @@ if 'g395h' in gratings:
         free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
 
         # free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
-        free_params.update({'R_cav': [(0.5, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
-        free_params.update({'R_out': [(0.5, 200.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
+        # free_params.update({'R_cav': [(0.5, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
+        # free_params.update({'R_out': [(0.5, 200.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
+        free_params.update({'log_R_cav': [(0.0, 1.5), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
+        free_params.update({'log_R_out': [(0.5, 2.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
         free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
         free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
@@ -458,13 +462,14 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 if cov_mode == 'GP':
-    free_params['log_l_G'] = [(-0.4, 0.5), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.3, 0.8), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
         # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
-        free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
-        invgamma_params.append(f'a_{grating}_G')
+        # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
+        # invgamma_params.append(f'a_{grating}_G')
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
+        constant_params[f'a_{grating}_G'] = 1.0
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 

@@ -156,6 +156,8 @@ class Parameters:
                     
                 if key_i == 'R_out':
                     low = max(self.params['R_cav'] * 1.01, low)
+                if key_i == 'log_R_out':
+                    low = max(self.params['log_R_cav'] + np.log10(1.01), low)
                     
                     
                 
@@ -515,7 +517,7 @@ class Parameters:
         
             assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
             
-        if 'R_cav' in self.param_keys:
+        if 'R_cav' in self.param_keys or 'log_R_cav' in self.param_keys:
             self.params['R_cav'] = self.params['R_cav']
             # self.params['R_out'] = self.params.get('R_out', self.params['R_cav'] * 100.0)
             self.params['R_out'] = self.params['R_out']

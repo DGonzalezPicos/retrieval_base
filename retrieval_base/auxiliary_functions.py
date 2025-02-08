@@ -739,7 +739,7 @@ def apply_keplerian_profile(
     
     total_flux = np.nansum(flux)
     if total_flux == 0:
-        print(f'--> Total flux is zero, returning original flux')
+        # print(f'--> Total flux is zero, returning original flux')
         return flux
     flux_s = np.zeros_like(wave)
     sin_inclination = np.sin(np.radians(inclination_deg))

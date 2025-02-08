@@ -295,10 +295,15 @@ class GaussianProcesses(Covariance):
         
         k = self.separation.shape[0]
         mask_nonzero_diag = (self.cov != 0).any(axis=1)
-        if mask_nonzero_diag.sum() == 1:
-            return np.sqrt(self.cov[0])
-        
         C = self.cov[mask_nonzero_diag,:]
+
+        if mask_nonzero_diag.sum() == 1:
+            if debug:
+                print(f' --> C.shape {C.shape}')
+                
+            self.cov_cholesky = np.sqrt(C)
+            return self
+        
         
         try:
             self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
@@ -344,7 +349,7 @@ class GaussianProcesses(Covariance):
             return self
 
 
-    def get_cholesky_old(self, debug=False):
+    def get_cholesky_old(self, debug=True):
         '''
         Get the Cholesky decomposition. Employs a banded 
         decomposition with scipy. 
@@ -360,7 +365,7 @@ class GaussianProcesses(Covariance):
             self.cov = self.cov[0]
             self.cov_cholesky = np.sqrt(self.cov)
             
-            return 
+            return self
     
         self.cov = self.cov[mask_nonzero_diag,:]
         

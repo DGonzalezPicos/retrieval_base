@@ -34,6 +34,7 @@ class Parameters:
                 'J1226': [9,3], 'K2166': [7,3], 
                 },
             gaussian_params = [],
+            invgamma_params = [],
             ):
 
         # Separate the prior range from the mathtext label
@@ -91,6 +92,7 @@ class Parameters:
             
         # self.gaussian_priors = {k:norm(loc=v[0], scale=v[1]) for k, v in self.param_priors.items() if k in gaussian_params}
         self.gaussian_params = gaussian_params
+        self.invgamma_params = invgamma_params
     def __str__(self):
         out = '** Parameters **\n'
         # add line of dashes
@@ -132,6 +134,14 @@ class Parameters:
                 # cube[i] = self.gaussian_priors[key_i].rvs()
                 mu, sigma = self.param_priors[key_i]
                 cube[i] = np.clip(norm.ppf(cube[i], loc=mu, scale=sigma), mu-3*sigma, mu+3*sigma)
+            
+            elif key_i in self.invgamma_params:
+                # sample from an Inverse Gamma distribution
+                alpha, beta = self.param_priors[key_i]
+                # print(f' [Parameters.__call__]: invgamma key_i = {key_i}, alpha = {alpha}, beta = {beta}')
+                # print(f' [Parameters.__call__]: cube[i] = {cube[i]}')
+                cube[i] = np.clip(invgamma.ppf(cube[i], a=alpha, scale=beta), 0.0, 3.0*beta)
+                # print(f' [Parameters.__call__]: transformed cube[i] = {cube[i]}')
             
             else:
                 # Sample within the boundaries
@@ -539,7 +549,7 @@ class Parameters:
     def read_params(self):
         '''Parse the parameters from the parameter dictionary.'''
         self.read_PT_params()
-        self.read_uncertainty_params()
+        # self.read_uncertainty_params()
         self.read_chemistry_params()
         self.read_surface_gravity()
         # self.read_cloud_params()

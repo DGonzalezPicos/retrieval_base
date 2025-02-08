@@ -70,3 +70,4 @@ paper/test_gridspec_fig1.py
 TWA28/check_free_params_wave_range.py
 TWA28/fix_covariance.py
 TWA28/test_full_covariance.py
+TWA28/invgamma_prior.py

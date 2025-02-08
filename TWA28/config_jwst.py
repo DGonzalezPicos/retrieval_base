@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = '_GP' if cov_mode == 'GP' else ''
 
-index = 0
+index = 1
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -266,6 +266,7 @@ if PT_mode == 'fixed':
 # Surface gravity
 
 gaussian_params = []
+invgamma_params = []
 # if 'mass' in free_params.keys():
 #     gaussian_params = ['mass']
     
@@ -460,13 +461,14 @@ if cov_mode == 'GP':
     free_params['log_l_G'] = [(-0.4, 0.5), r'$\log\ l_G$']
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
+        # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
+        free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
+        invgamma_params.append(f'a_{grating}_G')
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
-
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 6,
+    max_separation = 5,
 
     # Prepare the wavelength separation and
     # average squared error arrays and keep 

@@ -286,9 +286,14 @@ if 'mass' not in free_params.keys():
 if 'g395h' in gratings:
     # add disk params
     # free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
-    free_params['log_R_d'] = [(0.0, 2.0), r'$R_d [R_{Jup}]$']
+    # free_params['log_R_d'] = [(0.0, 2.0), r'$R_d [R_{Jup}]$']
     # free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
-    free_params['log_T_d'] = [(2.0, 3.2), r'$T_d$']
+    # free_params['log_T_d'] = [(2.0, 3.2), r'$T_d$']
+    # use gaussian priors from low res NIRSpec+Spitzer fit
+    free_params['R_d'] = [(14.8, 2.0), r'$R_d [R_{Jup}]$']
+    free_params['T_d'] = [(631.0, 20.0), r'$T_d$']
+    gaussian_params.append('R_d')
+    gaussian_params.append('T_d')
     
 else:
     # add disk params from best fit of g140h+g235h+g395h
@@ -366,7 +371,10 @@ for log_k, v in opacity_params.items():
             # pass
             # add deviation parameter `alpha` for each species: log X = log X_0 + alpha
             # free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
-            free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
+            # free_params[f'alpha_{k}'] = [(-3.0, 3.0), f'$\\alpha_{{{k}}}$']
+            free_params[f'alpha_{k}'] = [(0.0, 1.0), f'$\\alpha_{{{k}}}$']
+            gaussian_params.append(f'alpha_{k}')
+            
         elif k in isotopologues_dict.keys():
             # add isotope ratio as free parameter
             free_params[isotopologues_dict[k][0]] = isotopologues_dict[k][1]

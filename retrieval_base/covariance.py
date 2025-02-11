@@ -334,7 +334,14 @@ class GaussianProcesses(Covariance):
             self.cov_cholesky = np.sqrt(C)
             return self
         
-        
+        # regularize the covariance matrix to ensure it is positive definite
+        # C_min_nonzero = np.min(C[C > 0])
+        # print(f'[GaussianProcesses.get_cholesky]: C_min_nonzero {C_min_nonzero}')
+        # C_factor = 1e8
+        # print(f'[GaussianProcesses.get_cholesky]: q1, q50, q99 {np.percentile(C[C > 0], [1, 50, 99])}')
+        # C += C_factor
+        # print(f'[GaussianProcesses.get_cholesky]: q1, q50, q99 {np.percentile(C[C > 0], [1, 50, 99])}')
+
         try:
             self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False, overwrite_ab=True)
             # self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=True)

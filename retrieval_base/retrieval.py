@@ -441,7 +441,7 @@ class Retrieval:
                                                     parallax=self.Param.params["parallax"],
                                                     wave_cm=self.d_spec[w_set].wave*1e-7)
   
-                 
+            self.m_spec[w_set].flux *= self.d_spec[w_set].flux_unit_factor
             if 'GP' in self.Param.cov_mode:
                 for i in range(self.d_spec[w_set].n_orders):
                     for j in range(self.d_spec[w_set].n_dets):

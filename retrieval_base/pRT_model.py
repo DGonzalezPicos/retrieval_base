@@ -84,7 +84,7 @@ class pRT_model:
         self.d_wave          = d_spec.wave
         self.d_mask_isfinite = d_spec.mask_isfinite
         self.d_resolution    = d_spec.resolution
-        self.flux_unit_factor = getattr(d_spec, 'flux_unit_factor', 1.0)
+        # self.flux_unit_factor = getattr(d_spec, 'flux_unit_factor', 1.0)
         # self.gratings = np.atleast_1d(set(list(d_spec.gratings)))
         self.gratings = np.unique(d_spec.gratings_list)
         # remove `_f100lp` from 'g140h_f100lp'
@@ -429,21 +429,6 @@ class pRT_model:
         self.m_slab = []
         for i, atm_i in enumerate(self.atm):
             
-            # Compute the emission spectrum
-            # if i == 0 and fast:
-            #     atm_i.calc_flux_init(self.temperature, 
-            #         self.mass_fractions, 
-            #         gravity=10.0**self.params['log_g'], 
-            #         mmw=self.mass_fractions['MMW'], 
-            #         Kzz=self.K_zz, 
-            #         fsed=self.f_sed, 
-            #         sigma_lnorm=self.sigma_g,
-            #         give_absorption_opacity=self.give_absorption_opacity, 
-            #     )
-            # else:
-            #     # copy attributes from the previous order
-            #     atm_i.copy_flux_init(self.atm[0])
-            
             if fast:
                 atm_i.calc_flux_fast(
                     self.temperature, 
@@ -621,7 +606,7 @@ class pRT_model:
         # Create a new ModelSpectrum instance with all orders
         m_spec = ModelSpectrum(
             wave=wave, 
-            flux=flux * self.flux_unit_factor,
+            flux=flux,
             lbl_opacity_sampling=self.lbl_opacity_sampling, 
             multiple_orders=True, 
             high_pass_filtered=self.apply_high_pass_filter, 

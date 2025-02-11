@@ -76,7 +76,7 @@ if args.pre_processing:
     if len(conf.mask_lines)>0:
         spec.mask_lines(conf.mask_lines)
         
-    for i in range(2):
+    for i in range(3):
         spec.sigma_clip_reshaped(use_flux=False, 
                                     # sigma=3, # KM bands
                                     sigma=conf_data.get('sigma_clip', 2),
@@ -84,12 +84,14 @@ if args.pre_processing:
                                     max_iter=5,
                                     fun='median', 
                                     fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
+        
+    
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
     spec.apply_flux_unit_factor(conf_data.get('flux_unit_factor', 1.0)) # NEW 2025-02-06
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     
-    if conf.cov_mode == 'GP':
+    if 'GP' in conf.cov_mode:
         spec.prepare_for_covariance()
         
     spec.gratings_list = conf.constant_params['gratings']
@@ -141,7 +143,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = False
+    random = True
     random_label = '_random' if random else ''
     disk = True
     disk_label = '_disk' if disk else ''

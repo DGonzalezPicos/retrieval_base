@@ -163,7 +163,7 @@ class SpectrumJWST:
             for attr in attrs:
                 if hasattr(spec, attr):
                     n_orders = len(getattr(spec, attr))
-                    print(f'[__add__] n_orders = {n_orders}')
+                    # print(f'[__add__] n_orders = {n_orders}')
                     # attr_pad = np.nan * np.ones((2, n))
                     attr_pad = np.nan * np.ones((n_orders, n))
                     for order in range(n_orders):
@@ -186,8 +186,8 @@ class SpectrumJWST:
                 setattr(self, attr, np.vstack([getattr(spec, attr) for spec in spec_list])[idx])
         # self.set_n_orders()
         assert self.n_orders > 1, 'No data loaded'
-        print(f' len(spec_list) = {len(spec_list)}')
-        print(f' idx = {idx}')
+        # print(f' len(spec_list) = {len(spec_list)}')
+        # print(f' idx = {idx}')
         # join arrays into single list
         # self.grating = np.array([spec.grating for spec in spec_list])[idx]
         # print(f' grating = {self.grating}')
@@ -345,7 +345,7 @@ class SpectrumJWST:
                             width=5, 
                             max_iter=5, 
                             fun='median',
-                            fig_name=False,
+                            fig_name=None,
                             ):
         
         array = self.flux if use_flux else self.err
@@ -382,6 +382,16 @@ class SpectrumJWST:
             fig.savefig(fig_name)
             print(f'--> Saved {fig_name}')
             plt.close(fig)
+        return self
+    
+    def clip_err(self, sigma=3):
+        for order in range(self.n_orders):
+            for det in range(self.n_dets):
+                nans_in = np.isnan(self.err[order,det])
+                err_ij = self.err[order,det,~nans_in]
+                q1, q99 = np.nanpercentile(err_ij, [1, 99])
+                
+                self.err[order,det,nans_in] = clip
         return self
     
     def reshape(self, n_orders=1, n_dets=1):

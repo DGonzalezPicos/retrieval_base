@@ -71,3 +71,7 @@ TWA28/check_free_params_wave_range.py
 TWA28/fix_covariance.py
 TWA28/test_full_covariance.py
 TWA28/invgamma_prior.py
+TWA28/debug_cholesky_decomp.py
+TWA28/debug_data_covariance.py
+TWA28/scipy_sparse_solvers.py
+TWA28/solve_covariance.py

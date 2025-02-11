@@ -20,9 +20,9 @@ chem_mode = 'fastchem'
 # chem_mode = 'freechem'
 # cov_mode = None
 cov_mode = 'GP'
-cov_mode_label = '_GP' if cov_mode == 'GP' else ''
+cov_mode_label = f'_{cov_mode}' if 'GP' in cov_mode else ''
 
-index = 1
+index = 2
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -46,7 +46,7 @@ config_data = {
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
-        'flux_unit_factor': 1e14, # DGP (2025-02-06): new parameter
+        'flux_unit_factor': 1e20, # DGP (2025-02-06): new parameter
         }, 
     }
 
@@ -286,14 +286,14 @@ if 'mass' not in free_params.keys():
 if 'g395h' in gratings:
     # add disk params
     # free_params['R_d'] =  [(0.0, 50.0), r'$R_d [R_{Jup}]$']
-    # free_params['log_R_d'] = [(0.0, 2.0), r'$R_d [R_{Jup}]$']
-    # free_params['T_d'] =  [(300.0, 1000.0), r'$T_d$']
+    free_params['log_R_d'] = [(0.0, 2.0), r'$R_d [R_{Jup}]$']
+    free_params['T_d'] =  [(300.0, 900.0), r'$T_d$']
     # free_params['log_T_d'] = [(2.0, 3.2), r'$T_d$']
     # use gaussian priors from low res NIRSpec+Spitzer fit
-    free_params['R_d'] = [(14.8, 2.0), r'$R_d [R_{Jup}]$']
-    free_params['T_d'] = [(631.0, 20.0), r'$T_d$']
-    gaussian_params.append('R_d')
-    gaussian_params.append('T_d')
+    # free_params['R_d'] = [(14.8, 2.0), r'$R_d [R_{Jup}]$']
+    # free_params['T_d'] = [(631.0, 20.0), r'$T_d$']
+    # gaussian_params.append('R_d')
+    # gaussian_params.append('T_d')
     
 else:
     # add disk params from best fit of g140h+g235h+g395h
@@ -433,6 +433,9 @@ if 'g395h' in gratings:
 scale_flux = False
 scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
 scale_err  = True
+if scale_err == False:
+    free_params['beta2'] = [(1.0, 10.0), r'b$^2$']
+    invgamma_params.append('beta2')
 apply_high_pass_filter = False
 
 # cloud_mode = 'gray'
@@ -449,8 +452,9 @@ mask_lines = {}
 # Rayleigh scattering and continuum opacities
 rayleigh_species=['H2','He']
 continuum_opacities=['H2-H2', 'H2-He', 'H-']
-# add free parameter for H-
-free_params['log_Hminus'] = [(-12.0, -7.0), r'$\log\ H^-$']
+# add free parameter for H- opacity
+if 'g140h' in gratings:
+    free_params['log_Hminus'] = [(-12.0, -7.0), r'$\log\ H^-$']
 
 line_species =list(set([v[1] for _,v in opacity_params.items()]))
 line_species_dict = {k[4:]: v[1] for k,v in opacity_params.items()}
@@ -469,8 +473,11 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 ####################################################################################
 # Covariance parameters
 ####################################################################################
-if cov_mode == 'GP':
-    free_params['log_l_G'] = [(-0.3, 0.8), r'$\log\ l_G$']
+max_separation = 5
+trunc_dist = 2.0
+if cov_mode == 'GP' or cov_mode == 'SGP':
+    free_params['log_l_G'] = [(-0.3, 0.7), r'$\log\ l_G$']
+    max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
         # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
@@ -481,8 +488,8 @@ if cov_mode == 'GP':
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
-    max_separation = 5,
-
+    max_separation = max_separation,
+    trunc_dist = trunc_dist,
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
     # in memory
@@ -493,8 +500,9 @@ lck_kwargs = dict(
     use_lck=True,
     lck_width=3,
     n_max_regions=6,
-    sigma_threshold=5.0,
+    sigma_threshold=8.0,
     scale_GP_amp=True,
+    trunc_dist = trunc_dist
 )
 
 # if free_params.get('log_l') is not None:

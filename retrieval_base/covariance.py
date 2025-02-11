@@ -1,11 +1,17 @@
 import numpy as np
 from scipy.linalg import cholesky_banded, cho_solve_banded
 from scipy.linalg import eig_banded
+from scipy.sparse import csc_array
+import scipy.sparse.linalg
+
 def get_Covariance_class(err, mode=None, **kwargs):
 
     if mode == 'GP':
         # Use a GaussianProcesses instance
         return GaussianProcesses(err, **kwargs)
+    elif mode == 'SGP':
+        # Use a SparseCovariance instance
+        return SparseCovariance(err, **kwargs)
     
     # Use a Covariance instance instead
     return Covariance(err, **kwargs)
@@ -169,13 +175,17 @@ class GaussianProcesses(Covariance):
         self.separation = self.get_banded(
             self.separation, max_value=max_separation
             )
-        if isinstance(self.err_eff, np.ndarray):
-            self.err_eff = self.get_banded(self.err_eff)
-            self.err_eff = self.err_eff[:self.separation.shape[0]]
+        
+        assert isinstance(self.err_eff, float), f'err_eff must be a float, got {type(self.err_eff)}'
+        self.err_eff_copy = float(self.err_eff)
+        self.err_eff = float(self.err_eff)
+        # if isinstance(self.err_eff, np.ndarray):
+        #     self.err_eff = self.get_banded(self.err_eff)
+        #     self.err_eff = self.err_eff[:self.separation.shape[0]]
 
-        if isinstance(self.flux_eff, np.ndarray):
-            self.flux_eff = self.get_banded(self.flux_eff)
-            self.flux_eff = self.flux_eff[:self.separation.shape[0]]
+        # if isinstance(self.flux_eff, np.ndarray):
+        #     self.flux_eff = self.get_banded(self.flux_eff)
+        #     self.flux_eff = self.flux_eff[:self.separation.shape[0]]
 
         # Give arguments to the parent class
         super().__init__(err)
@@ -190,13 +200,23 @@ class GaussianProcesses(Covariance):
         #         params[f'beta_{grating}'][order,det]
         #         )
         
+        # if params.get('beta2', 1.0) != 1.0:
+        #     self.add_data_err_scaling(
+        #         params['beta2']**0.5
+        #         )
+        
         if params.get(f'a_{grating}_G', None) is not None:
             if isinstance(params[f'a_{grating}_G'], float):
+                # print(f' --> Adding RBF kernel with a={params[f"a_{grating}_G"]}, l={params["l_G"]}')
                 self.add_RBF_kernel(
                     a=params[f'a_{grating}_G'], 
                     l = params['l_G'],
                     **kwargs
                     )
+        beta2 = np.clip(params.get('beta2', 1.0), 0.1, None)
+        # print(f' --> beta2 {beta2}')
+        self.cov *=  beta2
+        
             
 
     def cov_reset(self):
@@ -204,7 +224,7 @@ class GaussianProcesses(Covariance):
         # Create the covariance matrix from the uncertainties
         self.cov = np.zeros_like(self.separation)
         self.cov[0] = self.err**2
-
+        # self.err_eff = float(self.err_eff_copy)
         self.is_matrix = True
         return self
         
@@ -212,6 +232,7 @@ class GaussianProcesses(Covariance):
         # Scale the uncertainty with a (beta) factor
         assert len(self.cov.shape) == 2, f'Covariance matrix is not banded: {self.cov.shape}'
         self.cov[0] *= beta**2
+        # self.err_eff *= beta**2
         return self
     
     def hanning_window(self, trunc_dist=5, l=1, cosine_taper=True):
@@ -227,7 +248,7 @@ class GaussianProcesses(Covariance):
             w_ij = self.separation < trunc_dist * l
         return w_ij
 
-    def add_RBF_kernel(self, a, l, trunc_dist=5, scale_GP_amp=False, **kwargs):
+    def add_RBF_kernel(self, a, l, trunc_dist=4.0, scale_GP_amp=False, **kwargs):
         '''
         Add a radial-basis function kernel to the covariance matrix. 
         The amplitude can be scaled by the flux-uncertainties of 
@@ -265,8 +286,12 @@ class GaussianProcesses(Covariance):
         return self
     
     def check_cov(self):
+        print(f' --> Checking covariance matrix')
+        print(f' --> cov.shape {self.cov.shape}')
         assert np.all(np.diag(self.cov) >= 0), f'Covariance matrix has negative diagonal elements: {self.cov.shape}'
-        
+        # check all values are finite
+        assert np.all(np.isfinite(self.cov)), f'Covariance matrix has non-finite values: {self.cov.shape}'
+        assert np.all(self.cov >= 0), f'Covariance matrix has negative values: {self.cov.shape}'
         # Compute eigenvalues of the banded covariance matrix
         eigenvalues, eigenvectors = eig_banded(self.cov, lower=True)
         
@@ -288,7 +313,7 @@ class GaussianProcesses(Covariance):
         return self
     
     
-    def get_cholesky(self, log_jitter=-4, max_iter=2, debug=False):
+    def get_cholesky(self, log_jitter=-4, max_iter=0, debug=False):
         """
         Ensure self.cov is a robust banded covariance matrix that will pass Cholesky decomposition.
         """
@@ -296,6 +321,11 @@ class GaussianProcesses(Covariance):
         k = self.separation.shape[0]
         mask_nonzero_diag = (self.cov != 0).any(axis=1)
         C = self.cov[mask_nonzero_diag,:]
+        
+        if debug:
+            print(f' --> C.shape {C.shape}')
+            self.check_cov()
+        
 
         if mask_nonzero_diag.sum() == 1:
             if debug:
@@ -306,11 +336,13 @@ class GaussianProcesses(Covariance):
         
         
         try:
-            self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
+            self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False, overwrite_ab=True)
+            # self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=True)
             if debug:
                 print(f' --> L.shape {self.cov_cholesky.shape}')
             return self
         except Exception as e:
+            print(f' --> Cholesky decomposition failed: {e}')
             if debug:
                 print(f' --> Cholesky decomposition failed: {e}')
             eigvals, eigvecs = eig_banded(C, lower=True)
@@ -323,24 +355,25 @@ class GaussianProcesses(Covariance):
                 print(f' Number of negative eigenvalues: {len(neg_eigvals)} / {len(eigvals)}')
             eigvals[eigvals <= 0] = np.min(eigvals[eigvals > 0])
             
-            for _i in range(max_iter):  
-                jitter = 10**(log_jitter * (_i + 1))
-                eigvals += jitter
+            if max_iter > 0:
+                for _i in range(max_iter):  
+                    jitter = 10**(log_jitter * (_i + 1))
+                    eigvals += jitter
                 
-                C = eigvecs @ np.diag(eigvals) @ eigvecs.T
-                
-                C_banded = self.get_banded(C)[:k,:]
-                if debug:
-                    print(f' --> C_banded.shape {C_banded.shape}')
-                try:
-                    self.cov_cholesky = cholesky_banded(C_banded, lower=True, check_finite=False)
+                    C = eigvecs @ np.diag(eigvals) @ eigvecs.T
+                    
+                    C_banded = self.get_banded(C)[:k,:]
                     if debug:
-                        print(f' --> L.shape {self.cov_cholesky.shape}')
-                    return self
-                except Exception as e:
-                    if debug:
-                        print(f' --> Cholesky decomposition failed: {e}')
-                    continue
+                        print(f' --> C_banded.shape {C_banded.shape}')
+                    try:
+                        self.cov_cholesky = cholesky_banded(C_banded, lower=True, check_finite=False)
+                        if debug:
+                            print(f' --> L.shape {self.cov_cholesky.shape}')
+                        return self
+                    except Exception as e:
+                        if debug:
+                            print(f' --> Cholesky decomposition failed: {e}')
+                        continue
             
             # Return an all-zero matrix with the same shape as C if Cholesky fails after max_iter
             if debug:
@@ -367,7 +400,7 @@ class GaussianProcesses(Covariance):
             
             return self
     
-        self.cov = self.cov[mask_nonzero_diag,:]
+        # self.cov = self.cov[mask_nonzero_diag,:]
         
         eps = 1e-4
         for eps_i in range(3):
@@ -375,6 +408,7 @@ class GaussianProcesses(Covariance):
                 # self.cov += eps_i*eps*np.ones_like(self.cov)
                 self.cov_cholesky = cholesky_banded(self.cov,
                                                     lower=True, 
+                                                    overwrite_ab=True,
                                                     check_finite=False)
                 return self
             except np.linalg.LinAlgError:
@@ -431,6 +465,67 @@ class GaussianProcesses(Covariance):
         return cov_full
     
     
+class SparseCovariance:
+    
+    def __init__(self, err, separation, err_eff=None, **kwargs):
+        self.err = err
+        self.cov_0 = csc_array(err**2)
+        self.x_ij = csc_array(separation)
+        
+        assert isinstance(err_eff, float), f'err_eff must be a float, got {type(err_eff)}'
+        self.err_eff = err_eff
+        
+        
+    def add_RBF_kernel(self, a, l, trunc_dist=5, scale_GP_amp=False, **kwargs):
+        '''
+        Add a radial-basis function kernel to the covariance matrix. 
+        The amplitude can be scaled by the flux-uncertainties of 
+        pixels i and j if scale_GP_amp=True. 
+        '''
+        w_ij = (self.x_ij < trunc_dist * l)
+        
+        err_eff = 1.0 if not scale_GP_amp else self.err_eff
+        GP_amp = (a * err_eff)**2
+        if isinstance(GP_amp, np.ndarray):
+            GP_amp = GP_amp[w_ij]
+            
+        self.cov[w_ij] += GP_amp * np.exp(-(self.x_ij[w_ij])**2/(2*l**2))
+        
+        return self
+    
+    def __call__(self, params, grating, **kwargs):
+        self.cov_reset()
+        if params.get(f'a_{grating}_G', None) is not None:
+            self.add_RBF_kernel(
+                a=params[f'a_{grating}_G'], 
+                l = params['l_G'],
+                trunc_dist=kwargs.pop('trunc_dist', 4.0),
+                **kwargs
+                )
+            
+    
+    def cov_reset(self):
+        self.cov = self.cov_0.copy()
+        
+    def get_cholesky(self):
+        # return scipy.sparse.linalg.cholesky(self.cov, lower=True)
+        print(f' Not implemented for SparseCovariance')
+        return None
+    
+    def get_LU_factor(self):
+        
+        return scipy.sparse.linalg.splu(self.cov)
+        
+    def get_logdet(self):
+        return np.sum(np.log(self.get_LU_factor().U.diagonal()))
+        
+        
+    def solve(self, b):
+        return scipy.sparse.linalg.cg(self.cov, b, rtol=1e-10)[0]
+        
+        
+    def get_dense_cov(self):
+        return self.cov.toarray()
     
 if __name__ == '__main__':
     # test GP covariance matrix with off-diagonal elements

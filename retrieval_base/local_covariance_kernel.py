@@ -71,7 +71,8 @@ class LocalCovarianceKernel:
             r_j = np.abs(self.wave[:,None] - r_0)
             r2 = r_i**2 + r_j**2
             # print(f' r2.shape {r2.shape}')
-            w_ij = (self.separation < trunc_dist * self.lck_width_wavelength / 2.355)
+            # w_ij = (self.separation < trunc_dist * self.lck_width_wavelength / 2.355)
+            w_ij = (np.sqrt(r2) < trunc_dist * self.lck_width_wavelength / 2.355)
             # print(f' w_ij.shape {w_ij.shape}')
             
             # print(f' self.s.shape {self.s.shape}')

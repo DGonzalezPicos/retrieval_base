@@ -261,7 +261,7 @@ class Retrieval:
                     
                     separation_ij, err_eff_ij = None, None
                     # if hasattr(self.d_spec[w_set], 'flux_eff'):
-                    if self.conf.cov_mode == 'GP':
+                    if 'GP' in self.Param.cov_mode:
                         separation_ij = self.d_spec[w_set].separation[i,j]
                         err_eff_ij = self.d_spec[w_set].err_eff[i,j]
                         
@@ -441,20 +441,8 @@ class Retrieval:
                                                     parallax=self.Param.params["parallax"],
                                                     wave_cm=self.d_spec[w_set].wave*1e-7)
   
-            # Spline decomposition
-            # self.N_knots = self.Param.params.get('N_knots', 1)
-            # if self.N_knots > 1:
-            #     # print(f'Performing spline decomposition with {self.N_knots} knots...')
-            #     # new shape of the flux array --> [n_knots, n_orders, n_dets, n_pixels]
-            #     self.m_spec[w_set].spline_decomposition(self.N_knots, replace_flux=True)
-            #     # print(f'Median flux of the spline decomposition: {np.nanmedian(self.m_spec[w_set].flux)}')
-            # else:
-            #     # add a dimension to the flux array --> [1, n_orders, n_dets, n_pixels]
-            #     self.m_spec[w_set].flux = self.m_spec[w_set].flux[None,:,:,:]
-                
-                
-            
-            if self.conf.cov_mode == 'GP': # New, 2024-07-25
+                 
+            if 'GP' in self.Param.cov_mode:
                 for i in range(self.d_spec[w_set].n_orders):
                     for j in range(self.d_spec[w_set].n_dets):
 
@@ -473,6 +461,7 @@ class Retrieval:
                             )
 
             self.m_spec[w_set].fit_radius = ('R_p' in self.Param.param_keys)
+            self.m_spec[w_set].beta2 = self.Param.params.get('beta2', 1.0)
             # print(f'Fit radius: {self.m_spec[w_set].fit_radius}')
             
             

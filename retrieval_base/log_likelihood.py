@@ -29,7 +29,7 @@ class LogLikelihood:
         
         self.use_lck = (len(lck_kwargs) > 0)
         self.lck_kwargs = lck_kwargs
-        
+                
     def __call__(self, 
                  m_spec, 
                  Cov, 
@@ -98,6 +98,7 @@ class LogLikelihood:
                             
                         kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4)) # a_k**2
                         a_k = np.sqrt(Cov[i,j].get_banded(kernel)[:Cov[i,j].separation.shape[0]])
+                        a_k = np.clip(a_k, 0.0, 100.0)
                         if debug_lck:
                             print(f' [LogLikelihood.__call__]: a_k.shape {a_k.shape}')
                             print(f' [LogLikelihood.__call__]: a_k.min() {a_k.min():.2e} a_k.max() {a_k.max():.2e} a_k.mean() {a_k.mean():.2e}')
@@ -142,19 +143,21 @@ class LogLikelihood:
                 # print(f' chi_squared_ij_scaled {chi_squared_ij_scaled:.2e}')
                 if self.scale_err:
                     # Scale the flux uncertainty that maximizes the log-likelihood
-                    beta_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)
+                    beta2_ij = self.get_err_scaling(chi_squared_ij_scaled, N_ij)**2
+                    # ensure beta_ij is larger than 1 (NEW 2025-02-07)
+                    beta2_ij = max(beta2_ij, 1.0)
                 else:
-                    # No additional uncertainty scaling
-                    beta_ij = 1.0
+                    # No additional uncertainty scaling, check if global beta2 is set
+                    # beta2_ij = getattr(m_spec, 'beta2', 1.0)
+                    beta2_ij = 1.0
 
-                # ensure beta_ij is larger than 1 (NEW 2025-02-07)
-                beta_ij = max(beta_ij, 1.0)
+                
                 # Chi-squared for optimal linear scaling and uncertainty scaling
-                chi_squared_ij = 1/beta_ij**2 * chi_squared_ij_scaled
+                chi_squared_ij = 1/beta2_ij * chi_squared_ij_scaled
 
                 # Add chi-squared and optimal uncertainty scaling terms to log-likelihood
                 ln_L_ij = -(N_ij/2*np.log(2*np.pi) + 1/2*Cov[i,j].logdet)
-                ln_L_ij += -0.5 * N_ij*np.log(beta_ij**2) 
+                ln_L_ij += -0.5 * N_ij*np.log(beta2_ij) 
                 ln_L_ij += -0.5 * chi_squared_ij
 
                 # Add to the total log-likelihood and chi-squared
@@ -162,7 +165,7 @@ class LogLikelihood:
                 #self.chi_squared += chi_squared_ij
                 self.chi_squared += np.nansum((res_ij/d_err_ij)**2)
             
-                self.beta[i,j] = beta_ij
+                self.beta[i,j] = np.sqrt(beta2_ij)
                 self.m_flux[i,j,mask_ij] = m_flux_ij
 
         # Reduced chi-squared

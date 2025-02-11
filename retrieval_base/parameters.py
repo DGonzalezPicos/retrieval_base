@@ -140,7 +140,7 @@ class Parameters:
                 alpha, beta = self.param_priors[key_i]
                 # print(f' [Parameters.__call__]: invgamma key_i = {key_i}, alpha = {alpha}, beta = {beta}')
                 # print(f' [Parameters.__call__]: cube[i] = {cube[i]}')
-                cube[i] = np.clip(invgamma.ppf(cube[i], a=alpha, scale=beta), 0.0, 3.0*beta)
+                cube[i] = np.clip(invgamma.ppf(cube[i], a=alpha, scale=beta), 0.01, 5.0*beta)
                 # print(f' [Parameters.__call__]: transformed cube[i] = {cube[i]}')
             
             else:
@@ -290,7 +290,7 @@ class Parameters:
     
     def read_uncertainty_params(self):
         
-        if self.cov_mode == 'GP':
+        if 'GP' in self.cov_mode:
             assert 'l_G' in self.params.keys(), ' [Parameters.read_uncertainty_params]: l_G parameter not found in the parameter keys'
             for grating in self.params['gratings']:
                 assert f'a_{grating}_G' in self.params.keys(), f' [Parameters.read_uncertainty_params]: a_{grating}_G parameter not found in the parameter keys'

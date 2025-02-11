@@ -75,3 +75,4 @@ TWA28/debug_cholesky_decomp.py
 TWA28/debug_data_covariance.py
 TWA28/scipy_sparse_solvers.py
 TWA28/solve_covariance.py
+TWA28/estimate_data_covariance.py

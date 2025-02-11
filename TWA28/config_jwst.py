@@ -18,11 +18,11 @@ gratings = ['g235h', 'g395h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
-# cov_mode = None
-cov_mode = 'GP'
-cov_mode_label = f'_{cov_mode}' if 'GP' in cov_mode else ''
+cov_mode = 'None'
+# cov_mode = 'GP'
+cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 2
+index = 3
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -432,7 +432,7 @@ if 'g395h' in gratings:
 ####################################################################################
 scale_flux = False
 scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
-scale_err  = True
+scale_err  = False
 if scale_err == False:
     free_params['beta2'] = [(1.0, 10.0), r'b$^2$']
     invgamma_params.append('beta2')

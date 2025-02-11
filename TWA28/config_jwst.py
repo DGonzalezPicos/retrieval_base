@@ -476,7 +476,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 max_separation = 5
 trunc_dist = 2.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
-    free_params['log_l_G'] = [(-0.3, 0.7), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.3, 0.6), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
@@ -497,12 +497,12 @@ cov_kwargs = dict(
 )
 
 lck_kwargs = dict(
-    use_lck=True,
-    lck_width=3,
-    n_max_regions=6,
-    sigma_threshold=8.0,
-    scale_GP_amp=True,
-    trunc_dist = trunc_dist
+    # use_lck=True,
+    # lck_width=3,
+    # n_max_regions=6,
+    # sigma_threshold=6.0,
+    # scale_GP_amp=True,
+    # trunc_dist = trunc_dist
 )
 
 # if free_params.get('log_l') is not None:

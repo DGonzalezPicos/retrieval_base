@@ -81,7 +81,7 @@ class LogLikelihood:
                 
                 if self.use_lck:
                     # print(f' [LogLikelihood.__call__]: using LCK')
-                    debug_lck = False
+                    debug_lck = True
                     lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
                                                 d_flux_ij,
                                                 d_err_ij,
@@ -98,7 +98,7 @@ class LogLikelihood:
                             
                         kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4)) # a_k**2
                         a_k = np.sqrt(Cov[i,j].get_banded(kernel)[:Cov[i,j].separation.shape[0]])
-                        a_k = np.clip(a_k, 0.0, 100.0)
+                        a_k = np.clip(a_k, 0.0, 2.0)
                         if debug_lck:
                             print(f' [LogLikelihood.__call__]: a_k.shape {a_k.shape}')
                             print(f' [LogLikelihood.__call__]: a_k.min() {a_k.min():.2e} a_k.max() {a_k.max():.2e} a_k.mean() {a_k.mean():.2e}')

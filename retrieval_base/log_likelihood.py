@@ -81,10 +81,11 @@ class LogLikelihood:
                 
                 if self.use_lck:
                     # print(f' [LogLikelihood.__call__]: using LCK')
-                    debug_lck = True
+                    debug_lck = False
                     lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
                                                 d_flux_ij,
-                                                d_err_ij,
+                                                # d_err_ij,
+                                                np.sqrt(Cov[i,j].cov[0]), # diagonal of banded covariance matrix
                                                 lck_width=self.lck_kwargs.get('lck_width', 4))
                     lck.s = lck(m_flux_ij, 
                         sigma_threshold=self.lck_kwargs.get('sigma_threshold', 5.0),
@@ -98,11 +99,12 @@ class LogLikelihood:
                             
                         kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4)) # a_k**2
                         a_k = np.sqrt(Cov[i,j].get_banded(kernel)[:Cov[i,j].separation.shape[0]])
-                        a_k = np.clip(a_k, 0.0, 2.0)
+                        # a_k = np.clip(a_k, 0.0, 2.0)
                         if debug_lck:
                             print(f' [LogLikelihood.__call__]: a_k.shape {a_k.shape}')
                             print(f' [LogLikelihood.__call__]: a_k.min() {a_k.min():.2e} a_k.max() {a_k.max():.2e} a_k.mean() {a_k.mean():.2e}')
                             print(f' [LogLikelihood.__call__]: Cov.cov: min={Cov[i,j].cov.min():.2e} max={Cov[i,j].cov.max():.2e} mean={Cov[i,j].cov.mean():.2e}')
+                            print(f' [LogLikelihood.__call__]: Cov.err_eff: {Cov[i,j].err_eff:.2e}')
                             print(f' [LogLikelihood.__call__]: scale_GP_amp {self.lck_kwargs.get("scale_GP_amp", True)}')
                         del lck
 
@@ -112,7 +114,7 @@ class LogLikelihood:
                         assert a_k.shape[0] == Cov[i,j].separation.shape[0], f'a_k.shape {a_k.shape} != Cov[i,j].separation.shape {Cov[i,j].separation.shape}'
                         Cov[i,j].add_RBF_kernel(a=a_k,
                                                 l=self.lck_kwargs.get('lck_width', 4),
-                                                scale_GP_amp=self.lck_kwargs.get('scale_GP_amp', True),
+                                                scale_GP_amp=self.lck_kwargs.get('scale_GP_amp', True), # FIXME: True? or already scaled?
                                                 trunc_dist=self.lck_kwargs.get('trunc_dist', 4))
                         del kernel, a_k
                     

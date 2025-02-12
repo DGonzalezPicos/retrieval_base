@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 3
+index = 4
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -166,9 +166,9 @@ species_wave = {
     
     
     'HF': [[1200, 3550.0]],
-    # 'HCl': [[0, np.inf]], # FIXME: check this
+    'HCl': [[3050, np.inf]], # FIXME: check this
 
-    'CO2': [[3700, 5400]],
+    'CO2': [[2800, 3300],[3900, 5400]],
     # 'HCN': [[0.0, np.inf]],
     
     'Na': [[0, 2400.0], [3500, 4100.0]],
@@ -199,7 +199,7 @@ species_wave = {
     'TiO': [[0,1450]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
-    # 'H2S': [[1250, np.inf]],
+    'H2S': [[2350, np.inf]],
 }
 
 # include_only = ['FeH', 'H2O'] # FIXME: manually add species here
@@ -497,12 +497,12 @@ cov_kwargs = dict(
 )
 
 lck_kwargs = dict(
-    # use_lck=True,
-    # lck_width=3,
-    # n_max_regions=6,
-    # sigma_threshold=6.0,
-    # scale_GP_amp=True,
-    # trunc_dist = trunc_dist
+    use_lck=True,
+    lck_width=4,
+    n_max_regions=6,
+    sigma_threshold=6.0,
+    scale_GP_amp=False,
+    trunc_dist = trunc_dist
 )
 
 # if free_params.get('log_l') is not None:

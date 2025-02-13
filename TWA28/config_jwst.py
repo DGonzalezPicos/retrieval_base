@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 4
+index = 5
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -46,7 +46,7 @@ config_data = {
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
-        'flux_unit_factor': 1e20, # DGP (2025-02-06): new parameter
+        'flux_unit_factor': 1e18, # DGP (2025-02-06): new parameter
         }, 
     }
 
@@ -476,7 +476,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 max_separation = 5
 trunc_dist = 2.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
-    free_params['log_l_G'] = [(-0.3, 0.6), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.2, 0.6), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
@@ -500,7 +500,7 @@ lck_kwargs = dict(
     use_lck=True,
     lck_width=4,
     n_max_regions=6,
-    sigma_threshold=6.0,
+    sigma_threshold=4.0,
     scale_GP_amp=False,
     trunc_dist = trunc_dist
 )

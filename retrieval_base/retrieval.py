@@ -70,10 +70,6 @@ def prior_check(conf, n=3, random=False,
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
         # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
-        print(f'ln_L = {ln_L:.4e}\n')
-        end = time.time()
-        print(f'Elapsed time: {end-start:.2f} s')
-        time_list.append(end-start)
         
         if i == 0:
             print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
@@ -82,7 +78,11 @@ def prior_check(conf, n=3, random=False,
             if hasattr(ret.Cov[w_set], 'cov_cholesky'):
                 print(f' shape.ret.Cov.cov_cholesky = {ret.Cov[w_set].cov_cholesky.shape}')
                 
-                
+        print(f'ln_L = {ln_L:.4e}')
+        end = time.time()
+        print(f'Elapsed time: {end-start:.2f} s\n')
+        time_list.append(end-start)
+        
         samples.append(sample)
             
             

@@ -123,16 +123,16 @@ class Covariance:
 
 class GaussianProcesses(Covariance):
 
-    def get_banded(cls, array, max_value=None):
+    def get_banded(cls, array, max_value=None, k=None):
 
         # Make banded covariance matrix
         banded_array = []
-
+        k = len(array) if k is None else k
         for i in range(len(array)):
             # Retrieve the i-th diagonal
             diag_i = np.diag(array, k=i)
 
-            if (diag_i == 0).all() and (i != 0):
+            if (diag_i == 0).all() and (i != 0) and i >= k:
                 # There are no more non-zero diagonals coming
                 break
             
@@ -208,14 +208,19 @@ class GaussianProcesses(Covariance):
         if params.get(f'a_{grating}_G', None) is not None:
             if isinstance(params[f'a_{grating}_G'], float):
                 # print(f' --> Adding RBF kernel with a={params[f"a_{grating}_G"]}, l={params["l_G"]}')
+                a = params[f'a_{grating}_G']
+                l = params['l_G']
+                # print(f' --> Adding RBF kernel with a={a}, l={l}')
                 self.add_RBF_kernel(
-                    a=params[f'a_{grating}_G'], 
-                    l = params['l_G'],
+                    a=a, 
+                    l = l,
                     **kwargs
                     )
         beta2 = np.clip(params.get('beta2', 1.0), 0.1, None)
+        if beta2 != 1.0:
+            print(f' --> beta2 {beta2}')
         # print(f' --> beta2 {beta2}')
-        self.cov *=  beta2
+        # self.cov *=  beta2
         
             
 
@@ -224,6 +229,8 @@ class GaussianProcesses(Covariance):
         # Create the covariance matrix from the uncertainties
         self.cov = np.zeros_like(self.separation)
         self.cov[0] = self.err**2
+        # min, mean, median, max = np.min(self.cov), np.mean(self.cov), np.median(self.cov), np.max(self.cov)
+        # print(f'[Covariance.cov_reset]: cov.min, mean, median, max = {min:.2e}, {mean:.2e}, {median:.2e}, {max:.2e}')
         # self.err_eff = float(self.err_eff_copy)
         self.is_matrix = True
         return self
@@ -272,7 +279,8 @@ class GaussianProcesses(Covariance):
 
         # Hann window function to ensure sparsity
         w_ij = self.hanning_window(trunc_dist, l, cosine_taper=kwargs.get('cosine_taper', False))
-        
+        # check fraction of elements that are non-zero
+        # print(f' --> Fraction of non-zero elements: {np.sum(w_ij)/w_ij.size}')
         # print(f' w_ij.shape {w_ij.shape}')
         # GP amplitude
         err_eff = 1.0 if not scale_GP_amp else self.err_eff
@@ -312,121 +320,68 @@ class GaussianProcesses(Covariance):
         # assert cond_number < 1e10, f'Covariance matrix is ill-conditioned: {cond_number}'
         return self
     
-    
-    def get_cholesky(self, log_jitter=-4, max_iter=0, debug=False):
-        """
-        Ensure self.cov is a robust banded covariance matrix that will pass Cholesky decomposition.
-        """
-        
+    def get_cholesky(self, debug=False):
+        '''
+        Get the Cholesky decomposition. Employs a banded 
+        decomposition with scipy. Falls back to zeros if decomposition fails.
+        '''
+        self.cholesky_failed = False
         k = self.separation.shape[0]
+        # clip all values below quantile 1th to zero
+        # q1, q99 = np.quantile(self.cov[self.cov>0], [0.001, 0.999])
+        # self.cov[self.cov < q1] = 0.0
+        # self.cov[self.cov > q99] = q99
         mask_nonzero_diag = (self.cov != 0).any(axis=1)
         C = self.cov[mask_nonzero_diag,:]
         
         if debug:
-            print(f' --> C.shape {C.shape}')
-            self.check_cov()
-        
-
+            min, mean, max = np.min(C), np.mean(C), np.max(C)
+            q1, q99 = np.quantile(C, 0.01), np.quantile(C, 0.99)
+            print(f'[Covariance.get_cholesky]: min, mean, max = {min:.2e}, {mean:.2e}, {max:.2e}')
+            print(f'[Covariance.get_cholesky]: q1, q99 = {q1:.2e}, {q99:.2e}')
+        #     # print(f' Number of removed rows {np.sum(~mask_nonzero_diag)}')
+            # self.check_cov()
+            
+            C = np.clip(C, q1, q99)
+            
+        # Handle special case of 1x1 matrix
         if mask_nonzero_diag.sum() == 1:
             if debug:
-                print(f' --> C.shape {C.shape}')
-                
+                print(f' --> Single diagonal case, using sqrt')
             self.cov_cholesky = np.sqrt(C)
             return self
-        
-        # regularize the covariance matrix to ensure it is positive definite
-        # C_min_nonzero = np.min(C[C > 0])
-        # print(f'[GaussianProcesses.get_cholesky]: C_min_nonzero {C_min_nonzero}')
-        # C_factor = 1e8
-        # print(f'[GaussianProcesses.get_cholesky]: q1, q50, q99 {np.percentile(C[C > 0], [1, 50, 99])}')
-        # C += C_factor
-        # print(f'[GaussianProcesses.get_cholesky]: q1, q50, q99 {np.percentile(C[C > 0], [1, 50, 99])}')
-
+            
         try:
-            self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False, overwrite_ab=True)
-            # self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=True)
-            if debug:
-                print(f' --> L.shape {self.cov_cholesky.shape}')
+            # Try standard Cholesky decomposition first
+            self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
             return self
+            
         except Exception as e:
-            print(f' --> Cholesky decomposition failed: {e}')
-            if debug:
-                print(f' --> Cholesky decomposition failed: {e}')
-            eigvals, eigvecs = eig_banded(C, lower=True)
-            if debug:
-                print(f' --> eigvals.shape {eigvals.shape}')
-                print(f' --> eigvecs.shape {eigvecs.shape}')
             
-            neg_eigvals = eigvals[eigvals < 0]
             if debug:
-                print(f' Number of negative eigenvalues: {len(neg_eigvals)} / {len(eigvals)}')
-            eigvals[eigvals <= 0] = np.min(eigvals[eigvals > 0])
+                print(f' --> Initial Cholesky failed: {e}')
             
-            if max_iter > 0:
-                for _i in range(max_iter):  
-                    jitter = 10**(log_jitter * (_i + 1))
-                    eigvals += jitter
+            # Add small jitter to diagonal for numerical stability
+            # jitter = 1e-3 * np.max(np.abs(C[0]))
+            # C[0] += jitter
+            
+            # try:
+            #     self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
+            #     return self
                 
-                    C = eigvecs @ np.diag(eigvals) @ eigvecs.T
-                    
-                    C_banded = self.get_banded(C)[:k,:]
-                    if debug:
-                        print(f' --> C_banded.shape {C_banded.shape}')
-                    try:
-                        self.cov_cholesky = cholesky_banded(C_banded, lower=True, check_finite=False)
-                        if debug:
-                            print(f' --> L.shape {self.cov_cholesky.shape}')
-                        return self
-                    except Exception as e:
-                        if debug:
-                            print(f' --> Cholesky decomposition failed: {e}')
-                        continue
-            
-            # Return an all-zero matrix with the same shape as C if Cholesky fails after max_iter
-            if debug:
-                print("Cholesky decomposition failed after maximum iterations. Returning zero matrix.")
-            self.cov_cholesky = np.zeros_like(C)
-            return self
-
-
-    def get_cholesky_old(self, debug=True):
-        '''
-        Get the Cholesky decomposition. Employs a banded 
-        decomposition with scipy. 
-        '''        
-        self.cholesky_failed = False
-        mask_nonzero_diag = (self.cov != 0).any(axis=1)
-        if debug:
-            # print(f' [GaussianProcesses.get_cholesky]: mask_nonzero_diag.sum() {mask_nonzero_diag.sum()}')
-            self.check_cov()
-        
-        if mask_nonzero_diag.sum() == 1:
-            # Only the diagonal is non-zero
-            self.cov = self.cov[0]
-            self.cov_cholesky = np.sqrt(self.cov)
-            
-            return self
-    
-        # self.cov = self.cov[mask_nonzero_diag,:]
-        
-        eps = 1e-4
-        for eps_i in range(3):
-            try:
-                # self.cov += eps_i*eps*np.ones_like(self.cov)
-                self.cov_cholesky = cholesky_banded(self.cov,
-                                                    lower=True, 
-                                                    overwrite_ab=True,
-                                                    check_finite=False)
+            # except Exception as e:
+            #     if debug:
+            #         print(f' --> Cholesky with jitter failed: {e}')
+                
+                # Fall back to diagonal approximation
+                if debug:
+                    print(' --> Falling back to diagonal approximation')
+                self.cholesky_failed = True
+                self.cov_cholesky = np.zeros_like(C)
+                self.cov_cholesky[0] = np.sqrt(C[0])
                 return self
-            except np.linalg.LinAlgError:
-                # if debug:
-                print(f' !!!!!! Cholesky decomposition failed {eps_i}/3...')
-                # self.cov_cholesky = np.sqrt(self.cov)
-                
-            self.cholesky_failed = True
-        
-        return self
 
+   
     def get_logdet(self):
         '''
         Calculate the log of the determinant. Uses diagonal 

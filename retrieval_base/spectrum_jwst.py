@@ -444,7 +444,8 @@ class SpectrumJWST:
 
                 if prepare_err_eff:
                     # Arithmetic mean of the squared flux-errors
-                    self.err_eff[i,j] = np.nanmean(self.err[i,j,mask_ij])
+                    # self.err_eff[i,j] = np.nanmean(self.err[i,j,mask_ij])
+                    self.err_eff[i,j] = np.nanmedian(self.err[i,j,mask_ij]) # NEW 2025-02-13: median is more robust to outliers
         
         return self
     

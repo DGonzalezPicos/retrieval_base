@@ -97,31 +97,29 @@ class LogLikelihood:
                             print(f' [LogLikelihood.__call__]: lck.s.min() {lck.s.min():.2e} lck.s.max() {lck.s.max():.2e} lck.s.mean() {lck.s.mean():.2e}')
                             print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
                             
-                        kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4)) # a_k**2
-                        a_k = np.sqrt(Cov[i,j].get_banded(kernel)[:Cov[i,j].separation.shape[0]])
-                        # a_k = np.clip(a_k, 0.0, 2.0)
+                        kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4),
+                                                       max_value=0.5 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
+                        kernel_banded = Cov[i,j].get_banded(kernel, k=Cov[i,j].separation.shape[0])
+                       
                         if debug_lck:
-                            print(f' [LogLikelihood.__call__]: a_k.shape {a_k.shape}')
-                            print(f' [LogLikelihood.__call__]: a_k.min() {a_k.min():.2e} a_k.max() {a_k.max():.2e} a_k.mean() {a_k.mean():.2e}')
                             print(f' [LogLikelihood.__call__]: Cov.cov: min={Cov[i,j].cov.min():.2e} max={Cov[i,j].cov.max():.2e} mean={Cov[i,j].cov.mean():.2e}')
                             print(f' [LogLikelihood.__call__]: Cov.err_eff: {Cov[i,j].err_eff:.2e}')
+                            print(f' [LogLikelihood.__call__]: kernel_banded.max() {kernel_banded.max():.2e}')
+                            # print(f' [LogLikelihood.__call__]: a_k * Cov.err_eff: {a_k * Cov[i,j].err_eff:.2e}')
                             print(f' [LogLikelihood.__call__]: scale_GP_amp {self.lck_kwargs.get("scale_GP_amp", True)}')
                         del lck
-
-                        if a_k.shape[0] < Cov[i,j].separation.shape[0]:
-                            # fill with zeros along axis 0
-                            a_k = np.concatenate((a_k, np.zeros((Cov[i,j].separation.shape[0] - a_k.shape[0], a_k.shape[1]))), axis=0)
-                        assert a_k.shape[0] == Cov[i,j].separation.shape[0], f'a_k.shape {a_k.shape} != Cov[i,j].separation.shape {Cov[i,j].separation.shape}'
-                        Cov[i,j].add_RBF_kernel(a=a_k,
-                                                l=self.lck_kwargs.get('lck_width', 4),
-                                                scale_GP_amp=self.lck_kwargs.get('scale_GP_amp', True), # FIXME: True? or already scaled?
-                                                trunc_dist=self.lck_kwargs.get('trunc_dist', 4))
-                        del kernel, a_k
+                            
+                        # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].err_eff**2) #FIXME: what is the maximum reasonable value?
+                        # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].cov.max())
+                        w_ij = Cov[i,j].separation < self.lck_kwargs.get('trunc_dist', 4)
+                        Cov[i,j].cov[w_ij] += kernel_banded[w_ij] 
+                        del kernel_banded
                     
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky()
-                    if np.all(Cov[i,j].cov_cholesky == 0):
+                    # if np.all(Cov[i,j].cov_cholesky == 0):
+                    if Cov[i,j].cholesky_failed:
                         print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j}')
                         self.ln_L = -np.inf
                         return self.ln_L

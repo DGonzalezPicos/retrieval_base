@@ -143,12 +143,12 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
-    np.random.seed(998725)
+    random = False
+    np.random.seed(1122213)
     random_label = '_random' if random else ''
     disk = True
     disk_label = '_disk' if disk else ''
-    ret = prior_check(conf=conf, n=8, 
+    ret = prior_check(conf=conf, n=5, 
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,

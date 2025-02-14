@@ -12,8 +12,8 @@ lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h', 'g395h']
-# gratings = ['g140h', 'g235h', 'g395h']
+# gratings = ['g235h', 'g395h']
+gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 6
+index = 0
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -160,7 +160,7 @@ species_wave = {
     '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
     '13CO': [[2200, 3200], [4200, 5400]],
     'C18O': [[2200, 3200], [4200, 5400]],
-    'C17O': [[4200, 5400]],
+    # 'C17O': [[4200, 5400]], # TODO: add this back for final retrieval
     'H2O': [[0.0, np.inf]],
     'H2O_181': [[0.0, np.inf]],
     
@@ -169,9 +169,9 @@ species_wave = {
     'HCl': [[3050, np.inf]], # FIXME: check this
 
     'CO2': [[2800, 3200],[3900, 5400]],
-    'CH4': [[2900.0, 3900.0]],
-    'NH3': [[2700.0, np.inf]],
-    'HCN': [[2800.0, np.inf]],
+    # 'CH4': [[2900.0, 3900.0]], # TODO: add this back for final retrieval
+    # 'NH3': [[2700.0, np.inf]], # TODO: add this back for final retrieval
+    # 'HCN': [[2800.0, np.inf]], # TODO: add this back for final retrieval
 
     'Na': [[0, 2400.0], [3300.0, 3500.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
@@ -476,7 +476,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 max_separation = 5
-trunc_dist = 3.0
+trunc_dist = 4.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
     free_params['log_l_G'] = [(-0.2, 0.6), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist

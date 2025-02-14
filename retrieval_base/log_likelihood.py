@@ -98,21 +98,21 @@ class LogLikelihood:
                             print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
                             
                         kernel = lck.correlated_kernel(trunc_dist=self.lck_kwargs.get('trunc_dist', 4),
-                                                       max_value=3.0 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
-                        kernel_banded = Cov[i,j].get_banded(kernel, k=Cov[i,j].separation.shape[0])
+                                                       max_value=100.0 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
                        
                         if debug_lck:
                             print(f' [LogLikelihood.__call__]: Cov.cov: min={Cov[i,j].cov.min():.2e} max={Cov[i,j].cov.max():.2e} mean={Cov[i,j].cov.mean():.2e}')
                             print(f' [LogLikelihood.__call__]: Cov.err_eff: {Cov[i,j].err_eff:.2e}')
-                            print(f' [LogLikelihood.__call__]: kernel_banded.max() {kernel_banded.max():.2e}')
+                            # print(f' [LogLikelihood.__call__]: kernel_banded.max() {kernel_banded.max():.2e}')
                             # print(f' [LogLikelihood.__call__]: a_k * Cov.err_eff: {a_k * Cov[i,j].err_eff:.2e}')
                             print(f' [LogLikelihood.__call__]: scale_GP_amp {self.lck_kwargs.get("scale_GP_amp", True)}')
                             
                         # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].err_eff**2) #FIXME: what is the maximum reasonable value?
                         # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].cov.max())
-                        w_ij = Cov[i,j].separation < self.lck_kwargs.get('trunc_dist', 4)
-                        Cov[i,j].cov[w_ij] += kernel_banded[w_ij] 
-                        del kernel_banded, kernel, lck
+                        w_ij = Cov[i,j].separation < self.lck_kwargs.get('trunc_dist', 4) * lck.lck_width_wavelength
+
+                        Cov[i,j].cov[w_ij] += Cov[i,j].get_banded(kernel, k=Cov[i,j].separation.shape[0])[:Cov[i,j].separation.shape[0]][w_ij]
+                        del kernel, lck
                     
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition

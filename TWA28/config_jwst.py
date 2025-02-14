@@ -502,7 +502,7 @@ lck_kwargs = dict(
     use_lck=True,
     lck_width=4,
     n_max_regions=6,
-    sigma_threshold=5.0,
+    sigma_threshold=6.0,
     scale_GP_amp=False,
     trunc_dist = trunc_dist
 )

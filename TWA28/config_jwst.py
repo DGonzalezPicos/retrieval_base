@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 5
+index = 6
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -168,10 +168,12 @@ species_wave = {
     'HF': [[1200, 3550.0]],
     'HCl': [[3050, np.inf]], # FIXME: check this
 
-    'CO2': [[2800, 3300],[3900, 5400]],
-    # 'HCN': [[0.0, np.inf]],
-    
-    'Na': [[0, 2400.0], [3500, 4100.0]],
+    'CO2': [[2800, 3200],[3900, 5400]],
+    'CH4': [[2900.0, 3900.0]],
+    'NH3': [[2700.0, np.inf]],
+    'HCN': [[2800.0, np.inf]],
+
+    'Na': [[0, 2400.0], [3300.0, 3500.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
     'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
@@ -196,7 +198,7 @@ species_wave = {
     # 'ScH':[[0,1900.0]], # add this back for final retrieval
     'OH' : [[0, 4730.0]],
     'VO': [[0, 1450.0]],
-    'TiO': [[0,1450]],
+    'TiO': [[0,1450], [4800, np.inf]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
     'H2S': [[2350, np.inf]],
@@ -474,7 +476,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 max_separation = 5
-trunc_dist = 2.0
+trunc_dist = 3.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
     free_params['log_l_G'] = [(-0.2, 0.6), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
@@ -500,7 +502,7 @@ lck_kwargs = dict(
     use_lck=True,
     lck_width=4,
     n_max_regions=6,
-    sigma_threshold=4.0,
+    sigma_threshold=5.0,
     scale_GP_amp=False,
     trunc_dist = trunc_dist
 )

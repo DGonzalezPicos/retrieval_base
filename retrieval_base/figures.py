@@ -527,8 +527,8 @@ def fig_PT(PT,
                 bestfit_color,
                 lw=2, alpha=0.4,
                 )
-            peaf_icf = np.nanmax(PT.int_contr_em[w_set])
-            print(f' - Peak integrated contribution emission: {peaf_icf:.2f} at {p[np.argmax(PT.int_contr_em[w_set])]:.2e} bar')
+            peak_icf = np.nanmax(PT.int_contr_em[w_set])
+            print(f' - Peak integrated contribution emission: {peak_icf:.2f} at {p[np.argmax(PT.int_contr_em[w_set])]:.2e} bar')
 
         
             # if weigh_alpha:

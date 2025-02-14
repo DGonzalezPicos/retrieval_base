@@ -322,64 +322,53 @@ class GaussianProcesses(Covariance):
     
     def get_cholesky(self, debug=False):
         '''
-        Get the Cholesky decomposition. Employs a banded 
-        decomposition with scipy. Falls back to zeros if decomposition fails.
+        Get the Cholesky decomposition with principled jitter.
         '''
         self.cholesky_failed = False
-        k = self.separation.shape[0]
-        # clip all values below quantile 1th to zero
-        # q1, q99 = np.quantile(self.cov[self.cov>0], [0.001, 0.999])
-        # self.cov[self.cov < q1] = 0.0
-        # self.cov[self.cov > q99] = q99
         mask_nonzero_diag = (self.cov != 0).any(axis=1)
         C = self.cov[mask_nonzero_diag,:]
         
-        if debug:
-            min, mean, max = np.min(C), np.mean(C), np.max(C)
-            q1, q99 = np.quantile(C, 0.01), np.quantile(C, 0.99)
-            print(f'[Covariance.get_cholesky]: min, mean, max = {min:.2e}, {mean:.2e}, {max:.2e}')
-            print(f'[Covariance.get_cholesky]: q1, q99 = {q1:.2e}, {q99:.2e}')
-        #     # print(f' Number of removed rows {np.sum(~mask_nonzero_diag)}')
-            # self.check_cov()
-            
-            C = np.clip(C, q1, q99)
-            
-        # Handle special case of 1x1 matrix
-        if mask_nonzero_diag.sum() == 1:
-            if debug:
-                print(f' --> Single diagonal case, using sqrt')
-            self.cov_cholesky = np.sqrt(C)
-            return self
-            
+        # Base jitter on measurement uncertainties
+        median_variance = np.median(C[0])  # diagonal elements
+        min_jitter = 1e-6 * median_variance  # minimum regularization
+        
         try:
-            # Try standard Cholesky decomposition first
             self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
             return self
             
         except Exception as e:
-            
             if debug:
                 print(f' --> Initial Cholesky failed: {e}')
             
-            # Add small jitter to diagonal for numerical stability
-            # jitter = 1e-3 * np.max(np.abs(C[0]))
-            # C[0] += jitter
+            # Progressive jitter based on measurement scale
+            jitter_sequence = [
+                min_jitter,
+                1e-4 * median_variance,
+                1e-2 * median_variance,
+                0.1 * median_variance,
+                0.5 * median_variance
+            ]
             
-            # try:
-            #     self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
-            #     return self
+            for jitter in jitter_sequence:
+                C_reg = C.copy()
+                C_reg[0] += jitter
                 
-            # except Exception as e:
-            #     if debug:
-            #         print(f' --> Cholesky with jitter failed: {e}')
+                try:
+                    self.cov_cholesky = cholesky_banded(C_reg, lower=True, check_finite=False)
+                    if debug:
+                        print(f' --> Cholesky succeeded with jitter={jitter:.2e}')
+                        print(f' --> Jitter/variance ratio: {jitter/median_variance:.2e}')
+                    return self
+                except:
+                    continue
                 
-                # Fall back to diagonal approximation
-                if debug:
-                    print(' --> Falling back to diagonal approximation')
-                self.cholesky_failed = True
-                self.cov_cholesky = np.zeros_like(C)
-                self.cov_cholesky[0] = np.sqrt(C[0])
-                return self
+            # Fall back to diagonal if all attempts fail
+            if debug:
+                print(' --> All Cholesky attempts failed, falling back to diagonal')
+            self.cholesky_failed = True
+            self.cov_cholesky = np.zeros_like(C)
+            self.cov_cholesky[0] = np.sqrt(C[0])
+            return self
 
    
     def get_logdet(self):

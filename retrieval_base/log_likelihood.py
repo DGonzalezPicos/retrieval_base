@@ -98,7 +98,7 @@ class LogLikelihood:
                             print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
                             
                         kernel = lck.correlated_kernel(
-                                                    length_scale=Cov[i,j].l, # same length scale as the global covariance matrix
+                                                    # length_scale=Cov[i,j].l, # same length scale as the global covariance matrix
                                                     trunc_dist=self.lck_kwargs.get('trunc_dist', 4),
                                                        max_value=100.0 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
                        

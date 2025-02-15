@@ -59,7 +59,7 @@ class LocalCovarianceKernel:
             s_lck[mask_region] = np.sqrt(chi2_region) * self.gaussian_kernel(self.wave[mask_region], np.median(self.wave[mask_region]), self.lck_width_wavelength / 2.355)
         return s_lck
     
-    def correlated_kernel(self, trunc_dist=4.0, max_value=np.inf):
+    def correlated_kernel(self, length_scale=None, trunc_dist=4.0, max_value=np.inf):
         """Calculate the correlated covariance kernel matrix.
         
         Args:
@@ -73,7 +73,10 @@ class LocalCovarianceKernel:
             raise RuntimeError("Must call __call__() before computing correlated kernel")
         
         kernels = np.zeros((self.wave.shape[0], self.wave.shape[0]))
-        sigma = self.lck_width_wavelength / 2.355  # Convert FWHM to sigma
+        if length_scale is None:
+            l = self.lck_width_wavelength / 2.355  # Convert FWHM to sigma
+        else:
+            l = length_scale    
         
         for region, chi2_region in zip(self.regions, self.chi2_regions):
             # Center point of region
@@ -85,12 +88,12 @@ class LocalCovarianceKernel:
             r2 = r_i**2 + r_j**2
             
             # Apply truncation
-            w_ij = (np.sqrt(r2) < trunc_dist * sigma)
+            w_ij = (np.sqrt(r2) < trunc_dist * l)
             
             # Calculate kernel values for this region
             kernel = np.zeros((self.wave.shape[0], self.wave.shape[0]))
             
-            kernel[w_ij] = min(chi2_region, max_value) * np.exp(-0.5 * r2[w_ij] / sigma**2)
+            kernel[w_ij] = min(chi2_region, max_value) * np.exp(-0.5 * r2[w_ij] / l**2)
             
             kernels += kernel
         

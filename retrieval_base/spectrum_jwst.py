@@ -355,18 +355,30 @@ class SpectrumJWST:
             # keep a copy of the original data
             self.flux_uncorr = self.flux.copy()
             self.err_uncorr = self.err.copy()
-            fig, ax = plt.subplots(self.n_orders, 1, figsize=(10, 8), tight_layout=True)
+            fig, ax = plt.subplots(self.n_orders, 1, figsize=(14, 14), tight_layout=True)
             
         for order in range(self.n_orders):
             for det in range(self.n_dets):
                 nans_in = np.isnan(self.err[order,det])
                 # print(f' Average SNR (BEFORE) = {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}')
-
-                clip  = af.sigma_clip(y=np.copy(self.err[order,det]), sigma=sigma, width=width, 
-                                max_iter=max_iter, fun=fun, replace=False,
-                                replace_w_fun=True)
+                # manage zero values in self.err[order,det]
                 
-                # self.flux[order,det,clip] = np.nan
+                # self.err[order,det] = np.clip(self.err[order,det], np.quantile(self.err[order,det][self.err[order,det]>0], 0.01), np.inf)
+                zeros_before_clipping = np.sum(self.err[order,det] == 0)
+                # if zeros_before_clipping > 0:
+                    # print(f' !!! Found {zeros_before_clipping}/{len(self.err[order,det])} zeros in order {order}, detector {det}')
+                if zeros_before_clipping > 0:
+                    print(f' --> Before clipping: Found {zeros_before_clipping}/{len(self.err[order,det])} zeros in order {order}, detector {det}')
+                
+                clip  = af.sigma_clip(y=np.copy(self.err[order,det]), sigma=sigma, width=width, 
+                                max_iter=max_iter,
+                                fun=fun,
+                                replace=False,
+                                replace_w_fun=True,# NEW 2025-02-15: replace the flux with the function values
+                                return_mask=True)
+                print(f' Clipped {np.sum(clip)}/{len(clip)} points in order {order}, detector {det}')
+                self.flux[order,det,clip] = np.nan # set the flux to nan
+                # self.err[order,det,clip] = np.nan # set the error to nan
                 # self.flux[order,det,:] = clip # this is the flux with bad values replaced by the function values
                 if debug:
                     # print(f' Clipped {np.sum(np.isnan(clip)) - np.sum(nans_in)} points in order {order}, detector {det}')
@@ -375,8 +387,12 @@ class SpectrumJWST:
                     
                     ax[order].plot(self.wave[order,det], clip, label=f'std={np.nanstd(clip):.2e}', color='r')
                     ax[order].legend(frameon=False)
-                self.err[order,det,] = clip
+                # self.err[order,det,] = clip
                 # print(f' Mean error {order},{det} = {np.nanmean(self.err[order,det]):.2e}')
+                zeros = self.err[order,det] == 0
+                if np.sum(zeros) > 0:
+                    print(f' --> After clipping: Found {np.sum(zeros)}/{len(zeros)} zeros in order {order}, detector {det}')
+                    self.err[order,det,zeros] = np.quantile(self.err[order,det][self.err[order,det]>0], 0.01)
                 print(f' Mean SNR ~ {np.nanmean(self.flux[order,det]/self.err[order,det]):.1f}')
         if debug:
             fig.savefig(fig_name)

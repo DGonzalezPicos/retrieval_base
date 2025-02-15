@@ -111,7 +111,7 @@ class Covariance:
     def get_err(self, mask=None):
         
         if mask is None:
-            mask = np.ones(self.cov.shape[-1])
+            mask = np.ones(self.cov.shape[-1]).astype(bool)
         err = np.nan * np.ones_like(mask)
 
         if not self.is_matrix:
@@ -208,12 +208,12 @@ class GaussianProcesses(Covariance):
         if params.get(f'a_{grating}_G', None) is not None:
             if isinstance(params[f'a_{grating}_G'], float):
                 # print(f' --> Adding RBF kernel with a={params[f"a_{grating}_G"]}, l={params["l_G"]}')
-                a = params[f'a_{grating}_G']
-                l = params['l_G']
+                self.a = params[f'a_{grating}_G']
+                self.l = params['l_G']
                 # print(f' --> Adding RBF kernel with a={a}, l={l}')
                 self.add_RBF_kernel(
-                    a=a, 
-                    l = l,
+                    a = self.a, 
+                    l = self.l,
                     **kwargs
                     )
         beta2 = np.clip(params.get('beta2', 1.0), 0.1, None)
@@ -414,6 +414,9 @@ class GaussianProcesses(Covariance):
                 cov_full += np.diag(diag_i, k=-i)
 
         return cov_full
+    
+    # def get_err(self):
+    #     return np.sqrt(np.diag(self.get_dense_cov()))
     
     
 class SparseCovariance:

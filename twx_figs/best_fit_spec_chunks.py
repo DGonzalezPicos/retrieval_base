@@ -20,10 +20,10 @@ path = af.get_path(return_pathlib=True)
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 # run = None
-run = 'lbl12_G1G2G3_fastchem_0'
+# run = 'lbl15_G1G2G3_fastchem_GP_0'
 w_set='NIRSpec'
 
-runs = dict(TWA28='lbl12_G1G2G3_fastchem_0',
+runs = dict(TWA28='lbl15_G1G2G3_fastchem_GP_0',
             TWA27A='lbl15_G1G2G3_fastchem_0')
 
 def load_data(target, run):
@@ -37,7 +37,34 @@ def load_data(target, run):
     m_spec = af.pickle_load(f'{conf.prefix}data/bestfit_m_spec_NIRSpec.pkl')
     m_spec.flux = m_spec.flux.squeeze()
     d_spec = af.pickle_load(f'{conf.prefix}data/d_spec_NIRSpec.pkl')
+    
+    Cov = af.pickle_load(f'{conf.prefix}data/bestfit_Cov_NIRSpec.pkl')
+    LogLike = af.pickle_load(f'{conf.prefix}data/bestfit_LogLike_NIRSpec.pkl')
+    err = np.nan * np.ones_like(d_spec.flux)
+    
+    for i in range(d_spec.n_orders):
+        for j in range(d_spec.n_dets):
+            # mask_i = d_spec.mask_isfinite[i,]
+            mask_ij = d_spec.mask_isfinite[i,j]
+
+            if Cov is not None:
+                err_ij = Cov[i,j].get_err(mask=mask_ij)
+            else:
+                err_ij = d_spec.err[i,j]
+                    
+            beta_ij = LogLike.beta[i,j]
+            err_ij *= beta_ij # optimal uncertainty scaling
+            err[i,j,:] = err_ij
+        
+    flux_factor = conf.config_data['NIRSpec'].get('flux_unit_factor', 1.0)
+    
+    d_spec.err = err
     d_spec.squeeze()
+    m_spec.flux.squeeze()
+
+    m_spec.flux /= flux_factor
+    d_spec.flux /= flux_factor
+    d_spec.err /= flux_factor
     return d_spec, m_spec
 
 d_specs, m_specs = {}, {}
@@ -53,15 +80,23 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     if new_ax:
         fig, ax = plt.subplots(2,1, figsize=(10,5), sharex=True)
     else:
-        assert len(ax) == 2, f'ax must be a list of 2 elements'
+        assert len(ax) == 2, f'ax must be a list of 2 elements, not {len(ax)}'
         
-    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx] + offset, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
-    ax[0].plot(d_spec.wave[idx], m_spec.flux[idx] + offset, color=colors['model'], lw=lw, alpha=0.8, ls=ls, label=target)
+    wave = d_spec.wave[idx]
+    flux = d_spec.flux[idx] + offset
+    err = d_spec.err[idx]
+    m_flux = m_spec.flux[idx] + offset
     
-    res = d_spec.flux[idx] - m_spec.flux[idx]
+    ax[0].plot(wave, flux, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
+    ax[0].fill_between(wave, flux - err, flux + err, color=colors['data'], alpha=0.2)
+    ax[0].plot(wave, m_flux, color=colors['model'], lw=lw, alpha=0.8, ls=ls, label=target)
+    
+    res = flux - m_flux
     if relative_residuals:
-        res = res / d_spec.flux[idx]
-    ax[1].plot(d_spec.wave[idx], res, color=colors['model'], lw=lw, alpha=0.8)
+        res = res / flux
+        err = err / flux
+    ax[1].plot(wave, res, color=colors['model'], lw=lw, alpha=0.8)
+    ax[1].fill_between(wave, -err, err, color=colors['data'], alpha=0.1)
     
     # if new_ax:
     ax[1].set_xlabel('Wavelength / nm')
@@ -73,7 +108,7 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     # ax[1].axhline(0.0,color=colors['model'], lw=0.7)
         # ax.set_title(f'Chunk {idx}')
         # plt.show()
-    return ax
+    return ax, wave, flux, err
     
 
 offsets = dict(TWA28=np.zeros(d_specs['TWA28'].n_orders),
@@ -89,7 +124,8 @@ with PdfPages(pdf_name) as pdf:
         fig, ax = plt.subplots(2,1, figsize=(14,4), sharex=True, gridspec_kw={'height_ratios':[3,1]})
         for target in runs.keys():
             d_spec, m_spec = d_specs[target], m_specs[target]
-            ax = plot_chunk(d_spec, m_spec, ax=ax, relative_residuals=True, idx=idx, colors=colors[target], offset=offsets[target][idx])
+            # assert len(ax) == 2, f'ax must be a list of 2 elements, not {len(ax)}'
+            _, wave, flux, err = plot_chunk(d_spec, m_spec, ax=ax, relative_residuals=True, idx=idx, colors=colors[target], offset=offsets[target][idx])
         
             
         if target == list(runs.keys())[-1]:
@@ -100,7 +136,7 @@ with PdfPages(pdf_name) as pdf:
             
             nans = np.isnan(d_spec.flux[idx])
             eps = 0.002
-            xlim = (1-eps)*np.nanmin(d_spec.wave[idx][~nans]), (1+eps)*np.nanmax(d_spec.wave[idx][~nans])
+            xlim = (1-eps)*np.nanmin(wave[~nans]), (1+eps)*np.nanmax(wave[~nans])
             ax[0].set_xlim(xlim)
             ax[0].legend(loc='upper right')
             
@@ -122,7 +158,7 @@ with PdfPages(fig_name) as pdf:
         fig, ax = plt.subplots(2,1, figsize=(14,4), sharex=True, gridspec_kw={'height_ratios':[3,1]})
         for target in runs.keys():
             d_spec, m_spec = d_specs[target], m_specs[target]
-            ax = plot_chunk(d_spec, m_spec, ax=ax, relative_residuals=True, idx=idx, colors=colors[target], offset=offsets[target][idx],
+            _ = plot_chunk(d_spec, m_spec, ax=ax, relative_residuals=True, idx=idx, colors=colors[target], offset=offsets[target][idx],
                             ls='-' if target == 'TWA28' else '--')
         
         # save with tight layout

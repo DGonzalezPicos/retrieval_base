@@ -76,20 +76,26 @@ if args.pre_processing:
     if len(conf.mask_lines)>0:
         spec.mask_lines(conf.mask_lines)
         
-    for i in range(3):
-        spec.sigma_clip_reshaped(use_flux=False, 
-                                    # sigma=3, # KM bands
-                                    sigma=conf_data.get('sigma_clip', 2),
-                                    width=sigma_clip_width * (i+1)**2,
-                                    max_iter=5,
-                                    fun='median', 
-                                    fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
+    spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit_before_clipping.pdf', grid=True)
+
+    sigma = conf_data.get('sigma_clip', 2)
+    if sigma > 0.0:
+        for i in range(2):
+            spec.sigma_clip_reshaped(use_flux=False, 
+                                        # sigma=3, # KM bands
+                                        sigma=sigma,
+                                        width=sigma_clip_width * (i+1)**2,
+                                        max_iter=conf_data.get('sigma_clip_max_iter', 5),
+                                        fun='median_filter', 
+                                        fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
         
     
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
     spec.apply_flux_unit_factor(conf_data.get('flux_unit_factor', 1.0)) # NEW 2025-02-06
+
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
+    
     
     if 'GP' in conf.cov_mode:
         spec.prepare_for_covariance()
@@ -144,7 +150,7 @@ if args.prior_check:
     figs_path.mkdir(parents=True, exist_ok=True)
     
     random = False
-    np.random.seed(1122213)
+    np.random.seed(199)
     random_label = '_random' if random else ''
     disk = True
     disk_label = '_disk' if disk else ''
@@ -152,7 +158,7 @@ if args.prior_check:
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,
-                species_to_plot=['12CO', 'H2O', 'FeH','TiO','VO', 'C2H2', 'CrH','HCl','HF','Fe','Na','K','Ca','Ti'],
+                species_to_plot=['12CO', 'H2O', 'FeH','TiO','Na','K','Ca','Ti'],
                 fig_name=figs_path / f'prior_predictive_check{disk_label}{random_label}.pdf')
     
     if args.memory_profiler:

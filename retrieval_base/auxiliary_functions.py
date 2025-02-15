@@ -373,13 +373,13 @@ def blackbody(wave_cm, T):
     bb *= 1e-7
     return bb
 
-def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=False, replace_w_fun=False):
+def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=False, replace_w_fun=False, return_mask=False):
     '''Sigma clipping algorithm. If replace=True, the function will replace the
     clipped values with np.nan. If replace=False, the function will return a
     boolean mask with the same shape as y.
     '''
     
-    assert fun in ['median', 'gaussian', 'savgol'], 'fun must be either "median" or "gaussian"'
+    assert fun in ['median', 'gaussian', 'savgol', 'median_filter'], 'fun must be either "median" or "gaussian" or "savgol" or "median_filter"'
     
     mask_clip = np.isnan(y)
     print(f' Initial number of clipped points: {np.sum(mask_clip)}')
@@ -389,14 +389,16 @@ def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=False, re
         # mean_y = np.nanmean(y[~mask_clip])
         # use median filter 
         
-        if fun == 'median':
+        if fun == 'median_filter':
             mean_y = median_filter(y, width, mode='nearest')
         elif fun == 'gaussian':
             mean_y = gaussian_filter1d(y, width / 2.355, 
                                        mode='reflect',
                                        ) 
         elif fun == 'savgol':
-            mean_y = savgol_filter(y, width, 2, mode='nearest')       
+            mean_y = savgol_filter(y, width, 2, mode='nearest')
+        else:
+            mean_y = np.nanmedian(y)    
         
         clip = np.abs(y - mean_y) > sigma * std_y
         print(f' Iteration {i}: {np.sum(clip)} points clipped')
@@ -418,6 +420,9 @@ def sigma_clip(y, sigma=3, width=10, max_iter=5, fun='median', replace=False, re
             # interpolate over nans
             # print(f' Interpolated number of clipped points: {np.sum(mask_clip)}')
             y = np.interp(np.arange(len(y)), np.arange(len(y))[~mask_clip], y[~mask_clip])
+            
+    if return_mask:
+        return mask_clip
     return y
     
     

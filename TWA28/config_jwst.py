@@ -8,12 +8,12 @@ file_params = 'config_jwst.py'
 
 target = 'TWA28'
 # lbl = 11
-lbl = 15
+lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-# gratings = ['g235h', 'g395h']
-gratings = ['g140h', 'g235h', 'g395h']
+gratings = ['g235h', 'g395h']
+# gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -39,7 +39,8 @@ config_data = {
 
         'lbl_opacity_sampling' : lbl,
         'sigma_clip': 3,
-        'sigma_clip_width': 31, # (2024-07-16): 21 --> 31
+        'sigma_clip_max_iter': 5,
+        'sigma_clip_width': 31, # (2025-02-15): 31
         'Nedge': 40, # (2024-10-18): 20 --> 40
         'log_P_range': (-5,2),
         'n_atm_layers': 50, # (2025-01-08): update 40 --> 60
@@ -478,7 +479,7 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 max_separation = 5
 trunc_dist = 4.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
-    free_params['log_l_G'] = [(-0.2, 0.6), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.2, 0.4), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:

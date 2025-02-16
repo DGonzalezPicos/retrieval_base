@@ -26,10 +26,17 @@ target = 'TWA28'
 run = 'lbl12_G1G2G3_fastchem_0'
 w_set='NIRSpec'
 
+# runs = dict(
+#     TWA27A='lbl11_G1G2G3_fastchem_0',
+#     TWA28='lbl11_G1G2G3_fastchem_0',
+#             )
 runs = dict(
-    TWA27A='lbl11_G1G2G3_fastchem_0',
-    TWA28='lbl11_G1G2G3_fastchem_0',
-            )
+    TWA28=[
+        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
+        # ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+        ],
+    )
+
 
 colors = dict(TWA28={'data':'k', 'model':'orange'},
               TWA27A={'data':'#733b27', 'model':'#0a74da'})
@@ -98,20 +105,25 @@ def load_data(target, run):
 
 d_specs, m_specs = {}, {}
 for target in runs.keys():
-    d_specs[target], m_specs[target] = load_data(target, runs[target])
+    target_runs = list(np.atleast_1d(runs[target]))
+    for r, run_name in enumerate(target_runs):
+        run = run_name[0]
+        label = run_name[1]
+        d_specs[target], m_specs[target] = load_data(target, run)
 
 fig, ax = plt.subplots(4,1, figsize=(6, 5), gridspec_kw={'height_ratios': [2, 1, 0.6, 0.6]}, sharex=True)
 lw = 0.6
 def plot_chunk(d_spec, m_spec, idx=0, colors=None, ls='-', lw=1.0):
     
-        
-    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx], color=colors['data'], lw=lw, alpha=0.8, ls=ls)
-    ax[0].plot(d_spec.wave[idx], m_spec.flux[idx], color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+    f = d_spec.flux_unit_factor
+    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx] / f, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
+    ax[0].plot(d_spec.wave[idx], m_spec.flux[idx] / f, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
     
     residuals_list = []
     if hasattr(m_spec, 'flux_slab'):
-        ax[1].plot(m_spec.wave[idx], m_spec.flux_slab[1:][idx], color=colors['model'], lw=lw, alpha=0.8, ls=ls)
-        m_flux_no_slab = m_spec.flux[idx] - m_spec.flux_slab[1:][idx]
+        print(f'm_spec.flux_slab.shape = {m_spec.flux_slab.shape}')
+        ax[1].plot(m_spec.wave[idx], m_spec.flux_slab[idx] / f, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+        m_flux_no_slab = m_spec.flux[idx] - m_spec.flux_slab[idx]
         res_slab = (d_spec.flux[idx] - m_flux_no_slab) / d_spec.flux[idx]
         MAD = np.nanmedian(np.abs(res_slab))
         print(f'MAD = {MAD:.2e} (no slab)')

@@ -25,10 +25,13 @@ target = 'TWA28'
 run = 'lbl12_G1G2G3_fastchem_0'
 w_set='NIRSpec'
 
-runs = dict(TWA28='lbl12_G1G2G3_fastchem_0',
-            TWA27A='lbl15_G1G2G3_fastchem_0',
-            )
-
+runs = dict(
+    # TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA28=[
+        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
+        # ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+        ],
+    )
 def load_data(target, run):
     cwd = os.getcwd()
     if target not in cwd:
@@ -49,13 +52,34 @@ def load_data(target, run):
 
 d_specs, m_specs = {}, {}
 for target in runs.keys():
-    d_specs[target], m_specs[target] = load_data(target, runs[target])
+    d_specs[target], m_specs[target] = [], []
+    for run, label in runs[target]:
+        d, m = load_data(target, run)
+        d_specs[target].append(d)
+        m_specs[target].append(m)
+        
+    
 
-colors = dict(TWA28={'data':'k', 'model':'orange'},
-              TWA27A={'data':'k', 'model':'green'})
+colors = dict(TWA28={'data':'k', 
+                     'model':['brown', 'darkgreen', 'darkblue'], 
+                     'crires': 'orange'},
+              TWA27A={'data':'#733b27',
+                      'model':['#0a74da'],
+                      })
 lw = 0.9
-def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=None, offset=0.0, ls='-',
-               plot_bb=False, inset_args={}, inset=None):
+def plot_chunk(d_spec, 
+               m_spec, 
+               ax=None, 
+               idx=0, 
+               relative_residuals=False, 
+            #    colors=None, 
+               color_data='k', 
+               color_model='brown',
+               offset=0.0, 
+               ls='-',
+               plot_bb=False, 
+               inset_args={}, 
+               inset=None):
     
     new_ax = (ax is None)
     if new_ax:
@@ -64,8 +88,8 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
         # assert len(ax) == 2, f'ax must be a list of 2 elements'
         pass
         
-    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx] + offset, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
-    ax[0].plot(d_spec.wave[idx], m_spec.flux[idx] + offset, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx] + offset, color=color_data, lw=lw, alpha=0.8, ls=ls)
+    ax[0].plot(d_spec.wave[idx], m_spec.flux[idx] + offset, color=color_model, lw=lw, alpha=0.8, ls=ls)
     
     ax_inset = None
     if len(inset_args) > 0 and 'inset' not in inset_args:
@@ -79,11 +103,11 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
         ax_inset = inset
     if ax_inset is not None:
         mask = (d_spec.wave[idx] > inset_args['xlim'][0]) & (d_spec.wave[idx] < inset_args['xlim'][1])
-        ax_inset.plot(d_spec.wave[idx][mask], d_spec.flux[idx][mask] + offset, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
-        ax_inset.plot(d_spec.wave[idx][mask], m_spec.flux[idx][mask] + offset, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+        ax_inset.plot(d_spec.wave[idx][mask], d_spec.flux[idx][mask] + offset, color=color_data, lw=lw, alpha=0.8, ls=ls)
+        ax_inset.plot(d_spec.wave[idx][mask], m_spec.flux[idx][mask] + offset, color=color_model, lw=lw, alpha=0.8, ls=ls)
     
     if plot_bb:
-        ax[0].plot(d_spec.wave[idx], m_spec.flux_bb[idx], color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+        ax[0].plot(d_spec.wave[idx], m_spec.flux_bb[idx], color=color_model, lw=lw, alpha=0.8, ls=ls)
         # ax[0].fill_between(d_spec.wave[idx], m_spec.flux_bb[idx], color=colors['model'], alpha=0.2)
     ax[0].set_ylabel('Flux / erg/s/cm2/nm')
 
@@ -91,7 +115,7 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
         res = d_spec.flux[idx] - m_spec.flux[idx]
         if relative_residuals:
             res = res / d_spec.flux[idx]
-        ax[1].plot(d_spec.wave[idx], res, color=colors['model'], lw=lw, alpha=0.8)
+        ax[1].plot(d_spec.wave[idx], res, color=color_model, lw=lw, alpha=0.8)
         
         # if new_ax:
         ax[1].set_xlabel('Wavelength / nm')
@@ -108,14 +132,15 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     return ax, inset_args
     
 
-offsets = dict(TWA28=np.zeros(d_specs['TWA28'].n_orders),
-               TWA27A=1e-22*np.array([5.0, 5.0, 5.0, 5.0, 
-                                      0.5, 0.5, 0.5, 0.5,
-                                      0.0, 0.0, 0.0, 0.0]))
+
 
 # pdf_name = path / 'twx_figs/fig1_spec_full_range.pdf'
 pdf_name = path_figures / 'fig1_spec_full_range.pdf'
-n_orders = d_specs['TWA28'].n_orders
+n_orders = d_specs['TWA28'][0].n_orders
+offsets = dict(TWA28=np.zeros(n_orders),
+               TWA27A=1e-22*np.array([5.0, 5.0, 5.0, 5.0, 
+                                      0.5, 0.5, 0.5, 0.5,
+                                      0.0, 0.0, 0.0, 0.0]))
 
 fig, ax = plt.subplots(3,1, figsize=(14,4), sharex=True, gridspec_kw={'height_ratios':[3,3,1]})
 
@@ -124,34 +149,34 @@ inset_idx = {'5': [(2260, 2390), [0.4, 0.45, 0.2, 0.4]],
 inset_args = {}
 for idx in range(n_orders):
     for t, target in enumerate(runs.keys()):
-        d_spec, m_spec = d_specs[target], m_specs[target]
+        for r, (run, label) in enumerate(runs[target]):
+            d_spec, m_spec = d_specs[target][r], m_specs[target][r]
         
-        # inset_args = {}
-        # inset_i = None
-
-        if idx in np.array(list(inset_idx.keys())).astype(int):
-            if not 'inset' in inset_args.get(str(idx), {}):
-                inset_xlim = inset_idx[str(idx)][0]
-                inset_args[str(idx)] = dict(xlim=inset_xlim, xywh=inset_idx[str(idx)][1])
-                print(f'Inset xlim: {inset_xlim} at idx: {idx}')
-            # else:
-            #     inset_args[str(idx)]['inset'] = inset_i
-        
-        axes, inset_args[str(idx)] = plot_chunk(d_spec, m_spec, ax=[ax[0], ax[2]], 
-                        relative_residuals=True, 
-                        idx=idx, 
-                        colors=colors[target], 
+            if idx in np.array(list(inset_idx.keys())).astype(int):
+                if not 'inset' in inset_args.get(str(idx), {}):
+                    inset_xlim = inset_idx[str(idx)][0]
+                    inset_args[str(idx)] = dict(xlim=inset_xlim, xywh=inset_idx[str(idx)][1])
+                    print(f'Inset xlim: {inset_xlim} at idx: {idx}')
+                # else:
+                #     inset_args[str(idx)]['inset'] = inset_i
+            
+            axes, inset_args[str(idx)] = plot_chunk(d_spec, m_spec, ax=[ax[0], ax[2]], 
+                            relative_residuals=True, 
+                            idx=idx, 
+                            color_data=colors[target]['data'],
+                            color_model=colors[target]['model'][r],
+                            offset=offsets[target][idx],
+                            plot_bb=True,
+                            inset_args=inset_args.get(str(idx), {})
+            )
+            
+            _ = plot_chunk(d_spec, m_spec, ax=[ax[1]],
+                        relative_residuals=True,
+                        idx=idx,
+                        color_data=colors[target]['data'],
+                        color_model=colors[target]['model'][r],
                         offset=offsets[target][idx],
-                        plot_bb=True,
-                        inset_args=inset_args.get(str(idx), {})
-        )
-        
-        _ = plot_chunk(d_spec, m_spec, ax=[ax[1]],
-                       relative_residuals=True,
-                       idx=idx,
-                       colors=colors[target],
-                       offset=offsets[target][idx],
-                       plot_bb=True)
+                        plot_bb=True)
     
 ax[-1].axhline(0.0, color='k', lw=0.7)
 ylim = ax[-1].get_ylim()

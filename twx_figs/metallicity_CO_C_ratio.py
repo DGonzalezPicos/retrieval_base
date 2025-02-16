@@ -18,11 +18,15 @@ w_set='NIRSpec'
 
 runs = dict(
     # TWA27A=['lbl11_G1G2G3_fastchem_0'],
-    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+    TWA28=[
+        # 'lbl11_G1G2G3_fastchem_0', 
+           ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
+           ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+           ],
             )
 colors = dict(TWA28={'data':'k', 
                      'model':['brown', 'darkgreen', 'darkblue'], 
-                     'model_labels':['G1+G2+G3', 'G2+G3', 'G2'],
+                    #  'model_labels':['G1+G2+G3', 'G2+G3', 'G2'],
                      'crires': 'orange'},
               TWA27A={'data':'#733b27',
                       'model':['#0a74da'],
@@ -109,8 +113,11 @@ def print_quantiles(target, run, log_g_posterior, CO_posterior, CH_posterior, is
 
 for t, target in enumerate(runs.keys()):
     target_runs = list(np.atleast_1d(runs[target]))
-    for r, run in enumerate(target_runs):
-        chem, log_g_posterior = load_data(target, run, cache=False)
+    for r, run_name in enumerate(target_runs):
+        run = run_name[0]
+        label = run_name[1]
+        
+        chem, log_g_posterior = load_data(target, run, cache=True)
         
         CO_posterior = np.mean(chem.COH_posterior['C'] / chem.COH_posterior['O'], axis=-1)
         CH_posterior = af.solar_metallicity(np.mean(chem.COH_posterior['C'], axis=-1), 
@@ -128,7 +135,7 @@ for t, target in enumerate(runs.keys()):
         
         plot_hist(ax, CO_posterior, CH_posterior, isotope_ratios, colors[target]['model'][r], log_g_posterior=log_g_posterior, edge=True, density=True,
                 # label=colors[target]['model_labels'][r], fill=(r==0))
-                label='TWA ' + target.replace('TWA', '') + f"\n({colors[target]['model_labels'][r]})",
+                label='TWA ' + target.replace('TWA', '') + f"\n({label})",
                 fill=True)
     
 # load CRIRES posteriors
@@ -216,6 +223,7 @@ for value in [solar, ism]:
 axes[0].set_xlabel('C/O')
 axes[1].set_xlabel('[C/H]')
 axes[2].set_xlabel(r'$\mathrm{^{12}C}/\mathrm{^{13}C}$')
+axes[3].set_xlabel('log g')
 # add separation between columns of legend
 leg = axes[2].legend(loc='upper right', ncol=2, frameon=False,
                      columnspacing=24)

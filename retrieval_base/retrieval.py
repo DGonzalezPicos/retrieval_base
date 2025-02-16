@@ -261,6 +261,8 @@ class Retrieval:
                     
                     separation_ij, err_eff_ij = None, None
                     # if hasattr(self.d_spec[w_set], 'flux_eff'):
+                    if self.Param.cov_mode == None:
+                        self.Param.cov_mode = 'None'
                     if 'GP' in self.Param.cov_mode:
                         separation_ij = self.d_spec[w_set].separation[i,j]
                         err_eff_ij = self.d_spec[w_set].err_eff[i,j]
@@ -285,7 +287,7 @@ class Retrieval:
                 scale_flux=self.conf.scale_flux, 
                 scale_err=self.conf.scale_err, 
                 scale_flux_eps=getattr(self.conf, 'scale_flux_eps', 0.05),
-                lck_kwargs=self.conf.lck_kwargs
+                lck_kwargs=getattr(self.conf, 'lck_kwargs', {}),
                 )
 
         self.PT = get_PT_profile_class(

@@ -25,9 +25,14 @@ path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
 # target = 'TWA28'
 w_set='NIRSpec'
+
 runs = dict(
-    TWA27A=['lbl11_G1G2G3_fastchem_0'],
-    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+    # TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA28=[
+        # 'lbl11_G1G2G3_fastchem_0', 
+           ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
+        #    ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+           ],
             )
 
 
@@ -179,7 +184,11 @@ def plot_target(target, run, ax, ax_icf=None, color_species={}, ls_dict={}):
 
 color_species, ls_dict = {}, {}
 for t, target in enumerate(runs.keys()):
-    color_species, ls_dict = plot_target(target, runs[target][0], ax[t], None, color_species, ls_dict)
+    target_runs = list(np.atleast_1d(runs[target]))
+    for r, run_name in enumerate(target_runs):
+        run = run_name[0]
+        label = run_name[1]
+        color_species, ls_dict = plot_target(target, run, ax[t], None, color_species, ls_dict)
     
 ax[1].legend(loc=(1.01, 0.1), fontsize=10,
         ncol=2,

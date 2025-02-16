@@ -54,10 +54,18 @@ def get_bestfit_params(target,run):
 # run = 'lbl15_G2G3_3'
 # run = 'lbl12_G1G2G3_fastchem_1'
 
+# runs = dict(
+#     # TWA27A=['lbl11_G1G2G3_fastchem_0'],
+#     TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
+#             )
+
 runs = dict(
     # TWA27A=['lbl11_G1G2G3_fastchem_0'],
-    TWA28=['lbl11_G1G2G3_fastchem_0', 'lbl11_G2G3_fastchem_0', 'lbl11_G2_fastchem_0'],
-            )
+    TWA28=[
+        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
+        # ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+        ],
+    )
 colors = dict(TWA28={'data':'k', 
                      'model':['brown', 'darkgreen', 'darkblue'], 
                      'model_labels':['G1+G2+G3', 'G2+G3', 'G2'],
@@ -171,7 +179,9 @@ for t, target in enumerate(runs.keys()):
     if target == 'TWA28':
         plot_crires(ax)
         
-    for r, run in enumerate(runs[target]):
+    for r, run_name in enumerate(runs[target]):
+        run = run_name[0]
+        label = run_name[1]
         p, t, cf = get_PT(path, target, run)
         ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'][r], alpha=0.3, fill_cf=True,
                             label='TWA ' + target.replace('TWA', '') + f"\n({colors[target]['model_labels'][r]})",

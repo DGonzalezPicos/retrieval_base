@@ -251,15 +251,18 @@ def fig_bestfit_model(
         is_new_fig = False
 
     ylabel_spec = r'$F_\lambda$'+'\n'+r'$(\mathrm{erg\ s^{-1}\ cm^{-2}\ nm^{-1}})$'
+    f = getattr(d_spec, 'flux_unit_factor', 1.0)
+    wave = d_spec.wave
+    flux = d_spec.flux / f
     # if d_spec.high_pass_filtered:
     #     ylabel_spec = r'$F_\lambda$ (high-pass filtered)'
     if sharey:
         # Use the same ylim, also for multiple axes
-        ylim_spec = (np.nanmean(d_spec.flux)-3*np.nanstd(d_spec.flux), 
-                    np.nanmean(d_spec.flux)+3*np.nanstd(d_spec.flux)
+        ylim_spec = (np.nanmean(flux)-3*np.nanstd(flux), 
+                    np.nanmean(flux)+3*np.nanstd(flux)
                     )
-        ylim_res = (1/5*(ylim_spec[0]-np.nanmean(d_spec.flux)), 
-                    1/5*(ylim_spec[1]-np.nanmean(d_spec.flux))
+        ylim_res = (1/5*(ylim_spec[0]-np.nanmean(flux)), 
+                    1/5*(ylim_spec[1]-np.nanmean(flux))
                     )
     else:
         ylim_spec = None
@@ -294,7 +297,7 @@ def fig_bestfit_model(
             if mask_ij.any():
                 # Show the observed and model spectra
                 ax_spec.plot(
-                    d_spec.wave[i,j], d_spec.flux[i,j], 
+                    wave[i,j], flux[i,j], 
                     c='k', lw=0.5, label='Observation'
                     )
                 # if hasattr(d_spec, 'err'):
@@ -302,85 +305,80 @@ def fig_bestfit_model(
                 
                 # else:
                 if Cov is not None:
-                    err_ij = Cov[i,j].get_err(mask=mask_ij)
+                    err_ij = Cov[i,j].get_err(mask=mask_ij) / f
                 else:
-                    err_ij = d_spec.err[i,j]
+                    err_ij = d_spec.err[i,j] / f
                     
                 beta_ij = LogLike.beta[i,j]
                 err_ij *= beta_ij # optimal uncertainty scaling
                     
                 ax_spec.fill_between(
-                    d_spec.wave[i,j], y1=d_spec.flux[i,j]-err_ij, y2=d_spec.flux[i,j]+err_ij, 
-                color='k', alpha=0.2, lw=0,
-            )
+                    wave[i,j], y1=flux[i,j]-err_ij, y2=flux[i,j]+err_ij, 
+                    color='k', alpha=0.2, lw=0,
+                    )
 
             label = 'Best-fit model ' + \
                     r'$(\chi^2_\mathrm{red}$$=' + \
                     '{:.2f}'.format(LogLike.chi_squared_red) + \
                     r')$'
                     
-            m_flux = LogLike.m_flux[i,j]
+            m_flux = LogLike.m_flux[i,j] / f
             ax_spec.plot(
-                # d_spec.wave[i,j], LogLike.f[i,j] @ m_spec.flux[i,j], 
-                d_spec.wave[i,j], m_flux,
+                wave[i,j], m_flux,
                 c=bestfit_color, lw=1, label=label
                 )
             if m_spec.flux_envelope is not None:
                 ax_spec.plot(
-                    d_spec.wave[i,j], m_spec.flux_envelope[3,i,j], c='C0', lw=1
+                    wave[i,j], m_spec.flux_envelope[3,i,j], c='C0', lw=1
                     )
 
             if mask_ij.any():
 
                 # Plot the residuals
                 # res_ij = d_spec.flux[i,j] - LogLike.f[i,j] @ m_spec.flux[i,j]
-                res_ij = d_spec.flux[i,j] - m_flux
-                ax_res.plot(d_spec.wave[i,j], res_ij, c='k', lw=0.5)
+                res_ij = flux[i,j] - m_flux
+                ax_res.plot(wave[i,j], res_ij, c='k', lw=0.5)
                 ax_res.plot(
-                    [np.nanmin(d_spec.wave[i,j]), np.nanmax(d_spec.wave[i,j])], 
+                    [np.nanmin(wave[i,j]), np.nanmax(wave[i,j])], 
                     [0,0], c=bestfit_color, lw=1
                 )
                 ax_res.fill_between(
-                    d_spec.wave[i,j], y1=-err_ij, y2=err_ij, 
+                    wave[i,j], y1=-err_ij, y2=err_ij, 
                     color='k', alpha=0.2, lw=0,
                 )
 
                 if m_spec.flux_envelope is not None:
                     ax_res.plot(
-                        d_spec.wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.f[i,j]*m_spec.flux[i,j], 
+                        wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.f[i,j]*m_spec.flux[i,j], 
                         c='C0', lw=1
                         )
                     
                 if hasattr(m_spec, 'blackbody_disk_args'):
                     # try:
-                    bb = m_spec.blackbody_disk(**m_spec.blackbody_disk_args, wave_cm=d_spec.wave[i,j]*1e-7)
-                    ax_spec.plot(d_spec.wave[i,j], bb, c='orange', lw=1)
+                    bb = m_spec.blackbody_disk(**m_spec.blackbody_disk_args, wave_cm=wave[i,j]*1e-7) / f
+                    ax_spec.plot(wave[i,j], bb, c='orange', lw=1)
                         # print error message
-                        
-                    # except:
-                        # print(' - Could not plot blackbody disk...')
-                        # show error message 
-                        
+                         
+                    
+                
 
+                # Get the covariance matrix                
                 # Show the mean error
-                mean_err_ij = np.mean(Cov[i,j].err)
+                mean_err_ij = np.mean(err_ij)
                 ax_res.errorbar(
-                    np.nanmin(d_spec.wave[i,j])+8, 0, yerr=1*mean_err_ij, 
+                    np.nanmin(wave[i,j])+8, 0, yerr=1*mean_err_ij, 
                     fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
                     label=r'$\langle\sigma_{ij}\rangle$'
                     )
-
-                # Get the covariance matrix
-                cov = Cov[i,j].get_dense_cov()
                 
                 # Scale with the optimal uncertainty-scaling
-                cov *= LogLike.beta[i,j]**2
+                err_ij *= LogLike.beta[i,j]
 
                 # Get the mean error from the trace
-                mean_scaled_err_ij = np.mean(np.diag(np.sqrt(cov)))
+                mean_scaled_err_ij = np.mean(err_ij)
 
                 ax_res.errorbar(
-                    np.nanmin(d_spec.wave[i,j])+4, 0, yerr=1*mean_scaled_err_ij, 
+                    np.nanmin(wave[i,j])+4, 0, yerr=1*mean_scaled_err_ij, 
                     fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
                     #label=r'$\beta_{ij}\langle\sigma_{ij}\rangle$'
                     label=r'$\beta_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'

@@ -23,8 +23,9 @@ target = 'TWA28'
 # run = 'lbl15_G1G2G3_fastchem_GP_0'
 w_set='NIRSpec'
 
-runs = dict(TWA28='lbl15_G1G2G3_fastchem_GP_0',
-            TWA27A='lbl15_G1G2G3_fastchem_0')
+runs = dict(TWA28='lbl11_G2G3_fastchem_GP_0',
+            # TWA27A='lbl15_G1G2G3_fastchem_0',
+            )
 
 def load_data(target, run):
     cwd = os.getcwd()
@@ -85,18 +86,21 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     wave = d_spec.wave[idx]
     flux = d_spec.flux[idx] + offset
     err = d_spec.err[idx]
+    nans = np.isnan(flux)
     m_flux = m_spec.flux[idx] + offset
+    m_flux_nans = np.where(~nans, np.nan, m_flux)
     
     ax[0].plot(wave, flux, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
     ax[0].fill_between(wave, flux - err, flux + err, color=colors['data'], alpha=0.2)
     ax[0].plot(wave, m_flux, color=colors['model'], lw=lw, alpha=0.8, ls=ls, label=target)
+    ax[0].plot(wave, m_flux_nans, color='red', lw=lw, alpha=0.8, ls=ls)
     
     res = flux - m_flux
     if relative_residuals:
         res = res / flux
         err = err / flux
     ax[1].plot(wave, res, color=colors['model'], lw=lw, alpha=0.8)
-    ax[1].fill_between(wave, -err, err, color=colors['data'], alpha=0.1)
+    ax[1].fill_between(wave, -err, err, color=colors['model'], alpha=0.1)
     
     # if new_ax:
     ax[1].set_xlabel('Wavelength / nm')

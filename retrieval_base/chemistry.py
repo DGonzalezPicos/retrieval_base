@@ -143,7 +143,10 @@ class Chemistry:
         self.VMRs_posterior = {}
         self.VMRs_envelopes = {}
         # info = self.species_info
-        MMW = self.mass_fractions_posterior['MMW'].mean() if hasattr(self, 'mass_fractions_posterior') else self.mass_fractions['MMW']
+        if getattr(self, 'mass_fractions_posterior', None) is not None:
+            MMW = self.mass_fractions_posterior['MMW'].mean()
+        else:
+            MMW = self.mass_fractions['MMW']
         print(f'[Chemistry.get_VMRs_posterior] Calculating VMRs posterior and envelopes for {self.line_species}')
         for line_species_i in self.line_species:
             # key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]

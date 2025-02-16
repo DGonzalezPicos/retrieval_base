@@ -4,7 +4,7 @@ import subprocess as sp
 
 import shutil
 import os
-
+import numpy as np
 from retrieval_base.retrieval import prior_check, Retrieval
 from retrieval_base.spectrum_jwst import SpectrumJWST
 from retrieval_base.pRT_model import pRT_model
@@ -76,20 +76,28 @@ if args.pre_processing:
     if len(conf.mask_lines)>0:
         spec.mask_lines(conf.mask_lines)
         
-    for i in range(2):
-        spec.sigma_clip_reshaped(use_flux=False, 
-                                    # sigma=3, # KM bands
-                                    sigma=conf_data.get('sigma_clip', 2),
-                                    width=sigma_clip_width * (i+1)**2,
-                                    max_iter=5,
-                                    fun='median', 
-                                    fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
+    spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit_before_clipping.pdf', grid=True)
+
+    sigma = conf_data.get('sigma_clip', 2)
+    if sigma > 0.0:
+        for i in range(2):
+            spec.sigma_clip_reshaped(use_flux=False, 
+                                        # sigma=3, # KM bands
+                                        sigma=sigma,
+                                        width=sigma_clip_width * (i+1)**2,
+                                        max_iter=conf_data.get('sigma_clip_max_iter', 5),
+                                        fun='median_filter', 
+                                        fig_name=f'{conf.prefix}plots/sigma_clip_{i}.pdf')
+        
+    
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
-    
+    spec.apply_flux_unit_factor(conf_data.get('flux_unit_factor', 1.0)) # NEW 2025-02-06
+
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     
-    if conf.cov_mode == 'GP':
+    
+    if 'GP' in conf.cov_mode:
         spec.prepare_for_covariance()
         
     spec.gratings_list = conf.constant_params['gratings']
@@ -141,15 +149,16 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = False
+    random = True
+    np.random.seed(87654)
     random_label = '_random' if random else ''
     disk = True
     disk_label = '_disk' if disk else ''
-    ret = prior_check(conf=conf, n=3, 
+    ret = prior_check(conf=conf, n=5, 
                 random=random, 
                 get_contr=False,
                 remove_disk=not disk,
-                species_to_plot=['12CO', 'H2O', 'FeH','TiO','VO', 'C2H2', 'CrH','HCl','HF','Fe','Na','K','Ca','Ti'],
+                species_to_plot=['12CO', 'H2O', 'FeH','TiO','Na','K','Ca','Ti'],
                 fig_name=figs_path / f'prior_predictive_check{disk_label}{random_label}.pdf')
     
     if args.memory_profiler:
@@ -173,7 +182,9 @@ if args.copy_to_snellius:
     # if parent directory does not exist, create it on remote
     # sp.run(f'scp -r {local_dir} dgonzalezpi@snellius.surf.nl:{snellius_dir}', shell=True, check=True)
     # use rync -av --delete instead of scp -r
-    rsync_command = f'rsync -av --progress --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
+    # rsync_command = f'rsync -av --progress --delete {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
+    rsync_command = f'rsync -av --progress --partial --append-verify {local_dir}/ dgonzalezpi@snellius.surf.nl:{snellius_dir}/'
+
     try:
         sp.run(rsync_command, shell=True, check=True)
         
@@ -259,7 +270,7 @@ if args.evaluation:
 if args.ccf:
     run = run or conf.run
     print(f' ** Running cross-correlation function for {target} {run}..')
-    # command = f'python {path}/retrieval_base/cross_correlation.py -t {target} -r {run}'
+    command = f'python {path}/retrieval_base/cross_correlation.py -t {target} -r {run}'
     # print(f' ** Running command: {command}')
     sp.call(command, shell=True)
     print(f' ** Done with cross-correlation function for {target} {run}..')

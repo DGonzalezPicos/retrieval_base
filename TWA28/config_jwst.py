@@ -39,7 +39,7 @@ config_data = {
 
         'lbl_opacity_sampling' : lbl,
         'sigma_clip': 3,
-        'sigma_clip_max_iter': 5,
+        'sigma_clip_max_iter': 6,
         'sigma_clip_width': 31, # (2025-02-15): 31
         'Nedge': 40, # (2024-10-18): 20 --> 40
         'log_P_range': (-5,2),
@@ -180,7 +180,7 @@ species_wave = {
     'Ca': [[0, 2400.0]],
     'Ti': [[0, 2400.0]],
     # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
-    # 'Mg': [[0, 2600]],
+    'Mg': [[0, 2600]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
     # 'Mn': [[0, 2400.0]],
     'Fe': [[0, 2200]],
@@ -192,11 +192,11 @@ species_wave = {
     # 'V': [[0, 2300]],
     'CrH': [[0, 1400]],
     # 'TiH': [[0, 2000]], # add this back for final retrieval
-    # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
+    'CaH': [[0, 1400]], # add this back for final retrieval
     # 'AlH': [[1400, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
-    # 'ScH':[[0,1900.0]], # add this back for final retrieval
+    'ScH':[[0,1900.0]], # add this back for final retrieval
     'OH' : [[0, 4730.0]],
     'VO': [[0, 1450.0]],
     'TiO': [[0,1450], [4800, np.inf]],
@@ -477,13 +477,13 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 max_separation = 5
-trunc_dist = 3.0
+trunc_dist = 4.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
-    free_params['log_l_G'] = [(-0.2, 0.6), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.2, 0.4), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-1.0, 1.0), r'$\log\ a_{G}$' + f'({grating})']
+        free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
         # invgamma_params.append(f'a_{grating}_G')
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']

@@ -31,9 +31,11 @@ w_set='NIRSpec'
 #     TWA28='lbl11_G1G2G3_fastchem_0',
 #             )
 runs = dict(
+    TWA27A=[
+        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'), 
+        ],
     TWA28=[
-        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
-        # ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'), 
         ],
     )
 
@@ -138,6 +140,8 @@ def plot_chunk(d_spec, m_spec, idx=0, colors=None, ls='-', lw=1.0):
     
 MAD_dict = {}
 for target in runs.keys():
+    run = runs[target][0][0]
+    label = runs[target][0][1]
     d_spec, m_spec = d_specs[target], m_specs[target]
     
     residuals_no_slab = 0.0

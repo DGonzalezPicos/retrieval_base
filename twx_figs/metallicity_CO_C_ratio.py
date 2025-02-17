@@ -17,11 +17,11 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    # TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA27A=[('lbl11_G2G3_fastchem_GP_0', 'G2+G3')],
     TWA28=[
         # 'lbl11_G1G2G3_fastchem_0', 
-           ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
-           ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+           ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'), 
+        #    ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'),
            ],
             )
 colors = dict(TWA28={'data':'k', 
@@ -181,7 +181,7 @@ if target == 'TWA28':
                 histtype='stepfilled', 
                 edgecolor='k',
                 ls='--',
-                label='TWA 28 (CRIRES' + r'$\mathrm{^{+}}$)',
+                label='TWA 28\n(CRIRES' + r'$\mathrm{^{+}}$)',
                 )
         
         axi.hist(crires[key], 
@@ -226,7 +226,7 @@ axes[2].set_xlabel(r'$\mathrm{^{12}C}/\mathrm{^{13}C}$')
 axes[3].set_xlabel('log g')
 # add separation between columns of legend
 leg = axes[2].legend(loc='upper right', ncol=2, frameon=False,
-                     columnspacing=24)
+                     columnspacing=4)
 
 # remove the top, right and left spines
 
@@ -239,7 +239,7 @@ def remove_spines(ax):
 
 [remove_spines(axi) for axi in axes]
 
-xlims = [(0.40, 0.69), (-1, 1.0), (30, 150), (2.8, 4.5)]
+xlims = [(0.45, 0.70), (-0.2, 0.6), (30, 120), (3, 5.0)]
 for axi, xlim in zip(axes, xlims):
     axi.set_xlim(xlim)
 # TODO: plot each target on a separate row, compare freechem and fastchem??

@@ -12,8 +12,8 @@ lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h', 'g395h']
-# gratings = ['g140h', 'g235h', 'g395h']
+# gratings = ['g235h', 'g395h']
+gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -47,7 +47,7 @@ config_data = {
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
-        'flux_unit_factor': 1e18, # DGP (2025-02-06): new parameter
+        'flux_unit_factor': 1e20, # DGP (2025-02-06): new parameter
         }, 
     }
 
@@ -477,17 +477,17 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 max_separation = 5
-trunc_dist = 4.0
+trunc_dist = 3.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
-    free_params['log_l_G'] = [(-0.2, 0.4), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.2, 0.6), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
+        free_params[f'log_a_{grating}_G'] = [(-1.0, 1.0), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
         # invgamma_params.append(f'a_{grating}_G')
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
-        constant_params[f'a_{grating}_G'] = 1.0
+        # constant_params[f'a_{grating}_G'] = 1.0
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 

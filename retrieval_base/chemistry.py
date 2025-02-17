@@ -146,7 +146,10 @@ class Chemistry:
         if getattr(self, 'mass_fractions_posterior', None) is not None:
             MMW = self.mass_fractions_posterior['MMW'].mean()
         else:
-            MMW = self.mass_fractions['MMW']
+            
+            # MMW = self.mass_fractions['MMW']
+            print(f'[Chemistry.get_VMRs_posterior] Mass fractions not yet evaluated')
+            return self
         print(f'[Chemistry.get_VMRs_posterior] Calculating VMRs posterior and envelopes for {self.line_species}')
         for line_species_i in self.line_species:
             # key_i = [key_i for key_i in info.keys() if info[key_i][0]==line_species_i][0]

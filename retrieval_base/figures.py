@@ -232,6 +232,7 @@ def fig_bestfit_model(
         prefix=None, 
         w_set='',
         sharey=False,
+        relative_residuals=False,
         ):
 
     if (ax_spec is None) and (ax_res is None):
@@ -337,13 +338,18 @@ def fig_bestfit_model(
                 # Plot the residuals
                 # res_ij = d_spec.flux[i,j] - LogLike.f[i,j] @ m_spec.flux[i,j]
                 res_ij = flux[i,j] - m_flux
+                err_res_ij = err_ij
+                if relative_residuals:
+                    res_ij = res_ij / flux[i,j]
+                    err_res_ij = err_ij / flux[i,j]
+                    
                 ax_res.plot(wave[i,j], res_ij, c='k', lw=0.5)
                 ax_res.plot(
                     [np.nanmin(wave[i,j]), np.nanmax(wave[i,j])], 
                     [0,0], c=bestfit_color, lw=1
                 )
                 ax_res.fill_between(
-                    wave[i,j], y1=-err_ij, y2=err_ij, 
+                    wave[i,j], y1=-err_res_ij, y2=err_res_ij, 
                     color='k', alpha=0.2, lw=0,
                 )
 
@@ -365,6 +371,8 @@ def fig_bestfit_model(
                 # Get the covariance matrix                
                 # Show the mean error
                 mean_err_ij = np.mean(err_ij)
+                if relative_residuals:
+                    mean_err_ij = np.mean(err_res_ij)
                 ax_res.errorbar(
                     np.nanmin(wave[i,j])+8, 0, yerr=1*mean_err_ij, 
                     fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
@@ -376,6 +384,8 @@ def fig_bestfit_model(
 
                 # Get the mean error from the trace
                 mean_scaled_err_ij = np.mean(err_ij)
+                if relative_residuals:
+                    mean_scaled_err_ij = np.mean(err_res_ij)
 
                 ax_res.errorbar(
                     np.nanmin(wave[i,j])+4, 0, yerr=1*mean_scaled_err_ij, 
@@ -383,6 +393,8 @@ def fig_bestfit_model(
                     #label=r'$\beta_{ij}\langle\sigma_{ij}\rangle$'
                     label=r'$\beta_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
                     )
+                MAD = np.nanmedian(np.abs(res_ij))
+                ax_res.set(ylim=(-5.0*MAD, 5.0*MAD))
 
             if i==0 and j==0:
                 ax_spec.legend(

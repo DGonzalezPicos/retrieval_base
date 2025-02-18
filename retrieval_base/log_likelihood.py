@@ -100,7 +100,7 @@ class LogLikelihood:
                         kernel = lck.correlated_kernel(
                                                     # length_scale=Cov[i,j].l, # same length scale as the global covariance matrixc
                                                     trunc_dist=self.lck_kwargs.get('trunc_dist', 4),
-                                                       max_value=100.0 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
+                                                       max_value=25.0 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
                        
                         if debug_lck:
                             print(f' [LogLikelihood.__call__]: Cov.cov: min={Cov[i,j].cov.min():.2e} max={Cov[i,j].cov.max():.2e} mean={Cov[i,j].cov.mean():.2e}')
@@ -121,7 +121,7 @@ class LogLikelihood:
                     Cov[i,j].get_cholesky(debug=debug_lck)
                     # if np.all(Cov[i,j].cov_cholesky == 0):
                     if Cov[i,j].cholesky_failed:
-                        print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j}')
+                        print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j} with l_G {Cov[i,j].l:.2e} and a_G {Cov[i,j].a:.2e}')
                         self.ln_L = -np.inf
                         return self.ln_L
                     # print(f' Cholesky shape {Cov[i,j].cov_cholesky.shape}')

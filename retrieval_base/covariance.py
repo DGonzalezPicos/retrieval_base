@@ -209,7 +209,8 @@ class GaussianProcesses(Covariance):
             if isinstance(params[f'a_{grating}_G'], float):
                 # print(f' --> Adding RBF kernel with a={params[f"a_{grating}_G"]}, l={params["l_G"]}')
                 self.a = params[f'a_{grating}_G']
-                self.l = params['l_G']
+                self.l = params.get('l_G', params.get(f'log_l_{grating}_G', None))
+                assert self.l is not None, f' [GaussianProcesses.__call__]: l_{grating}_G parameter not found in the parameter keys'
                 # print(f' --> Adding RBF kernel with a={a}, l={l}')
                 self.add_RBF_kernel(
                     a = self.a, 

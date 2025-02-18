@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 0
+index = 1
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -47,7 +47,7 @@ config_data = {
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
-        'flux_unit_factor': 1e20, # DGP (2025-02-06): new parameter
+        'flux_unit_factor': 1e18, # DGP (2025-02-06): new parameter
         }, 
     }
 
@@ -161,7 +161,7 @@ species_wave = {
     '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
     '13CO': [[2200, 3200], [4200, 5400]],
     'C18O': [[2200, 3200], [4200, 5400]],
-    # 'C17O': [[4200, 5400]], # TODO: add this back for final retrieval
+    'C17O': [[4200, 5400]], # 
     'H2O': [[0.0, np.inf]],
     'H2O_181': [[0.0, np.inf]],
     
@@ -179,7 +179,7 @@ species_wave = {
     'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
     'Ti': [[0, 2400.0]],
-    # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
+    'Sc': [[0, 2600]], #TODO: testing this...
     'Mg': [[0, 2600]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
     # 'Mn': [[0, 2400.0]],
@@ -192,11 +192,11 @@ species_wave = {
     # 'V': [[0, 2300]],
     'CrH': [[0, 1400]],
     # 'TiH': [[0, 2000]], # add this back for final retrieval
-    'CaH': [[0, 1400]], # add this back for final retrieval
+    # 'CaH': [[0, 1400]], # Feb 18: not detected...
     # 'AlH': [[1400, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
-    'ScH':[[0,1900.0]], # add this back for final retrieval
+    # 'ScH':[[0,1900.0]], # Feb 18: not detected...
     'OH' : [[0, 4730.0]],
     'VO': [[0, 1450.0]],
     'TiO': [[0,1450], [4800, np.inf]],
@@ -477,17 +477,23 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 # Covariance parameters
 ####################################################################################
 max_separation = 5
-trunc_dist = 4.0
+trunc_dist = 3.0
 if cov_mode == 'GP' or cov_mode == 'SGP':
-    free_params['log_l_G'] = [(-0.2, 0.4), r'$\log\ l_G$']
-    max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
+    
+    log_l_prior = (-0.2, 0.6)
+    # free_params['log_l_G'] = [(-0.2, 0.8), r'$\log\ l_G$']
+    # max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
+        # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
         # invgamma_params.append(f'a_{grating}_G')
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
-        # constant_params[f'a_{grating}_G'] = 1.0
+        constant_params[f'a_{grating}_G'] = 1.0
+        free_params[f'log_l_{grating}_G'] = [log_l_prior, r'$\log\ l_{G}$' + f'({grating})']
+    
+    max_separation = 10.0**log_l_prior[1] * trunc_dist
+    
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
@@ -535,7 +541,7 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
+evidence_tolerance = 0.5 if not testing else 0.5
 n_live_points = 800 if not testing else 400
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1

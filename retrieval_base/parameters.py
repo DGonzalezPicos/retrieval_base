@@ -291,9 +291,17 @@ class Parameters:
     def read_uncertainty_params(self):
         
         if 'GP' in self.cov_mode:
-            assert 'l_G' in self.params.keys(), ' [Parameters.read_uncertainty_params]: l_G parameter not found in the parameter keys'
+            # assert 'l_G' in self.params.keys(), ' [Parameters.read_uncertainty_params]: l_G parameter not found in the parameter keys'
+            if not 'l_G' in self.params.keys():
+                check_l_G = True
+            else:
+                check_l_G = False
+                
             for grating in self.params['gratings']:
                 assert f'a_{grating}_G' in self.params.keys(), f' [Parameters.read_uncertainty_params]: a_{grating}_G parameter not found in the parameter keys'
+                if check_l_G:
+                    assert f'log_l_{grating}_G' in self.params.keys(), f' [Parameters.read_uncertainty_params]: log_l_{grating}_G parameter not found in the parameter keys'
+                
             
         # for grating in self.gratings:
             

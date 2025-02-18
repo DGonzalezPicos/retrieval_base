@@ -28,7 +28,7 @@ import matplotlib.patheffects as path_effects
 
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
-def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, fl=1.0, **kwargs):
+def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, fl=1.0, cache=True, **kwargs):
     
     
     assert len(ax) == 2, f'Lenght of ax must be 2, not {len(ax)}'
@@ -103,11 +103,22 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, f
         print(f' flux.shape = {flux.shape}')
         
         err = np.ones_like(wave) * np.nan
-        mask = ret.d_spec['spirou'].mask_isfinite[:,0]
+        mask = np.squeeze(ret.d_spec['spirou'].mask_isfinite)
+        
+        # print(f' s.shape = {s.shape}')
+        # print(f'err.shape = {err.shape}')
+        # print(f'mask.shape = {mask.shape}')
+        # if debug:
+        #     breakpoint()
         # for i in range(3):
             # err_i = np.ones_like(wave[order]) * np.nan
-        
-        err[order, mask[order]] = ret.Cov['spirou'][order][0].err * s[order]
+        for ii in range(ret.d_spec['spirou'].n_orders):
+            # this is necessary to properly store the err for each order
+            err_order = err[ii]
+            err_order[mask[ii]] = ret.Cov['spirou'][ii][0].err * s[ii,0]
+            assert np.sum(np.isnan(err_order)) < np.size(err_order), f'WARNING: {target}: All err are NaN for order {ii}'
+            print(f'[DEBUG] sum(nans(err_order)) = {np.sum(np.isnan(err_order))}')
+            err[ii] = err_order
         
         # save file
         np.save(bestfit_spec_file, np.array([wave, flux, err, mask, m, spline_cont]))
@@ -229,6 +240,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         # offset = 0.42*(len(names)-t)
         offset = 0.54*(len(my_targets)-my_targets.index(target)-1)
         fl  = 1.0
+        cache = kwargs.pop('cache', True)
         for order in orders:
             fl = main(target, ax=ax, offset=offset, order=order,
                     run=None, 
@@ -237,7 +249,11 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
                     divide_spline=True,
                     offset_x=-2*count,
                     fl=fl,
-                    **kwargs)   
+                    cache=cache if order == 0 else True,
+                    **kwargs)
+            if debug:
+                print(f'Checkpoint {target} {order}')
+                break
         
         ax[0].text(s=spt[name].split('.')[0].replace('V',''), x=text_x[1]-3, y=1.02+offset, transform=ax[0].transData,
                     color=color, fontsize=7, weight='bold', path_effects=[path_effects.withStroke(linewidth=2, foreground='w')])
@@ -270,6 +286,8 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     ax[0].set_ylabel('Flux + offset')
     ax[1].set_ylabel('Residuals', labelpad=0)
     # fig_name = base_path + 'paper/latex/figures/best_fit_model' + "-".join(orders_str) + ".pdf"
+    if debug:
+        return
     fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
     fig.savefig(fig_name, bbox_inches='tight')
     print(f'Figure saved as {fig_name}')
@@ -284,8 +302,9 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
 #           (2358.0, 2438.),
 #           (2435.0, 2510.0),
 # ]
+debug = True
 order = 0
 # xlim = (2282, 2364) # for order 0
 xlim = (2270, 2500) # for all orders
 text_x = (xlim[0]+1.5, xlim[1]-9)
-plot([0,1,2], text_x=text_x, xlim=xlim)
+plot([0,1,2], text_x=text_x, xlim=xlim, cache=False)

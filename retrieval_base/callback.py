@@ -261,23 +261,23 @@ class CallBack:
                 print(f'Error in fig_VMR: {e}')
                 
                  
-            try: # FIXME: plotting C/O, Fe/H runs into issues...
+            # try: # FIXME: plotting C/O, Fe/H runs into issues...
                 
-                # if hasattr(self.Chem, 'VMRs_posterior'):
-                if hasattr(self.Chem, 'mass_fractions_posterior'):
-                    print(f'[CallBack] plotting figs.fig_chemistry')
-                    self.Chem.get_VMRs_posterior()
-                    figs.fig_chemistry(Chem=self.Chem,
-                                            fig=None,
-                                            # species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species],
-                                            color=self.bestfit_color,
-                                            smooth=None,
-                                            fontsize=14,
-                                            fig_name=self.prefix+f'plots/chemistry.pdf',
-                                            fig_size=(24,24),
-                    )
-            except Exception as e:
-                print(f'Error in fig_chemistry: {e}')
+            #     # if hasattr(self.Chem, 'VMRs_posterior'):
+            #     if hasattr(self.Chem, 'mass_fractions_posterior'):
+            #         print(f'[CallBack] plotting figs.fig_chemistry')
+            #         self.Chem.get_VMRs_posterior()
+            #         figs.fig_chemistry(Chem=self.Chem,
+            #                                 fig=None,
+            #                                 # species_to_plot=[self.Chem.pRT_name_dict[k] for k in self.Chem.line_species],
+            #                                 color=self.bestfit_color,
+            #                                 smooth=None,
+            #                                 fontsize=14,
+            #                                 fig_name=self.prefix+f'plots/chemistry.pdf',
+            #                                 fig_size=(24,24),
+            #         )
+            # except Exception as e:
+            #     print(f'Error in fig_chemistry: {e}')
 
 
         # Remove attributes from memory
@@ -619,7 +619,9 @@ class CallBack:
                 ax_spec=ax_spec[i], 
                 ax_res=ax_res[i], 
                 prefix=self.prefix, 
-                xlabel=['Wavelength (nm)', None][i]
+                xlabel=['Wavelength (nm)', None][i],
+                sharey=True,
+                relative_residuals=True,
                 )
 
         # ax_VMR = fig.add_axes([0.65,0.43,0.1,0.22])
@@ -686,5 +688,6 @@ class CallBack:
                 ax_spec=None, 
                 ax_res=None, 
                 prefix=self.prefix, 
-                w_set=w_set
+                w_set=w_set,
+                relative_residuals=True,
                 )

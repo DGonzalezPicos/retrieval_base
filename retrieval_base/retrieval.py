@@ -264,6 +264,9 @@ class Retrieval:
                     if self.Param.cov_mode == None:
                         self.Param.cov_mode = 'None'
                     if 'GP' in self.Param.cov_mode:
+                        if not hasattr(self.d_spec[w_set], 'separation'):
+                            print(f' No separation found for {w_set}')
+                            continue
                         separation_ij = self.d_spec[w_set].separation[i,j]
                         err_eff_ij = self.d_spec[w_set].err_eff[i,j]
                         
@@ -314,7 +317,8 @@ class Retrieval:
             n_samples_to_use=2000, 
             prefix=self.conf.prefix, 
             posterior_color='k', 
-            bestfit_color='limegreen', 
+            # bestfit_color='limegreen', 
+            bestfit_color='darkorange', 
             species_to_plot_VMR=self.conf.species_to_plot_VMR, 
             species_to_plot_CCF=self.conf.species_to_plot_CCF, 
             )

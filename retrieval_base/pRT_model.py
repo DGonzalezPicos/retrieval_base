@@ -497,8 +497,10 @@ class pRT_model:
             if not hasattr(self, 'fwhms'):
                 self.gratings = set(list(self.params['gratings']))
                 self.load_nirspec_gratings()
-                
-            self.fwhms_i = np.interp(wave_i, self.wave_fwhms[grating], self.fwhms[grating])
+            if grating in self.wave_fwhms.keys():
+                self.fwhms_i = np.interp(wave_i, self.wave_fwhms[grating], self.fwhms[grating])
+            else:
+                self.fwhms_i = 100.0 * np.ones_like(wave_i) # manually set to 100 km/s
             # print(f'{i}: {grating} fwhm idx(0,mid,-1) = {fwhms[0]:.1f}, {fwhms[len(fwhms)//2]:.1f}, {fwhms[-1]:.1f}')
             # assert isinstance(fwhms, np.ndarray), f'fwhms has type {type(fwhms)}'
                 

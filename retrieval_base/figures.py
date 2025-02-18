@@ -255,20 +255,9 @@ def fig_bestfit_model(
     f = getattr(d_spec, 'flux_unit_factor', 1.0)
     wave = d_spec.wave
     flux = d_spec.flux / f
-    # if d_spec.high_pass_filtered:
-    #     ylabel_spec = r'$F_\lambda$ (high-pass filtered)'
-    if sharey:
-        # Use the same ylim, also for multiple axes
-        ylim_spec = (np.nanmean(flux)-3*np.nanstd(flux), 
-                    np.nanmean(flux)+3*np.nanstd(flux)
-                    )
-        ylim_res = (1/5*(ylim_spec[0]-np.nanmean(flux)), 
-                    1/5*(ylim_spec[1]-np.nanmean(flux))
-                    )
-    else:
-        ylim_spec = None
-        ylim_res = None
 
+    ylim_res = None
+    mad_list = []
     for i in range(d_spec.n_orders):
 
         if is_new_fig:
@@ -289,8 +278,13 @@ def fig_bestfit_model(
         ax_spec.set(xlim=xlim, xticks=[])
         ax_res.set(xlim=xlim)
         if sharey:
+            ylim_spec = np.nanquantile(flux, q=[0.001, 0.999]) * np.array([1-0.10, 1+0.05])
+
             ax_spec.set(ylim=ylim_spec)
             ax_res.set(ylim=ylim_res)
+        else:
+            ylim_i = np.nanquantile(flux[i,:], q=[0.001, 0.999]) * np.array([1-0.05, 1+0.05])
+            ax_spec.set(ylim=ylim_i)
 
         for j in range(d_spec.n_dets):
         
@@ -326,86 +320,110 @@ def fig_bestfit_model(
             m_flux = LogLike.m_flux[i,j] / f
             ax_spec.plot(
                 wave[i,j], m_flux,
-                c=bestfit_color, lw=1, label=label
+                c=bestfit_color, lw=1, label=label, alpha=0.9,
                 )
             if m_spec.flux_envelope is not None:
                 ax_spec.plot(
                     wave[i,j], m_spec.flux_envelope[3,i,j], c='C0', lw=1
                     )
 
-            if mask_ij.any():
+            # if mask_ij.any():
 
-                # Plot the residuals
-                # res_ij = d_spec.flux[i,j] - LogLike.f[i,j] @ m_spec.flux[i,j]
-                res_ij = flux[i,j] - m_flux
-                err_res_ij = err_ij
-                if relative_residuals:
-                    res_ij = res_ij / flux[i,j]
-                    err_res_ij = err_ij / flux[i,j]
-                    
-                ax_res.plot(wave[i,j], res_ij, c='k', lw=0.5)
+            # Plot the residuals
+            # res_ij = d_spec.flux[i,j] - LogLike.f[i,j] @ m_spec.flux[i,j]
+            res_ij = flux[i,j] - m_flux
+            err_res_ij = err_ij
+            if relative_residuals:
+                res_ij = res_ij / flux[i,j]
+                err_res_ij = err_ij / flux[i,j]
+                
+            ax_res.plot(wave[i,j], res_ij, c='k', lw=0.5)
+            ax_res.plot(
+                [np.nanmin(wave[i,j]), np.nanmax(wave[i,j])], 
+                [0,0], c=bestfit_color, lw=1
+            )
+            ax_res.fill_between(
+                wave[i,j], y1=-err_res_ij, y2=err_res_ij, 
+                color='k', alpha=0.2, lw=0,
+            )
+
+            if m_spec.flux_envelope is not None:
                 ax_res.plot(
-                    [np.nanmin(wave[i,j]), np.nanmax(wave[i,j])], 
-                    [0,0], c=bestfit_color, lw=1
-                )
-                ax_res.fill_between(
-                    wave[i,j], y1=-err_res_ij, y2=err_res_ij, 
-                    color='k', alpha=0.2, lw=0,
-                )
-
-                if m_spec.flux_envelope is not None:
-                    ax_res.plot(
-                        wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.f[i,j]*m_spec.flux[i,j], 
-                        c='C0', lw=1
-                        )
-                    
-                if hasattr(m_spec, 'blackbody_disk_args'):
-                    # try:
-                    bb = m_spec.blackbody_disk(**m_spec.blackbody_disk_args, wave_cm=wave[i,j]*1e-7) / f
-                    ax_spec.plot(wave[i,j], bb, c='orange', lw=1)
-                        # print error message
-                         
-                    
-                
-
-                # Get the covariance matrix                
-                # Show the mean error
-                mean_err_ij = np.mean(err_ij)
-                if relative_residuals:
-                    mean_err_ij = np.mean(err_res_ij)
-                ax_res.errorbar(
-                    np.nanmin(wave[i,j])+8, 0, yerr=1*mean_err_ij, 
-                    fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
-                    label=r'$\langle\sigma_{ij}\rangle$'
+                    wave[i,j], m_spec.flux_envelope[3,i,j] - LogLike.f[i,j]*m_spec.flux[i,j], 
+                    c='C0', lw=1
                     )
                 
-                # Scale with the optimal uncertainty-scaling
-                err_ij *= LogLike.beta[i,j]
+            if hasattr(m_spec, 'blackbody_disk_args'):
+                # try:
+                bb = m_spec.blackbody_disk(**m_spec.blackbody_disk_args, wave_cm=wave[i,j]*1e-7) / f
+                ax_spec.plot(wave[i,j], bb, c='orange', lw=1)
+                    # print error message
+                        
+                
+            
 
-                # Get the mean error from the trace
-                mean_scaled_err_ij = np.mean(err_ij)
-                if relative_residuals:
-                    mean_scaled_err_ij = np.mean(err_res_ij)
+            # Get the covariance matrix                
+            # Show the mean error
+            mean_err_ij = np.mean(err_ij)
+            if relative_residuals:
+                mean_err_ij = np.mean(err_res_ij)
+            ax_res.errorbar(
+                np.nanmin(wave[i,j])+8, 0, yerr=1*mean_err_ij, 
+                fmt='none', lw=1, ecolor='k', capsize=2, color='k', 
+                label=r'$\langle\sigma_{ij}\rangle$'
+                )
+            
+            # Scale with the optimal uncertainty-scaling
+            err_ij *= LogLike.beta[i,j]
 
-                ax_res.errorbar(
-                    np.nanmin(wave[i,j])+4, 0, yerr=1*mean_scaled_err_ij, 
-                    fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
-                    #label=r'$\beta_{ij}\langle\sigma_{ij}\rangle$'
-                    label=r'$\beta_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
-                    )
-                MAD = np.nanmedian(np.abs(res_ij))
-                ax_res.set(ylim=(-5.0*MAD, 5.0*MAD))
+            # Get the mean error from the trace
+            mean_scaled_err_ij = np.mean(err_ij)
+            if relative_residuals:
+                mean_scaled_err_ij = np.mean(err_res_ij)
 
+            ax_res.errorbar(
+                np.nanmin(wave[i,j])+4, 0, yerr=1*mean_scaled_err_ij, 
+                fmt='none', lw=1, ecolor=bestfit_color, capsize=2, color=bestfit_color, 
+                #label=r'$\beta_{ij}\langle\sigma_{ij}\rangle$'
+                label=r'$\beta_{ij}\cdot\langle\mathrm{diag}(\sqrt{\Sigma_{ij}})\rangle$'
+                )
+            MAD = np.nanmedian(np.abs(res_ij))
+            # add text in ax_res with MAD in %
+            text_x = 0.005
+            text_s = 'MAD='
+            if sharey and i>0:
+                text_x += (1.0 / d_spec.n_orders) * i
+                text_s = ' '
+            ax_res.text(
+                text_x, 0.95, 
+                f'{text_s}{100.0 * MAD:.1f}%', 
+                transform=ax_res.transAxes, 
+                ha='left', va='top'
+                )
+            # ax_res.set(ylim=(-6.0*MAD, 6.0*MAD))
+            # ylim_res_list.append(MAD)
+            if sharey:
+                mad_list.append(MAD)
+            else:
+                ax_res.set(ylim=(-6.0*MAD, 6.0*MAD))
+            
             if i==0 and j==0:
                 ax_spec.legend(
                     loc='upper right', ncol=2, fontsize=8, handlelength=1, 
                     framealpha=0.7, handletextpad=0.3, columnspacing=0.8
                     )
+                
+            # Set the labels for ALL axes           
+            ax_spec.set(ylabel=ylabel_spec)
+            ax_res.set(xlabel=xlabel, ylabel='Res.' if not relative_residuals else 'Relative Res.')
 
-    # Set the labels for the final axis
-    ax_spec.set(ylabel=ylabel_spec)
-    ax_res.set(xlabel=xlabel, ylabel='Res.')
-
+                
+    # ylim_res_mad = np.max
+    # ax_res.set(ylim=(ylim_res_min, ylim_res_max))
+    if sharey:
+        mad_max = np.max(mad_list)
+        ax_res.set(ylim=(-6.0*mad_max, 6.0*mad_max))
+   
     if is_new_fig and (prefix is not None):
         plt.savefig(prefix+f'plots/bestfit_spec_{w_set}.pdf')
         print(f' - Saved {prefix}plots/bestfit_spec_{w_set}.pdf')

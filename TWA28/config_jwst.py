@@ -483,16 +483,16 @@ length_scale_factors = {k:1.0 for k in gratings}
 if cov_mode == 'GP' or cov_mode == 'SGP':
     
     # log_l_prior_gratings = {'g140h': (-0.4, 0.18), 'g235h': (-0.4, 0.42), 'g395h': (-0.4, 0.64)}
-    free_params['log_l_G'] = [(-0.40, 0.20), r'$\log\ l_G$']
-    # max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
+    free_params['log_l_G'] = [(-0.40, 0.60), r'$\log\ l_G$']
+    max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        free_params[f'log_a_{grating}_G'] = [(-1.0, 0.6), r'$\log\ a_{G}$' + f'({grating})']
+        # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.6), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
         # invgamma_params.append(f'a_{grating}_G')
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
         length_scale_factors[grating] = cenwave_gratings[grating] / cenwave_gratings['g140h']
-        # constant_params[f'a_{grating}_G'] = 1.0
+        constant_params[f'a_{grating}_G'] = 1.0
         # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
         # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
     
@@ -513,7 +513,7 @@ lck_kwargs = dict(
     use_lck=True,
     lck_width=4,
     n_max_regions=6,
-    sigma_threshold=8.0,
+    sigma_threshold=7.0,
     scale_GP_amp=False,
     trunc_dist = trunc_dist
 )

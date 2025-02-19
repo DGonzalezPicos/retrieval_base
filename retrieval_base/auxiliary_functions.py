@@ -797,3 +797,38 @@ def solar_metallicity(C, H, asplund_year=2021):
     
     asplund = {2021: 8.46, 2009: 8.43}
     return np.log10(C/H) - (asplund[asplund_year] - 12.0)
+
+def load_posterior(target, run):
+    from retrieval_base.config import Config
+    from retrieval_base.retrieval import Retrieval
+    path = get_path(return_pathlib=True)
+    config_file = 'config_jwst.txt'
+    w_set='NIRSpec'
+    
+    cwd = os.getcwd()
+    if target not in cwd:
+        os.chdir(f'{path}/{target}')
+        print(f'Changed directory to {target}')
+
+    conf = Config(path=path, target=target, run=run)(config_file)
+    
+    posterior_file = f'{conf.prefix}data/bestfit_posteriors.npy'
+    if not os.path.exists(posterior_file):
+        
+        ret = Retrieval(
+                conf=conf,
+                evaluation=False,
+                )
+        _, posterior = ret.PMN_analyze()
+        np.save(posterior_file, posterior)
+        print(f'Saved posterior to {posterior_file}')
+        
+        
+    posterior = np.load(posterior_file)
+    print(f'Loaded posterior from {posterior_file}')
+        
+    free_params_keys = conf.free_params.keys()
+    assert len(free_params_keys) == posterior.shape[1]
+    return dict(zip(free_params_keys, posterior.T))
+        
+

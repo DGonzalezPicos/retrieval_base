@@ -483,7 +483,7 @@ length_scale_factors = {k:1.0 for k in gratings}
 if cov_mode == 'GP' or cov_mode == 'SGP':
     
     # log_l_prior_gratings = {'g140h': (-0.4, 0.18), 'g235h': (-0.4, 0.42), 'g395h': (-0.4, 0.64)}
-    free_params['log_l_G'] = [(-0.40, 0.60), r'$\log\ l_G$']
+    free_params['log_l_G'] = [(-0.40, 0.20), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:

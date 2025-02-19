@@ -27,11 +27,9 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    # TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA27A=['lbl11_G1G2G3_fastchem_0'],
     TWA28=[
-        # 'lbl11_G1G2G3_fastchem_0', 
-           ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
-        #    ('lbl11_G2G3_fastchem_0', 'G2+G3'),
+        'lbl11_G1G2G3_fastchem_0', 
            ],
             )
 
@@ -66,20 +64,15 @@ def get_VMR(target, run, cache=True):
 
     VMR_envelopes_file = envelopes_dir / 'VMR_envelopes.npy'
     VMR_labels_file = envelopes_dir / 'VMR_labels.npy'
-    
+
     check_dir(target)
     conf = Config(path=path, target=target, run=run)(config_file)
+    
+    posterior_file = f'{conf.prefix}data/bestfit_posteriors.npy'
+    
+    exist = (VMR_envelopes_file.exists() and VMR_labels_file.exists() and PT_envelopes_file.exists() and os.path.exists(posterior_file))
 
-    if cache and VMR_envelopes_file.exists() and VMR_labels_file.exists():
-        assert PT_envelopes_file.exists(), 'PT envelopes not found'
-        print(f' --> Found {VMR_envelopes_file}')
-        VMR_envelopes_data = np.load(VMR_envelopes_file)
-        VMR_labels_data = np.load(VMR_labels_file)
-        # create a dictionary with the VMRs
-        VMR_envelopes = dict(zip(VMR_labels_data, VMR_envelopes_data))
-        PT_envelopes = np.load(PT_envelopes_file)
-        return VMR_envelopes, PT_envelopes, conf
-    else:
+    if not cache or not exist:
         print(f' --> Calculating VMRs for {target} {run}')
         check_dir(target)
         conf = Config(path=path, target=target, run=run)(config_file)        
@@ -90,6 +83,8 @@ def get_VMR(target, run, cache=True):
             )
         
         bestfit_params, posterior = ret.PMN_analyze()
+        np.save(posterior_file, posterior)
+        print(f' --> Saved posterior to {posterior_file}')
         bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
         # bestfit_params_dict['log_SiO'] = -6.0
 
@@ -105,7 +100,22 @@ def get_VMR(target, run, cache=True):
 
         # save PT envelopes as npy file with pressure and temperature envelopes
         PT_envelopes = np.vstack([ret.PT.pressure, ret.PT.temperature_envelopes, ret.PT.int_contr_em['NIRSpec']])
-        return np.array(ret.Chem.VMR_envelopes), PT_envelopes, conf
+        # return np.array(ret.Chem.VMRs_envelopes), PT_envelopes, conf
+        
+    print(f' --> Found {VMR_envelopes_file}')
+    VMR_envelopes_data = np.load(VMR_envelopes_file)
+    VMR_labels_data = np.load(VMR_labels_file)
+    # create a dictionary with the VMRs
+    VMR_envelopes = dict(zip(VMR_labels_data, VMR_envelopes_data))
+    PT_envelopes = np.load(PT_envelopes_file)
+    
+    free_params_keys = conf.free_params.keys()
+    # print(f' --> free_params_keys: {free_params_keys}')
+    # print(f' --> VMR_envelopes.keys: {VMR_envelopes.keys()}')
+    posterior = dict(zip(free_params_keys, np.load(posterior_file).T))
+    
+    alpha_params = {k:posterior[f'alpha_{k}'] for k in VMR_labels_data if f'alpha_{k}' in free_params_keys}
+    return VMR_envelopes, PT_envelopes, conf, alpha_params
     
 fig, ax = plt.subplots(1,2, figsize=(7,4), sharey=True, sharex=True,
                        gridspec_kw=dict(wspace=0.05))
@@ -113,8 +123,9 @@ fig, ax = plt.subplots(1,2, figsize=(7,4), sharey=True, sharex=True,
 icf_colors = dict(TWA28='orange',
                   TWA27A='#0a74da')
 
-def plot_target(target, run, ax, ax_icf=None, color_species={}, ls_dict={}):
-    VMR_envelopes, PT_envelopes, conf = get_VMR(target, run)
+def plot_target(target, run, ax, ax_icf=None, plot_species='all', color_species={}, ls_dict={}):
+    VMR_envelopes, PT_envelopes, conf, alpha_params = get_VMR(target, run)
+    # print(f' --> alpha_params: {alpha_params}')
     tex_labels = {k[4:]:v[0][-1].replace("\\log\\ ", "") for k,v in conf.opacity_params.items()}
     pressure = PT_envelopes[0]
     temperature = PT_envelopes[1:-1]
@@ -125,38 +136,45 @@ def plot_target(target, run, ax, ax_icf=None, color_species={}, ls_dict={}):
         ax_icf.set_xlim(-14, 0.)
 
         
-    ax_icf.plot(-icf, pressure, color='black', lw=1.5, alpha=0.65, ls=':')
+    ax_icf.plot(-icf, pressure, color='black', lw=1.5, alpha=0.65, ls='-')
     ax_icf.fill_betweenx(pressure, -icf, 0.0, 
                             lw=0.0,
                             color='k',
                             alpha=0.2, 
                             zorder=-2)
-    # Add gradient color to the fill
-    p_gradient = np.logspace(np.log10(pressure.min()), np.log10(pressure.max()), len(pressure) * 5)
-    icf_gradient = np.interp(p_gradient, pressure, icf)
+    
+    fill_icf = False
+    if fill_icf:
+        # Add gradient color to the fill
+        p_gradient = np.logspace(np.log10(pressure.min()), np.log10(pressure.max()), len(pressure) * 5)
+        icf_gradient = np.interp(p_gradient, pressure, icf)
 
-    weights = icf_gradient**(2) / icf_gradient.max()
-    for i in range(len(p_gradient) - 1):
-        
-        ax_icf.fill_betweenx(p_gradient[i:i+2], -icf_gradient[i:i+2], 0.0, 
-                            lw=0.0,
-                            color=icf_colors[target], 
-                            alpha=max(weights[i], 0.2), 
-                            zorder=-1)
+        weights = icf_gradient**(2) / icf_gradient.max()
+        for i in range(len(p_gradient) - 1):
+            
+            ax_icf.fill_betweenx(p_gradient[i:i+2], -icf_gradient[i:i+2], 0.0, 
+                                lw=0.0,
+                                color=icf_colors[target], 
+                                alpha=max(weights[i], 0.2), 
+                                zorder=-1)
 
     ax_icf.set(yscale='log', xticks=[], yticks=[], ylim=(pressure.max(), pressure.min()))
 
     
     cmap = cc.cm.glasbey_bw_minc_20_maxl_70
+    
+    if plot_species == 'all':
+        plot_species = VMR_envelopes.keys()
         
-    for i, key in enumerate(VMR_envelopes.keys()):
+    for i, key in enumerate(plot_species):
         
         x1 = VMR_envelopes[key][0,:]
         x2 = VMR_envelopes[key][-1,:]
         color = color_species.get(key, cmap(i))
         color_species[key] = color
         
-        ls = ls_dict.get(key, '-' if i % 2 == 0 else '--')
+        # ls = ls_dict.get(key, '-' if i % 2 == 0 else '--')
+        ls = ls_dict.get(key, '-')
         ls_dict[key] = ls
         if np.mean(abs(np.log10(x1) - np.log10(x2))) > 1.0:
             print(f' Skipping {key} because the VMR range is too large...')
@@ -172,6 +190,12 @@ def plot_target(target, run, ax, ax_icf=None, color_species={}, ls_dict={}):
                 lw=1.5, alpha=0.75,
                 label=tex_labels[key],
                 ls = ls)
+        alpha_i = np.median(alpha_params[key])
+        print(f' key: {key}, alpha_i: {alpha_i}')
+        ax.plot(VMR_envelopes[key][1,:] / 10.0**alpha_i, pressure, 
+                color=color,
+                lw=1.5, alpha=0.75,
+                ls = '--')
         
     ax.set(ylabel='Pressure (bar)', 
         xlabel='VMR', yscale='log', 
@@ -183,12 +207,13 @@ def plot_target(target, run, ax, ax_icf=None, color_species={}, ls_dict={}):
 
 
 color_species, ls_dict = {}, {}
+plot_species = ['H2O', '12CO', 'SiO','OH']
+
 for t, target in enumerate(runs.keys()):
     target_runs = list(np.atleast_1d(runs[target]))
     for r, run_name in enumerate(target_runs):
-        run = run_name[0]
-        label = run_name[1]
-        color_species, ls_dict = plot_target(target, run, ax[t], None, color_species, ls_dict)
+
+        color_species, ls_dict = plot_target(target, run_name, ax[t], None, plot_species=plot_species, color_species=color_species, ls_dict=ls_dict)
     
 ax[1].legend(loc=(1.01, 0.1), fontsize=10,
         ncol=2,
@@ -200,7 +225,8 @@ ax[1].legend(loc=(1.01, 0.1), fontsize=10,
 ax[0].set_xlim(1e-9, 1e-2)
 ax[1].set_ylabel('')
 # plt.show()
-fig_name = path_figures / 'fig_VMRs.pdf'
+species_label = '_'.join(plot_species)
+fig_name = path_figures / f'fig_VMRs_{species_label}.pdf'
 fig.savefig(fig_name, bbox_inches='tight')
 print(f' --> Saved {fig_name}')
 plt.close()

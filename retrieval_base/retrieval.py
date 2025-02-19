@@ -680,11 +680,14 @@ class Retrieval:
             line_species_list = []
             for i, line_species_i in enumerate(mass_fractions_list[0].keys()):
                 if line_species_i == 'MMW':
-                    continue
-                species_i = self.Chem.pRT_name_dict.get(line_species_i, line_species_i)
-                mass_i = self.Chem.read_species_info(species_i, 'mass')
-                VMRs_list.append(mass_fractions_array[i,] * MMW / mass_i)
-                line_species_list.append(line_species_i)
+                    VMRs_list.append(MMW)
+                    line_species_list.append('MMW')
+                    
+                else:
+                    species_i = self.Chem.pRT_name_dict.get(line_species_i, line_species_i)
+                    mass_i = self.Chem.read_species_info(species_i, 'mass')
+                    VMRs_list.append(mass_fractions_array[i,] * MMW / mass_i)
+                    line_species_list.append(line_species_i)
             VMRs_array = np.array(VMRs_list)
             # create array with shape (n_samples, n_layers, n_cols) where n_cols = (temperature, mass_fractions, C, O, H)
 
@@ -709,7 +712,7 @@ class Retrieval:
         self.PT.temperature_posterior = stack_array[0,:,:]
        
         self.Chem.VMRs_posterior = {self.Chem.pRT_name_dict.get(k, k):stack_array[1+i,:,:] for i, k in enumerate(line_species_list)}
-       
+        
             
         self.Chem.COH_posterior = {k:stack_array[-3+i,:,:] for i, k in enumerate(['C', 'O', 'H'])}
             

@@ -151,7 +151,7 @@ class GaussianProcesses(Covariance):
 
         return banded_array
 
-    def __init__(self, err, separation, err_eff=None, flux_eff=None, max_separation=None, **kwargs):
+    def __init__(self, err, separation, err_eff=None, max_separation=None, length_scale_factor=1.0, **kwargs):
         '''
         Create a covariance matrix suited for Gaussian processes. 
 
@@ -169,23 +169,19 @@ class GaussianProcesses(Covariance):
         # Pre-computed average error and wavelength separation
         self.separation = np.abs(separation)
         self.err_eff  = err_eff
-        self.flux_eff = flux_eff
+        self.length_scale_factor = length_scale_factor
+        self.max_separation = max_separation * self.length_scale_factor
+        
+        self.trunc_dist = kwargs.get('trunc_dist', 4.0)
 
         # Convert to banded matrices
         self.separation = self.get_banded(
-            self.separation, max_value=max_separation
+            self.separation, max_value=self.max_separation
             )
         
         assert isinstance(self.err_eff, float), f'err_eff must be a float, got {type(self.err_eff)}'
         self.err_eff_copy = float(self.err_eff)
         self.err_eff = float(self.err_eff)
-        # if isinstance(self.err_eff, np.ndarray):
-        #     self.err_eff = self.get_banded(self.err_eff)
-        #     self.err_eff = self.err_eff[:self.separation.shape[0]]
-
-        # if isinstance(self.flux_eff, np.ndarray):
-        #     self.flux_eff = self.get_banded(self.flux_eff)
-        #     self.flux_eff = self.flux_eff[:self.separation.shape[0]]
 
         # Give arguments to the parent class
         super().__init__(err)
@@ -195,27 +191,20 @@ class GaussianProcesses(Covariance):
         # Reset the covariance matrix
         self.cov_reset()
 
-        # if params[f'beta_{grating}'][order,det] != 1:
-        #     self.add_data_err_scaling(
-        #         params[f'beta_{grating}'][order,det]
-        #         )
-        
-        # if params.get('beta2', 1.0) != 1.0:
-        #     self.add_data_err_scaling(
-        #         params['beta2']**0.5
-        #         )
-        
+
         if params.get(f'a_{grating}_G', None) is not None:
             if isinstance(params[f'a_{grating}_G'], float):
                 # print(f' --> Adding RBF kernel with a={params[f"a_{grating}_G"]}, l={params["l_G"]}')
                 self.a = params[f'a_{grating}_G']
                 self.l = params.get('l_G', params.get(f'log_l_{grating}_G', None))
                 assert self.l is not None, f' [GaussianProcesses.__call__]: l_{grating}_G parameter not found in the parameter keys'
-                # print(f' --> Adding RBF kernel with a={a}, l={l}')
+                # print(f' --> Adding RBF kernel with a={self.a:.2e}, l={self.l * self.length_scale_factor:.2e} with self.length_scale_factor={self.length_scale_factor:.1f}')
                 self.add_RBF_kernel(
                     a = self.a, 
-                    l = self.l,
-                    **kwargs
+                    l = self.l * self.length_scale_factor,
+                    trunc_dist=self.trunc_dist,
+                    scale_GP_amp=kwargs.get('scale_GP_amp', False),
+                    # **kwargs
                     )
         beta2 = np.clip(params.get('beta2', 1.0), 0.1, None)
         if beta2 != 1.0:
@@ -256,7 +245,7 @@ class GaussianProcesses(Covariance):
             w_ij = self.separation < trunc_dist * l
         return w_ij
 
-    def add_RBF_kernel(self, a, l, trunc_dist=4.0, scale_GP_amp=False, **kwargs):
+    def add_RBF_kernel(self, a, l, trunc_dist=4.0, scale_GP_amp=False):
         '''
         Add a radial-basis function kernel to the covariance matrix. 
         The amplitude can be scaled by the flux-uncertainties of 
@@ -279,7 +268,8 @@ class GaussianProcesses(Covariance):
         '''
 
         # Hann window function to ensure sparsity
-        w_ij = self.hanning_window(trunc_dist, l, cosine_taper=kwargs.get('cosine_taper', False))
+        # w_ij = self.hanning_window(trunc_dist, l, cosine_taper=kwargs.get('cosine_taper', False))
+        w_ij = self.separation < trunc_dist * l
         # check fraction of elements that are non-zero
         # print(f' --> Fraction of non-zero elements: {np.sum(w_ij)/w_ij.size}')
         # print(f' w_ij.shape {w_ij.shape}')
@@ -334,7 +324,7 @@ class GaussianProcesses(Covariance):
         min_jitter = 1e-6 * median_variance  # minimum regularization
         
         try:
-            self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
+            self.cov_cholesky = cholesky_banded(C, overwrite_ab=False, lower=True, check_finite=False)
             return self
             
         except Exception as e:
@@ -355,7 +345,7 @@ class GaussianProcesses(Covariance):
                 C_reg[0] += jitter
                 
                 try:
-                    self.cov_cholesky = cholesky_banded(C_reg, lower=True, check_finite=False)
+                    self.cov_cholesky = cholesky_banded(C_reg, overwrite_ab=False, lower=True, check_finite=False)
                     if debug:
                         print(f' --> Cholesky succeeded with jitter={jitter:.2e}')
                         print(f' --> Jitter/variance ratio: {jitter/median_variance:.2e}')

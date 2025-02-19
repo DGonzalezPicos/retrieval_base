@@ -391,9 +391,9 @@ def fig_bestfit_model(
             # add text in ax_res with MAD in %
             text_x = 0.005
             text_s = 'MAD='
-            if sharey and i>0:
+            if sharey:
                 text_x += (1.0 / d_spec.n_orders) * i
-                text_s = ' '
+                text_s = ''
             ax_res.text(
                 text_x, 0.95, 
                 f'{text_s}{100.0 * MAD:.1f}%', 

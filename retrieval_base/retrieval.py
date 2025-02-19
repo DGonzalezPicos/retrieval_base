@@ -75,8 +75,6 @@ def prior_check(conf, n=3, random=False,
             print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
             print(f' shape m_spec.flux = {ret.m_spec[w_set].flux.shape}')
             print(f' shape LogLike.m_flux = {ret.LogLike[w_set].m_flux.shape}')
-            if hasattr(ret.Cov[w_set], 'cov_cholesky'):
-                print(f' shape.ret.Cov.cov_cholesky = {ret.Cov[w_set].cov_cholesky.shape}')
                 
         print(f'ln_L = {ln_L:.4e}')
         end = time.time()
@@ -270,12 +268,20 @@ class Retrieval:
                         separation_ij = self.d_spec[w_set].separation[i,j]
                         err_eff_ij = self.d_spec[w_set].err_eff[i,j]
                         
-
+                    grating = self.d_spec[w_set].gratings_list[i]
+                    # max_separation = self.conf.cov_kwargs.pop(f'max_separation_{grating}', self.conf.cov_kwargs.pop('max_separation', None))
+                    # print(f'[Retrieval.__init__] grating = {grating}, max_separation = {max_separation}')
+                    if 'length_scale_factors' in self.conf.cov_kwargs.keys():
+                        length_scale_factor = self.conf.cov_kwargs.get('length_scale_factors')[grating]
+                    else:
+                        length_scale_factor = 1.0
+                    
                     self.Cov[w_set][i,j] = get_Covariance_class(
                         self.d_spec[w_set].err[i,j,mask_ij], 
                         self.Param.cov_mode, 
                         separation=separation_ij,
                         err_eff=err_eff_ij,
+                        length_scale_factor=length_scale_factor,
                         # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
                         **self.conf.cov_kwargs
                         )

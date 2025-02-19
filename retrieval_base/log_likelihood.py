@@ -119,6 +119,8 @@ class LogLikelihood:
                 if Cov[i,j].is_matrix:
                     # Retrieve a Cholesky decomposition
                     Cov[i,j].get_cholesky(debug=debug_lck)
+                    # if debug_lck:
+                        # print(f' [LogLikelihood.__call__]: (i,j) = ({i},{j}), Cov[i,j].cov_cholesky.shape {Cov[i,j].cov_cholesky.shape}')
                     # if np.all(Cov[i,j].cov_cholesky == 0):
                     if Cov[i,j].cholesky_failed:
                         print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j} with l_G {Cov[i,j].l:.2e} and a_G {Cov[i,j].a:.2e}')

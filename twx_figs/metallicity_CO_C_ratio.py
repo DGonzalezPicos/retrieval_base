@@ -20,7 +20,7 @@ runs = dict(
     TWA27A=[('lbl11_G2G3_fastchem_GP_0', 'G2+G3')],
     TWA28=[
         # 'lbl11_G1G2G3_fastchem_0', 
-           ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'), 
+           ('lbl11_G2G3_fastchem_GP_1', 'G2+G3'), 
         #    ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'),
            ],
             )

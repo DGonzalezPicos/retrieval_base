@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 0
+index = 1
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -39,7 +39,7 @@ config_data = {
 
         'lbl_opacity_sampling' : lbl,
         'sigma_clip': 3,
-        'sigma_clip_max_iter': 5,
+        'sigma_clip_max_iter': 6,
         'sigma_clip_width': 31, # (2025-02-15): 31
         'Nedge': 40, # (2024-10-18): 20 --> 40
         'log_P_range': (-5,2),
@@ -50,15 +50,15 @@ config_data = {
         'flux_unit_factor': 1e18, # DGP (2025-02-06): new parameter
         }, 
     }
-
-wave_range_gratings = dict(g140h= (900.0, 1900.0),
-                   g235h= (1650.0, 3200.0),
-                   g395h= (2850.0, 5300.0),
+# from JWST docs NIRSpec
+wave_range_gratings = dict(
+                   g140h= (970.0, 1820.0),
+                   g235h= (1660.0, 3050.0),
+                   g395h= (2870.0, 5300.0),
                    )
-
+cenwave_gratings = {k:np.mean(v) for k,v in wave_range_gratings.items()}
 wave_range_list = [wave_range_gratings[grating] for grating in gratings]
 wave_range = [float(np.min(wave_range_list)), float(np.max(wave_range_list))]
-del wave_range_gratings, wave_range_list
 
 # distance in pc to parallax
 parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
@@ -161,7 +161,7 @@ species_wave = {
     '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
     '13CO': [[2200, 3200], [4200, 5400]],
     'C18O': [[2200, 3200], [4200, 5400]],
-    # 'C17O': [[4200, 5400]], # TODO: add this back for final retrieval
+    'C17O': [[4200, 5400]], # 
     'H2O': [[0.0, np.inf]],
     'H2O_181': [[0.0, np.inf]],
     
@@ -170,17 +170,17 @@ species_wave = {
     'HCl': [[3050, np.inf]], # FIXME: check this
 
     'CO2': [[2800, 3200],[3900, 5400]],
-    'CH4': [[2900.0, 3900.0]], # TODO: add this back for final retrieval
-    'NH3': [[2700.0, np.inf]], # TODO: add this back for final retrieval
-    'HCN': [[2800.0, np.inf]], # TODO: add this back for final retrieval
+    # 'CH4': [[2900.0, 3900.0]], # TODO: add this back for final retrieval
+    # 'NH3': [[2700.0, np.inf]], # TODO: add this back for final retrieval
+    # 'HCN': [[2800.0, np.inf]], # TODO: add this back for final retrieval
 
     'Na': [[0, 2400.0], [3300.0, 3500.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
     'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
     'Ti': [[0, 2400.0]],
-    # 'Sc': [[0, 2600]], # add this back for final retrieval, potential opacity source at 1.35, 1.62 um
-    # 'Mg': [[0, 2600]],
+    # 'Sc': [[0, 2600]], # 2025-02-19: not detected...
+    'Mg': [[0, 2600]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
     # 'Mn': [[0, 2400.0]],
     'Fe': [[0, 2200]],
@@ -192,17 +192,17 @@ species_wave = {
     # 'V': [[0, 2300]],
     'CrH': [[0, 1400]],
     # 'TiH': [[0, 2000]], # add this back for final retrieval
-    # 'CaH': [[0, 1400], [3800, 5300]], # add this back for final retrieval
+    # 'CaH': [[0, 1400]], # Feb 18: not detected...
     # 'AlH': [[1400, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
-    # 'ScH':[[0,1900.0]], # add this back for final retrieval
+    # 'ScH':[[0,1900.0]], # Feb 18: not detected...
     'OH' : [[0, 4730.0]],
     'VO': [[0, 1450.0]],
     'TiO': [[0,1450], [4800, np.inf]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
-    'H2S': [[2350, np.inf]],
+    # 'H2S': [[2350, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
 }
 
 # include_only = ['FeH', 'H2O'] # FIXME: manually add species here
@@ -476,23 +476,33 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 ####################################################################################
 # Covariance parameters
 ####################################################################################
+trunc_dist = 3.0
 max_separation = 5
-trunc_dist = 4.0
+# max_separation_gratings = {'g140h': 5, 'g235h': 5, 'g395h': 5}
+length_scale_factors = {k:1.0 for k in gratings}
 if cov_mode == 'GP' or cov_mode == 'SGP':
-    free_params['log_l_G'] = [(-0.2, 0.6), r'$\log\ l_G$']
+    
+    # log_l_prior_gratings = {'g140h': (-0.4, 0.18), 'g235h': (-0.4, 0.42), 'g395h': (-0.4, 0.64)}
+    free_params['log_l_G'] = [(-0.40, 0.20), r'$\log\ l_G$']
     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
     for grating in gratings:
-        # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.8), r'$\log\ a_{G}$' + f'({grating})']
+        # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.6), r'$\log\ a_{G}$' + f'({grating})']
         # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
         # invgamma_params.append(f'a_{grating}_G')
         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
+        length_scale_factors[grating] = cenwave_gratings[grating] / cenwave_gratings['g140h']
         constant_params[f'a_{grating}_G'] = 1.0
+        # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
+        # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
+    
 cov_kwargs = dict(
     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
     scale_GP_amp = True, 
     max_separation = max_separation,
+    # max_separation_gratings = max_separation_gratings,
     trunc_dist = trunc_dist,
+    length_scale_factors = length_scale_factors,
     # Prepare the wavelength separation and
     # average squared error arrays and keep 
     # in memory
@@ -503,7 +513,7 @@ lck_kwargs = dict(
     use_lck=True,
     lck_width=4,
     n_max_regions=6,
-    sigma_threshold=6.0,
+    sigma_threshold=7.0,
     scale_GP_amp=False,
     trunc_dist = trunc_dist
 )
@@ -535,12 +545,13 @@ testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
-evidence_tolerance = 0.5 if not testing else 1.0
+evidence_tolerance = 0.5 if not testing else 0.5
 n_live_points = 800 if not testing else 400
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file
 print(f' --> {free_params} free parameters')
+del wave_range_gratings, wave_range_list
 
 if __name__ == '__main__':
     from retrieval_base.config import Config

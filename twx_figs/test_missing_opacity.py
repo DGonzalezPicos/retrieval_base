@@ -95,37 +95,58 @@ def plot_species(ret,
                  line_species, 
                  params_dict, 
                 #  new_value,
-                 high_low='low',
                  overplot_extinction=False,
                   **kwargs):
 
 
     n_orders = len(wave)
     
-    params_dict_copy = copy.deepcopy(params_dict)    
     
-    if conf.chem_mode == 'fastchem':
-        params_dict_copy[f'alpha_{line_species}'] = 3.0 if high_low == 'high' else -4.0
-        format = 'alpha'
-        if line_species in conf.isotopologues_dict.keys():
+    n = 4
+    alpha_range = np.linspace(-3.0, 2.0, n)
+    log_ratio_range = np.linspace(1.0, 4.0, n)
+    log_range = np.linspace(-12.0, -4.5, n)
+    colors = plt.cm.viridis(np.linspace(0, 1, n))
+    
+    ranges = {'alpha': alpha_range,
+             'log_iso_ratio': log_ratio_range,
+             'log': log_range}
+
+        
+    m_flux_list = []
+    for i in range(n):
+        params_dict_copy = copy.deepcopy(params_dict)    
+        # print(f'line_species: {line_species}')
+        # print(params_dict_copy.keys())
+        # if conf.chem_mode == 'fastchem':
+        if f'alpha_{line_species}' in list(params_dict_copy.keys()):
+            params_dict_copy[f'alpha_{line_species}'] = ranges['alpha'][i]
+            param_kind = 'alpha'
+            bestfit_value = params_dict[f'alpha_{line_species}']
+        elif line_species in conf.isotopologues_dict.keys():
             print(f'Found isotopologue {line_species} with ratio {conf.isotopologues_dict[line_species][0]}')
             log_ratio = conf.isotopologues_dict[line_species][0]
-            params_dict_copy[log_ratio] = 1.0 if high_low == 'high' else 4.0
-            format = 'log_iso_ratio'
-            
-    else:
-        params_dict_copy[f'log_{line_species}'] = -3.0 if high_low == 'high' else -14.0
-        format = 'log'
-    
+            params_dict_copy[log_ratio] = ranges['log_iso_ratio'][i]
+            param_kind = 'log_iso_ratio'
+            bestfit_value = params_dict[log_ratio]
+        
+        else:
+            params_dict_copy[f'log_{line_species}'] = ranges['log'][i]
+            param_kind = 'log'
+            bestfit_value = params_dict[f'log_{line_species}']
+        ret.evaluate_model(np.array(list(params_dict_copy.values())))
+        ret.PMN_lnL_func()
+        m_flux_list.append(np.squeeze(ret.LogLike[w_set].m_flux) / f)
+
     # if overplot_extinction:
-    title = f'{line_species} ({format} = {params_dict_copy[f"{format}_{line_species}"]})'
-    fig_name = f'{conf.prefix}plots/bestfit_spec_{line_species}_{high_low}.pdf'
+    title = f'{line_species} ({conf.line_species_dict[line_species]})'
+    fig_name = f'{conf.prefix}plots/test_{line_species}.pdf'
 
     
     with PdfPages(fig_name) as pdf:
         
         lw = kwargs.get('lw', 0.7)
-        color = kwargs.get('color', 'red')
+        # color = kwargs.get('color', 'red')
         
        
         ret.evaluate_model(np.array(list(params_dict_copy.values())))
@@ -153,19 +174,27 @@ def plot_species(ret,
 
             
             ax[0].plot(wave[order,], d_flux[order], color='black', lw=lw, label='Data')
-            
+            res_full = d_flux[order] - m_flux_full[order,]
+            ax[1].plot(wave[order,], res_full, color='limegreen', lw=lw)
+        
             chi2_full_order = np.nansum((d_flux[order] - m_flux_full[order,])**2 / err_ij**2) / mask_i.sum()
-            chi2_order = np.nansum((d_flux[order] - m_flux[order,])**2 / err_ij**2) / mask_i.sum()
-            
-            ax[0].plot(wave[order,], m_flux_full[order,], color='limegreen', lw=lw, label=f'Full model (chi2={chi2_full_order:.2f})')
-            ax[0].plot(wave[order,], m_flux[order,], color=color, lw=lw, label=f'new {line_species} (chi2={chi2_order:.2f})')
+            # label = line_species
+            label = f'{param_kind}='
+            label += f'{bestfit_value:.1e}'
+            label += f' (chi2={chi2_full_order:.1f})'
+            ax[0].plot(wave[order,], m_flux_full[order,], color='limegreen', lw=lw, label=label)
 
-            # ax[0].plot(wave[order,], m_flux[order,], color=color, lw=lw, label=
-            res_data = d_flux[order] - m_flux[order,]
-            ax[1].plot(wave[order,], res_data, color='black', lw=lw)
-            
-            res = m_flux_full[order,] - m_flux[order,]
-            ax[1].plot(wave[order,], res, color=color, lw=lw)
+            for i in range(n):
+                m_flux = m_flux_list[i]
+                chi2_order = np.nansum((d_flux[order] - m_flux[order,])**2 / err_ij**2) / mask_i.sum()
+                # label = line_species
+                label = f'{param_kind}='
+                label += f'{ranges[param_kind][i]:.1e}'
+                label += f' (chi2={chi2_order:.1f})'
+                ax[0].plot(wave[order,], m_flux[order,], color=colors[i], lw=lw, label=label)            
+                
+                res_new = d_flux[order,] - m_flux[order,]
+                ax[1].plot(wave[order,], res_new, color=colors[i], lw=lw)
         
 
             ax[1].axhline(0, color='r', lw=0.5)
@@ -174,7 +203,7 @@ def plot_species(ret,
             if order==0:
                 ax[0].set_title(title)
             
-            ax[0].legend()
+            ax[0].legend(ncol=2)
             if order==n_orders-1:
                 ax[1].set_xlabel('Wavelength / nm')
                 # ax[1].legend()
@@ -187,11 +216,10 @@ def plot_species(ret,
 
 
 # new_alphas = [-2.0, -1.0, 0.0, 1.0, 2.0]
-high_low = 'low'
 for k, v in species_dict.items():
-    
+    if k != 'C2H2':
+        continue
     plot_species(ret, wave, m_flux_full, chi2_full, k, params_dict,
-                high_low=high_low,
                 # new_value=new_value,
                 #  color=ret.Chem.read_species_info(species, 'color')
                 color='darkorange')

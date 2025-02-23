@@ -525,6 +525,11 @@ class FastChemistry(Chemistry):
                 # print(f' WARNING: {species_i} not in VMRs, setting to 0')
                 self.VMRs[species_i] = 0.0 * np.ones(self.n_atm_layers)
                 
+            # print(f' species = {species_i}, alpha = {alpha_i}')
+            if alpha_i > 6.0:
+                assert False, f' WARNING: High alpha_i = {alpha_i} for {species_i}'
+                print(f' WARNING: High alpha_i = {alpha_i} for {species_i}')
+                alpha_i = 0.0
             VMR_i = np.clip((self.VMRs[species_i] * 10.**alpha_i),a_max=1e-1, a_min=1e-20) # VMRs is already an array
             self.mass_fractions[line_species_i] = VMR_i * mass_i
             VMR_wo_H2 += VMR_i

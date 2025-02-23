@@ -41,8 +41,8 @@ def get_bestfit_params(run):
     bestfit_params_dict = dict(zip(ret.Param.param_keys, bestfit_params))
     return bestfit_params_dict
 
-run = 'lbl12_G1_fastchem_1'
-run_bestfit = 'lbl12_G1G2G3_fastchem_1'
+run = 'lbl11_G2G3_fastchem_GP_1'
+run_bestfit = 'lbl11_G2G3_fastchem_GP_1'
 conf = Config(path=path, target=target, run=run)(config_file)        
 conf_bestfit = Config(path=path, target=target, run=run_bestfit)(config_file)        
     
@@ -87,13 +87,13 @@ def new_model(bestfit_params_dict, update_params):
     return m_flux_full_new, chi2_full_new, mf_new
 
 
-species = '46TiO'
+species = 'H2O'
 line_species = ret.Chem.pRT_name_dict_r[species]
 update_params = {
-    # f'alpha_{species}': 2.0,
-    'log_TiO/46TiO': 0.0,
+    f'alpha_{species}': 2.0,
+    # 'log_TiO/46TiO': 0.0,
     }
-xlim = (900, 1900)
+# xlim = (900, 1900)
 
 m_flux_full, chi2_full, mf = new_model(bestfit_params_dict, update_params={})
 m_flux_full_new, chi2_full_new, mf_new = new_model(bestfit_params_dict, update_params)
@@ -116,7 +116,7 @@ with PdfPages(fig_name) as pdf:
     ax[0].set_ylabel('Pressure [bar]')
     ax[1].set_xlabel('Mass Fraction')
     ax[0].set(ylim=(p.max(), p.min()), yscale='log')
-    ax[1].set(ylim=(p.max(), p.min()), yscale='log', xscale='log', xlim=(1e-10, 1e-2))
+    ax[1].set(ylim=(p.max(), p.min()), yscale='log', xscale='log', xlim=(1e-10, 0.0))
     pdf.savefig(fig)
     
     for order in range(n_orders):
@@ -133,6 +133,9 @@ with PdfPages(fig_name) as pdf:
         ax[1].plot(wave[order], res_new, lw=lw, color=colors['new'], alpha=0.8)
         ax[1].set_ylabel('Residuals')
         ax[1].set_xlabel('Wavelength [nm]')
+        xlim = (np.nanmin(wave[order]), np.nanmax(wave[order]))
+        ax[0].set_xlim(xlim)
+        ax[1].set_xlim(xlim)
         pdf.savefig(fig)
         plt.close(fig)
 

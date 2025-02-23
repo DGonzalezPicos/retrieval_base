@@ -117,8 +117,8 @@ def get_VMR(target, run, cache=True):
     alpha_params = {k:posterior[f'alpha_{k}'] for k in VMR_labels_data if f'alpha_{k}' in free_params_keys}
     return VMR_envelopes, PT_envelopes, conf, alpha_params
     
-fig, ax = plt.subplots(1,2, figsize=(7,4), sharey=True, sharex=True,
-                       gridspec_kw=dict(wspace=0.05))
+fig, ax = plt.subplots(1,2, figsize=(9,3), sharey=True, sharex=True,
+                       gridspec_kw=dict(wspace=0.15))
 
 icf_colors = dict(TWA28='orange',
                   TWA27A='#0a74da')
@@ -135,33 +135,37 @@ def plot_target(target, run, ax, ax_icf=None, plot_species='all', color_species=
         ax_icf = ax.twiny()
         ax_icf.set_xlim(-14, 0.)
 
-        
-    ax_icf.plot(-icf, pressure, color='black', lw=1.5, alpha=0.65, ls='-')
-    ax_icf.fill_betweenx(pressure, -icf, 0.0, 
+    draw_icf = False
+    if draw_icf:
+        ax_icf.plot(-icf, pressure, color='black', lw=1.5, alpha=0.65, ls='-')
+        ax_icf.fill_betweenx(pressure, -icf, 0.0, 
                             lw=0.0,
                             color='k',
                             alpha=0.2, 
                             zorder=-2)
     
-    fill_icf = False
+    fill_icf = True
     if fill_icf:
         # Add gradient color to the fill
         p_gradient = np.logspace(np.log10(pressure.min()), np.log10(pressure.max()), len(pressure) * 5)
         icf_gradient = np.interp(p_gradient, pressure, icf)
 
-        weights = icf_gradient**(2) / icf_gradient.max()
+        # weights = icf_gradient**(2) / icf_gradient.max()
+        weights = (icf_gradient**(1) / icf_gradient.max()) * 0.2
         for i in range(len(p_gradient) - 1):
             
-            ax_icf.fill_betweenx(p_gradient[i:i+2], -icf_gradient[i:i+2], 0.0, 
-                                lw=0.0,
-                                color=icf_colors[target], 
-                                alpha=max(weights[i], 0.2), 
-                                zorder=-1)
+            # ax_icf.fill_betweenx(p_gradient[i:i+2], -icf_gradient[i:i+2], 0.0, 
+            #                     lw=0.0,
+            #                     color=icf_colors[target], 
+            #                     alpha=max(weights[i], 0.2), 
+            #                     zorder=-1)
+            ax.axhspan(p_gradient[i], p_gradient[i+1], color='k', alpha=max(weights[i], 0.0), zorder=-1)
 
     ax_icf.set(yscale='log', xticks=[], yticks=[], ylim=(pressure.max(), pressure.min()))
 
     
-    cmap = cc.cm.glasbey_bw_minc_20_maxl_70
+    # cmap = cc.cm.glasbey_bw_minc_20_maxl_70
+    cmap = cc.cm.glasbey_dark
     
     if plot_species == 'all':
         plot_species = VMR_envelopes.keys()
@@ -190,14 +194,17 @@ def plot_target(target, run, ax, ax_icf=None, plot_species='all', color_species=
                 lw=1.5, alpha=0.75,
                 label=tex_labels[key],
                 ls = ls)
-        alpha_i = np.median(alpha_params[key])
-        print(f' key: {key}, alpha_i: {alpha_i}')
-        ax.plot(VMR_envelopes[key][1,:] / 10.0**alpha_i, pressure, 
-                color=color,
-                lw=1.5, alpha=0.75,
-                ls = '--')
         
-    ax.set(ylabel='Pressure (bar)', 
+        plot_alpha_zero = False
+        if plot_alpha_zero:
+            alpha_i = np.median(alpha_params[key])
+            print(f' key: {key}, alpha_i: {alpha_i}')
+            ax.plot(VMR_envelopes[key][1,:] / 10.0**alpha_i, pressure, 
+                    color=color,
+                    lw=1.5, alpha=0.75,
+                    ls = '--')
+        
+    ax.set(ylabel='Pressure / bar', 
         xlabel='VMR', yscale='log', 
         ylim=(pressure.max(), pressure.min()),
         xscale='log')
@@ -207,7 +214,7 @@ def plot_target(target, run, ax, ax_icf=None, plot_species='all', color_species=
 
 
 color_species, ls_dict = {}, {}
-plot_species = ['H2O', '12CO', 'SiO','OH']
+plot_species = ['12CO', 'H2O','SiO','OH','HF', 'FeH','TiO', 'NaH', 'CO2', 'VO', 'CrH']
 
 for t, target in enumerate(runs.keys()):
     target_runs = list(np.atleast_1d(runs[target]))
@@ -215,8 +222,8 @@ for t, target in enumerate(runs.keys()):
 
         color_species, ls_dict = plot_target(target, run_name, ax[t], None, plot_species=plot_species, color_species=color_species, ls_dict=ls_dict)
     
-ax[1].legend(loc=(1.01, 0.1), fontsize=10,
-        ncol=2,
+ax[1].legend(loc=(1.01, 0.0), fontsize=10,
+        ncol=1,
         frameon=False,
         handlelength=1.5,
         handletextpad=1.0,

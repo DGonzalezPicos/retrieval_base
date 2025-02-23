@@ -199,7 +199,10 @@ class pRT_model:
                 # print(f' wave_range_i = {wave_range_i}')
                 
                 
-                assert len(line_species_i) > 0, 'No line species in wavelength range'
+                # assert len(line_species_i) > 0, 'No line species in wavelength range'
+                if len(line_species_i) == 0:
+                    print(f'WARNING: No line species in wavelength range ({wave_range_i[0]}, {wave_range_i[1]})')
+                    continue
                 print(f' --> ({wave_range_i[0]}, {wave_range_i[1]}): {len(line_species_i)} line species')
             else:
                 line_species_i = self.line_species

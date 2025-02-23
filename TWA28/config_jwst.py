@@ -12,18 +12,20 @@ lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h', 'g395h']
+gratings = ['g395h']
+# gratings = ['g235h', 'g395h']
 # gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
-# cov_mode = 'None'
-cov_mode = 'GP'
+cov_mode = 'None'
+# cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
 index = 1
-run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
+# run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
+run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 # Define PT profile
@@ -155,6 +157,8 @@ opacity_params = {
     'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    'log_NO':  ([(-14,-2), r'$\log\ \mathrm{NO}$'], 'NO_XABC_main_iso'),
+    'log_SiH': ([(-14,-2), r'$\log\ \mathrm{SiH}$'], 'SiH_SiGHTLY_main_iso'),
 }
 
 species_wave = {
@@ -204,6 +208,11 @@ species_wave = {
     'SiO': [[2650,5300]],
     # 'H2S': [[2350, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
 }
+
+#FIXME: only for testing
+all_species = [k[4:] for k,v in opacity_params.items() if not v[-1].endswith('_high')]
+ignore = ['13CO','C18O','C17O','H2O_181']
+species_wave = {k:[[2800, 4100]] for k in all_species if k not in ignore}
 
 # include_only = ['FeH', 'H2O'] # FIXME: manually add species here
 # if len(include_only) > 0:
@@ -310,19 +319,19 @@ fc_species_dict={
     'e-': 'e-',
     'H2O': 'H2O1',
     '12CO': 'C1O1',
-    'CH4': 'C1H4',
-    'C2H2': 'C2H2',
+    # 'CH4': 'C1H4', # remove from here to use freechem for this species
+    # 'C2H2': 'C2H2',
     'CO2': 'C1O2',
-    'H2S': 'H2S1',
-    'CH': 'C1H1',
-    'NH': 'H1N1',
-    'NH3': 'H3N1',
-    'HCN': 'C1H1N1_1',
-    'SH': 'H1S1',
+    # 'H2S': 'H2S1',
+    # 'CH': 'C1H1',
+    # 'NH': 'H1N1',
+    # 'NH3': 'H3N1',
+    # 'HCN': 'C1H1N1_1',
+    # 'SH': 'H1S1',
     'PH': 'H1P1',
   
     'SiS': 'S1Si1',
-    'SiH': 'H1Si1',
+    # 'SiH': 'H1Si1',
     'HCl':'Cl1H1',
     'CaH': 'Ca1H1',
     'MgH': 'H1Mg1',
@@ -510,12 +519,12 @@ cov_kwargs = dict(
 )
 
 lck_kwargs = dict(
-    use_lck=True,
-    lck_width=4,
-    n_max_regions=6,
-    sigma_threshold=7.0,
-    scale_GP_amp=False,
-    trunc_dist = trunc_dist
+    # use_lck=False,
+    # lck_width=4,
+    # n_max_regions=6,
+    # sigma_threshold=7.0,
+    # scale_GP_amp=False,
+    # trunc_dist = trunc_dist
 )
 
 # if free_params.get('log_l') is not None:

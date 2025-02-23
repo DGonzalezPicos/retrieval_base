@@ -49,6 +49,7 @@ class LogLikelihood:
         # Cov = copy.deepcopy(Cov)
         self.ln_L = 0
         self.chi_squared = 0
+        self.chi_squared_red = np.inf
 
         # Array to store the uncertainty-scaling terms
         self.beta = np.ones((self.d_spec.n_orders, self.d_spec.n_dets))
@@ -125,6 +126,7 @@ class LogLikelihood:
                     if Cov[i,j].cholesky_failed:
                         print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j} with l_G {Cov[i,j].l:.2e} and a_G {Cov[i,j].a:.2e}')
                         self.ln_L = -np.inf
+                        self.chi_squared_red = np.inf
                         return self.ln_L
                     # print(f' Cholesky shape {Cov[i,j].cov_cholesky.shape}')
 

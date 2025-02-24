@@ -22,7 +22,7 @@ chem_mode = 'fastchem'
 cov_mode = 'GP'
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
+index = 2
 run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -155,6 +155,7 @@ opacity_params = {
     'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    'log_SiH': ([(-14,-2), r'$\log\ \mathrm{SiH}$'], 'SiH_SiGHTLY_main_iso'),
 }
 
 species_wave = {
@@ -166,7 +167,7 @@ species_wave = {
     'H2O_181': [[0.0, np.inf]],
     
     
-    'HF': [[1200, 3550.0]],
+    'HF': [[1200, 3900.0]],
     'HCl': [[3050, np.inf]], # FIXME: check this
 
     'CO2': [[2800, 3200],[3900, 5400]],
@@ -176,7 +177,7 @@ species_wave = {
 
     'Na': [[0, 2400.0], [3300.0, 3500.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
-    'K': [[0, 1900.0], [2440, 4100]],
+    'K': [[0, 1900.0], [2440, np.inf]],
     'Ca': [[0, 2400.0]],
     'Ti': [[0, 2400.0]],
     # 'Sc': [[0, 2600]], # 2025-02-19: not detected...
@@ -199,10 +200,15 @@ species_wave = {
     # 'ScH':[[0,1900.0]], # Feb 18: not detected...
     'OH' : [[0, 4730.0]],
     'VO': [[0, 1450.0]],
-    'TiO': [[0,1450], [4800, np.inf]],
+    'TiO': [[0,1450], [2800, np.inf]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
     # 'H2S': [[2350, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
+    'AlH': [[3000, 4600]],
+    'CH': [[3000, np.inf]],
+    'SiH': [[4500, 5300]],
+    'MgO': [[3000, 5300]],
+    'AlO': [[3000, 5300]],
 }
 
 # include_only = ['FeH', 'H2O'] # FIXME: manually add species here

@@ -18,7 +18,7 @@ from .pRT_model import pRT_model
 from .log_likelihood import LogLikelihood
 from .PT_profile import get_PT_profile_class
 from .chemistry import get_Chemistry_class
-from .covariance import get_Covariance_class
+from .covariance import get_Covariance_class, Covariance
 from .callback import CallBack
 
 import retrieval_base.figures as figs
@@ -47,7 +47,7 @@ def prior_check(conf, n=3, random=False,
     beta_list = []
     
     print(f' --> Evaluating the model at {n} different parameter values')
-    print(f' ret.Cov[w_set][0,0].cov.shape = {ret.Cov[w_set][0,0].cov.shape}')
+    # print(f' ret.Cov[w_set][0,0].cov.shape = {ret.Cov[w_set][0,0].cov.shape}')
     # plot PT
     fig_PT, (ax_PT, ax_grad) = plt.subplots(1,2, figsize=(10,5), sharey=True)
     fig_chem, ax_chem = plt.subplots(1,n, figsize=(8 + 2*n, 5), sharey=True, sharex=True)
@@ -57,6 +57,7 @@ def prior_check(conf, n=3, random=False,
     time_list = []
     samples = []
     error_scaling_factors = []
+    Cov_list = []
     for i, theta_i in enumerate(theta):
         start = time.time()
 
@@ -70,6 +71,7 @@ def prior_check(conf, n=3, random=False,
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
         # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
+        Cov_list.append(ret.Cov[w_set])
         
         if i == 0:
             print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
@@ -114,6 +116,34 @@ def prior_check(conf, n=3, random=False,
             showlegend=True,
             fig_name=str(fig_name).replace('.pdf', '_VMR.pdf') if i==(len(theta)-1) else None
             )
+        
+        # plot random draws from covariance matrix
+        n_orders = ret.d_spec[w_set].n_orders
+        n_dets = ret.d_spec[w_set].n_dets
+        fig_cov, ax_cov = plt.subplots(n_orders, 1, figsize=(10,10))
+        for i, Cov in enumerate(Cov_list):
+            for order in range(ret.d_spec[w_set].n_orders):
+                for det in range(ret.d_spec[w_set].n_dets):
+                    mask_ij = ret.d_spec[w_set].mask_isfinite[order, det]
+                    C_full = Cov[order, det].banded_to_full(Cov[order, det].C)
+                    envelope_contours = Cov[order, det].envelope_contours(C=C_full, 
+                                                                       draws=None, 
+                                                                       n_draws=200)
+                    (l1, u1), (l2, u2), (l3, u3) = envelope_contours
+                    mask_ij = ret.d_spec[w_set].mask_isfinite[order, det]
+                    ax_cov[order].fill_between(ret.d_spec[w_set].wave[order, det, mask_ij], l3, u3, color=f'C{i}', alpha=0.1, label='3σ', lw=0.0)
+                    ax_cov[order].fill_between(ret.d_spec[w_set].wave[order, det, mask_ij], l2, u2, color=f'C{i}', alpha=0.2, label='2σ', lw=0.0)
+                    ax_cov[order].fill_between(ret.d_spec[w_set].wave[order, det, mask_ij], l1, u1, color=f'C{i}', alpha=0.3, label='1σ', lw=0.0)
+                    ax_cov[order].set_xlabel('Wavelength / nm')
+                    ax_cov[order].set_ylabel('Flux []')
+                    if order == 0:
+                        ax_cov[order].legend()
+        
+        plt.tight_layout()
+        fig_name_cov = str(fig_name).replace('.pdf', '_cov.pdf')
+        fig_cov.savefig(fig_name_cov)
+        plt.close(fig_cov)
+        print(f'--> Saved {fig_name_cov}')
         
         # Collect error scaling factors for each order and model
         order_error_scaling = []
@@ -253,38 +283,43 @@ class Retrieval:
                     
                     # Select only the finite pixels
                     mask_ij = self.d_spec[w_set].mask_isfinite[i,j]
+                    wave_ij = self.d_spec[w_set].wave[i,j,mask_ij]
 
                     if not mask_ij.any():
                         continue
                     
-                    separation_ij, err_eff_ij = None, None
+                    # separation_ij, err_eff_ij = None, None
                     # if hasattr(self.d_spec[w_set], 'flux_eff'):
                     if self.Param.cov_mode == None:
                         self.Param.cov_mode = 'None'
-                    if 'GP' in self.Param.cov_mode:
-                        if not hasattr(self.d_spec[w_set], 'separation'):
-                            print(f' No separation found for {w_set}')
-                            continue
-                        separation_ij = self.d_spec[w_set].separation[i,j]
-                        err_eff_ij = self.d_spec[w_set].err_eff[i,j]
+                    # if 'GP' in self.Param.cov_mode:
+                    #     if not hasattr(self.d_spec[w_set], 'separation'):
+                    #         print(f' No separation found for {w_set}')
+                    #         continue
+                    #     separation_ij = self.d_spec[w_set].separation[i,j]
+                    #     err_eff_ij = self.d_spec[w_set].err_eff[i,j]
                         
-                    grating = self.d_spec[w_set].gratings_list[i]
+                    # grating = self.d_spec[w_set].gratings_list[i]
                     # max_separation = self.conf.cov_kwargs.pop(f'max_separation_{grating}', self.conf.cov_kwargs.pop('max_separation', None))
-                    # print(f'[Retrieval.__init__] grating = {grating}, max_separation = {max_separation}')
-                    if 'length_scale_factors' in self.conf.cov_kwargs.keys():
-                        length_scale_factor = self.conf.cov_kwargs.get('length_scale_factors')[grating]
-                    else:
-                        length_scale_factor = 1.0
-                    
-                    self.Cov[w_set][i,j] = get_Covariance_class(
-                        self.d_spec[w_set].err[i,j,mask_ij], 
-                        self.Param.cov_mode, 
-                        separation=separation_ij,
-                        err_eff=err_eff_ij,
-                        length_scale_factor=length_scale_factor,
-                        # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
-                        **self.conf.cov_kwargs
-                        )
+                
+                    self.Cov[w_set][i,j] = Covariance(x=wave_ij, 
+                                                      err=self.d_spec[w_set].err[i,j,mask_ij],
+                                                      max_length_scale=self.conf.cov_kwargs.get('max_length_scale', None),
+                                                      truncate=self.conf.cov_kwargs.get('truncate', 4.0),
+                                                      scale_amplitude=self.conf.cov_kwargs.get('scale_amplitude', False),
+                                                      )
+                    # self.Cov[w_set][i,j] = get_Covariance_class(
+                    #     self.d_spec[w_set].err[i,j,mask_ij], 
+                    #     self.Param.cov_mode, 
+                    #     wave=wave_ij,
+                    #     # separation=separation_ij,
+                    #     # err_eff=err_eff_ij,
+                    #     # length_scale_factor=length_scale_factor,
+                    #     # # flux_eff=self.d_spec[w_set].flux_eff[i,j], 
+                    #     # **self.conf.cov_kwargs
+                    #     truncate=self.conf.cov_kwargs.get('truncate_distance', 4.0),
+                        
+                    #     )
             del_attrs = ['err', 'separation', 'err_eff', 'flux_eff']
             for attr in del_attrs:
                 if hasattr(self.d_spec[w_set], attr):
@@ -454,23 +489,23 @@ class Retrieval:
                                                     wave_cm=self.d_spec[w_set].wave*1e-7)
   
             self.m_spec[w_set].flux *= self.d_spec[w_set].flux_unit_factor
-            if 'GP' in self.Param.cov_mode:
-                for i in range(self.d_spec[w_set].n_orders):
-                    for j in range(self.d_spec[w_set].n_dets):
+            # if 'GP' in self.Param.cov_mode:
+            #     for i in range(self.d_spec[w_set].n_orders):
+            #         for j in range(self.d_spec[w_set].n_dets):
 
-                        if not self.d_spec[w_set].mask_isfinite[i,j].any():
-                            continue
+            #             if not self.d_spec[w_set].mask_isfinite[i,j].any():
+            #                 continue
 
-                        # grating = self.d_spec[w_set].gratings_list[i]
-                        # print(f' [Retrieval.PMN_lnL_func] (i,j) = ({i}, {j}), grating = {grating}')
-                        # Update the covariance matrix
-                        self.Cov[w_set][i,j](
-                            self.Param.params, 
-                            # w_set, 
-                            # order=i, det=j, 
-                            grating=self.d_spec[w_set].gratings_list[i],
-                            **self.conf.cov_kwargs, 
-                            )
+            #             # grating = self.d_spec[w_set].gratings_list[i]
+            #             # print(f' [Retrieval.PMN_lnL_func] (i,j) = ({i}, {j}), grating = {grating}')
+            #             # Update the covariance matrix
+            #             self.Cov[w_set][i,j](
+            #                 self.Param.params, 
+            #                 # w_set, 
+            #                 # order=i, det=j, 
+            #                 grating=self.d_spec[w_set].gratings_list[i],
+            #                 **self.conf.cov_kwargs, 
+            #                 )
 
             self.m_spec[w_set].fit_radius = ('R_p' in self.Param.param_keys)
             self.m_spec[w_set].beta2 = self.Param.params.get('beta2', 1.0)
@@ -481,9 +516,9 @@ class Retrieval:
             ln_L += self.LogLike[w_set](
                 self.m_spec[w_set], 
                 self.Cov[w_set], 
+                params=self.Param.params,
                 # is_first_w_set=(h==0), 
                 #ln_L_penalty=ln_L_penalty, 
-                evaluation=self.evaluation, 
                 )
         
         time_B = time.time()

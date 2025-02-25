@@ -2,17 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import cholesky_banded, cho_solve_banded
 
-def get_Covariance_class(err, mode=None, **kwargs):
-
-    assert mode is 'GP', 'Only GP mode is currently implemented'
-    # Use a GaussianProcesses instance
-    return GaussianProcesses(err, **kwargs)
-    
 class Covariance:
     
     c_km_s = 299792.458  # speed of light in km/s
     
-    def __init__(self, x, err, max_length_scale=None, truncate=4.0, scale_amplitude=False):
+    def __init__(self, x, err):
         """
         Initialize the Covariance class.
         
@@ -28,20 +22,6 @@ class Covariance:
         assert self.x.shape == self.err.shape, "x and err must have the same shape."
         assert np.all(np.isfinite(self.err)), "Error array contains non-finite values (NaNs or infs)."
 
-        self.max_length_scale = max_length_scale
-        self.truncate = truncate
-        self.scale_amplitude = scale_amplitude
-        self.max_value = None
-        if self.max_length_scale is not None:
-            assert self.max_length_scale > 0, "max_length_scale must be positive."
-            assert self.truncate > 0, "truncate must be positive."
-            self.max_value = self.max_length_scale * self.truncate
-
-        if self.x is not None:
-            self.x_ij = self.full_to_banded(self.separation_matrix(), 
-                                            max_value=self.max_value)
-            
-            
     def separation_matrix(self, x=None, x2=None):
         """
         Compute the pairwise velocity separation matrix.
@@ -147,7 +127,7 @@ class Covariance:
         amplitudes[amplitudes < 0] = 0.0
         return outlier_indices, amplitudes, sigma_robust
 
-    def local_kernel(self, x, a_L, mu_local, sigma_local, truncate=4.0, k=None):
+    def local_kernel(self, x, a_L, mu_local, sigma_local, truncate=4.0):
         """
         Build a local covariance kernel for a single feature.
         The kernel is given by a Gaussian function of the velocity separation from mu_local,
@@ -170,83 +150,24 @@ class Covariance:
             Local covariance matrix.
         """
         # Compute separation between each pixel and the local feature centre.
-        # x = np.atleast_1d(np.array(x))
+        x = np.atleast_1d(np.array(x))
         r_local = 0.5 * self.c_km_s * np.abs(x - mu_local) / (x + mu_local)
-                
         # Set truncation for the Hann window (e.g., 4 * sigma_local)
         r0_local = truncate * sigma_local
         w_local = self.hann_window(r_local, r0_local)
         profile = np.exp(-0.5 * (r_local / sigma_local)**2)
         weighted_profile = w_local * profile
-        return self.full_to_banded(a_L**2 * np.outer(weighted_profile, weighted_profile), k=k)
+        return a_L**2 * np.outer(weighted_profile, weighted_profile)
     
     def effective_variance(self, b=0.0):
         """
         Compute the effective variance array, which is the diagonal of the covariance matrix scaled by the factor b as in
-        sigma2 = sigma2_0 * 10.0**b
+        sigma2 = sigma_2_0 * 10.0**b
+        b = 0.0 --> sigma2 = sigma_2_0
+        b = 1.0 --> sigma2 = 10.0 * sigma_2_0
         """
-        return (self.err**2 * 10.0**b)
-    
-    def local_covariance(self, residuals, residuals_threshold=4.0, sigma_local=1.0, truncate=4.0, k=None):
-        """
-        Compute the local covariance matrix from the residuals.
-        """
-        K_local = np.zeros_like(self.C)
-        # print(f'[Covariance.local_covariance]: K_local.shape = {K_local.shape}')
-        
-        outlier_indices, amplitudes, sigma_robust = self.identify_outliers(residuals, threshold=residuals_threshold)
-        for a_local, idx in zip(amplitudes, outlier_indices):
-            if a_local > 0:
-                mu_local = self.x[idx]
-                K_local += self.local_kernel(self.x, a_local, mu_local, sigma_local, truncate=truncate, k=k)
-        return K_local
-    
-    def __call__(self, 
-                 params={}, 
-                 residuals=None,
-                 jitter=0.0):
-        """
-        Compute the covariance matrix for a given set of parameters.
-        """
-        
-        self.C = self.full_to_banded(np.diag(self.effective_variance(b=params.get('b', 0.0))),
-                                     k=self.x_ij.shape[0])
-        
-        a_G = params.get('a_G', 0.0)
-        if self.scale_amplitude:
-            a_G *= np.median(self.C[0])
-            
-        self.C += self.matern_kernel(self.x_ij, 
-                                    a_G, # default is no global covariance
-                                    params.get('l_G', 1.0), 
-                                    nu=1.5, 
-                                    r0=self.max_value)
-        
-        if residuals is not None:
-            # Identify outliers from the residuals:
-            K_local = self.local_covariance(residuals, 
-                                            residuals_threshold=params.get('local_threshold', 4.0),
-                                            sigma_local=params.get('local_sigma', 1.0),
-                                            truncate=self.truncate,
-                                            k=self.x_ij.shape[0])
-            if np.any(K_local > 0.0):
-                self.C += K_local
-            
-        if jitter > 0.0:
-            # typical value for jitter is 1e-6
-            self.C += jitter * np.mean(self.C[0]) * np.eye(len(self.x))
-        
-        # Cholesky factorize
-        self.L = self.cholesky_banded(self.C, get_logdet=True)
-        return 
-    
-    @property
-    def cov(self):
-        'alias for the covariance matrix'
-        if hasattr(self, 'L'):
-            return self.L
-        else:
-            return self.C
+        var = self.err**2 * 10.0**b
+        return var
     
     @classmethod
     def full_to_banded(cls, array, max_value=None, k=None):
@@ -295,7 +216,7 @@ class Covariance:
 
         return A
     
-    def cholesky_banded(self, Ab, get_logdet=False):
+    def cholesky_banded(self, Ab):
         """
         Compute the Cholesky factorization of a symmetric positive-definite 
         banded matrix A given in banded form Ab.
@@ -310,11 +231,11 @@ class Covariance:
         L : ndarray
             The Cholesky factor in banded form.
         """
-        self.L = cholesky_banded(Ab, lower=True, overwrite_ab=False, check_finite=True)
+        L = cholesky_banded(Ab, lower=True, overwrite_ab=False, check_finite=True)
         # Calculate and store logdet
-        if get_logdet:
-            self.logdet = self.logdet_from_cholesky(self.L, lower=True)
-        return self.L
+        if not hasattr(self, 'logdet'):
+            self.logdet = self.logdet_from_cholesky(L, lower=True)
+        return L
 
     def solve_banded_system(self, L, b, lower=True):
         """
@@ -402,25 +323,33 @@ class Covariance:
         K_global = self.matern_kernel(r_full, a_G, l, nu=1.5, r0=r0_global)
         
         # Identify outliers from the residuals:
-        K_local = self.local_covariance(resid, 
-                                       residuals_threshold=threshold, 
-                                       sigma_local=sigma_local, 
-                                       truncate=truncate)
+        outlier_indices, amplitudes, sigma_robust = self.identify_outliers(resid, threshold=threshold)
+        
+        # Sum the local covariance contributions:
+        K_local = np.zeros_like(M1)
+        for a_local, idx in zip(amplitudes, outlier_indices):
+            if a_local > 0:
+                mu_local = self.x[idx]
+                K_local += self.local_kernel(self.x, a_local, mu_local, sigma_local, truncate=truncate)
         
         C_total = M1 + K_global + K_local + self.jitter * np.eye(len(self.x))
         components = {'noise': M1, 'global': K_global, 'local': K_local}
         return C_total, components
     
-    def draw_random_samples(self, C=None, n_draws=200):
+    def draw_random_samples(self, x=None, C=None, n_draws=200):
+        if x is None:
+            x = self.x
         if C is None:
             C = self.C
-        return np.random.multivariate_normal(np.zeros(C.shape[0]), C, size=n_draws)
+        return np.random.multivariate_normal(np.zeros(len(x)), C, size=n_draws)
     
-    def envelope_contours(self, C=None, draws=None, n_draws=200):
+    def envelope_contours(self, x=None, C=None, draws=None, n_draws=200):
+        if x is None:
+            x = self.x
         if C is None:
             C = self.C
         if draws is None:
-            draws = self.draw_random_samples(C=C, n_draws=n_draws)
+            draws = self.draw_random_samples(x=x, n_draws=n_draws)
         lower1, upper1 = np.percentile(draws, [16, 84], axis=0)
         lower2, upper2 = np.percentile(draws, [2.5, 97.5], axis=0)
         lower3, upper3 = np.percentile(draws, [0.15, 99.85], axis=0)

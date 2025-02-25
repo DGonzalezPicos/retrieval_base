@@ -97,8 +97,8 @@ if args.pre_processing:
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     
     
-    if 'GP' in conf.cov_mode:
-        spec.prepare_for_covariance()
+    # if 'GP' in conf.cov_mode: # DEPRECATED 2025-02-25
+    #     spec.prepare_for_covariance()
         
     spec.gratings_list = conf.constant_params['gratings']
     print(f' gratings_list = {spec.gratings_list}')
@@ -149,7 +149,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = True
+    random = False
     np.random.seed(1123)
     random_label = '_random' if random else ''
     disk = True

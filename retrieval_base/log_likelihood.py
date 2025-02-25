@@ -33,7 +33,8 @@ class LogLikelihood:
     def __call__(self, 
                  m_spec, 
                  Cov, 
-                 evaluation=False):
+                 params={},
+                 ):
         '''
         Evaluate the total log-likelihood given the model spectrum and parameters.
 
@@ -80,63 +81,69 @@ class LogLikelihood:
                     self.ln_L = -np.inf
                     return self.ln_L
                 
-                if self.use_lck:
-                    # print(f' [LogLikelihood.__call__]: using LCK')
-                    debug_lck = False
-                    lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
-                                                d_flux_ij,
-                                                # d_err_ij,
-                                                np.sqrt(Cov[i,j].cov[0]), # diagonal of banded covariance matrix
-                                                lck_width=self.lck_kwargs.get('lck_width', 4))
-                    lck.s = lck(m_flux_ij, 
-                        sigma_threshold=self.lck_kwargs.get('sigma_threshold', 5.0),
-                        n_max_regions=self.lck_kwargs.get('n_max_regions', 5))
+                # Evaluate the covariance matrix
+                Cov[i,j](params, 
+                         residuals=res_ij,
+                         jitter=0.0)
+                
+                # if self.use_lck:
+                #     # print(f' [LogLikelihood.__call__]: using LCK')
+                #     debug_lck = False
+                #     lck = LocalCovarianceKernel(self.d_spec.wave[i,j,mask_ij],
+                #                                 d_flux_ij,
+                #                                 # d_err_ij,
+                #                                 np.sqrt(Cov[i,j].cov[0]), # diagonal of banded covariance matrix
+                #                                 lck_width=self.lck_kwargs.get('lck_width', 4))
+                #     lck.s = lck(m_flux_ij, 
+                #         sigma_threshold=self.lck_kwargs.get('sigma_threshold', 5.0),
+                #         n_max_regions=self.lck_kwargs.get('n_max_regions', 5))
                    
-                    if len(getattr(lck, 'chi2_regions', [])) > 0:
-                        if debug_lck:
-                            print(f' [LogLikelihood.__call__]: lck.s.shape {lck.s.shape}')
-                            print(f' [LogLikelihood.__call__]: lck.s.min() {lck.s.min():.2e} lck.s.max() {lck.s.max():.2e} lck.s.mean() {lck.s.mean():.2e}')
-                            print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
+                #     if len(getattr(lck, 'chi2_regions', [])) > 0:
+                #         if debug_lck:
+                #             print(f' [LogLikelihood.__call__]: lck.s.shape {lck.s.shape}')
+                #             print(f' [LogLikelihood.__call__]: lck.s.min() {lck.s.min():.2e} lck.s.max() {lck.s.max():.2e} lck.s.mean() {lck.s.mean():.2e}')
+                #             print(f' [LogLikelihood.__call__]: lck.regions {lck.regions}')
                             
-                        kernel = lck.correlated_kernel(
-                                                    # length_scale=Cov[i,j].l, # same length scale as the global covariance matrixc
-                                                    trunc_dist=self.lck_kwargs.get('trunc_dist', 4),
-                                                       max_value=25.0 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
+                #         kernel = lck.correlated_kernel(
+                #                                     # length_scale=Cov[i,j].l, # same length scale as the global covariance matrixc
+                #                                     trunc_dist=self.lck_kwargs.get('trunc_dist', 4),
+                #                                        max_value=25.0 * np.quantile(Cov[i,j].cov, 0.95)) # a_k**2
                        
-                        if debug_lck:
-                            print(f' [LogLikelihood.__call__]: Cov.cov: min={Cov[i,j].cov.min():.2e} max={Cov[i,j].cov.max():.2e} mean={Cov[i,j].cov.mean():.2e}')
-                            print(f' [LogLikelihood.__call__]: Cov.err_eff: {Cov[i,j].err_eff:.2e}')
-                            # print(f' [LogLikelihood.__call__]: kernel_banded.max() {kernel_banded.max():.2e}')
-                            # print(f' [LogLikelihood.__call__]: a_k * Cov.err_eff: {a_k * Cov[i,j].err_eff:.2e}')
-                            print(f' [LogLikelihood.__call__]: scale_GP_amp {self.lck_kwargs.get("scale_GP_amp", True)}')
+                #         if debug_lck:
+                #             print(f' [LogLikelihood.__call__]: Cov.cov: min={Cov[i,j].cov.min():.2e} max={Cov[i,j].cov.max():.2e} mean={Cov[i,j].cov.mean():.2e}')
+                #             print(f' [LogLikelihood.__call__]: Cov.err_eff: {Cov[i,j].err_eff:.2e}')
+                #             # print(f' [LogLikelihood.__call__]: kernel_banded.max() {kernel_banded.max():.2e}')
+                #             # print(f' [LogLikelihood.__call__]: a_k * Cov.err_eff: {a_k * Cov[i,j].err_eff:.2e}')
+                #             print(f' [LogLikelihood.__call__]: scale_GP_amp {self.lck_kwargs.get("scale_GP_amp", True)}')
                             
-                        # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].err_eff**2) #FIXME: what is the maximum reasonable value?
-                        # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].cov.max())
-                        w_ij = Cov[i,j].separation < self.lck_kwargs.get('trunc_dist', 4) * lck.lck_width_wavelength
+                #         # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].err_eff**2) #FIXME: what is the maximum reasonable value?
+                #         # kernel_banded = np.clip(kernel_banded, 0.0, Cov[i,j].cov.max())
+                #         w_ij = Cov[i,j].separation < self.lck_kwargs.get('trunc_dist', 4) * lck.lck_width_wavelength
 
-                        Cov[i,j].cov[w_ij] += Cov[i,j].get_banded(kernel, k=Cov[i,j].separation.shape[0])[:Cov[i,j].separation.shape[0]][w_ij]
-                        del kernel, lck
+                #         Cov[i,j].cov[w_ij] += Cov[i,j].get_banded(kernel, k=Cov[i,j].separation.shape[0])[:Cov[i,j].separation.shape[0]][w_ij]
+                #         del kernel, lck
                     
-                if Cov[i,j].is_matrix:
-                    # Retrieve a Cholesky decomposition
-                    Cov[i,j].get_cholesky(debug=debug_lck)
-                    # if debug_lck:
-                        # print(f' [LogLikelihood.__call__]: (i,j) = ({i},{j}), Cov[i,j].cov_cholesky.shape {Cov[i,j].cov_cholesky.shape}')
-                    # if np.all(Cov[i,j].cov_cholesky == 0):
-                    if Cov[i,j].cholesky_failed:
-                        print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j} with l_G {Cov[i,j].l:.2e} and a_G {Cov[i,j].a:.2e}')
-                        self.ln_L = -np.inf
-                        self.chi_squared_red = np.inf
-                        return self.ln_L
-                    # print(f' Cholesky shape {Cov[i,j].cov_cholesky.shape}')
+                # if Cov[i,j].is_matrix:
+                #     # Retrieve a Cholesky decomposition
+                #     Cov[i,j].get_cholesky(debug=debug_lck)
+                #     # if debug_lck:
+                #         # print(f' [LogLikelihood.__call__]: (i,j) = ({i},{j}), Cov[i,j].cov_cholesky.shape {Cov[i,j].cov_cholesky.shape}')
+                #     # if np.all(Cov[i,j].cov_cholesky == 0):
+                #     if Cov[i,j].cholesky_failed:
+                #         print(f' [LogLikelihood.__call__]: Cholesky decomposition failed for order {i}, detector {j} with l_G {Cov[i,j].l:.2e} and a_G {Cov[i,j].a:.2e}')
+                #         self.ln_L = -np.inf
+                #         self.chi_squared_red = np.inf
+                #         return self.ln_L
+                #     # print(f' Cholesky shape {Cov[i,j].cov_cholesky.shape}')
 
-                # Get the log of the determinant (log prevents over/under-flow)
-                Cov[i,j].get_logdet()
-                # check logdet
+                # # Get the log of the determinant (log prevents over/under-flow)
+                # Cov[i,j].get_logdet()
+                # # check logdet
                 # print(f' logdet {Cov[i,j].logdet:.2e}')
                 
                 # Chi-squared for the optimal linear scaling
-                inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
+                # inv_cov_ij_res_ij = Cov[i,j].solve(res_ij)
+                inv_cov_ij_res_ij = Cov[i,j].solve_banded_system(Cov[i,j].L, res_ij)
                 # check there's no inf or nan
                 assert np.all(np.isfinite(inv_cov_ij_res_ij)), 'There are inf or nan in the inverse covariance matrix'
                 # print(f' [LogLikelihood.__call__]: mean(res_ij) {np.mean(res_ij):.2e}')

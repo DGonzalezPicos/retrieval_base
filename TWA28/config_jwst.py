@@ -506,7 +506,8 @@ trunc_dist = 4.0
 #         # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
 #         # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
 
-free_params['log_l_G'] = [(1.5, 2.2), r'$\log\ l_G$ [km/s]'] # from 30 to ~200 km/s ~ 5 pixels
+free_params['log_l_G'] = [(1.4, 2.4), r'$\log\ l_G$ [km/s]'] # from 30 to ~200 km/s ~ 5 pixels
+free_params['log_a_G'] = [(-1.0, 1.0), r'$\log\ a_G$']
 cov_kwargs = {
     'scale_amplitude': True,
     'max_length_scale': 10.0**free_params['log_l_G'][0][1],

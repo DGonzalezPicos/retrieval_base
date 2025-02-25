@@ -214,7 +214,7 @@ class Covariance:
         
         a_G = params.get('a_G', 0.0)
         if self.scale_amplitude:
-            a_G *= np.median(self.C[0])
+            a_G *= np.median(self.C[0])**0.5
             
         self.C += self.matern_kernel(self.x_ij, 
                                     a_G, # default is no global covariance

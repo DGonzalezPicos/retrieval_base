@@ -71,7 +71,7 @@ def prior_check(conf, n=3, random=False,
         ret.evaluation = get_contr
         ln_L = ret.PMN_lnL_func()
         # assert hasattr(ret.m_spec, 'int_contr_em'), f' No integrated contribution emission found in ret.m_spec'
-        Cov_list.append(ret.Cov[w_set])
+        Cov_list.append(copy.deepcopy(ret.Cov[w_set]))
         
         if i == 0:
             print(f' shape data flux = {ret.d_spec[w_set].flux.shape}')
@@ -117,33 +117,7 @@ def prior_check(conf, n=3, random=False,
             fig_name=str(fig_name).replace('.pdf', '_VMR.pdf') if i==(len(theta)-1) else None
             )
         
-        # plot random draws from covariance matrix
-        n_orders = ret.d_spec[w_set].n_orders
-        n_dets = ret.d_spec[w_set].n_dets
-        fig_cov, ax_cov = plt.subplots(n_orders, 1, figsize=(10,10))
-        for i, Cov in enumerate(Cov_list):
-            for order in range(ret.d_spec[w_set].n_orders):
-                for det in range(ret.d_spec[w_set].n_dets):
-                    mask_ij = ret.d_spec[w_set].mask_isfinite[order, det]
-                    C_full = Cov[order, det].banded_to_full(Cov[order, det].C)
-                    envelope_contours = Cov[order, det].envelope_contours(C=C_full, 
-                                                                       draws=None, 
-                                                                       n_draws=200)
-                    (l1, u1), (l2, u2), (l3, u3) = envelope_contours
-                    mask_ij = ret.d_spec[w_set].mask_isfinite[order, det]
-                    ax_cov[order].fill_between(ret.d_spec[w_set].wave[order, det, mask_ij], l3, u3, color=f'C{i}', alpha=0.1, label='3σ', lw=0.0)
-                    ax_cov[order].fill_between(ret.d_spec[w_set].wave[order, det, mask_ij], l2, u2, color=f'C{i}', alpha=0.2, label='2σ', lw=0.0)
-                    ax_cov[order].fill_between(ret.d_spec[w_set].wave[order, det, mask_ij], l1, u1, color=f'C{i}', alpha=0.3, label='1σ', lw=0.0)
-                    ax_cov[order].set_xlabel('Wavelength / nm')
-                    ax_cov[order].set_ylabel('Flux []')
-                    if order == 0:
-                        ax_cov[order].legend()
         
-        plt.tight_layout()
-        fig_name_cov = str(fig_name).replace('.pdf', '_cov.pdf')
-        fig_cov.savefig(fig_name_cov)
-        plt.close(fig_cov)
-        print(f'--> Saved {fig_name_cov}')
         
         # Collect error scaling factors for each order and model
         order_error_scaling = []
@@ -201,19 +175,63 @@ def prior_check(conf, n=3, random=False,
             plt.close(fig)
         print(f'--> Saved {fig_name}')
         
-        # Prepare headers for the error scaling factor table
-        error_headers = ['Order'] + [f'Model {i+1}' for i in range(n)]
+        show_error_table = False
+        if show_error_table:
+            # Prepare headers for the error scaling factor table
+            error_headers = ['Order'] + [f'Model {i+1}' for i in range(n)]
 
-        # Prepare data for the error scaling factor table
-        error_table_data = []
-        for order_idx in range(len(error_scaling_factors[0])):
-            row = [f'Order {order_idx+1}']
-            for model_idx in range(n):
-                row.append(', '.join(f'{factor:.1f}' for factor in error_scaling_factors[model_idx][order_idx]))
-            error_table_data.append(row)
+            # Prepare data for the error scaling factor table
+            error_table_data = []
+            for order_idx in range(len(error_scaling_factors[0])):
+                row = [f'Order {order_idx+1}']
+                for model_idx in range(n):
+                    row.append(', '.join(f'{factor:.1f}' for factor in error_scaling_factors[model_idx][order_idx]))
+                error_table_data.append(row)
 
-        # Print the error scaling factor table
-        print(tabulate(error_table_data, headers=error_headers, tablefmt='grid'))
+            # Print the error scaling factor table
+            print(tabulate(error_table_data, headers=error_headers, tablefmt='grid'))
+        
+        # plot random draws from covariance matrix
+        n_orders = ret.d_spec[w_set].n_orders
+        n_dets = ret.d_spec[w_set].n_dets
+        fig_cov, ax_cov = plt.subplots(n_orders, 1, figsize=(10,10))
+        fig_cov_grid, ax_cov_grid = plt.subplots(n_orders, len(theta), figsize=(10,10), gridspec_kw={'wspace':0.2}, tight_layout=True)
+        for i, Cov in enumerate(Cov_list):
+            for order in range(ret.d_spec[w_set].n_orders):
+                for det in range(ret.d_spec[w_set].n_dets):
+                    mask_ij = ret.d_spec[w_set].mask_isfinite[order, det]
+                    C_full = Cov[order, det].banded_to_full(Cov[order, det].C)
+                    envelope_contours = Cov[order, det].envelope_contours(C=C_full, 
+                                                                       draws=None, 
+                                                                       n_draws=200)
+                    (l1, u1), (l2, u2), (l3, u3) = envelope_contours
+                    mask_ij = ret.d_spec[w_set].mask_isfinite[order, det]
+                    wave_ij = ret.d_spec[w_set].wave[order, det, mask_ij]
+                    ax_cov[order].fill_between(wave_ij, l3, u3, color=f'C{i}', alpha=0.1, label='3σ', lw=0.0)
+                    ax_cov[order].fill_between(wave_ij, l2, u2, color=f'C{i}', alpha=0.2, label='2σ', lw=0.0)
+                    ax_cov[order].fill_between(wave_ij, l1, u1, color=f'C{i}', alpha=0.3, label='1σ', lw=0.0)
+                    ax_cov[order].set_xlabel('Wavelength / nm')
+                    ax_cov[order].set_ylabel('Flux []')
+                    if order == 0:
+                        ax_cov[order].legend()
+                        
+                    extent = [wave_ij[0], wave_ij[-1], wave_ij[0], wave_ij[-1]]
+                    vmin, vmax = np.quantile(C_full, [0.01, 0.99])
+                    im = ax_cov_grid[order,i].imshow(C_full, cmap='Blues', aspect='auto', origin='lower', extent=extent, vmin=vmin, vmax=vmax)
+                    # use .e notation for the colorbar 
+                    plt.colorbar(im, ax=ax_cov_grid[order,i])
+        
+        plt.tight_layout()
+        fig_name_cov = str(fig_name).replace('.pdf', '_cov.pdf')
+        fig_name_cov_grid = str(fig_name).replace('.pdf', '_cov_grid.pdf')
+        
+        fig_cov_grid.savefig(fig_name_cov_grid)
+        plt.close(fig_cov_grid)
+        print(f'--> Saved {fig_name_cov_grid}')
+        
+        fig_cov.savefig(fig_name_cov)
+        plt.close(fig_cov)
+        print(f'--> Saved {fig_name_cov}')
         
         return ret
                        

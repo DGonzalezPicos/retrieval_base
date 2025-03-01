@@ -446,10 +446,11 @@ def fig_cov(LogLike, Cov, d_spec, cmap, prefix=None, w_set=''):
             mask_ij = d_spec.mask_isfinite[i,j]
 
             # Get the covariance matrix
-            cov = Cov[i,j].get_dense_cov()
+            # cov = Cov[i,j].get_dense_cov()
+            cov = Cov[i,j].banded_to_full(Cov[i,j].C)
 
             # Scale with the optimal uncertainty scaling
-            cov *= LogLike.beta[i,j]**2
+            # cov *= LogLike.beta[i,j]**2
 
             # Insert the masked rows into the covariance matrix
             # n_pixels = len(mask_ij)

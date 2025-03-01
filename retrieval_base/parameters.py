@@ -77,7 +77,7 @@ class Parameters:
 
         # Check the used covariance definition
         self.cov_mode = cov_mode
-        assert(self.cov_mode in ['GP', None, 'None'])
+        assert(self.cov_mode in ['GP', 'newGP', None, 'None'])
 
         self.wlen_settings = wlen_settings
         assert isinstance(self.wlen_settings, dict), 'wlen_settings must be a dictionary'

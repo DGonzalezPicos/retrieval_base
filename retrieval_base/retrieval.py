@@ -195,7 +195,7 @@ def prior_check(conf, n=3, random=False,
         n_orders = ret.d_spec[w_set].n_orders
         n_dets = ret.d_spec[w_set].n_dets
         fig_cov, ax_cov = plt.subplots(n_orders, 1, figsize=(10,10))
-        fig_cov_grid, ax_cov_grid = plt.subplots(n_orders, len(theta), figsize=(10,10), gridspec_kw={'wspace':0.2}, tight_layout=True)
+        fig_cov_grid, ax_cov_grid = plt.subplots(n_orders, len(theta), figsize=(10,10), gridspec_kw={'wspace':0.2})
         for i, Cov in enumerate(Cov_list):
             for order in range(ret.d_spec[w_set].n_orders):
                 for det in range(ret.d_spec[w_set].n_dets):
@@ -221,7 +221,6 @@ def prior_check(conf, n=3, random=False,
                     # use .e notation for the colorbar 
                     plt.colorbar(im, ax=ax_cov_grid[order,i])
         
-        plt.tight_layout()
         fig_name_cov = str(fig_name).replace('.pdf', '_cov.pdf')
         fig_name_cov_grid = str(fig_name).replace('.pdf', '_cov_grid.pdf')
         

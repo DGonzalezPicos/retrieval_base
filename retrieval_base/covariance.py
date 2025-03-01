@@ -4,9 +4,12 @@ from scipy.linalg import cholesky_banded, cho_solve_banded
 
 def get_Covariance_class(err, mode=None, **kwargs):
 
-    assert mode is 'GP', 'Only GP mode is currently implemented'
+    # assert mode == 'newGP', 'Only GP mode is currently implemented'
     # Use a GaussianProcesses instance
-    return GaussianProcesses(err, **kwargs)
+    if mode == 'newGP':
+        return Covariance(err, **kwargs)
+    elif mode == 'GP':
+        return GaussianProcesses(err, **kwargs)
     
 class Covariance:
     
@@ -247,6 +250,15 @@ class Covariance:
             return self.L
         else:
             return self.C
+        
+    def get_err(self, mask=None):
+        if mask is None:
+            mask = np.ones(self.C.shape[-1]).astype(bool)
+        err = np.nan * np.ones_like(mask)
+        
+        err[mask] = np.sqrt(np.diag(self.banded_to_full(self.C)))
+        return err
+
     
     @classmethod
     def full_to_banded(cls, array, max_value=None, k=None):
@@ -534,6 +546,398 @@ class Covariance:
         # share y-axis limits between the second column
         plt.tight_layout()
         plt.show()
+        
+        
+class OLDCovariance:
+     
+    def __init__(self, err, **kwargs):
+
+        # Set-up the covariance matrix, manage the case where err is negative or zero
+        self.err = np.where(err > 0, err, np.inf)
+        # print(f' [Covariance.__init__]: err.shape {self.err.shape}')
+        # print(f' [Covariance.__init__]: err.min {self.err.min():.2e} err.max {self.err.max():.2e}')
+        # print(f' [Covariance.__init__]: err.mean {self.err.mean():.2e}, err.std {self.err.std():.2e}')
+        self.cov_reset()
+
+        # Set to None initially
+        self.cov_cholesky = None
+        self.cholesky_failed = False
+
+    def __call__(self, params, grating, order, det, **kwargs):
+
+        # Reset the covariance matrix
+        self.cov_reset()
+        # check there's no zeros in cov
+        assert not np.any(self.cov == 0), f'Covariance matrix has {np.sum(self.cov == 0)} zeros'
+        
+        if params[f'beta_{grating}'][order,det] != 1:
+            self.add_data_err_scaling(
+                params[f'beta_{grating}'][order,det]
+                )
+        return self
+
+    def cov_reset(self):
+
+        # Create the covariance matrix from the uncertainties
+        self.cov = self.err**2
+        self.is_matrix = (self.cov.ndim == 2)
+
+        self.cov_shape = self.cov.shape
+        return self
+
+    def add_data_err_scaling(self, beta):
+        # print(f' self.cov.shape {self.cov.shape}')
+        # print(f' beta.shape {beta.shape}')
+        # Scale the uncertainty with a (beta) factor
+        if not self.is_matrix:
+            self.cov *= beta**2
+        else:
+            self.cov[np.diag_indices_from(self.cov)] *= beta**2
+            
+        return self
+
+    def add_model_err(self, model_err):
+
+        # Add a model uncertainty term
+        if not self.is_matrix:
+            self.cov += model_err**2
+        else:
+            self.cov += np.diag(model_err**2)
+        return self
+
+    def get_logdet(self):
+
+        # Calculate the log of the determinant
+        self.logdet = np.sum(np.log(self.cov))
+        return self
+    
+
+    def solve(self, b):
+        '''
+        Solve the system cov*x = b, for x (x = cov^{-1}*b).
+
+        Input
+        -----
+        b : np.ndarray
+            Righthand-side of cov*x = b.
+        
+        Returns
+        -------
+        x : np.ndarray
+
+        '''
+        
+        if self.is_matrix:
+            return np.linalg.solve(self.cov, b)
+            
+        # Only invert the diagonal
+        return (1/self.cov) * b
+    
+    def get_dense_cov(self):
+
+        if self.is_matrix:
+            return self.cov
+        
+        return np.diag(self.cov)
+    
+    def get_err(self, mask=None):
+        
+        if mask is None:
+            mask = np.ones(self.cov.shape[-1]).astype(bool)
+        err = np.nan * np.ones_like(mask)
+
+        if not self.is_matrix:
+            err[mask] = np.sqrt(self.cov)
+        
+        else: # diagonal elements
+            err[mask] = np.sqrt(np.diag(self.get_dense_cov()))
+        return err
+
+class GaussianProcesses(OLDCovariance):
+
+    def get_banded(cls, array, max_value=None, k=None):
+
+        # Make banded covariance matrix
+        banded_array = []
+        k = len(array) if k is None else k
+        for i in range(len(array)):
+            # Retrieve the i-th diagonal
+            diag_i = np.diag(array, k=i)
+
+            if (diag_i == 0).all() and (i != 0) and i >= k:
+                # There are no more non-zero diagonals coming
+                break
+            
+            if max_value is not None:
+                if (diag_i > max_value).all():
+                    break
+
+            # Only store the non-zero diagonals
+            # Pad the diagonals to the same sizes
+            banded_array.append(
+                np.concatenate((diag_i, np.zeros(i)))
+                )
+        
+        # Convert to array for scipy
+        banded_array = np.asarray(banded_array)
+
+        return banded_array
+
+    def __init__(self, err, separation, err_eff=None, max_separation=None, length_scale_factor=1.0, **kwargs):
+        '''
+        Create a covariance matrix suited for Gaussian processes. 
+
+        Input
+        -----
+        err : np.ndarray
+            Uncertainty in the flux.
+        separation : np.ndarray
+            Separation between pixels, can be in units of wavelength, 
+            pixels, or velocity.
+        err_eff : np.ndarray
+            Average squared error between pixels.
+        '''
+        
+        # Pre-computed average error and wavelength separation
+        self.separation = np.abs(separation)
+        self.err_eff  = err_eff
+        self.length_scale_factor = length_scale_factor
+        self.max_separation = max_separation * self.length_scale_factor
+        
+        self.trunc_dist = kwargs.get('trunc_dist', 4.0)
+
+        # Convert to banded matrices
+        self.separation = self.get_banded(
+            self.separation, max_value=self.max_separation
+            )
+        
+        assert isinstance(self.err_eff, float), f'err_eff must be a float, got {type(self.err_eff)}'
+        self.err_eff_copy = float(self.err_eff)
+        self.err_eff = float(self.err_eff)
+
+        # Give arguments to the parent class
+        super().__init__(err)
+
+    def __call__(self, params, grating, **kwargs): # remove order, det as arguments
+
+        # Reset the covariance matrix
+        self.cov_reset()
+
+
+        if params.get(f'a_{grating}_G', None) is not None:
+            if isinstance(params[f'a_{grating}_G'], float):
+                # print(f' --> Adding RBF kernel with a={params[f"a_{grating}_G"]}, l={params["l_G"]}')
+                self.a = params[f'a_{grating}_G']
+                self.l = params.get('l_G', params.get(f'log_l_{grating}_G', None))
+                assert self.l is not None, f' [GaussianProcesses.__call__]: l_{grating}_G parameter not found in the parameter keys'
+                # print(f' --> Adding RBF kernel with a={self.a:.2e}, l={self.l * self.length_scale_factor:.2e} with self.length_scale_factor={self.length_scale_factor:.1f}')
+                self.add_RBF_kernel(
+                    a = self.a, 
+                    l = self.l * self.length_scale_factor,
+                    trunc_dist=self.trunc_dist,
+                    scale_GP_amp=kwargs.get('scale_GP_amp', False),
+                    # **kwargs
+                    )
+        beta2 = np.clip(params.get('beta2', 1.0), 0.1, None)
+        if beta2 != 1.0:
+            print(f' --> beta2 {beta2}')
+        # print(f' --> beta2 {beta2}')
+        # self.cov *=  beta2
+        
+            
+
+    def cov_reset(self):
+
+        # Create the covariance matrix from the uncertainties
+        self.cov = np.zeros_like(self.separation)
+        self.cov[0] = self.err**2
+        # min, mean, median, max = np.min(self.cov), np.mean(self.cov), np.median(self.cov), np.max(self.cov)
+        # print(f'[Covariance.cov_reset]: cov.min, mean, median, max = {min:.2e}, {mean:.2e}, {median:.2e}, {max:.2e}')
+        # self.err_eff = float(self.err_eff_copy)
+        self.is_matrix = True
+        return self
+        
+    def add_data_err_scaling(self, beta):
+        # Scale the uncertainty with a (beta) factor
+        assert len(self.cov.shape) == 2, f'Covariance matrix is not banded: {self.cov.shape}'
+        self.cov[0] *= beta**2
+        # self.err_eff *= beta**2
+        return self
+    
+    def hanning_window(self, trunc_dist=5, l=1, cosine_taper=True):
+        # Hann window function to ensure sparsity
+        if cosine_taper:
+            ratio = self.separation / (trunc_dist * l)
+            w_ij = np.where(
+                self.separation < trunc_dist * l,
+                0.5 * (1 + np.cos(np.pi * ratio)),
+                0
+            ).astype(bool)
+        else:
+            w_ij = self.separation < (trunc_dist * l)
+        return w_ij
+
+    def add_RBF_kernel(self, a, l, trunc_dist=4.0, scale_GP_amp=False):
+        '''
+        Add a radial-basis function kernel to the covariance matrix. 
+        The amplitude can be scaled by the flux-uncertainties of 
+        pixels i and j if scale_GP_amp=True. 
+
+        Input
+        -----
+        a : float
+            Square-root of amplitude of the RBF kernel.
+        l : float
+            Length-scale of the RBF kernel.
+        trunc_dist : float
+            Distance at which to truncate the kernel 
+            (|wave_i-wave_j| < trunc_dist*l). This ensures
+            a relatively sparse covariance matrix. 
+        scale_GP_amp : bool
+            If True, scale the amplitude at each covariance element, 
+            using the flux-uncertainties of the corresponding pixels
+            (A = a**2 * (err_i**2 + err_j**2)/2).
+        '''
+
+        # Hann window function to ensure sparsity
+        # w_ij = self.hanning_window(trunc_dist, l, cosine_taper=kwargs.get('cosine_taper', False))
+        w_ij = self.separation < (trunc_dist * l)
+        # check fraction of elements that are non-zero
+        # print(f' --> Fraction of non-zero elements: {np.sum(w_ij)/w_ij.size}')
+        # print(f' w_ij.shape {w_ij.shape}')
+        # GP amplitude
+        err_eff = 1.0 if not scale_GP_amp else self.err_eff
+        GP_amp = (a * err_eff)**2
+        if isinstance(GP_amp, np.ndarray):
+            GP_amp = GP_amp[w_ij]
+
+        # Gaussian radial-basis function kernel
+        self.cov[w_ij] += GP_amp * np.exp(-(self.separation[w_ij])**2/(2*l**2))
+        
+        return self
+    
+    def check_cov(self):
+        print(f' --> Checking covariance matrix')
+        print(f' --> cov.shape {self.cov.shape}')
+        assert np.all(np.diag(self.cov) >= 0), f'Covariance matrix has negative diagonal elements: {self.cov.shape}'
+        # check all values are finite
+        assert np.all(np.isfinite(self.cov)), f'Covariance matrix has non-finite values: {self.cov.shape}'
+        assert np.all(self.cov >= 0), f'Covariance matrix has negative values: {self.cov.shape}'
+        # Compute eigenvalues of the banded covariance matrix
+        eigenvalues, eigenvectors = eig_banded(self.cov, lower=True)
+        
+        if np.any(eigenvalues < 0):
+            print(f'Warning: Negative eigenvalues detected: {eigenvalues[eigenvalues < 0]}')
+            print(f' shape of cov {self.cov.shape}')
+            # Clip negative eigenvalues to a small positive value
+            eigenvalues = np.clip(eigenvalues, a_min=1e-6, a_max=None)
+            
+            # Reconstruct the covariance matrix
+            self.cov = (eigenvectors @ np.diag(eigenvalues) @ eigenvectors.T)
+            self.cov = self.get_banded(self.cov)[:self.separation.shape[0]]
+            
+                                                          
+            print(f' shape of cov {self.cov.shape} after reconstruction')
+        
+        # cond_number = np.linalg.cond(self.cov)
+        # assert cond_number < 1e10, f'Covariance matrix is ill-conditioned: {cond_number}'
+        return self
+    
+    def get_cholesky(self, debug=False):
+        '''
+        Get the Cholesky decomposition with principled jitter.
+        '''
+        self.cholesky_failed = False
+        mask_nonzero_diag = (self.cov != 0).any(axis=1)
+        C = self.cov[mask_nonzero_diag,:]
+        
+        # Base jitter on measurement uncertainties
+        median_variance = np.median(C[0])  # diagonal elements
+        min_jitter = 1e-6 * median_variance  # minimum regularization
+        
+        try:
+            self.cov_cholesky = cholesky_banded(C, lower=True, check_finite=False)
+            return self
+            
+        except Exception as e:
+            if debug:
+                print(f' --> Initial Cholesky failed: {e}')
+            
+            # Progressive jitter based on measurement scale
+            jitter_sequence = [
+                min_jitter,
+                1e-4 * median_variance,
+                1e-2 * median_variance,
+                0.1 * median_variance,
+                0.5 * median_variance
+            ]
+            
+            for jitter in jitter_sequence:
+                C_reg = C.copy()
+                C_reg[0] += jitter
+                
+                try:
+                    self.cov_cholesky = cholesky_banded(C_reg, lower=True, check_finite=False)
+                    if debug:
+                        print(f' --> Cholesky succeeded with jitter={jitter:.2e}')
+                        print(f' --> Jitter/variance ratio: {jitter/median_variance:.2e}')
+                    return self
+                except:
+                    continue
+                
+            # Fall back to diagonal if all attempts fail
+            if debug:
+                print(' --> All Cholesky attempts failed, falling back to diagonal')
+            self.cholesky_failed = True
+            self.cov_cholesky = np.zeros_like(C)
+            self.cov_cholesky[0] = np.sqrt(C[0])
+            return self
+
+   
+    def get_logdet(self):
+        '''
+        Calculate the log of the determinant. Uses diagonal 
+        elements of banded Cholesky decomposition.
+        '''
+
+        self.logdet = 2*np.sum(np.log(self.cov_cholesky[0]))
+
+    def solve(self, b):
+        '''
+        Solve the system cov*x = b, for x (x = cov^{-1}*b). 
+        Employs a sparse or banded Cholesky decomposition.
+
+        Input
+        -----
+        b : np.ndarray
+            Righthand-side of cov*x = b.
+        
+        Returns
+        -------
+        x : np.ndarray
+
+        '''
+
+        return cho_solve_banded((self.cov_cholesky, True), b, check_finite=False, overwrite_b=False)
+    
+    def get_dense_cov(self):
+        
+        # Full covariance matrix
+        cov_full = np.zeros((self.cov.shape[1], self.cov.shape[1]))
+        
+        for i, diag_i in enumerate(self.cov):
+
+            if i != 0:
+                diag_i = diag_i[:-i]
+
+            # Fill upper diagonals
+            cov_full += np.diag(diag_i, k=i)
+            if i != 0:
+                # Fill lower diagonals
+                cov_full += np.diag(diag_i, k=-i)
+
+        return cov_full
+    
 
 if __name__ == '__main__':
     # Seed for reproducibility

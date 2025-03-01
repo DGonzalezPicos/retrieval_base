@@ -20,11 +20,11 @@ grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
 # cov_mode = 'None'
-cov_mode = 'GP'
+cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
-run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
+index = 2
+run = f'new_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -40,10 +40,11 @@ config_data = {
         'w_set': 'NIRSpec',
 
         'lbl_opacity_sampling' : lbl,
-        'sigma_clip': 3,
+        'n_order_factor': 6, # NEW 2025-02-27: number of chunks to divide each order into
+        'sigma_clip': 0, # NEW 2025-02-27: disable sigma clipping
         'sigma_clip_max_iter': 6,
         'sigma_clip_width': 31, # (2025-02-15): 31
-        'Nedge': 40, # (2024-10-18): 20 --> 40
+        'Nedge': 20, # (2025-02-27): 40 --> 20, new data already has edge effects discarded
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
@@ -165,6 +166,7 @@ species_wave = {
     '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
     '13CO': [[2200, 3200], [4200, 5400]],
     'C18O': [[2200, 3200], [4200, 5400]],
+    # 'C18O': [[4200, np.inf]],
     'C17O': [[4200, 5400]], # 
     'H2O': [[0.0, np.inf]],
     'H2O_181': [[0.0, np.inf]],
@@ -412,7 +414,9 @@ free_params = {k:v for k,v in free_params.items() if k not in list(constant_para
 
 # disk_species = ['H2O', '12CO', '13CO']
 constant_params['gratings'] = []
-gratings_n = {'g140h': 4, 'g235h': 4, 'g395h': 4}
+
+n_order_factor = config_data['NIRSpec']['n_order_factor']
+gratings_n = {'g140h': n_order_factor, 'g235h': n_order_factor, 'g395h': n_order_factor}
 constant_params['gratings'] += [[g]*gratings_n[g] for g in gratings]
 # flatten list of lists
 constant_params['gratings'] = [item for sublist in constant_params['gratings'] for item in sublist]
@@ -506,8 +510,9 @@ trunc_dist = 4.0
 #         # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
 #         # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
 
-free_params['log_l_G'] = [(1.4, 2.4), r'$\log\ l_G$ [km/s]'] # from 30 to ~200 km/s ~ 5 pixels
-free_params['log_a_G'] = [(-1.0, 1.0), r'$\log\ a_G$']
+free_params['log_l_G'] = [(1.4, 2.6), r'$\log\ l_G$ [km/s]'] # from 30 to ~200 km/s ~ 5 pixels
+# free_params['log_a_G'] = [(-1.0, 1.0), r'$\log\ a_G$']
+constant_params['a_G'] = 1.0 # fix it to 1.0
 cov_kwargs = {
     'scale_amplitude': True,
     'max_length_scale': 10.0**free_params['log_l_G'][0][1],
@@ -554,7 +559,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 400
+n_live_points = 800 if not testing else 200
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file

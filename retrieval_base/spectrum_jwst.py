@@ -46,6 +46,7 @@ class SpectrumJWST:
         self.Nedge = Nedge
         if self.file is not None:
             print(f'Reading {self.file}')
+            
             self.read_data(units='erg/s/cm2/nm', split_filters=split_filters)
             
         # if self.grating is not None: # deprecated
@@ -53,39 +54,48 @@ class SpectrumJWST:
             
         
     def read_data(self, grating=None, units='mJy', split_filters=True):
-        with fits.open(self.file) as hdul:
-            data = hdul[1].data
-            self.wave, self.flux, self.err = data['WAVELENGTH'], data['FLUX'], data['ERR'] # units [um, Jy, Jy]
+        
+        if self.file.endswith('.npy'):
+            self.wave, self.flux, self.err = np.load(self.file)
+            self.flux_unit = 'erg/s/cm2/nm'
+        else:
+            with fits.open(self.file) as hdul:
+                data = hdul[1].data
+                self.wave, self.flux, self.err = data['WAVELENGTH'], data['FLUX'], data['ERR'] # units [um, Jy, Jy]
             print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
             print(f' [SpectrumJWST.read_data] Wave range: {np.nanmin(self.wave):.2f} - {np.nanmax(self.wave):.2f} um')
-        self.wave *= 1e3 # um to nm
+            self.wave *= 1e3 # um to nm
+        
+            self.flux_unit = 'Jy'
+        
         
         self.wave_unit = 'nm'
-        self.flux_unit = 'Jy'
-        
+
         # if grating is not None:
             # file name must be in the format 'TWA28_g235h-f170lp.fits'
         self.grating = str(self.file).split('_')[1].split('.fits')[0].replace('-', '_')
         
         print(f'grating: {self.grating}')
         if units == 'mJy':
-            self.flux *= 1e3
-            self.err *= 1e3
-            self.flux_unit = 'mJy'
+            if units != self.flux_unit:
+                self.flux *= 1e3
+                self.err *= 1e3
+                self.flux_unit = 'mJy'
         if units == 'erg/s/cm2/nm':
-            # [Jy] --> [erg/s/cm2/Hz]
-            self.flux *= 1e-23
-            self.err  *= 1e-23
-            
-            # [erg/s/cm2/Hz] --> [erg/s/cm2/cm]
-            wave_cm = self.wave * 1e-7
-            self.flux *= nc.c / (wave_cm**2)
-            self.err  *= nc.c / (wave_cm**2)
-            
-            # [erg/s/cm2/cm] --> [erg/s/cm2/nm]
-            self.flux *= 1e-7
-            self.err  *= 1e-7
-            self.flux_unit = 'erg/s/cm2/nm'
+            if units != self.flux_unit:
+                # [Jy] --> [erg/s/cm2/Hz]
+                self.flux *= 1e-23
+                self.err  *= 1e-23
+                
+                # [erg/s/cm2/Hz] --> [erg/s/cm2/cm]
+                wave_cm = self.wave * 1e-7
+                self.flux *= nc.c / (wave_cm**2)
+                self.err  *= nc.c / (wave_cm**2)
+                
+                # [erg/s/cm2/cm] --> [erg/s/cm2/nm]
+                self.flux *= 1e-7
+                self.err  *= 1e-7
+                self.flux_unit = 'erg/s/cm2/nm'
             
             
         # split into two filters
@@ -416,15 +426,55 @@ class SpectrumJWST:
         shape_in = self.flux.shape
         attrs = ['wave', 'flux', 'err']
         
-        rs = lambda x: x.reshape(n_orders, n_dets, -1) if n_dets > 0 else x.reshape(n_orders, -1)
+        # rs = lambda x: x.reshape(n_orders, n_dets, -1) if n_dets > 0 else x.reshape(n_orders, -1)
+        assert n_dets==1, f'Only one detector is supported for now'
+        
         for attr in attrs:
             if hasattr(self, attr):
                 # setattr(self, attr, getattr(self, attr).reshape(n_orders, n_dets, -1))
-                setattr(self, attr, rs(getattr(self, attr)))
+                setattr(self, attr, self.reshape_with_padding(getattr(self, attr).flatten(), n_orders)[:,None,:])
+                
         shape_out = self.flux.shape
         print(f' Reshaped data from {shape_in} to {shape_out}')
         return self
-    
+    @classmethod
+    def reshape_with_padding(cls, arr, nx):
+        """
+        Reshape a 1D numpy array into a 2D array with shape (nx, ny) by padding with np.nan.
+        
+        The resulting array will have:
+        - A total number of elements equal to the smallest integer >= len(arr) 
+            such that the padded length is divisible by nx.
+        - The number of columns (ny = padded_length // nx) is divisible by 4.
+        
+        Parameters
+        ----------
+        arr : numpy.ndarray
+            Input 1D array.
+        nx : int
+            Desired number of rows in the reshaped array.
+        
+        Returns
+        -------
+        reshaped : numpy.ndarray
+            Reshaped 2D array with shape (nx, ny).
+        pad : int
+            The number of np.nan values used as padding.
+        """
+        nd = arr.size
+        target_size = nd
+        # Increase the target size until it is divisible by nx and 
+        # the computed ny (target_size // nx) is divisible by 4.
+        while (target_size % nx != 0) or ((target_size // nx) % 4 != 0):
+            target_size += 1
+
+        pad = target_size - nd
+        # Pad the array with np.nan at the end.
+        padded_arr = np.pad(arr, (0, pad), constant_values=np.nan)
+        ny = target_size // nx
+        reshaped = padded_arr.reshape(nx, ny)
+        return reshaped
+        
     def squeeze(self):
         attrs = ['wave', 'flux', 'err']
         for attr in attrs:

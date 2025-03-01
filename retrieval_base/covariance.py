@@ -193,9 +193,20 @@ class Covariance:
     def local_covariance(self, residuals, residuals_threshold=4.0, sigma_local=1.0, truncate=4.0, k=None):
         """
         Compute the local covariance matrix from the residuals.
+        Parameters
+        ----------
+        residuals : array_like
+            Residuals (data - model).
+        residuals_threshold : float, optional
+            Threshold in units of robust sigma (default is 4.0).
+        sigma_local : float, optional
+            Width of the local feature (km/s).
+        truncate : float, optional
+            Truncation distance for the Hann window.
+        k : int, optional
+            Number of off-diagonal elements to keep. None (default) means all.
         """
         K_local = np.zeros_like(self.C)
-        # print(f'[Covariance.local_covariance]: K_local.shape = {K_local.shape}')
         
         outlier_indices, amplitudes, sigma_robust = self.identify_outliers(residuals, threshold=residuals_threshold)
         for a_local, idx in zip(amplitudes, outlier_indices):

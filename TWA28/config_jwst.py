@@ -12,8 +12,8 @@ lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h']
-# gratings = ['g235h', 'g395h']
+# gratings = ['g235h']
+gratings = ['g235h', 'g395h']
 # gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 2
+index = 0
 run = f'new_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -199,16 +199,20 @@ species_wave = {
     'CrH': [[0, 1400]],
     # 'TiH': [[0, 2000]], # add this back for final retrieval
     # 'CaH': [[0, 1400]], # Feb 18: not detected...
-    # 'AlH': [[1400, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # Feb 18: not detected...
     'OH' : [[0, 4730.0]],
     'VO': [[0, 1450.0]],
-    'TiO': [[0,1450], [4800, np.inf]],
+    'TiO': [[0,1450], [2800, np.inf]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
     # 'H2S': [[2350, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
+    'AlH': [[3000, 4600]],
+    'CH': [[3000, np.inf]],
+    'SiH': [[4500, 5300]],
+    'MgO': [[3000, 5300]],
+    'AlO': [[3000, 5300]],
 }
 
 #FIXME: only for testing
@@ -517,7 +521,13 @@ cov_kwargs = {
     'scale_amplitude': True,
     'max_length_scale': 10.0**free_params['log_l_G'][0][1],
     'truncate': trunc_dist,
+    'local_sigma': 120.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
+    'local_threshold': 5.0, # number of standard deviations to use for local covariance
 }
+
+# add all items in cov_kwargs to constant_params
+constant_params.update(cov_kwargs)
+
 # cov_kwargs = dict(
 #     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
 #     scale_GP_amp = True, 
@@ -559,7 +569,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 200
+n_live_points = 800 if not testing else 240
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file

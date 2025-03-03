@@ -19,10 +19,12 @@ target = 'TWA28'
 # run = 'lbl12_G1G2G3_fastchem_1'
 # run = 'lbl12_G1_fastchem_1'
 # run = 'lbl11_G2G3_fastchem_GP_1'
-run = 'test_g395h'
+# run = 'test_g395h'
+run = 'new_lbl16_G1G2G3_newGP_0'
 w_set='NIRSpec'
 
-run_bestfit = 'lbl11_G2G3_fastchem_GP_1'
+# run_bestfit = 'lbl11_G2G3_fastchem_GP_1'
+run_bestfit = 'new_lbl16_G1G2G3_newGP_0'
 
 cwd = os.getcwd()
 if target not in cwd:
@@ -104,21 +106,33 @@ def plot_species(ret,
     
     params_dict_copy = copy.deepcopy(params_dict)    
     
-    if conf.chem_mode == 'fastchem':
-        params_dict_copy[f'alpha_{line_species}'] = 3.0 if high_low == 'high' else -4.0
-        format = 'alpha'
-        if line_species in conf.isotopologues_dict.keys():
-            print(f'Found isotopologue {line_species} with ratio {conf.isotopologues_dict[line_species][0]}')
-            log_ratio = conf.isotopologues_dict[line_species][0]
-            params_dict_copy[log_ratio] = 1.0 if high_low == 'high' else 4.0
-            format = 'log_iso_ratio'
-            
+        
+    if line_species in conf.isotopologues_dict.keys() and conf.chem_mode == 'fastchem':
+        print(f'Found isotopologue {line_species} with ratio {conf.isotopologues_dict[line_species][0]}')
+        log_ratio = conf.isotopologues_dict[line_species][0]
+        new_value = 1.0 if high_low == 'high' else 4.0
+        old_value = params_dict_copy[log_ratio]
+        params_dict_copy[log_ratio] = new_value
+        format = log_ratio
+        
     else:
-        params_dict_copy[f'log_{line_species}'] = -3.0 if high_low == 'high' else -14.0
-        format = 'log'
-    
+        
+        
+        new_value = 3.0 if high_low == 'high' else -4.0
+        old_value = params_dict_copy.get(f'alpha_{line_species}')
+        format = 'alpha'
+        
+        if old_value is None:
+            new_value = -3.0 if high_low == 'high' else -14.0
+            old_value = params_dict_copy[f'log_{line_species}']
+            params_dict_copy[f'log_{line_species}'] = new_value
+            format = 'log'
+            
+        params_dict_copy[f'{format}_{line_species}'] = new_value
+
     # if overplot_extinction:
-    title = f'{line_species} ({format} = {params_dict_copy[f"{format}_{line_species}"]})'
+    # title = f'{line_species} ({format} = {params_dict_copy[f"{format}_{line_species}"]})'
+    title = f'{line_species} ({format} = {new_value:.2e} (bestfit = {old_value:.2e}))'
     fig_name = f'{conf.prefix}plots/bestfit_spec_{line_species}_{high_low}.pdf'
 
     
@@ -183,6 +197,7 @@ def plot_species(ret,
 
             pdf.savefig(fig)
         plt.close(fig)
+    plt.close()
     print(f'--> Saved {fig_name}')
 
 

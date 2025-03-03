@@ -8,13 +8,13 @@ file_params = 'config_jwst.py'
 
 target = 'TWA28'
 # lbl = 11
-lbl = 16
+lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
 # gratings = ['g235h']
-# gratings = ['g235h', 'g395h']
-gratings = ['g140h', 'g235h', 'g395h']
+gratings = ['g235h', 'g395h']
+# gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -165,25 +165,25 @@ opacity_params = {
 species_wave = {
     '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
     '13CO': [[2200, 3200], [4200, 5400]],
-    'C18O': [[2200, 3200], [4200, 5400]],
+    'C18O': [[2200, 2420], [4200, 5400]],
     # 'C18O': [[4200, np.inf]],
     'C17O': [[4200, 5400]], # 
     'H2O': [[0.0, np.inf]],
     'H2O_181': [[0.0, np.inf]],
     
     
-    'HF': [[1200, 3550.0]],
-    'HCl': [[1050, 2000], [3050, np.inf]], # FIXME: check this
+    'HF': [[2100, 2950.0]],
+    'HCl': [[3050, np.inf]], # FIXME: check this
 
     'CO2': [[2800, 3200],[3900, 5400]],
     # 'CH4': [[2900.0, 3900.0]], # TODO: add this back for final retrieval
     # 'NH3': [[2700.0, np.inf]], # TODO: add this back for final retrieval
     # 'HCN': [[2800.0, np.inf]], # TODO: add this back for final retrieval
-    'CH4': [[0.0, np.inf]],
-    'NH3': [[0.0, np.inf]],
-    'HCN': [[0.0, np.inf]],
+    'CH4': [[1580, np.inf]], # check from here... species contribution plot
+    # 'NH3': [[0.0, np.inf]],
+    # 'HCN': [[0.0, np.inf]], # unclear, keep?
 
-    'Na': [[0, 2400.0], [3300.0, 3500.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
+    'Na': [[0, 2400.0], [3390.0, 3600.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
     'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
@@ -205,20 +205,20 @@ species_wave = {
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # Feb 18: not detected...
-    'OH' : [[0, 4730.0]],
+    'OH' : [[0, np.inf]],
     'VO': [[0, 1450.0]],
-    'TiO': [[0,1450], [2800, np.inf]],
+    'TiO': [[0,1450]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
-    'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
+    # 'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
     # 'AlH': [[3000, 4600]],
     'AlH': [[1600, 4600]],
-    'CH': [[0.0, 2200], [3000, np.inf]],
+    # 'CH': [[0.0, 2200], [3000, np.inf]],
     # 'SiH': [[4500, 5300]],
-    'SiH': [[0.0, np.inf]],
+    # 'SiH': [[0.0, np.inf]],
     # 'MgO': [[3000, 5300]],
     # 'AlO': [[3000, 5300]],
-    'AlO': [[0.0, np.inf]],
+    'AlO': [[0.0, 4500]],
 }
 
 #FIXME: only for testing
@@ -527,7 +527,7 @@ cov_kwargs = {
     'scale_amplitude': True,
     'max_length_scale': 10.0**free_params['log_l_G'][0][1],
     'truncate': trunc_dist,
-    'local_sigma': 60.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
+    'local_sigma': 40.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
     'local_threshold': 5.0, # number of standard deviations to use for local covariance
 }
 
@@ -575,7 +575,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 300
+n_live_points = 800 if not testing else 400
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file

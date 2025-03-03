@@ -12,6 +12,7 @@ lbl = 11
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
+# gratings = ['g235h']
 gratings = ['g235h', 'g395h']
 # gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
@@ -19,11 +20,12 @@ grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
 # cov_mode = 'None'
-cov_mode = 'GP'
+cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 2
-run = f'lbl{lbl}_{grating_suffix}_{chem_mode}{cov_mode_label}_{index}'
+index = 0
+run = f'new_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
+# run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
 # Define PT profile
@@ -36,18 +38,19 @@ PT_run = 'lbl12_G1G2G3_fastchem_1' # ignored if PT_mode != 'fixed'
 config_data = {
     'NIRSpec': {
         'w_set': 'NIRSpec',
-
+        'n_ap': 6, # NEW 2025-03-03: aperture factor for spectral extraction
         'lbl_opacity_sampling' : lbl,
-        'sigma_clip': 3,
+        'n_order_factor': 6, # NEW 2025-02-27: number of chunks to divide each order into
+        'sigma_clip': 0, # NEW 2025-02-27: disable sigma clipping
         'sigma_clip_max_iter': 6,
         'sigma_clip_width': 31, # (2025-02-15): 31
-        'Nedge': 40, # (2024-10-18): 20 --> 40
+        'Nedge': 20, # (2025-02-27): 40 --> 20, new data already has edge effects discarded
         'log_P_range': (-5,2),
-        'n_atm_layers': 50, # (2025-01-08): update 40 --> 60
+        'n_atm_layers': 40, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
         'T_cutoff': (1200.0, 3400.0), # DGP (2024-10-14): new parameter
         'P_cutoff': (1e-3, 1e1), # DGP (2024-10-14): new parameter
-        'flux_unit_factor': 1e18, # DGP (2025-02-06): new parameter
+        'flux_unit_factor': 1e14, # DGP (2025-02-06): new parameter
         }, 
     }
 # from JWST docs NIRSpec
@@ -155,29 +158,34 @@ opacity_params = {
     'log_AlO': ([(-14,-2), r'$\log\ \mathrm{AlO}$'], 'AlO_main_iso'),
     'log_MgO': ([(-14,-2), r'$\log\ \mathrm{MgO}$'], 'MgO_Sid_main_iso'),
     'log_H2S': ([(-14,-2), r'$\log\ \mathrm{H_2S}$'], 'H2S_Sid_main_iso'),
+    'log_NO':  ([(-14,-2), r'$\log\ \mathrm{NO}$'], 'NO_XABC_main_iso'),
     'log_SiH': ([(-14,-2), r'$\log\ \mathrm{SiH}$'], 'SiH_SiGHTLY_main_iso'),
 }
 
 species_wave = {
     '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
     '13CO': [[2200, 3200], [4200, 5400]],
-    'C18O': [[2200, 3200], [4200, 5400]],
+    'C18O': [[2200, 2420], [4200, 5400]],
+    # 'C18O': [[4200, np.inf]],
     'C17O': [[4200, 5400]], # 
     'H2O': [[0.0, np.inf]],
     'H2O_181': [[0.0, np.inf]],
     
     
-    'HF': [[1200, 3900.0]],
+    'HF': [[2100, 2950.0]],
     'HCl': [[3050, np.inf]], # FIXME: check this
 
     'CO2': [[2800, 3200],[3900, 5400]],
     # 'CH4': [[2900.0, 3900.0]], # TODO: add this back for final retrieval
     # 'NH3': [[2700.0, np.inf]], # TODO: add this back for final retrieval
     # 'HCN': [[2800.0, np.inf]], # TODO: add this back for final retrieval
+    'CH4': [[1580, np.inf]], # check from here... species contribution plot
+    # 'NH3': [[0.0, np.inf]],
+    # 'HCN': [[0.0, np.inf]], # unclear, keep?
 
-    'Na': [[0, 2400.0], [3300.0, 3500.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
+    'Na': [[0, 2400.0], [3390.0, 3600.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
-    'K': [[0, 1900.0], [2440, np.inf]],
+    'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
     'Ti': [[0, 2400.0]],
     # 'Sc': [[0, 2600]], # 2025-02-19: not detected...
@@ -194,22 +202,29 @@ species_wave = {
     'CrH': [[0, 1400]],
     # 'TiH': [[0, 2000]], # add this back for final retrieval
     # 'CaH': [[0, 1400]], # Feb 18: not detected...
-    # 'AlH': [[1400, np.inf]],
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # Feb 18: not detected...
-    'OH' : [[0, 4730.0]],
+    'OH' : [[0, np.inf]],
     'VO': [[0, 1450.0]],
-    'TiO': [[0,1450], [2800, np.inf]],
+    'TiO': [[0,1450]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
-    # 'H2S': [[2350, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
-    'AlH': [[3000, 4600]],
-    'CH': [[3000, np.inf]],
-    'SiH': [[4500, 5300]],
-    'MgO': [[3000, 5300]],
-    'AlO': [[3000, 5300]],
+    # 'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
+    # 'AlH': [[3000, 4600]],
+    'AlH': [[1600, 4600]],
+    # 'CH': [[0.0, 2200], [3000, np.inf]],
+    # 'SiH': [[4500, 5300]],
+    # 'SiH': [[0.0, np.inf]],
+    # 'MgO': [[3000, 5300]],
+    # 'AlO': [[3000, 5300]],
+    'AlO': [[0.0, 4500]],
 }
+
+#FIXME: only for testing
+# all_species = [k[4:] for k,v in opacity_params.items() if not v[-1].endswith('_high')]
+# ignore = ['13CO','C18O','C17O','H2O_181']
+# species_wave = {k:[[2800, 4100]] for k in all_species if k not in ignore}
 
 # include_only = ['FeH', 'H2O'] # FIXME: manually add species here
 # if len(include_only) > 0:
@@ -249,6 +264,7 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
+    'b': [(0.0, 3.0), r'$b$'], # error scaling parameter as in var2_eff = var2_0 * 10**b
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 }
 if PT_mode  == 'RCE':
@@ -316,19 +332,19 @@ fc_species_dict={
     'e-': 'e-',
     'H2O': 'H2O1',
     '12CO': 'C1O1',
-    'CH4': 'C1H4',
-    'C2H2': 'C2H2',
+    # 'CH4': 'C1H4', # remove from here to use freechem for this species
+    # 'C2H2': 'C2H2',
     'CO2': 'C1O2',
-    'H2S': 'H2S1',
-    'CH': 'C1H1',
-    'NH': 'H1N1',
-    'NH3': 'H3N1',
-    'HCN': 'C1H1N1_1',
-    'SH': 'H1S1',
+    # 'H2S': 'H2S1',
+    # 'CH': 'C1H1',
+    # 'NH': 'H1N1',
+    # 'NH3': 'H3N1',
+    # 'HCN': 'C1H1N1_1',
+    # 'SH': 'H1S1',
     'PH': 'H1P1',
   
     'SiS': 'S1Si1',
-    'SiH': 'H1Si1',
+    # 'SiH': 'H1Si1',
     'HCl':'Cl1H1',
     'CaH': 'Ca1H1',
     'MgH': 'H1Mg1',
@@ -408,7 +424,9 @@ free_params = {k:v for k,v in free_params.items() if k not in list(constant_para
 
 # disk_species = ['H2O', '12CO', '13CO']
 constant_params['gratings'] = []
-gratings_n = {'g140h': 4, 'g235h': 4, 'g395h': 4}
+
+n_order_factor = config_data['NIRSpec']['n_order_factor']
+gratings_n = {'g140h': n_order_factor, 'g235h': n_order_factor, 'g395h': n_order_factor}
 constant_params['gratings'] += [[g]*gratings_n[g] for g in gratings]
 # flatten list of lists
 constant_params['gratings'] = [item for sublist in constant_params['gratings'] for item in sublist]
@@ -441,10 +459,10 @@ if 'g395h' in gratings:
 ####################################################################################
 scale_flux = False
 scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
-scale_err  = True
-if scale_err == False:
-    free_params['beta2'] = [(1.0, 10.0), r'b$^2$']
-    invgamma_params.append('beta2')
+scale_err  = False
+# if scale_err == False:
+#     free_params['beta2'] = [(1.0, 10.0), r'b$^2$']
+#     invgamma_params.append('beta2')
 apply_high_pass_filter = False
 
 # cloud_mode = 'gray'
@@ -482,47 +500,52 @@ species_to_plot_VMR , species_to_plot_CCF = [], []
 ####################################################################################
 # Covariance parameters
 ####################################################################################
-trunc_dist = 3.0
-max_separation = 5
+trunc_dist = 4.0
+# max_separation = 5
 # max_separation_gratings = {'g140h': 5, 'g235h': 5, 'g395h': 5}
-length_scale_factors = {k:1.0 for k in gratings}
-if cov_mode == 'GP' or cov_mode == 'SGP':
+# length_scale_factors = {k:1.0 for k in gratings}
+# if cov_mode == 'GP' or cov_mode == 'SGP':
     
-    # log_l_prior_gratings = {'g140h': (-0.4, 0.18), 'g235h': (-0.4, 0.42), 'g395h': (-0.4, 0.64)}
-    free_params['log_l_G'] = [(-0.40, 0.20), r'$\log\ l_G$']
-    max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
-    # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
-    for grating in gratings:
-        # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.6), r'$\log\ a_{G}$' + f'({grating})']
-        # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
-        # invgamma_params.append(f'a_{grating}_G')
-        # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
-        length_scale_factors[grating] = cenwave_gratings[grating] / cenwave_gratings['g140h']
-        constant_params[f'a_{grating}_G'] = 1.0
-        # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
-        # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
-    
-cov_kwargs = dict(
-    # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
-    scale_GP_amp = True, 
-    max_separation = max_separation,
-    # max_separation_gratings = max_separation_gratings,
-    trunc_dist = trunc_dist,
-    length_scale_factors = length_scale_factors,
-    # Prepare the wavelength separation and
-    # average squared error arrays and keep 
-    # in memory
-    prepare_for_covariance = True
-)
+#     # log_l_prior_gratings = {'g140h': (-0.4, 0.18), 'g235h': (-0.4, 0.42), 'g395h': (-0.4, 0.64)}
+#     free_params['log_l_G'] = [(-0.40, 0.20), r'$\log\ l_G$']
+#     max_separation = 10.0**free_params['log_l_G'][0][1] * trunc_dist
+#     # free_params['log_l_G'] = [(0.0, 0.1), r'$\log\ l_G$']
+#     for grating in gratings:
+#         # free_params[f'log_a_{grating}_G'] = [(-1.0, 0.6), r'$\log\ a_{G}$' + f'({grating})']
+#         # free_params[f'a_{grating}_G'] = [(3.0, 2.0), r'$a_{G}$' + f'({grating})']
+#         # invgamma_params.append(f'a_{grating}_G')
+#         # free_params[f'log_a_{grating}_G'] = [(0.0, 0.1), r'$\log\ a_{G}$']
+#         length_scale_factors[grating] = cenwave_gratings[grating] / cenwave_gratings['g140h']
+#         constant_params[f'a_{grating}_G'] = 1.0
+#         # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
+#         # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
 
-lck_kwargs = dict(
-    use_lck=True,
-    lck_width=4,
-    n_max_regions=6,
-    sigma_threshold=7.0,
-    scale_GP_amp=False,
-    trunc_dist = trunc_dist
-)
+free_params['log_l_G'] = [(1.4, 2.6), r'$\log\ l_G$ [km/s]'] # from 30 to ~200 km/s ~ 5 pixels
+# free_params['log_a_G'] = [(-1.0, 1.0), r'$\log\ a_G$']
+constant_params['a_G'] = 1.0 # fix it to 1.0
+cov_kwargs = {
+    'scale_amplitude': True,
+    'max_length_scale': 10.0**free_params['log_l_G'][0][1],
+    'truncate': trunc_dist,
+    'local_sigma': 40.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
+    'local_threshold': 5.0, # number of standard deviations to use for local covariance
+}
+
+# add all items in cov_kwargs to constant_params
+constant_params.update(cov_kwargs)
+
+# cov_kwargs = dict(
+#     # trunc_dist   = 2, # set to 3 for accuracy, 2 for speed
+#     scale_GP_amp = True, 
+#     max_separation = max_separation,
+#     # max_separation_gratings = max_separation_gratings,
+#     trunc_dist = trunc_dist,
+#     length_scale_factors = length_scale_factors,
+#     # Prepare the wavelength separation and
+#     # average squared error arrays and keep 
+#     # in memory
+#     prepare_for_covariance = True
+# )
 
 # if free_params.get('log_l') is not None:
 #     cov_kwargs['max_separation'] =  cov_kwargs['trunc_dist']

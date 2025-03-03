@@ -62,7 +62,12 @@ if args.pre_processing:
     print(conf.constant_params['gratings'])
     print(f'gratings {gratings}')
     
-    files = [f'jwst/{target}_{g}.fits' for g in gratings]
+    # files = [f'jwst/{target}_{g}.fits' for g in gratings]
+    # NEW 2025-02-27: custom extraction from stage 3 3D cubes
+    # use 5ap to include wider aperture (more flux)
+    n_ap = conf_data.get('n_ap', None)
+    assert n_ap is not None, 'n_ap must be defined in config_jwst.py'
+    files = [f'jwst/{g}_s3d_extraction_{n_ap}ap.npy' for g in gratings_list]
     Nedge = conf_data.get('Nedge', 40)
     
     # gratings_n = {'g140h': 2, 'g235h': 4, 'g395h': 4}
@@ -70,7 +75,8 @@ if args.pre_processing:
 
     spec = SpectrumJWST(Nedge=Nedge).load_gratings(files, gratings_n=gratings_n)
     print(f' Orders: {spec.n_orders}')
-    spec.reshape(spec.n_orders*2, 1)
+    # spec.reshape(spec.n_orders*2, 1)
+    spec.reshape(spec.n_orders * conf_data['n_order_factor']//2, 1)
     # spec.fix_wave_nans() # experimental...
     sigma_clip_width = conf_data.get('sigma_clip_width', 30)
     if len(conf.mask_lines)>0:
@@ -97,8 +103,8 @@ if args.pre_processing:
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     
     
-    if 'GP' in conf.cov_mode:
-        spec.prepare_for_covariance()
+    # if 'GP' in conf.cov_mode: # DEPRECATED 2025-02-25
+    #     spec.prepare_for_covariance()
         
     spec.gratings_list = conf.constant_params['gratings']
     print(f' gratings_list = {spec.gratings_list}')
@@ -149,7 +155,7 @@ if args.prior_check:
     figs_path = pathlib.Path(f'{conf.prefix}plots/')
     figs_path.mkdir(parents=True, exist_ok=True)
     
-    random = False
+    random = True
     np.random.seed(1123)
     random_label = '_random' if random else ''
     disk = True

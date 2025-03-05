@@ -57,6 +57,9 @@ class SpectrumJWST:
         
         if self.file.endswith('.npy'):
             self.wave, self.flux, self.err = np.load(self.file)
+            if np.nanmin(self.wave) < 10.0:
+                self.wave *= 1e3 # um to nm
+                
             self.flux_unit = 'erg/s/cm2/nm'
         else:
             with fits.open(self.file) as hdul:

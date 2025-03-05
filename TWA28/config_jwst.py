@@ -24,7 +24,7 @@ cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for com
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
 index = 0
-run = f'new_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
+run = f'psf_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -528,7 +528,7 @@ cov_kwargs = {
     'max_length_scale': 10.0**free_params['log_l_G'][0][1],
     'truncate': trunc_dist,
     'local_sigma': 40.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
-    'local_threshold': 5.0, # number of standard deviations to use for local covariance
+    'local_threshold': 4.0, # number of standard deviations to use for local covariance
 }
 
 # add all items in cov_kwargs to constant_params
@@ -575,7 +575,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 400
+n_live_points = 800 if not testing else 200
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file

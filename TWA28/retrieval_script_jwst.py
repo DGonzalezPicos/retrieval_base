@@ -65,7 +65,8 @@ if args.pre_processing:
     # files = [f'jwst/{target}_{g}.fits' for g in gratings]
     # NEW 2025-02-27: custom extraction from stage 3 3D cubes
     # use 5ap to include wider aperture (more flux)
-    files = [f'jwst/{g}_s3d_extraction_5ap.npy' for g in gratings_list]
+    # files = [f'jwst/{g}_s3d_extraction_5ap.npy' for g in gratings_list]
+    files = [f'jwst/nirspec_{g}_psf_extraction.npy' for g in gratings_list]
     Nedge = conf_data.get('Nedge', 40)
     
     # gratings_n = {'g140h': 2, 'g235h': 4, 'g395h': 4}

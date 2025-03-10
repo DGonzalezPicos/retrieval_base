@@ -50,7 +50,7 @@ if args.pre_processing:
     #         'g395h-f290lp',
     #         ]
     gratings_dict = {'g140h': 'g140h-f100lp',
-                     'g235h': 'g235h-f170lp', 
+                     'g235h': 'g235h-f170lp',
                      'g395h': 'g395h-f290lp'}
     
     gratings_list = list(set(conf.constant_params['gratings']))
@@ -73,7 +73,11 @@ if args.pre_processing:
     # gratings_n = {'g140h': 2, 'g235h': 4, 'g395h': 4}
     gratings_n = getattr(conf, 'gratings_n', {'g140h': 2, 'g235h': 4, 'g395h': 4})
 
-    spec = SpectrumJWST(Nedge=Nedge).load_gratings(files, gratings_n=gratings_n)
+    apply_psf_correction = conf_data.get('apply_psf_correction', False)
+
+    spec = SpectrumJWST(Nedge=Nedge).load_gratings(files, 
+                                                   gratings=gratings_keys, 
+                                                   apply_psf_correction=apply_psf_correction)
     print(f' Orders: {spec.n_orders}')
     # spec.reshape(spec.n_orders*2, 1)
     spec.reshape(spec.n_orders * conf_data['n_order_factor']//2, 1)
@@ -99,6 +103,7 @@ if args.pre_processing:
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
     spec.apply_flux_unit_factor(conf_data.get('flux_unit_factor', 1.0)) # NEW 2025-02-06
+    
 
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     

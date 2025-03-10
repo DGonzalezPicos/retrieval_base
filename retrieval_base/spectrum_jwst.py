@@ -6,6 +6,7 @@ import pickle
 import os
 import copy
 from spectres import spectres 
+import sys
 
 from PyAstronomy import pyasl
 import petitRADTRANS.nat_cst as nc
@@ -36,7 +37,7 @@ class SpectrumJWST:
     n_dets = 1 # default
     
     def __init__(self, wave=None, flux=None, err=None, target=None, grating=None, file=None,
-                 Nedge=10, split_filters=True):
+                 Nedge=10, split_filters=True, apply_psf_correction=False):
         self.wave = wave
         self.flux = flux
         self.err = err
@@ -47,13 +48,16 @@ class SpectrumJWST:
         if self.file is not None:
             print(f'Reading {self.file}')
             
-            self.read_data(units='erg/s/cm2/nm', split_filters=split_filters)
+            self.read_data(units='erg/s/cm2/nm',
+                           grating=grating,
+                           split_filters=split_filters, 
+                           apply_psf_correction=apply_psf_correction)
             
         # if self.grating is not None: # deprecated
             # self.split_grating(keep='both')
             
         
-    def read_data(self, grating=None, units='mJy', split_filters=True):
+    def read_data(self, grating=None, units='mJy', split_filters=True, apply_psf_correction=False):
         
         if self.file.endswith('.npy'):
             self.wave, self.flux, self.err = np.load(self.file)
@@ -61,6 +65,7 @@ class SpectrumJWST:
                 self.wave *= 1e3 # um to nm
                 
             self.flux_unit = 'erg/s/cm2/nm'
+        
         elif self.file.endswith('.fits'):
             with fits.open(self.file) as hdul:
                 data = hdul[1].data
@@ -72,8 +77,8 @@ class SpectrumJWST:
             self.flux_unit = 'Jy'
         elif self.file.endswith('.txt'):
             self.wave, self.flux, self.err = np.loadtxt(self.file, unpack=True)
-            print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
-            print(f' [SpectrumJWST.read_data] Wave range: {np.nanmin(self.wave):.2f} - {np.nanmax(self.wave):.2f} um')
+            # print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
+            print(f' [SpectrumJWST.read_data] Wave ({self.wave.shape}) range: {np.nanmin(self.wave):.2f} - {np.nanmax(self.wave):.2f} um')
             self.flux_unit = 'erg/s/cm2/nm'
             self.wave *= 1e3 # um to nm
         
@@ -82,9 +87,26 @@ class SpectrumJWST:
 
         # if grating is not None:
             # file name must be in the format 'TWA28_g235h-f170lp.fits'
-        self.grating = str(self.file).split('_')[1].split('.fits')[0].replace('-', '_')
+        # self.grating = str(self.file).split('_')[1].split('.fits')[0].replace('-', '_')
+        # print(f' [SpectrumJWST.read_data] grating = {self.grating}')
+        # print(f' [SpectrumJWST.read_data] file = {self.file}')
+        # print(f' [SpectrumJWST.read_data] file.parent = {self.file.parent}')
         
-        print(f'grating: {self.grating}')
+        # sys.exit()
+        self.grating = grating
+        if apply_psf_correction:
+            file_psf = f'jwst/{self.grating}_psf_corr_factor.npy'
+            print(f' [SpectrumJWST.read_data] PSF correction file = {file_psf}')
+            if os.path.exists(file_psf):
+                psf_corr_factor_wave, psf_corr_factor = np.load(file_psf)
+                psf_corr_factor_wave *= 1e3 # um to nm
+               
+                psf_corr_factor = np.interp(self.wave, psf_corr_factor_wave, psf_corr_factor)
+                assert np.nanmax(psf_corr_factor) > np.nanmin(psf_corr_factor), f'PSF correction factor is not correct, min = {np.nanmin(psf_corr_factor):.2f}, max = {np.nanmax(psf_corr_factor):.2f}'
+                self.flux *= psf_corr_factor
+            else:
+                print(f' [SpectrumJWST.read_data] PSF correction file {file_psf} does not exist')
+                sys.exit()
         if units == 'mJy':
             if units != self.flux_unit:
                 self.flux *= 1e3
@@ -140,15 +162,18 @@ class SpectrumJWST:
         # self.n_orders = 1
         return self
     
-    def load_gratings(self, files, gratings_n=None):
+    def load_gratings(self, files, gratings=[], apply_psf_correction=False):
         # self.gratings = [f.split('_')[1].split('-')[0] for f in files]
         
         if len(files) == 1:
             self.__init__(file=files[0], Nedge=self.Nedge)
         else:
             spec_list = []
-            for f in files:
-                spec_list.append(SpectrumJWST(file=f, Nedge=self.Nedge))
+            for f, grating in zip(files, gratings):
+                spec_list.append(SpectrumJWST(file=f, 
+                                              grating=grating,
+                                              Nedge=self.Nedge,
+                                              apply_psf_correction=apply_psf_correction))
                 
             self += spec_list
             print(f'Loaded {len(spec_list)} gratings')
@@ -156,6 +181,7 @@ class SpectrumJWST:
         print(f' shape of wave: {self.wave.shape}')
         print(f' shape of flux: {self.flux.shape}')
         return self
+
     
     def select_filter(self, filter_id=0):
         

@@ -61,7 +61,7 @@ class SpectrumJWST:
                 self.wave *= 1e3 # um to nm
                 
             self.flux_unit = 'erg/s/cm2/nm'
-        else:
+        elif self.file.endswith('.fits'):
             with fits.open(self.file) as hdul:
                 data = hdul[1].data
                 self.wave, self.flux, self.err = data['WAVELENGTH'], data['FLUX'], data['ERR'] # units [um, Jy, Jy]
@@ -70,6 +70,12 @@ class SpectrumJWST:
             self.wave *= 1e3 # um to nm
         
             self.flux_unit = 'Jy'
+        elif self.file.endswith('.txt'):
+            self.wave, self.flux, self.err = np.loadtxt(self.file, unpack=True)
+            print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
+            print(f' [SpectrumJWST.read_data] Wave range: {np.nanmin(self.wave):.2f} - {np.nanmax(self.wave):.2f} um')
+            self.flux_unit = 'erg/s/cm2/nm'
+            self.wave *= 1e3 # um to nm
         
         
         self.wave_unit = 'nm'

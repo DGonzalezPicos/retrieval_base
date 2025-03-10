@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 import subprocess as sp
-
+import sys
 import shutil
 import os
 import numpy as np
@@ -55,7 +55,7 @@ if args.pre_processing:
     
     gratings_list = list(set(conf.constant_params['gratings']))
     gratings = [gratings_dict[g] for g in gratings_list]
-    
+    gratings_keys = list(set(conf.constant_params['gratings']))
     # each grating has two filters, make list [a,b] to [a,a,b,b]
     # gratings_list = [g.split('-')[0] for g in gratings for _ in range(2)]
     print(f'--> Loading data for {gratings_list}')
@@ -66,7 +66,8 @@ if args.pre_processing:
     # NEW 2025-02-27: custom extraction from stage 3 3D cubes
     # use 5ap to include wider aperture (more flux)
     # files = [f'jwst/{g}_s3d_extraction_5ap.npy' for g in gratings_list]
-    files = [f'jwst/nirspec_{g}_psf_extraction.npy' for g in gratings_list]
+    # files = [f'jwst/nirspec_{g}_psf_extraction.npy' for g in gratings_list]
+    files = [f'jwst/{g}_wave_flux_err.txt' for g in gratings_keys]
     Nedge = conf_data.get('Nedge', 40)
     
     # gratings_n = {'g140h': 2, 'g235h': 4, 'g395h': 4}
@@ -109,7 +110,7 @@ if args.pre_processing:
     print(f' gratings_list = {spec.gratings_list}')
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)
 
-
+    # sys.exit()
     ## Create pRT_atm object
     pRT_file =pathlib.Path(f'{conf.prefix}data/pRT_atm_{spec.w_set}.pkl')
     if 'rv' in conf.free_params:

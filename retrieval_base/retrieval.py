@@ -300,6 +300,7 @@ class Retrieval:
                     
                     # Select only the finite pixels
                     mask_ij = self.d_spec[w_set].mask_isfinite[i,j]
+                    mask_ij = np.logical_and(mask_ij, np.isfinite(self.d_spec[w_set].err[i,j]))
                     wave_ij = self.d_spec[w_set].wave[i,j,mask_ij]
 
                     if not mask_ij.any():

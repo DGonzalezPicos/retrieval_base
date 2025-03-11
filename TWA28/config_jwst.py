@@ -23,8 +23,8 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
-run = f'new_extraction_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
+index = 0
+run = f'psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -45,7 +45,7 @@ config_data = {
         'sigma_clip': 0, # NEW 2025-02-27: disable sigma clipping
         'sigma_clip_max_iter': 6,
         'sigma_clip_width': 31, # (2025-02-15): 31
-        'Nedge': 20, # (2025-02-27): 40 --> 20, new data already has edge effects discarded
+        'Nedge': 10, # (2025-02-27): 40 --> 20, new data already has edge effects discarded
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter

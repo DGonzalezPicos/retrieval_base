@@ -7,7 +7,7 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 target = 'TWA28'
-lbl = 11
+lbl = 10
 # lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
@@ -576,8 +576,8 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 200
-n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
+n_live_points = 800 if not testing else 500
+n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file
 print(f' --> {free_params} free parameters')

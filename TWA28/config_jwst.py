@@ -24,7 +24,7 @@ cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for com
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
 index = 0
-run = f'psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
+run = f'no_psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -41,7 +41,7 @@ config_data = {
 
         'lbl_opacity_sampling' : lbl,
         'n_order_factor': 6, # NEW 2025-02-27: number of chunks to divide each order into
-        'apply_psf_correction': True, # NEW 2025-03-10: apply PSF correction
+        'apply_psf_correction': False, # NEW 2025-03-10: apply PSF correction
         'sigma_clip': 0, # NEW 2025-02-27: disable sigma clipping
         'sigma_clip_max_iter': 6,
         'sigma_clip_width': 31, # (2025-02-15): 31

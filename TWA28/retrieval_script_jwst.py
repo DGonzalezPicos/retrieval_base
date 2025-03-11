@@ -185,9 +185,11 @@ if args.prior_check:
 #     ret.gradient_based_optimization(method='L-BFGS-B', options={'maxiter': 100})
 
 if args.copy_to_snellius:
+    if run is None:
+        run = conf.run
     # copy this folder to snellius
-    snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{conf.run}'
-    local_dir = str(path / target / 'retrieval_outputs' / conf.run)
+    snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}'
+    local_dir = str(path / target / 'retrieval_outputs' / run)
     print(f' Copying {local_dir} to {snellius_dir}...')
     
     # if parent directory does not exist, create it on remote
@@ -216,7 +218,8 @@ if args.copy_to_snellius:
     
 if args.download:
     # download from snellius using scp -r
-    run = conf.run
+    if run is None:
+        run = conf.run
     snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}/test_output'
     local_dir = str(path / target / f'retrieval_outputs/{run}/test_output')
     print(f' Downloading {snellius_dir} to {local_dir}...')

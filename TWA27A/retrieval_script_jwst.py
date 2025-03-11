@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 import subprocess as sp
-
+import sys
 import shutil
 import os
 import numpy as np
@@ -50,12 +50,12 @@ if args.pre_processing:
     #         'g395h-f290lp',
     #         ]
     gratings_dict = {'g140h': 'g140h-f100lp',
-                     'g235h': 'g235h-f170lp', 
+                     'g235h': 'g235h-f170lp',
                      'g395h': 'g395h-f290lp'}
     
     gratings_list = list(set(conf.constant_params['gratings']))
     gratings = [gratings_dict[g] for g in gratings_list]
-    
+    gratings_keys = list(set(conf.constant_params['gratings']))
     # each grating has two filters, make list [a,b] to [a,a,b,b]
     # gratings_list = [g.split('-')[0] for g in gratings for _ in range(2)]
     print(f'--> Loading data for {gratings_list}')
@@ -65,15 +65,19 @@ if args.pre_processing:
     # files = [f'jwst/{target}_{g}.fits' for g in gratings]
     # NEW 2025-02-27: custom extraction from stage 3 3D cubes
     # use 5ap to include wider aperture (more flux)
-    n_ap = conf_data.get('n_ap', None)
-    assert n_ap is not None, 'n_ap must be defined in config_jwst.py'
-    files = [f'jwst/{g}_s3d_extraction_{n_ap}ap.npy' for g in gratings_list]
+    # files = [f'jwst/{g}_s3d_extraction_5ap.npy' for g in gratings_list]
+    # files = [f'jwst/nirspec_{g}_psf_extraction.npy' for g in gratings_list]
+    files = [f'jwst/{g}_wave_flux_err.txt' for g in gratings_keys]
     Nedge = conf_data.get('Nedge', 40)
     
     # gratings_n = {'g140h': 2, 'g235h': 4, 'g395h': 4}
     gratings_n = getattr(conf, 'gratings_n', {'g140h': 2, 'g235h': 4, 'g395h': 4})
 
-    spec = SpectrumJWST(Nedge=Nedge).load_gratings(files, gratings_n=gratings_n)
+    apply_psf_correction = conf_data.get('apply_psf_correction', False)
+
+    spec = SpectrumJWST(Nedge=Nedge).load_gratings(files, 
+                                                   gratings=gratings_keys, 
+                                                   apply_psf_correction=apply_psf_correction)
     print(f' Orders: {spec.n_orders}')
     # spec.reshape(spec.n_orders*2, 1)
     spec.reshape(spec.n_orders * conf_data['n_order_factor']//2, 1)
@@ -99,6 +103,7 @@ if args.pre_processing:
     # spec.scatter_overlapping_points()
     # spec.apply_error_scaling()
     spec.apply_flux_unit_factor(conf_data.get('flux_unit_factor', 1.0)) # NEW 2025-02-06
+    
 
     spec.plot_orders(fig_name=f'{conf.prefix}plots/spec_to_fit.pdf', grid=True)
     
@@ -110,7 +115,7 @@ if args.pre_processing:
     print(f' gratings_list = {spec.gratings_list}')
     af.pickle_save(f'{conf.prefix}data/d_spec_{spec.w_set}.pkl', spec)
 
-
+    # sys.exit()
     ## Create pRT_atm object
     pRT_file =pathlib.Path(f'{conf.prefix}data/pRT_atm_{spec.w_set}.pkl')
     if 'rv' in conf.free_params:
@@ -180,9 +185,11 @@ if args.prior_check:
 #     ret.gradient_based_optimization(method='L-BFGS-B', options={'maxiter': 100})
 
 if args.copy_to_snellius:
+    if run is None:
+        run = conf.run
     # copy this folder to snellius
-    snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{conf.run}'
-    local_dir = str(path / target / 'retrieval_outputs' / conf.run)
+    snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}'
+    local_dir = str(path / target / 'retrieval_outputs' / run)
     print(f' Copying {local_dir} to {snellius_dir}...')
     
     # if parent directory does not exist, create it on remote
@@ -211,7 +218,8 @@ if args.copy_to_snellius:
     
 if args.download:
     # download from snellius using scp -r
-    run = conf.run
+    if run is None:
+        run = conf.run
     snellius_dir = f'/home/dgonzalezpi/retrieval_base/{target}/retrieval_outputs/{run}/test_output'
     local_dir = str(path / target / f'retrieval_outputs/{run}/test_output')
     print(f' Downloading {snellius_dir} to {local_dir}...')

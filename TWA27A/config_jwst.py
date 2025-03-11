@@ -7,8 +7,8 @@ file_params = 'config_jwst.py'
 ####################################################################################
 
 target = 'TWA27A'
-# lbl = 11
-lbl = 11
+lbl = 10
+# lbl = 15
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
@@ -24,7 +24,7 @@ cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for com
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
 index = 0
-run = f'new_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
+run = f'no_psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -38,13 +38,14 @@ PT_run = 'lbl12_G1G2G3_fastchem_1' # ignored if PT_mode != 'fixed'
 config_data = {
     'NIRSpec': {
         'w_set': 'NIRSpec',
-        'n_ap': 6, # NEW 2025-03-03: aperture factor for spectral extraction
+
         'lbl_opacity_sampling' : lbl,
         'n_order_factor': 6, # NEW 2025-02-27: number of chunks to divide each order into
+        'apply_psf_correction': False, # NEW 2025-03-10: apply PSF correction
         'sigma_clip': 0, # NEW 2025-02-27: disable sigma clipping
         'sigma_clip_max_iter': 6,
         'sigma_clip_width': 31, # (2025-02-15): 31
-        'Nedge': 20, # (2025-02-27): 40 --> 20, new data already has edge effects discarded
+        'Nedge': 10, # (2025-02-27): 40 --> 20, new data already has edge effects discarded
         'log_P_range': (-5,2),
         'n_atm_layers': 40, # (2025-01-08): update 40 --> 60
         # 'T_cutoff': (1400.0, 3400.0), # DGP (2024-10-14): new parameter
@@ -575,7 +576,7 @@ const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 400
+n_live_points = 800 if not testing else 500
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file

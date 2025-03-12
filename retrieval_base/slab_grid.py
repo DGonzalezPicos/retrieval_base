@@ -232,14 +232,16 @@ if __name__ =='__main__':
     
     path = pathlib.Path(get_path())
     grating = 'g395h'
-    T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0)
-    N_mol_range = np.logspace(15, 20, 6*2)
-    for species in ['12CO', '13CO', 'H2O']:            
+    T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0)
+    N_mol_range = np.logspace(15, 22, 6*2)
+    # species = ['12CO', '13CO', 'H2O']
+    species = ['12CO']
+    for species in species:         
     
         slab = SlabGrid(species=species, grating=grating, path=path)
         # m = slab.get_flux(T_ex, N_mol)
         
-        slab.get_grid(T_ex_range, N_mol_range, cache=True)
+        slab.get_grid(T_ex_range, N_mol_range, cache=False)
         
         slab.load_interpolator(del_flux_grid=False) # False to plot the grid
         slab.plot_grid(fig_name=path / f'data/slab_models/slab_{species}_model_grid.pdf')

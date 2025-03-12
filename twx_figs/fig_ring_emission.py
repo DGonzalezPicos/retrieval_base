@@ -21,9 +21,9 @@ from fig1_insets import create_insets
 path = af.get_path(return_pathlib=True)
 path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
-target = 'TWA28'
+# target = 'TWA28'
 # run = None
-run = 'lbl12_G1G2G3_fastchem_0'
+# run = 'lbl12_G1G2G3_fastchem_0'
 w_set='NIRSpec'
 
 # runs = dict(
@@ -32,10 +32,10 @@ w_set='NIRSpec'
 #             )
 runs = dict(
     TWA27A=[
-        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'), 
+        ('no_psf_corr_lbl10_G2G3_newGP_0', 'G2+G3'), 
         ],
     TWA28=[
-        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'), 
+        ('no_psf_corr_lbl10_G2G3_newGP_0', 'G2+G3'), 
         ],
     )
 
@@ -94,6 +94,7 @@ def load_data(target, run):
         print(f'shape m_slab = {m_slab.shape}')
         # store slab model as txt with two columns: wave and flux, save as (2)
         m_slab = np.array([wave, m_slab]).T
+        print(f' saving m_slab array with shape {m_slab.shape}')
         np.save(slab_file, m_slab)
         print(f'Saved slab model to {slab_file}')
     else:

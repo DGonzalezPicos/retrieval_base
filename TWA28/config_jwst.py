@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 0
+index = 1
 run = f'no_psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -255,7 +255,7 @@ free_params = {
 
     # Uncertainty scaling
     # 'R_p': [(1.0, 5.0), r'$R_\mathrm{p}$'], # use this for robust results
-     'R_p': [(2.2, 3.6), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
+     'R_p': [(2.2, 3.8), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     # 'R_p': [(5.72, 5.73), r'$R_\mathrm{p}$'], # R_p ~ 2.82 R_jup
     #  'mass': [(10.0, 40.0), r'$M [M_\mathrm{Jup}]$'],
     # 'mass': [mass_dict[target], r'$M [M_\mathrm{Jup}]$'],
@@ -437,14 +437,16 @@ if 'g395h' in gratings:
     
     # disk_species = ['12CO', '13CO', 'H2O']
     disk_species = ['12CO']
-    T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
-    N_mol_range = np.logspace(15, 20, 6*2).tolist()
+    # T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
+    # N_mol_range = np.logspace(15, 20, 6*2).tolist()
+    T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
+    N_mol_range = np.logspace(15, 22, 6*2).tolist()
     
     disk_kwargs = dict(nr=20, ntheta=60)
 
     if len(disk_species) > 0:
         # free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
-        free_params.update({f'log_N_mol_{sp}': [(15.0, 20.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
+        free_params.update({f'log_N_mol_{sp}': [(15.0, 22.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
         free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
 
         # free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
@@ -529,7 +531,7 @@ cov_kwargs = {
     'max_length_scale': 10.0**free_params['log_l_G'][0][1],
     'truncate': trunc_dist,
     'local_sigma': 40.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
-    'local_threshold': 5.0, # number of standard deviations to use for local covariance
+    'local_threshold': 4.0, # number of standard deviations to use for local covariance
 }
 
 # add all items in cov_kwargs to constant_params
@@ -571,12 +573,12 @@ if PT_mode == 'fixed':
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = True
+testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 500
+n_live_points = 800 if not testing else 600
 n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 2
 # n_iter_before_update = 1
 # generate a .txt version of this file

@@ -442,7 +442,7 @@ if 'g395h' in gratings:
     # T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
     # N_mol_range = np.logspace(15, 22, 6*2).tolist()
     
-    disk_kwargs = dict(nr=20, ntheta=60)
+    disk_kwargs = dict(nr=18, ntheta=36)
     free_params.update({'log_N_mol_12CO': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$']})
     # free_params.update({'log_N_mol_13CO': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{13}CO})$']})
     free_params.update({'log_N_mol_H2O': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{H_2O})$']})

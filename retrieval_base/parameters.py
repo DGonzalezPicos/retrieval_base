@@ -526,9 +526,9 @@ class Parameters:
             assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
             
         if 'R_cav' in self.param_keys or 'log_R_cav' in self.param_keys:
-            self.params['R_cav'] = self.params['R_cav']
+            # self.params['R_cav'] = self.params['R_cav']
             # self.params['R_out'] = self.params.get('R_out', self.params['R_cav'] * 100.0)
-            self.params['R_out'] = self.params['R_out']
+            # self.params['R_out'] = self.params['R_out']
             # self.params['T_star']
             
             # multiply by factor to get the area in AU^2: (1 AU = 1.496e13 cm, 1 Rjup = 7.1492e9 cm)

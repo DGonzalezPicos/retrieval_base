@@ -215,6 +215,10 @@ class Covariance:
                 K_local += self.local_kernel(self.x, a_local, mu_local, sigma_local, truncate=truncate, k=k)
         return K_local
     
+    def set_grating(self, grating):
+        assert grating.lower() in ['g140h', 'g235h', 'g395h'], f'Grating {grating} not supported'
+        self.grating = grating.lower()
+    
     def __call__(self, 
                  params={}, 
                  residuals=None,
@@ -222,8 +226,12 @@ class Covariance:
         """
         Compute the covariance matrix for a given set of parameters.
         """
-        
-        self.C = self.full_to_banded(np.diag(self.effective_variance(b=params.get('b', 0.0))),
+        if hasattr(self, 'grating'):
+            b = params.get(f'b_{self.grating}', 0.0)
+        else:
+            b = params.get('b', 0.0)
+            
+        self.C = self.full_to_banded(np.diag(self.effective_variance(b=b)),
                                      k=self.x_ij.shape[0])
         
         a_G = params.get('a_G', 0.0)
@@ -557,6 +565,11 @@ class Covariance:
         # share y-axis limits between the second column
         plt.tight_layout()
         plt.show()
+        
+        
+    # alias for `solve_banded_system`
+    def solve(self, b):
+        return self.solve_banded_system(self.L, b)
         
         
 class OLDCovariance:

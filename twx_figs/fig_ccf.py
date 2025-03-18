@@ -25,8 +25,8 @@ target = 'TWA28'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A='lbl11_G1G2G3_fastchem_GP_0',
-    TWA28='lbl11_G1G2G3_fastchem_GP_0',
+    TWA27A='no_psf_corr_lbl10_G2G3_newGP_1',
+    TWA28='no_psf_corr_lbl10_G2G3_newGP_1',
             )
 
 def get_ccf(target, run):

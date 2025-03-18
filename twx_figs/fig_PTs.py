@@ -97,19 +97,14 @@ def get_bestfit_params(target,run):
 #             )
 
 runs = dict(
-    TWA27A=[('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)')],
-    TWA28=[
-        ('lbl11_G2G3_fastchem_GP_0', 'G2+G3 (GP)'), 
-        # ('lbl11_G2G3_fastchem_0', 'G2+G3'),
-        ],
-    )
+    TWA27A='no_psf_corr_lbl10_G2G3_newGP_1',
+    TWA28='no_psf_corr_lbl10_G2G3_newGP_1',
+            )
 colors = dict(TWA28={'data':'k', 
-                     'model':['brown', 'darkgreen', 'darkblue'], 
-                    #  'model_labels':['G1+G2+G3', 'G2+G3', 'G2'],
-                     'crires': 'orange'},
+                     'model':'orange', 
+                     'crires': 'brown'},
               TWA27A={'data':'#733b27',
-                      'model':['#0a74da'],
-                    #   'model_labels':['G2+G3 (GP)']
+                      'model':'#0a74da',
                       })
 
 def get_PT(path, target, run, config_file='config_jwst.txt', cache=True):
@@ -224,19 +219,17 @@ for t, target in enumerate(runs.keys()):
     # label_teff = r'T$_{\rm eff}$' + f' = {Teff[0]} K'
     label_teff = f'{Teff[0]:.0f} K'
     # ax.axvspan(Teff[0]-Teff[1], Teff[0]+Teff[1], color=colors[target]['model'], alpha=0.3, label=label_teff, lw=0, zorder=-1)
-    ax.axvline(Teff[0], color=colors[target]['model'][0], ls=':', lw=2, zorder=-10, alpha=0.6, label=label_teff)
+    ax.axvline(Teff[0], color=colors[target]['model'], ls=':', lw=2, zorder=-10, alpha=0.6, label=label_teff)
     
     if target == 'TWA28':
         plot_crires(ax)
         
-    for r, run_name in enumerate(runs[target]):
-        run = run_name[0]
-        label = run_name[1]
-        p, t, cf, logg = get_PT(path, target, run, cache=True)
-        ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'][r], alpha=0.3, fill_cf=True,
-                            label='TWA ' + target.replace('TWA', '') + f"\n({label})",
-                            ls_cf='-', lw_cf=1.0, use_altitude=True)
-    
+    # for r, run in enumerate(runs[target]):
+    p, t, cf, logg = get_PT(path, target, runs[target], cache=True)
+    ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'], alpha=0.3, fill_cf=True,
+                        label='TWA ' + target.replace('TWA', ''),
+                        ls_cf='-', lw_cf=1.0, use_altitude=True)
+
     
 
 z = pressure_to_altitude(p, t[3,:], logg) if use_altitude else p

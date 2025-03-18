@@ -317,7 +317,7 @@ class Retrieval:
                     #     separation_ij = self.d_spec[w_set].separation[i,j]
                     #     err_eff_ij = self.d_spec[w_set].err_eff[i,j]
                         
-                    # grating = self.d_spec[w_set].gratings_list[i]
+                    grating = self.d_spec[w_set].gratings_list[i]
                     # max_separation = self.conf.cov_kwargs.pop(f'max_separation_{grating}', self.conf.cov_kwargs.pop('max_separation', None))
                 
                     self.Cov[w_set][i,j] = Covariance(x=wave_ij, 
@@ -326,6 +326,7 @@ class Retrieval:
                                                       truncate=self.conf.cov_kwargs.get('truncate', 4.0),
                                                       scale_amplitude=self.conf.cov_kwargs.get('scale_amplitude', False),
                                                       )
+                    self.Cov[w_set][i,j].set_grating(grating)
                     # self.Cov[w_set][i,j] = get_Covariance_class(
                     #     self.d_spec[w_set].err[i,j,mask_ij], 
                     #     self.Param.cov_mode, 

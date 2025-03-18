@@ -547,8 +547,16 @@ class pRT_model:
                     # w_slab_i = self.slab[ds_i][grating][0,:] * 1e3 # [um] -> [nm]
                     
                     # skip if all values of flux are below 1e-18
-                                        
-                    disk_params = {attr:self.params.get(f'{attr}_{ds_i}') for attr in ['T_ex', 'N_mol']}
+                    T_ex = self.params.get(f'T_ex_{ds_i}', self.params['T_ex_12CO'])
+                    N_mol = self.params.get(f'N_mol_{ds_i}', None)
+                    if ds_i == '13CO':
+                        carbon_isotope_ratio = self.params.get('12CO/13CO', None)
+                        assert carbon_isotope_ratio is not None, f'12CO/13CO ratio is not set'
+                        N_mol = self.params.get(f'N_mol_12CO') / carbon_isotope_ratio
+                    assert N_mol is not None, f'N_mol for {ds_i} is not set'
+                    assert T_ex is not None, f'T_ex for {ds_i} is not set'
+                    # disk_params = {attr:self.params.get(f'{attr}_{ds_i}') for attr in ['T_ex', 'N_mol']}
+                    disk_params = {'T_ex': T_ex, 'N_mol': N_mol}
                     disk_params['A_au'] = self.params.get(f'A_au_{ds_i}', self.params['A_au'])
                     disk_params['d_pc'] = self.params['d_pc']
                     rv_disk = self.params.get('rv_disk', 0.0)

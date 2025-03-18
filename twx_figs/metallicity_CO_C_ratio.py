@@ -17,10 +17,10 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A=[('lbl11_G2G3_fastchem_GP_0', 'G2+G3')],
+    TWA27A=[('no_psf_corr_lbl10_G2G3_newGP_1', 'G2+G3')],
     TWA28=[
         # 'lbl11_G1G2G3_fastchem_0', 
-           ('lbl11_G2G3_fastchem_GP_1', 'G2+G3'), 
+           ('no_psf_corr_lbl10_G2G3_newGP_1', 'G2+G3'), 
         #    ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'),
            ],
             )
@@ -239,7 +239,7 @@ def remove_spines(ax):
 
 [remove_spines(axi) for axi in axes]
 
-xlims = [(0.45, 0.70), (-0.2, 0.6), (30, 120), (3, 5.0)]
+xlims = [(0.40, 0.70), (-0.5, 0.6), (30, 160), (3.0, 5.0)]
 for axi, xlim in zip(axes, xlims):
     axi.set_xlim(xlim)
 # TODO: plot each target on a separate row, compare freechem and fastchem??

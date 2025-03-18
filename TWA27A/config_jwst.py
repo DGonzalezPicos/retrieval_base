@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
+index = 2
 run = f'no_psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -265,7 +265,7 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
-    'b': [(0.0, 3.0), r'$b$'], # error scaling parameter as in var2_eff = var2_0 * 10**b
+    # 'b': [(0.0, 3.0), r'$b$'], # error scaling parameter as in var2_eff = var2_0 * 10**b
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 }
 if PT_mode  == 'RCE':
@@ -435,19 +435,22 @@ constant_params['gratings'] = [item for sublist in constant_params['gratings'] f
 if 'g395h' in gratings:
     # constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
     
-    # disk_species = ['12CO', '13CO', 'H2O']
-    disk_species = ['12CO']
-    # T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
-    # N_mol_range = np.logspace(15, 20, 6*2).tolist()
-    T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
-    N_mol_range = np.logspace(15, 22, 6*2).tolist()
+    disk_species = ['12CO', '13CO', 'H2O']
+    # disk_species = ['12CO']
+    T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
+    N_mol_range = np.logspace(15, 20, 6*2).tolist()
+    # T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
+    # N_mol_range = np.logspace(15, 22, 6*2).tolist()
     
     disk_kwargs = dict(nr=20, ntheta=60)
+    free_params.update({'log_N_mol_12CO': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$']})
+    # free_params.update({'log_N_mol_13CO': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{13}CO})$']})
+    free_params.update({'log_N_mol_H2O': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{H_2O})$']})
+    free_params.update({'T_ex_12CO': [(min(T_ex_range), max(T_ex_range)), r'$T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$']})
 
     if len(disk_species) > 0:
-        # free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
-        free_params.update({f'log_N_mol_{sp}': [(15.0, 22.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
-        free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
+        # free_params.update({f'log_N_mol_{sp}': [(15.0, 22.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
+        # free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
 
         # free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
         # free_params.update({'R_cav': [(0.5, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
@@ -455,7 +458,7 @@ if 'g395h' in gratings:
         free_params.update({'log_R_cav': [(0.0, 1.5), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
         free_params.update({'log_R_out': [(0.5, 2.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
         free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
-        free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
+        # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 ####################################################################################
 #
@@ -522,6 +525,10 @@ trunc_dist = 4.0
 #         constant_params[f'a_{grating}_G'] = 1.0
 #         # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
 #         # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
+# global error scaling per grating
+
+for grating in gratings:
+    free_params[f'b_{grating}'] = [(0.0, 3.0), r'$\log\ b$' + f'({grating})']
 
 free_params['log_l_G'] = [(1.4, 2.6), r'$\log\ l_G$ [km/s]'] # from 30 to ~200 km/s ~ 5 pixels
 # free_params['log_a_G'] = [(-1.0, 1.0), r'$\log\ a_G$']
@@ -573,13 +580,13 @@ if PT_mode == 'fixed':
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = False
+testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 600
-n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 2
+n_live_points = 800 if not testing else 400
+n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file
 print(f' --> {free_params} free parameters')

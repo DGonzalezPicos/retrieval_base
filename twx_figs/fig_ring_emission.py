@@ -31,13 +31,9 @@ w_set='NIRSpec'
 #     TWA28='lbl11_G1G2G3_fastchem_0',
 #             )
 runs = dict(
-    TWA27A=[
-        ('no_psf_corr_lbl10_G2G3_newGP_0', 'G2+G3'), 
-        ],
-    TWA28=[
-        ('no_psf_corr_lbl10_G2G3_newGP_0', 'G2+G3'), 
-        ],
-    )
+    TWA27A='no_psf_corr_lbl10_G2G3_newGP_1',
+    TWA28='no_psf_corr_lbl10_G2G3_newGP_1',
+            )
 
 
 colors = dict(TWA28={'data':'k', 'model':'orange'},
@@ -108,11 +104,7 @@ def load_data(target, run):
 
 d_specs, m_specs = {}, {}
 for target in runs.keys():
-    target_runs = list(np.atleast_1d(runs[target]))
-    for r, run_name in enumerate(target_runs):
-        run = run_name[0]
-        label = run_name[1]
-        d_specs[target], m_specs[target] = load_data(target, run)
+    d_specs[target], m_specs[target] = load_data(target, runs[target])
 
 fig, ax = plt.subplots(4,1, figsize=(6, 5), gridspec_kw={'height_ratios': [2, 1, 0.6, 0.6]}, sharex=True)
 lw = 0.6
@@ -141,13 +133,12 @@ def plot_chunk(d_spec, m_spec, idx=0, colors=None, ls='-', lw=1.0):
     
 MAD_dict = {}
 for target in runs.keys():
-    run = runs[target][0][0]
-    label = runs[target][0][1]
+    run = runs[target]
     d_spec, m_spec = d_specs[target], m_specs[target]
     
     residuals_no_slab = 0.0
     residuals_with_slab = 0.0
-    for idx in [-2, -1]:
+    for idx in [-3, -2, -1]:
         residuals_list = plot_chunk(d_spec, m_spec, idx=idx, colors=colors[target], lw=lw)
         residuals_no_slab += residuals_list[0]
         residuals_with_slab += residuals_list[1]

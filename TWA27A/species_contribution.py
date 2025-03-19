@@ -5,17 +5,24 @@ import matplotlib.pyplot as plt
 # pdf pages
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
+import argparse
 
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
 # import config_jwst as conf
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--target', '-t', type=str, default='TWA27A')
+parser.add_argument('--run', '-r', type=str, default='lbl15_KM7')
+args = parser.parse_args()
+
 path = af.get_path()
 config_file = 'config_jwst.txt'
-target = 'TWA27A'
-# run = None
-run = 'lbl15_KM7'
+# target = 'TWA27A'
+target = args.target
+run = args.run
+# run = 'lbl15_KM7'
 w_set='NIRSpec'
 
 cwd = os.getcwd()

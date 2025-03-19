@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 2
+index = 3
 run = f'no_psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -174,7 +174,7 @@ species_wave = {
     
     
     'HF': [[2100, 2950.0]],
-    'HCl': [[3050, np.inf]], # FIXME: check this
+    'HCl': [[3050, 4915]], #
 
     'CO2': [[2800, 3200],[3900, 5400]],
     # 'CH4': [[2900.0, 3900.0]], # TODO: add this back for final retrieval
@@ -184,16 +184,16 @@ species_wave = {
     # 'NH3': [[0.0, np.inf]],
     # 'HCN': [[0.0, np.inf]], # unclear, keep?
 
-    'Na': [[0, 2400.0], [3390.0, 3600.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
+    'Na': [[0, 2400.0], [3390.0, 3600.0], [3900.0,4100.0]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
     'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
     'Ti': [[0, 2400.0]],
     # 'Sc': [[0, 2600]], # 2025-02-19: not detected...
-    'Mg': [[0, 2600]],
+    'Mg': [[0, 2160]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
     # 'Mn': [[0, 2400.0]],
-    'Fe': [[0, 2200]],
+    'Fe': [[0, 2160]],
     'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
     # 'Cs': [[0, 1200], [1300, 1600],[2850,4000]],
@@ -206,14 +206,14 @@ species_wave = {
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # Feb 18: not detected...
-    'OH' : [[0, np.inf]],
+    'OH' : [[0, 4500]],
     'VO': [[0, 1450.0]],
-    'TiO': [[0,1450]],
+    'TiO': [[0,1450],[4500.0, 5300.0]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
     # 'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
     # 'AlH': [[3000, 4600]],
-    'AlH': [[1600, 4600]],
+    'AlH': [[2920, 4600]],
     # 'CH': [[0.0, 2200], [3000, np.inf]],
     # 'SiH': [[4500, 5300]],
     # 'SiH': [[0.0, np.inf]],
@@ -438,15 +438,17 @@ if 'g395h' in gratings:
     disk_species = ['12CO', '13CO', 'H2O']
     # disk_species = ['12CO']
     T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
-    N_mol_range = np.logspace(15, 20, 6*2).tolist()
+    N_mol_min, N_mol_max = 12.0, 18.0
+    N_mol_range = np.logspace(N_mol_min, N_mol_max, 6*2).tolist()
     # T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
     # N_mol_range = np.logspace(15, 22, 6*2).tolist()
     
     disk_kwargs = dict(nr=18, ntheta=36)
-    free_params.update({'log_N_mol_12CO': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$']})
+    free_params.update({'log_N_mol_12CO': [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$']})
     # free_params.update({'log_N_mol_13CO': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{13}CO})$']})
-    free_params.update({'log_N_mol_H2O': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{H_2O})$']})
-    free_params.update({'T_ex_12CO': [(min(T_ex_range), max(T_ex_range)), r'$T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$']})
+    free_params.update({'log_N_mol_H2O': [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{H_2O})$']})
+    # free_params.update({'T_ex_12CO': [(min(T_ex_range), max(T_ex_range)), r'$T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$']})
+    free_params.update({'log_T_ex_12CO': [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$']})
 
     if len(disk_species) > 0:
         # free_params.update({f'log_N_mol_{sp}': [(15.0, 22.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
@@ -465,7 +467,7 @@ if 'g395h' in gratings:
 ####################################################################################
 scale_flux = False
 scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
-scale_err  = False
+scale_err  = True
 # if scale_err == False:
 #     free_params['beta2'] = [(1.0, 10.0), r'b$^2$']
 #     invgamma_params.append('beta2')

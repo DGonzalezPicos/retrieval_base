@@ -15,6 +15,8 @@ class Covariance:
     
     c_km_s = 299792.458  # speed of light in km/s
     
+    b = None # default value for the variance scaling factor, 10**b = 1
+    
     def __init__(self, x, err, max_length_scale=None, truncate=4.0, scale_amplitude=False):
         """
         Initialize the Covariance class.
@@ -227,11 +229,11 @@ class Covariance:
         Compute the covariance matrix for a given set of parameters.
         """
         if hasattr(self, 'grating'):
-            b = params.get(f'b_{self.grating}', 0.0)
+            self.b = params.get(f'b_{self.grating}', 0.0)
         else:
-            b = params.get('b', 0.0)
+            self.b = params.get('b', 0.0)
             
-        self.C = self.full_to_banded(np.diag(self.effective_variance(b=b)),
+        self.C = self.full_to_banded(np.diag(self.effective_variance(b=self.b)),
                                      k=self.x_ij.shape[0])
         
         a_G = params.get('a_G', 0.0)

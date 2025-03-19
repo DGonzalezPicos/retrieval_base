@@ -38,6 +38,7 @@ parser.add_argument('--copy_to_snellius', '-copy_to_snellius', action='store_tru
 parser.add_argument('--download', '-d', action='store_true', default=False)
 parser.add_argument('--run', '-run', type=str, default=None)
 parser.add_argument('--ccf', '-ccf', action='store_true', default=False)
+parser.add_argument('--species_contribution', '-sc', action='store_true', default=False)
 args = parser.parse_args()
 run = args.run
 if args.pre_processing:
@@ -288,3 +289,10 @@ if args.ccf:
     # print(f' ** Running command: {command}')
     sp.call(command, shell=True)
     print(f' ** Done with cross-correlation function for {target} {run}..')
+    
+if args.species_contribution:
+    run = run or conf.run
+    print(f' ** Running species contribution for {target} {run}..')
+    command = f'python {path}/retrieval_base/species_contribution.py -t {target} -r {run}'
+    sp.call(command, shell=True)
+    print(f' ** Done with species contribution for {target} {run}..')

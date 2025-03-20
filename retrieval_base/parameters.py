@@ -87,12 +87,25 @@ class Parameters:
         # check distance / parallax parameters
         for p in ['parallax', 'parallax_mas']:
             if p in self.params.keys():
-                self.params['d_pc'] = 1 / (self.params[p] * 1e-3)
+                self.params['d_pc'] = 1e3 / (self.params[p])
+        for p in ['d_pc']:
+            if p in self.params.keys():
+                self.params['parallax'] = 1e3 / self.params[p]
             
             
         # self.gaussian_priors = {k:norm(loc=v[0], scale=v[1]) for k, v in self.param_priors.items() if k in gaussian_params}
         self.gaussian_params = gaussian_params
         self.invgamma_params = invgamma_params
+        
+        # check disk model mode
+        self.disk_model = 'standard'
+        if 'log_T_ex_12CO_hot' in self.param_keys:
+            assert 'log_T_ex_12CO_cold' in self.param_keys, ' [Parameters.__init__]: log_T_ex_12CO_cold must be defined if log_T_ex_12CO_hot is defined'
+            assert 'log_R_out_hot' in self.param_keys, ' [Parameters.__init__]: log_R_out_hot must be defined if log_T_ex_12CO_hot is defined'
+            assert 'log_R_out_cold' in self.param_keys, ' [Parameters.__init__]: log_R_out_cold must be defined if log_T_ex_12CO_hot is defined'
+            self.disk_model = 'hot_cold'
+        
+        
     def __str__(self):
         out = '** Parameters **\n'
         # add line of dashes
@@ -158,6 +171,11 @@ class Parameters:
                     low = max(self.params['R_cav'] * 1.01, low)
                 if key_i == 'log_R_out':
                     low = max(self.params['log_R_cav'] + np.log10(1.01), low)
+                    
+                if key_i == 'log_R_out_cold':
+                    low = max(self.params['log_R_out_hot'], low)
+                if key_i == 'log_T_ex_12CO_cold':
+                    low = min(self.params['log_T_ex_12CO_hot'], low)
                     
                     
                 
@@ -506,52 +524,72 @@ class Parameters:
     def read_disk_params(self):
         ''' Read the disk parameters '''
         
-        if 'T_ex' in self.params.keys():
-            disk_default = {
-                'T_ex': [600.0],
-                'N_mol': [1e17],
-                'A_au': [1.0],
-                'dV': [1.0],
-            }
-            all_keys = list(self.params.keys())
-            for k in disk_default.keys():
+        if self.disk_model == 'hot_cold':
+            # read hot and cold disk parameters
+            assert 'R_cav' in self.params.keys(), ' [Parameters.read_disk_params]: R_cav not found in the parameter keys'
+            assert 'R_out_hot' in self.params.keys(), ' [Parameters.read_disk_params]: R_out_hot not found in the parameter keys'
+            assert 'R_out_cold' in self.params.keys(), ' [Parameters.read_disk_params]: R_out_cold not found in the parameter keys'
+            
+            self.params['R_in_hot'] = float(self.params['R_cav'])
+            self.params['R_in_cold'] = float(self.params['R_out_hot'])
+            
+            unit_factor = (7.1492e9/1.496e13)**2 # cm to AU, squared for area
+            self.params['A_au_hot'] = np.pi * (self.params['R_out_hot']**2 - self.params['R_in_hot']**2) * unit_factor
+            self.params['A_au_cold'] = np.pi * (self.params['R_out_cold']**2 - self.params['R_in_cold']**2) * unit_factor
+
+            assert self.params['A_au_hot'] < 1e3, f' [Parameters.read_disk_params]: A_au_hot = {self.params["A_au_hot"]:.1e} is too large, R_out_hot = {self.params["R_out_hot"]:.1e}, R_in_hot = {self.params["R_in_hot"]:.1e}'
+            assert self.params['A_au_cold'] < 1e3, f' [Parameters.read_disk_params]: A_au_cold = {self.params["A_au_cold"]:.1e} is too large, R_out_cold = {self.params["R_out_cold"]:.1e}, R_in_cold = {self.params["R_in_cold"]:.1e}'
+            
+        else:
+            
+            self.params['R_in'] = float(self.params['R_cav']) # alias, inner radius = cavity radius
+            if 'T_ex' in self.params.keys():
+                disk_default = {
+                    'T_ex': [600.0],
+                    'N_mol': [1e17],
+                    'A_au': [1.0],
+                    'dV': [1.0],
+                }
+                all_keys = list(self.params.keys())
+                for k in disk_default.keys():
+                    
+                    v_list = [self.params[key] for key in all_keys if key.startswith(f'{k}_')]
+                    if len(v_list) == 0:
+                        v_list = disk_default[k]
+
+                    self.params[k] = np.array([np.array(v_list)])
+                    # print(f' [Parameters.read_disk_params]: k = {k}, self.params[k] = {self.params[k]}')
+            
+                assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
                 
-                v_list = [self.params[key] for key in all_keys if key.startswith(f'{k}_')]
-                if len(v_list) == 0:
-                    v_list = disk_default[k]
+            if 'R_cav' in self.param_keys or 'log_R_cav' in self.param_keys:
+                # self.params['R_cav'] = self.params['R_cav']
+                # self.params['R_out'] = self.params.get('R_out', self.params['R_cav'] * 100.0)
+                # self.params['R_out'] = self.params['R_out']
+                # self.params['T_star']
+                
+                # multiply by factor to get the area in AU^2: (1 AU = 1.496e13 cm, 1 Rjup = 7.1492e9 cm)
+                self.params['A_au'] = np.pi * (self.params['R_out']**2 - self.params['R_cav']**2) * (7.1492e9/1.496e13)**2
+                # self.params['i'] = np.radians(self.params.get('i_deg', 45.0))
+                self.params['i_deg'] = self.params.get('i_deg', 0.0)
 
-                self.params[k] = np.array([np.array(v_list)])
-                # print(f' [Parameters.read_disk_params]: k = {k}, self.params[k] = {self.params[k]}')
-        
-            assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
-            
-        if 'R_cav' in self.param_keys or 'log_R_cav' in self.param_keys:
-            # self.params['R_cav'] = self.params['R_cav']
-            # self.params['R_out'] = self.params.get('R_out', self.params['R_cav'] * 100.0)
-            # self.params['R_out'] = self.params['R_out']
-            # self.params['T_star']
-            
-            # multiply by factor to get the area in AU^2: (1 AU = 1.496e13 cm, 1 Rjup = 7.1492e9 cm)
-            self.params['A_au'] = np.pi * (self.params['R_out']**2 - self.params['R_cav']**2) * (7.1492e9/1.496e13)**2
-            # self.params['i'] = np.radians(self.params.get('i_deg', 45.0))
-            self.params['i_deg'] = self.params.get('i_deg', 0.0)
-
-            if 'q' in self.param_keys:
-                assert 'T_star' in self.params.keys(), ' [Parameters.read_disk_params]: T_star not found in the parameter keys'
+                if 'q' in self.param_keys:
+                    assert 'T_star' in self.params.keys(), ' [Parameters.read_disk_params]: T_star not found in the parameter keys'
+                    
+                    assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
+                    self.params['q'] = self.params.get('q', 0.75)
+                
+            elif 'log_A_au_12CO' in self.param_keys:
+                # self.params['A_au_12CO'] = 10**self.params['log_A_au_12CO']
+                # self.params['A_au_13CO'] = 10**self.params['log_A_au_13CO']
+                # self.params['A_au_H2O'] = 10**self.params['log_A_au_H2O']
                 
                 assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
-                self.params['q'] = self.params.get('q', 0.75)
-            
-        elif 'log_A_au_12CO' in self.param_keys:
-            # self.params['A_au_12CO'] = 10**self.params['log_A_au_12CO']
-            # self.params['A_au_13CO'] = 10**self.params['log_A_au_13CO']
-            # self.params['A_au_H2O'] = 10**self.params['log_A_au_H2O']
-            
-            assert 'd_pc' in self.params.keys(), ' [Parameters.read_disk_params]: d_pc not found in the parameter keys'
-        # if 'R_d' in self.param_keys:
-        #     rjup_cm = 7.1492e9
-        #     au_cm = 1.496e13
-        #     self.params['A_au'] = np.pi * (self.params['R_d'] * (rjup_cm/au_cm))**2
+            # if 'R_d' in self.param_keys:
+            #     rjup_cm = 7.1492e9
+            #     au_cm = 1.496e13
+            #     self.params['A_au'] = np.pi * (self.params['R_d'] * (rjup_cm/au_cm))**2
+        
         
             
         

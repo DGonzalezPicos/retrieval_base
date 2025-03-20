@@ -121,7 +121,7 @@ class Covariance:
             K *= self.hann_window(r, r0)
         return K
 
-    def identify_outliers(self, resid, threshold=3.0):
+    def identify_outliers(self, resid, threshold=3.0, max_outliers=None, debug=False):
         """
         Identify outliers in the residuals using a robust statistic.
         
@@ -148,8 +148,24 @@ class Covariance:
         
         outlier_indices = np.where(np.abs(resid - median) > threshold * sigma_robust)[0]
         # Extra amplitude above the threshold
-        amplitudes = np.abs(resid[outlier_indices]) - threshold * sigma_robust
+        # NEW 2025-03-20: extra amplitude above 1 sigma_robust, not threshold * sigma_robust
+        amplitudes = np.abs(resid[outlier_indices]) - 1.0 * sigma_robust
         amplitudes[amplitudes < 0] = 0.0
+        if max_outliers is not None:
+            # sort by amplitudes
+            sort = np.argsort(amplitudes)[::-1]
+            amplitudes = amplitudes[sort]
+            outlier_indices = outlier_indices[sort]
+            
+            if debug and len(outlier_indices) > 0:
+                print(' ** [Covariance.identify_outliers]')
+                print(f'Number of outliers: {len(outlier_indices)}')
+                print(f'Max, min amplitudes: {amplitudes[0]:.1e}, {amplitudes[-1]:.1e}')
+                print(f'Max outliers: {max_outliers}')
+                
+            # select the top max_outliers
+            amplitudes = amplitudes[:max_outliers]
+            outlier_indices = outlier_indices[:max_outliers]
         return outlier_indices, amplitudes, sigma_robust
 
     def local_kernel(self, x, a_L, mu_local, sigma_local, truncate=4.0, k=None):
@@ -192,7 +208,7 @@ class Covariance:
         """
         return (self.err**2 * 10.0**b)
     
-    def local_covariance(self, residuals, residuals_threshold=4.0, sigma_local=1.0, truncate=4.0, k=None):
+    def local_covariance(self, residuals, residuals_threshold=4.0, sigma_local=1.0, truncate=4.0, k=None, max_outliers=None):
         """
         Compute the local covariance matrix from the residuals.
         Parameters
@@ -210,7 +226,7 @@ class Covariance:
         """
         K_local = np.zeros_like(self.C)
         
-        outlier_indices, amplitudes, sigma_robust = self.identify_outliers(residuals, threshold=residuals_threshold)
+        outlier_indices, amplitudes, sigma_robust = self.identify_outliers(residuals, threshold=residuals_threshold, max_outliers=max_outliers)
         for a_local, idx in zip(amplitudes, outlier_indices):
             if a_local > 0:
                 mu_local = self.x[idx]
@@ -252,7 +268,8 @@ class Covariance:
                                             residuals_threshold=params.get('local_threshold', 4.0),
                                             sigma_local=params.get('local_sigma', 1.0),
                                             truncate=self.truncate,
-                                            k=self.x_ij.shape[0])
+                                            k=self.x_ij.shape[0],
+                                            max_outliers=params.get('max_outliers', None))
             if np.any(K_local > 0.0):
                 self.C += K_local
             

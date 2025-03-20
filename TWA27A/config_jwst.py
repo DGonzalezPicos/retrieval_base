@@ -23,8 +23,8 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 3
-run = f'no_psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
+index = 0
+run = f'hotcoldslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -66,18 +66,24 @@ wave_range = [float(np.min(wave_range_list)), float(np.max(wave_range_list))]
 
 # distance in pc to parallax
 parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
+
+# distance from Gaia, old distances from Ducourant+2008 were off...
+distance_pc_dict = dict(TWA28=59.9, 
+                        TWA27A=64.4)
 Teff_dict = dict(TWA28=2382.0, TWA27A=2430.0)
 mass_dict = dict(TWA28=(20.9, 6.0), TWA27A=(19.9, 5.0))
 
 parallax_mas = parallax_mas_dict[target] # Gaia DR3, for TWA 28 (Manjavacas+2024)
-d_pc = 1e3 / parallax_mas # ~ 59.17 pc
+# d_pc = 1e3 / parallax_mas # ~ 59.17 pc
+d_pc = distance_pc_dict[target]
 
 N_knots = 1 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
-    'parallax': parallax_mas, 
+    # 'parallax': parallax_mas, 
+    'd_pc': d_pc,
     'epsilon_limb': 0.5, 
     # 'log_g': 3.5,
     'vsini':0.,
@@ -435,32 +441,32 @@ constant_params['gratings'] = [item for sublist in constant_params['gratings'] f
 if 'g395h' in gratings:
     # constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
     
-    disk_species = ['12CO', '13CO', 'H2O']
+    # disk_species = ['12CO', '13CO', 'H2O']
+    disk_species = ['12CO', '13CO']
     # disk_species = ['12CO']
-    T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
-    N_mol_min, N_mol_max = 12.0, 18.0
+    T_ex_range = np.arange(300.0, 1150.0+50.0, 50.0).tolist()
+    N_mol_min, N_mol_max = 12.0, 19.0
     N_mol_range = np.logspace(N_mol_min, N_mol_max, 6*2).tolist()
     # T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
     # N_mol_range = np.logspace(15, 22, 6*2).tolist()
     
-    disk_kwargs = dict(nr=18, ntheta=36)
-    free_params.update({'log_N_mol_12CO': [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$']})
-    # free_params.update({'log_N_mol_13CO': [(15.0, 20.0), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{13}CO})$']})
-    free_params.update({'log_N_mol_H2O': [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{H_2O})$']})
-    # free_params.update({'T_ex_12CO': [(min(T_ex_range), max(T_ex_range)), r'$T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$']})
-    free_params.update({'log_T_ex_12CO': [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$']})
+    
+    # define disk geometry parameters
+    free_params.update({'log_R_cav': [(0.0, 2.0), r'$R_\mathrm{cav}$']}) # disk inner radius in R_jup
+    free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
 
-    if len(disk_species) > 0:
-        # free_params.update({f'log_N_mol_{sp}': [(15.0, 22.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
-        # free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
+    # define disk emission parameters (and outer radius)
+    hot_cold_model = True
+    labels = ['_hot', '_cold'] if hot_cold_model else ['']
+    
+    disk_kwargs = dict(nr=18, ntheta=36, hot_cold_model=hot_cold_model)
 
-        # free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
-        # free_params.update({'R_cav': [(0.5, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
-        # free_params.update({'R_out': [(0.5, 200.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
-        free_params.update({'log_R_cav': [(0.0, 1.5), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
-        free_params.update({'log_R_out': [(0.5, 2.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
-        free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
-        # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
+    for label in labels:
+        free_params.update({'log_N_mol_12CO'+label: [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$'+label]})
+        free_params.update({'log_T_ex_12CO'+label: [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$'+label]})
+        free_params.update({'log_R_out'+label: [(0.5, 4.0), r'$R_\mathrm{out}$'+label]}) # disk outer radius in R_jup
+
+    # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 ####################################################################################
 #
@@ -541,6 +547,7 @@ cov_kwargs = {
     'truncate': trunc_dist,
     'local_sigma': 40.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
     'local_threshold': 4.0, # number of standard deviations to use for local covariance
+    'max_outliers': 5, # maximum number of outliers to flag
 }
 
 # add all items in cov_kwargs to constant_params

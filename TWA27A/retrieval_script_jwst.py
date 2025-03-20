@@ -162,7 +162,7 @@ if args.prior_check:
     figs_path.mkdir(parents=True, exist_ok=True)
     
     random = True
-    np.random.seed(1123)
+    np.random.seed(998)
     random_label = '_random' if random else ''
     disk = True
     disk_label = '_disk' if disk else ''

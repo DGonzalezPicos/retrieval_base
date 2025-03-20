@@ -464,7 +464,7 @@ if 'g395h' in gratings:
     for label in labels:
         free_params.update({'log_N_mol_12CO'+label: [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$'+label]})
         free_params.update({'log_T_ex_12CO'+label: [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$'+label]})
-        free_params.update({'log_R_out'+label: [(0.5, 4.0), r'$R_\mathrm{out}$'+label]}) # disk outer radius in R_jup
+        free_params.update({'log_R_out'+label: [(0.5, 3.0), r'$R_\mathrm{out}$'+label]}) # disk outer radius in R_jup
 
     # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     

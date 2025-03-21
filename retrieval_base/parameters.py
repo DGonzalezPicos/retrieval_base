@@ -540,7 +540,7 @@ class Parameters:
             assert self.params['A_au_hot'] < 1e3, f' [Parameters.read_disk_params]: A_au_hot = {self.params["A_au_hot"]:.1e} is too large, R_out_hot = {self.params["R_out_hot"]:.1e}, R_in_hot = {self.params["R_in_hot"]:.1e}'
             assert self.params['A_au_cold'] < 1e3, f' [Parameters.read_disk_params]: A_au_cold = {self.params["A_au_cold"]:.1e} is too large, R_out_cold = {self.params["R_out_cold"]:.1e}, R_in_cold = {self.params["R_in_cold"]:.1e}'
             
-        else:
+        elif 'R_cav' in list(self.params.keys()):
             
             self.params['R_in'] = float(self.params['R_cav']) # alias, inner radius = cavity radius
             if 'T_ex' in self.params.keys():

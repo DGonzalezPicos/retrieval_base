@@ -541,53 +541,92 @@ class pRT_model:
             if len(self.disk_species) > 0 and (self.params['gratings'][i]=='g395h'):
                 
                 hot_cold_model = self.disk_kwargs.get('hot_cold_model', False)
+                n_slabs = self.disk_kwargs.get('n_slabs', 1)
                 labels_hot_cold = ['_hot', '_cold'] if hot_cold_model else ['']
                 for ds_i in self.disk_species:
-                    for label in labels_hot_cold:
-                        # skip if all values of flux are below 1e-18
-                        T_ex = self.params.get(f'T_ex_{ds_i}{label}', self.params[f'T_ex_12CO{label}'])
-                        N_mol = self.params.get(f'N_mol_{ds_i}{label}', None)
-                        # assert N_mol is not None, f'N_mol for {ds_i} is not set with label {label}'
-                        # assert T_ex is not None, f'T_ex for {ds_i} is not set with label {label}'
-                        # print(f'[pRT_model.get_model_spectrum] {ds_i}{label} T_ex = {T_ex:.1f}, N_mol = {N_mol:.1e}') # FIXME: remove   
-                        
-                        if ds_i == '13CO':
-                            carbon_isotope_ratio = self.params.get('12CO/13CO', None)
-                            assert carbon_isotope_ratio is not None, f'12CO/13CO ratio is not set'
-                            N_mol = self.params.get(f'N_mol_12CO{label}') / carbon_isotope_ratio
-                            # print(f'[pRT_model.get_model_spectrum] {ds_i}{label} N_mol = {N_mol:.1e}') # FIXME: remove
-                        assert N_mol is not None, f'N_mol for {ds_i} is not set'
-                        assert T_ex is not None, f'T_ex for {ds_i} is not set'
-                        # disk_params = {attr:self.params.get(f'{attr}_{ds_i}') for attr in ['T_ex', 'N_mol']}
-                        disk_params = {'T_ex': T_ex, 'N_mol': N_mol}
-                        disk_params['A_au'] = self.params.get(f'A_au_{ds_i}{label}', self.params[f'A_au{label}'])
-                        disk_params['d_pc'] = self.params['d_pc']
-                        rv_disk = self.params.get('rv_disk', 0.0)
-                        
-                        # print(f'[pRT_model.get_model_spectrum] {ds_i}{label} disk_params = {disk_params}')
-                        
-                        f_slab_i = self.slab[ds_i].interpolate(**disk_params)
-                        if 'i_deg' in self.params.keys():
-                            f_slab_i = apply_keplerian_profile(
-                                                                self.slab[ds_i].wave_grid,
-                                                                f_slab_i,
-                                                                np.linspace(self.params[f'R_in{label}'], self.params[f'R_out{label}'], self.disk_kwargs['nr']),
-                                                                self.params.get("M_star_Mjup", 20.0),
-                                                                inclination_deg=self.params['i_deg'],
-                                                                ntheta=self.disk_kwargs['ntheta'],
-                                                                nu=self.params.get('nu', 0.0),
-                                                                vsys=self.params.get('rv', 0.0),
-                                                                    )
-                        # fill with zeros values beyond the range of the slab model
-                        m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid * (1+(rv_disk/2.998e5)), f_slab_i, right=0.0, left=0.0)
-                        assert np.sum(np.isnan(m_flux_slab_i)) == 0, '[pRT_model.get_model_spectrum] line 546: NaNs in m_flux_slab_i'
-                        # print(f' [pRT_model] ds_i = {ds_i}  mean(f_slab_i) = {np.mean(f_slab_i)}')
+                    
+                    if n_slabs > 1:
+                        for i_slab in range(n_slabs):
+                            if ds_i == '13CO':
+                                carbon_isotope_ratio = self.params.get('12CO/13CO', None)
+                                assert carbon_isotope_ratio is not None, f'12CO/13CO ratio is not set'
+                                N_mol = self.params.get(f'N_mol_12CO_{i_slab}') / carbon_isotope_ratio
+                                T_ex = self.params.get(f'T_ex_12CO_{i_slab}', None)
+                            else:
+                                N_mol = self.params.get(f'N_mol_{ds_i}_{i_slab}', None)
+                                T_ex = self.params.get(f'T_ex_{ds_i}_{i_slab}', None)
+                                
+                            assert N_mol is not None, f'N_mol for {ds_i} is not set'
+                            assert T_ex is not None, f'T_ex for {ds_i} is not set'
+                            
+                            disk_params = {'T_ex': T_ex, 'N_mol': N_mol}
+                            disk_params['A_au'] = self.params.get(f'A_au_{ds_i}_{i_slab}', self.params[f'A_au_{i_slab}'])
+                            disk_params['d_pc'] = self.params['d_pc']
+                            rv_disk = self.params.get('rv', 0.0) # WARNING: here we use the systemic velocity, no keplerian profile applied
+                            
+                            f_slab_i = self.slab[ds_i].interpolate(**disk_params)
+                            
+                            # skip keplerian profile for now
+                            
+                            # fill with zeros values beyond the range of the slab model
+                            m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid * (1+(rv_disk/2.998e5)), f_slab_i, right=0.0, left=0.0)
+                            assert np.sum(np.isnan(m_flux_slab_i)) == 0, '[pRT_model.get_model_spectrum] line 546: NaNs in m_flux_slab_i'
+                            # print(f' [pRT_model] ds_i = {ds_i}  mean(f_slab_i) = {np.mean(f_slab_i)}')
 
-                        m_slab_i += m_flux_slab_i # store for plotting purposes
-                        m_spec_i.flux += m_flux_slab_i # add to model flux (already shifted and broadened)
+                            m_slab_i += m_flux_slab_i # store for plotting purposes
+                            m_spec_i.flux += m_flux_slab_i # add to model flux (already shifted and broadened)
+                            
+                    
+                            self.m_slab.append(m_slab_i) # store for plotting purposes
+                           
                         
-                
-                        self.m_slab.append(m_slab_i) # store for plotting purposes
+                    else:
+                        for label in labels_hot_cold:
+                            
+                            
+                            T_ex = self.params.get(f'T_ex_{ds_i}{label}', self.params[f'T_ex_12CO{label}'])
+                            N_mol = self.params.get(f'N_mol_{ds_i}{label}', None)
+                            # assert N_mol is not None, f'N_mol for {ds_i} is not set with label {label}'
+                            # assert T_ex is not None, f'T_ex for {ds_i} is not set with label {label}'
+                            # print(f'[pRT_model.get_model_spectrum] {ds_i}{label} T_ex = {T_ex:.1f}, N_mol = {N_mol:.1e}') # FIXME: remove   
+                            
+                            if ds_i == '13CO':
+                                carbon_isotope_ratio = self.params.get('12CO/13CO', None)
+                                assert carbon_isotope_ratio is not None, f'12CO/13CO ratio is not set'
+                                N_mol = self.params.get(f'N_mol_12CO{label}') / carbon_isotope_ratio
+                                # print(f'[pRT_model.get_model_spectrum] {ds_i}{label} N_mol = {N_mol:.1e}') # FIXME: remove
+                            assert N_mol is not None, f'N_mol for {ds_i} is not set'
+                            assert T_ex is not None, f'T_ex for {ds_i} is not set'
+                            # disk_params = {attr:self.params.get(f'{attr}_{ds_i}') for attr in ['T_ex', 'N_mol']}
+                            disk_params = {'T_ex': T_ex, 'N_mol': N_mol}
+                            disk_params['A_au'] = self.params.get(f'A_au_{ds_i}{label}', self.params[f'A_au{label}'])
+                            disk_params['d_pc'] = self.params['d_pc']
+                            rv_disk = self.params.get('rv_disk', 0.0)
+                            
+                            # print(f'[pRT_model.get_model_spectrum] {ds_i}{label} disk_params = {disk_params}')
+                            
+                            f_slab_i = self.slab[ds_i].interpolate(**disk_params)
+                            if 'i_deg' in self.params.keys():
+                                f_slab_i = apply_keplerian_profile(
+                                                                    self.slab[ds_i].wave_grid,
+                                                                    f_slab_i,
+                                                                    np.linspace(self.params[f'R_in{label}'], self.params[f'R_out{label}'], self.disk_kwargs['nr']),
+                                                                    self.params.get("M_star_Mjup", 20.0),
+                                                                    inclination_deg=self.params['i_deg'],
+                                                                    ntheta=self.disk_kwargs['ntheta'],
+                                                                    nu=self.params.get('nu', 0.0),
+                                                                    vsys=self.params.get('rv', 0.0),
+                                                                        )
+                            # fill with zeros values beyond the range of the slab model
+                            m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid * (1+(rv_disk/2.998e5)), f_slab_i, right=0.0, left=0.0)
+                            assert np.sum(np.isnan(m_flux_slab_i)) == 0, '[pRT_model.get_model_spectrum] line 546: NaNs in m_flux_slab_i'
+                            # print(f' [pRT_model] ds_i = {ds_i}  mean(f_slab_i) = {np.mean(f_slab_i)}')
+
+                            m_slab_i += m_flux_slab_i # store for plotting purposes
+                            m_spec_i.flux += m_flux_slab_i # add to model flux (already shifted and broadened)
+                            
+                    
+                            self.m_slab.append(m_slab_i) # store for plotting purposes
                         
             # print(f' Rebinning onto cenwave = {np.nanmedian(self.d_wave[i,]):.2f} nm from model cenwave = {np.nanmedian(m_spec_i.wave):.2f} nm')
             

@@ -477,7 +477,7 @@ if 'g395h' in gratings:
         for i in range(n_slabs):
             constant_params[f'N_mol_12CO_{i}'] = slabs['N_mol'][i]
             constant_params[f'T_ex_12CO_{i}'] = slabs['T_ex'][i]
-            free_params[f'log_A_au_{i}'] = [(-3.0, 2.0), r'$A_\mathrm{au}$'+f'_{i}']
+            free_params[f'log_A_au_{i}'] = [(-5.0, 2.0), r'$A_\mathrm{au}$'+f'_{i}']
     # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 ####################################################################################

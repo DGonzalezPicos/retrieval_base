@@ -24,7 +24,8 @@ except:
 class SlabGrid:
     
     wave_range = (4.20, 5.30) # fixed to the range of the g395h grating (reddest filter)
-    wave_step = 1e-5 # um, fixed and tested visually (must be small)
+    # wave_step = 1e-5 # um, fixed and tested visually (must be small)
+    wave_step = 2e-6 # um, NEW 2025-03-24, make it smaller to avoid line shape mismatch
     
     def __init__(self, species: str = '12CO', grating: str = 'g395h', path: pathlib.Path = None,
                  T_ex_range: np.ndarray = np.arange(100.0, 600.0, 200.0), N_mol_range: np.ndarray = np.logspace(12, 18, 1)):

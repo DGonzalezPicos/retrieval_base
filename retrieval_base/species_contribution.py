@@ -133,6 +133,10 @@ def plot_species(ret,
         params_dict_copy['log_R_cav'] = 0.0
         params_dict_copy['log_R_out'] = 0.0
         params_dict_copy['i_deg'] = 90.0
+        n_slabs = 3
+        for i in range(n_slabs):
+            params_dict_copy[f'log_A_au_{i}'] = -10.0
+            
         title = 'w/o disk'
         fig_name = f'{conf.prefix}plots/bestfit_spec_wodisk.pdf'
         
@@ -210,13 +214,27 @@ def plot_species(ret,
 
 # new_alphas = [-2.0, -1.0, 0.0, 1.0, 2.0]
 high_low = 'low'
-for k, v in species_dict.items():
+# for k, v in species_dict.items():
     
-    plot_species(ret, wave, m_flux_full, k, params_dict,
-                high_low=high_low,
-                color='orangered')
+#     plot_species(ret, wave, m_flux_full, k, params_dict,
+#                 high_low=high_low,
+#                 color='orangered')
     
 plot_species(ret, wave, m_flux_full, k=None, params_dict=params_dict,
                 high_low=high_low,
                 remove_disk=True,
                 color='dodgerblue')
+
+# from astropy.constants import au, R_jup
+# # convert astronomical units to cm
+# au_cm = au.value
+
+# # convert rjup to cm
+# rjup_cm = R_jup.value
+
+# # 1 rjup = ?? au
+# rjup_au = rjup_cm / au_cm
+# au_rjup = 1.0 / rjup_au
+
+# print(f'1 au = {au_rjup:.1e} rjup')
+# print(f'1 rjup = {rjup_au:.1e} au')

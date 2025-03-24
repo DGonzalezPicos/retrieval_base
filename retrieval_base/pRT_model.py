@@ -550,11 +550,13 @@ class pRT_model:
                             if ds_i == '13CO':
                                 carbon_isotope_ratio = self.params.get('12CO/13CO', None)
                                 assert carbon_isotope_ratio is not None, f'12CO/13CO ratio is not set'
-                                N_mol = self.params.get(f'N_mol_12CO_{i_slab}') / carbon_isotope_ratio
-                                T_ex = self.params.get(f'T_ex_12CO_{i_slab}', None)
+                                N_mol_12CO = self.params.get(f'N_mol_12CO_{i_slab}', self.params[f'N_mol_{i_slab}'])
+                                
+                                N_mol = N_mol_12CO / carbon_isotope_ratio
+                                T_ex = self.params.get(f'T_ex_12CO_{i_slab}', self.params[f'T_ex_{i_slab}'])
                             else:
-                                N_mol = self.params.get(f'N_mol_{ds_i}_{i_slab}', None)
-                                T_ex = self.params.get(f'T_ex_{ds_i}_{i_slab}', None)
+                                N_mol = self.params.get(f'N_mol_{ds_i}_{i_slab}', self.params[f'N_mol_{i_slab}'])
+                                T_ex = self.params.get(f'T_ex_{ds_i}_{i_slab}', self.params[f'T_ex_{i_slab}'])
                                 
                             assert N_mol is not None, f'N_mol for {ds_i} is not set'
                             assert T_ex is not None, f'T_ex for {ds_i} is not set'

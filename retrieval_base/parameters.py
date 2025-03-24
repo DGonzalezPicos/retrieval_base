@@ -591,7 +591,11 @@ class Parameters:
             #     self.params['A_au'] = np.pi * (self.params['R_d'] * (rjup_cm/au_cm))**2
         
         
-            
+        if self.params.get('n_slabs', 0) > 0:
+            for s in range(self.params.get('n_slabs', 0)):
+                R_au = 10**self.params[f'log_R_jup_{s}'] * 7.1492e9/1.496e13 # cm to AU
+                self.params[f'A_au_{s}'] = np.pi * R_au**2
+                
         
             
     def read_params(self):

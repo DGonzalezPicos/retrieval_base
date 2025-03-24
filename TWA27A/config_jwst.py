@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 0
+index = 1
 run = f'fixedslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -212,8 +212,8 @@ species_wave = {
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # Feb 18: not detected...
-    'OH' : [[0, 4500]],
-    'VO': [[0, 1450.0]],
+    'OH' : [[0, 5300.0]],
+    'VO': [[0, 1450.0], [4500.0, 5300.0]],
     'TiO': [[0,1450],[4500.0, 5300.0]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
@@ -441,8 +441,8 @@ constant_params['gratings'] = [item for sublist in constant_params['gratings'] f
 if 'g395h' in gratings:
     # constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
     
-    # disk_species = ['12CO', '13CO', 'H2O']
-    disk_species = ['12CO', '13CO']
+    disk_species = ['12CO', '13CO', 'H2O']
+    # disk_species = ['12CO', '13CO']
     # disk_species = ['12CO']
     # T_ex_range = np.arange(300.0, 1150.0+50.0, 50.0).tolist()
     # T_ex_range = np.arange(200.0, 1000.0+100.0, 100.0).tolist()
@@ -458,13 +458,14 @@ if 'g395h' in gratings:
 
     # define disk emission parameters (and outer radius)
     hot_cold_model = False
-    slabs = dict(T_ex = [1000.0, 600.0, 200.0],
-                 N_mol = [10**18.0, 10**16.0, 10**14.0])
+    slabs = dict(T_ex = [1200.0, 800.0, 600.0],
+                 N_mol = [10**18.0, 10**17.0, 10**16.0])
     n_slabs = len(slabs['T_ex'])
 
     labels = ['_hot', '_cold'] if hot_cold_model else ['']
     
     disk_kwargs = dict(nr=18, ntheta=36, hot_cold_model=hot_cold_model, n_slabs=n_slabs)
+    constant_params.update(disk_kwargs)
     if hot_cold_model:
          # define disk geometry parameters
         free_params.update({'log_R_cav': [(0.0, 2.0), r'$R_\mathrm{cav}$']}) # disk inner radius in R_jup
@@ -475,9 +476,10 @@ if 'g395h' in gratings:
             free_params.update({'log_R_out'+label: [(0.5, 3.0), r'$R_\mathrm{out}$'+label]}) # disk outer radius in R_jup
     else:
         for i in range(n_slabs):
-            constant_params[f'N_mol_12CO_{i}'] = slabs['N_mol'][i]
-            constant_params[f'T_ex_12CO_{i}'] = slabs['T_ex'][i]
-            free_params[f'log_A_au_{i}'] = [(-5.0, 2.0), r'$A_\mathrm{au}$'+f'_{i}']
+            constant_params[f'N_mol_{i}'] = slabs['N_mol'][i]
+            constant_params[f'T_ex_{i}'] = slabs['T_ex'][i]
+            # free_params[f'log_A_au_{i}'] = [(-5.0, 2.0), r'$A_\mathrm{au}$'+f'_{i}']
+            free_params[f'log_R_jup_{i}'] = [(-1.0, 3.0), r'$\log\ R_\mathrm{jup}$'+f'_{i}']
     # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 ####################################################################################

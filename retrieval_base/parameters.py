@@ -596,7 +596,7 @@ class Parameters:
                 R_au = 10**self.params[f'log_R_jup_{s}'] * 7.1492e9/1.496e13 # cm to AU
                 self.params[f'A_au_{s}'] = np.pi * R_au**2
                 
-        elif 'log_R_jup' in self.param_keys:
+        if 'log_R_jup' in self.param_keys:
             R_au = 10**self.params['log_R_jup'] * 7.1492e9/1.496e13 # cm to AU
             self.params['A_au'] = np.pi * R_au**2
                 

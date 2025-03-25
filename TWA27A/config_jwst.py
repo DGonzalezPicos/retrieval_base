@@ -458,9 +458,10 @@ if 'g395h' in gratings:
 
     # define disk emission parameters (and outer radius)
     hot_cold_model = False
-    slabs = dict(T_ex = [1200.0, 800.0, 600.0],
-                 N_mol = [10**18.0, 10**17.0, 10**16.0])
-    n_slabs = len(slabs['T_ex'])
+    # slabs = dict(T_ex = [1200.0, 800.0, 600.0],
+    #              N_mol = [10**18.0, 10**17.0, 10**16.0])
+    slabs = {}
+    n_slabs = len(slabs)
 
     labels = ['_hot', '_cold'] if hot_cold_model else ['']
     

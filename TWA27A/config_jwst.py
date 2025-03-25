@@ -23,8 +23,8 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
-run = f'fixedslab_lbl{lbl}_{grating_suffix}_{index}'
+index = 0
+run = f'freeslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -444,12 +444,12 @@ if 'g395h' in gratings:
     disk_species = ['12CO', '13CO', 'H2O']
     # disk_species = ['12CO', '13CO']
     # disk_species = ['12CO']
-    # T_ex_range = np.arange(300.0, 1150.0+50.0, 50.0).tolist()
+    T_ex_range = np.arange(500.0, 1150.0+51.0, 50.0).tolist()
     # T_ex_range = np.arange(200.0, 1000.0+100.0, 100.0).tolist()
-    T_ex_range = [200.0, 600.0, 1000.0]
+    # T_ex_range = [400.0, 600.0, 1200.0]
     N_mol_min, N_mol_max = 14.0, 18.0
-    # N_mol_range = np.logspace(N_mol_min, N_mol_max, 6*2).tolist()
-    N_mol_range = np.array([10**14.0, 10**16.0, 10**18.0]).tolist()
+    N_mol_range = np.logspace(N_mol_min, N_mol_max, 6*2).tolist()
+    # N_mol_range = np.array([10**14.0, 10**16.0, 10**18.0]).tolist()
     # T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
     # N_mol_range = np.logspace(15, 22, 6*2).tolist()
     
@@ -474,12 +474,17 @@ if 'g395h' in gratings:
             free_params.update({'log_N_mol_12CO'+label: [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$'+label]})
             free_params.update({'log_T_ex_12CO'+label: [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$'+label]})
             free_params.update({'log_R_out'+label: [(0.5, 3.0), r'$R_\mathrm{out}$'+label]}) # disk outer radius in R_jup
-    else:
+    elif n_slabs > 0:
         for i in range(n_slabs):
             constant_params[f'N_mol_{i}'] = slabs['N_mol'][i]
             constant_params[f'T_ex_{i}'] = slabs['T_ex'][i]
             # free_params[f'log_A_au_{i}'] = [(-5.0, 2.0), r'$A_\mathrm{au}$'+f'_{i}']
             free_params[f'log_R_jup_{i}'] = [(-1.0, 3.0), r'$\log\ R_\mathrm{jup}$'+f'_{i}']
+            
+    else:
+        free_params['log_N_mol'] = [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}}$']
+        free_params['log_T_ex'] = [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}}$']
+        free_params['log_R_jup'] = [(0.0, 3.0), r'$\log\ R_\mathrm{jup}$']
     # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 ####################################################################################

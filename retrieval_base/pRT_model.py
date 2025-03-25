@@ -562,7 +562,7 @@ class pRT_model:
                             assert T_ex is not None, f'T_ex for {ds_i} is not set'
                             
                             disk_params = {'T_ex': T_ex, 'N_mol': N_mol}
-                            disk_params['A_au'] = self.params.get(f'A_au_{ds_i}_{i_slab}', self.params[f'A_au_{i_slab}'])
+                            disk_params['A_au'] = self.params.get(f'A_au_{ds_i}_{i_slab}', self.params.get(f'A_au_{i_slab}', self.params['A_au']))
                             disk_params['d_pc'] = self.params['d_pc']
                             rv_disk = self.params.get('rv', 0.0) # WARNING: here we use the systemic velocity, no keplerian profile applied
                             

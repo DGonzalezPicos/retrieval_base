@@ -68,7 +68,7 @@ if args.pre_processing:
     # use 5ap to include wider aperture (more flux)
     # files = [f'jwst/{g}_s3d_extraction_5ap.npy' for g in gratings_list]
     # files = [f'jwst/nirspec_{g}_psf_extraction.npy' for g in gratings_list]
-    files = [f'jwst/{g}_wave_flux_err.txt' for g in gratings_keys]
+    files = [f'jwst/{g}_wave_flux_err_aper_radius_2.0_corrected.txt' for g in gratings_keys]
     Nedge = conf_data.get('Nedge', 40)
     
     # gratings_n = {'g140h': 2, 'g235h': 4, 'g395h': 4}

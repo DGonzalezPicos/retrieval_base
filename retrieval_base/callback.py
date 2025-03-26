@@ -28,7 +28,7 @@ class CallBack:
                  prefix=None, 
                  posterior_color='C0', 
                  bestfit_color='C1', 
-                 PT_color='orangered',
+                 PT_color='darkorange',
                  species_to_plot_VMR=['12CO', 'H2O', '13CO', 'CH4', 'NH3', 'C18O'], 
                  species_to_plot_CCF=['12CO', 'H2O', '13CO', 'CH4'], 
                  ):

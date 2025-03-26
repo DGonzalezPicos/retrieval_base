@@ -562,7 +562,8 @@ class pRT_model:
                     disk_params = {'T_ex': T_ex, 'N_mol': N_mol}
                     disk_params['A_au'] = self.params.get(f'A_au_{ds_i}', self.params['A_au'])
                     disk_params['d_pc'] = self.params['d_pc']
-                    rv_disk = self.params.get('rv', 0.0) # WARNING: here we use the systemic velocity, no keplerian profile applied
+                    # rv_disk = self.params.get('rv', 0.0) # WARNING: here we use the systemic velocity, no keplerian profile applied
+                    rv_disk = self.params.get('rv_disk', self.params.get('rv', 0.0))
                     
                     f_slab_i = self.slab[ds_i].interpolate(**disk_params)
                     m_flux_slab_i = np.interp(m_spec_i.wave, self.slab[ds_i].wave_grid * (1+(rv_disk/2.998e5)), f_slab_i, right=0.0, left=0.0)

@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 0
+index = 1
 run = f'freeslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -486,6 +486,7 @@ if 'g395h' in gratings:
         free_params['log_N_mol'] = [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}}$']
         free_params['log_T_ex'] = [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}}$']
         free_params['log_R_jup'] = [(0.0, 3.0), r'$\log\ R_\mathrm{jup}$']
+        free_params['rv_disk'] = [(-60.0, 60.0), r'$v_\mathrm{disk}$']
     # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 ####################################################################################

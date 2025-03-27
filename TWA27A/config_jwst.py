@@ -13,8 +13,8 @@ lbl = 10
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
 # gratings = ['g235h']
-gratings = ['g235h', 'g395h']
-# gratings = ['g140h', 'g235h', 'g395h']
+# gratings = ['g235h', 'g395h']
+gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
+index = 0
 run = f'freeslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -217,7 +217,7 @@ species_wave = {
     'TiO': [[0,1450],[4500.0, 5300.0]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
-    # 'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
+    'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
     # 'AlH': [[3000, 4600]],
     'AlH': [[2920, 4600]],
     # 'CH': [[0.0, 2200], [3000, np.inf]],

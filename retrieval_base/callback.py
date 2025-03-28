@@ -136,6 +136,7 @@ class CallBack:
             else:
                 print('{} = {:.2f}'.format(key_i, self.Param.params[key_i]))
                 self.bestfit_params.append(self.Param.params[key_i])
+        self.Param.compute_mass(print=True)
 
         for w_set in self.LogLike.keys():
             print(f'\n--- {w_set} -------------------------')

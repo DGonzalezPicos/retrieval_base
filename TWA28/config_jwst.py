@@ -23,8 +23,8 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
-run = f'no_psf_corr_lbl{lbl}_{grating_suffix}{cov_mode_label}_{index}'
+index = 0
+run = f'freeslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
 
@@ -66,18 +66,24 @@ wave_range = [float(np.min(wave_range_list)), float(np.max(wave_range_list))]
 
 # distance in pc to parallax
 parallax_mas_dict = dict(TWA28=16.87, TWA27A=15.46)
+
+# distance from Gaia, old distances from Ducourant+2008 were off...
+distance_pc_dict = dict(TWA28=59.9, 
+                        TWA27A=64.4)
 Teff_dict = dict(TWA28=2382.0, TWA27A=2430.0)
 mass_dict = dict(TWA28=(20.9, 6.0), TWA27A=(19.9, 5.0))
 
 parallax_mas = parallax_mas_dict[target] # Gaia DR3, for TWA 28 (Manjavacas+2024)
-d_pc = 1e3 / parallax_mas # ~ 59.17 pc
+# d_pc = 1e3 / parallax_mas # ~ 59.17 pc
+d_pc = distance_pc_dict[target]
 
 N_knots = 1 # spline knots (continuum fitting)
 
 constant_params = {
     # General properties
     # 'R_p' : 1.0, 
-    'parallax': parallax_mas, 
+    # 'parallax': parallax_mas, 
+    'd_pc': d_pc,
     'epsilon_limb': 0.5, 
     # 'log_g': 3.5,
     'vsini':0.,
@@ -174,7 +180,7 @@ species_wave = {
     
     
     'HF': [[2100, 2950.0]],
-    'HCl': [[3050, np.inf]], # FIXME: check this
+    'HCl': [[3050, 4915]], #
 
     'CO2': [[2800, 3200],[3900, 5400]],
     # 'CH4': [[2900.0, 3900.0]], # TODO: add this back for final retrieval
@@ -184,16 +190,16 @@ species_wave = {
     # 'NH3': [[0.0, np.inf]],
     # 'HCN': [[0.0, np.inf]], # unclear, keep?
 
-    'Na': [[0, 2400.0], [3390.0, 3600.0], [3900.0,4100.0], [4550, 4650], [4900,5100]],
+    'Na': [[0, 2400.0], [3390.0, 3600.0], [3900.0,4100.0]],
     # 'K': [[0, 1900], [2800, 3100], [3600,4100]],
     'K': [[0, 1900.0], [2440, 4100]],
     'Ca': [[0, 2400.0]],
     'Ti': [[0, 2400.0]],
     # 'Sc': [[0, 2600]], # 2025-02-19: not detected...
-    'Mg': [[0, 2600]],
+    'Mg': [[0, 2160]],
     # 'Mn': [[1200, 1600]], # add this back for final retrieval
     # 'Mn': [[0, 2400.0]],
-    'Fe': [[0, 2200]],
+    'Fe': [[0, 2160]],
     'Al': [[1000, 1800]],
     # 'Cr': [[0, 2200], [3800, 4100]],
     # 'Cs': [[0, 1200], [1300, 1600],[2850,4000]],
@@ -206,14 +212,14 @@ species_wave = {
     # 'MgH': [[0, 2000]],
     'NaH': [[0, 1400]],
     # 'ScH':[[0,1900.0]], # Feb 18: not detected...
-    'OH' : [[0, np.inf]],
-    'VO': [[0, 1450.0]],
-    'TiO': [[0,1450]],
+    'OH' : [[0, 5300.0]],
+    'VO': [[0, 1450.0], [4500.0, 5300.0]],
+    'TiO': [[0,1450],[4500.0, 5300.0]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
-    # 'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
+    'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
     # 'AlH': [[3000, 4600]],
-    'AlH': [[1600, 4600]],
+    'AlH': [[2920, 4600]],
     # 'CH': [[0.0, 2200], [3000, np.inf]],
     # 'SiH': [[4500, 5300]],
     # 'SiH': [[0.0, np.inf]],
@@ -265,7 +271,7 @@ free_params = {
     # 'epsilon_limb': [(0.1,0.98), r'$\epsilon_\mathrm{limb}$'], 
     
     'rv': [(-30.0,30.0), r'$v_\mathrm{rad}$'],
-    'b': [(0.0, 3.0), r'$b$'], # error scaling parameter as in var2_eff = var2_0 * 10**b
+    # 'b': [(0.0, 3.0), r'$b$'], # error scaling parameter as in var2_eff = var2_0 * 10**b
     # 'log_H-' : [(-12,-6), r'$\log\ \mathrm{H^-}$'],
 }
 if PT_mode  == 'RCE':
@@ -435,34 +441,60 @@ constant_params['gratings'] = [item for sublist in constant_params['gratings'] f
 if 'g395h' in gratings:
     # constant_params['gratings'] = ['g235h'] * 4 + ['g395h'] * 4
     
-    # disk_species = ['12CO', '13CO', 'H2O']
-    disk_species = ['12CO']
-    # T_ex_range = np.arange(300.0, 1000.0+50.0, 50.0).tolist()
-    # N_mol_range = np.logspace(15, 20, 6*2).tolist()
-    T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
-    N_mol_range = np.logspace(15, 22, 6*2).tolist()
+    disk_species = ['12CO', '13CO', 'H2O']
+    # disk_species = ['12CO', '13CO']
+    # disk_species = ['12CO']
+    T_ex_range = np.arange(500.0, 1150.0+51.0, 50.0).tolist()
+    # T_ex_range = np.arange(200.0, 1000.0+100.0, 100.0).tolist()
+    # T_ex_range = [400.0, 600.0, 1200.0]
+    N_mol_min, N_mol_max = 14.0, 18.0
+    N_mol_range = np.logspace(N_mol_min, N_mol_max, 6*2).tolist()
+    # N_mol_range = np.array([10**14.0, 10**16.0, 10**18.0]).tolist()
+    # T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0).tolist()
+    # N_mol_range = np.logspace(15, 22, 6*2).tolist()
     
-    disk_kwargs = dict(nr=20, ntheta=60)
+    
+   
 
-    if len(disk_species) > 0:
-        # free_params.update({f'log_A_au_{sp}': [(-5.0, -1.0), f'$\log\ A_{{\mathrm{{au}}}} ({sp})$'] for sp in disk_species})
-        free_params.update({f'log_N_mol_{sp}': [(15.0, 22.0), f'$\log\ N_{{\mathrm{{mol}}}} ({sp})$'] for sp in disk_species})
-        free_params.update({f'T_ex_{sp}': [(min(T_ex_range), max(T_ex_range)), f'$T_{{\mathrm{{ex}}}} ({sp})$'] for sp in disk_species})
+    # define disk emission parameters (and outer radius)
+    hot_cold_model = False
+    # slabs = dict(T_ex = [1200.0, 800.0, 600.0],
+    #              N_mol = [10**18.0, 10**17.0, 10**16.0])
+    slabs = {}
+    n_slabs = len(slabs)
 
-        # free_params.update({'rv_disk': [(-50.0,50.0), r'$v_\mathrm{rad,disk}$']}) # new parameter 2024-10-28
-        # free_params.update({'R_cav': [(0.5, 30.0), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
-        # free_params.update({'R_out': [(0.5, 200.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
-        free_params.update({'log_R_cav': [(0.0, 1.5), r'$R_\mathrm{cav}$']}) # disk radius in R_jup
-        free_params.update({'log_R_out': [(0.5, 2.0), r'$R_\mathrm{out}$']}) # disk radius in R_jup
+    labels = ['_hot', '_cold'] if hot_cold_model else ['']
+    
+    disk_kwargs = dict(nr=18, ntheta=36, hot_cold_model=hot_cold_model, n_slabs=n_slabs)
+    constant_params.update(disk_kwargs)
+    if hot_cold_model:
+         # define disk geometry parameters
+        free_params.update({'log_R_cav': [(0.0, 2.0), r'$R_\mathrm{cav}$']}) # disk inner radius in R_jup
         free_params.update({'i_deg': [(0.0, 90.0), r'$i$ (deg)']}) # disk inclination in degrees
-        free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
+        for label in labels:
+            free_params.update({'log_N_mol_12CO'+label: [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}} (\mathrm{^{12}CO})$'+label]})
+            free_params.update({'log_T_ex_12CO'+label: [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}} (\mathrm{^{12}CO})$'+label]})
+            free_params.update({'log_R_out'+label: [(0.5, 3.0), r'$R_\mathrm{out}$'+label]}) # disk outer radius in R_jup
+    elif n_slabs > 0:
+        for i in range(n_slabs):
+            constant_params[f'N_mol_{i}'] = slabs['N_mol'][i]
+            constant_params[f'T_ex_{i}'] = slabs['T_ex'][i]
+            # free_params[f'log_A_au_{i}'] = [(-5.0, 2.0), r'$A_\mathrm{au}$'+f'_{i}']
+            free_params[f'log_R_jup_{i}'] = [(-1.0, 3.0), r'$\log\ R_\mathrm{jup}$'+f'_{i}']
+            
+    else:
+        free_params['log_N_mol'] = [(N_mol_min, N_mol_max), r'$\log\ N_{{\mathrm{{mol}}}}$']
+        free_params['log_T_ex'] = [(np.log10(min(T_ex_range)), np.log10(max(T_ex_range)),), r'$\log\ T_{{\mathrm{{ex}}}}$']
+        free_params['log_R_jup'] = [(0.0, 3.0), r'$\log\ R_\mathrm{jup}$']
+        free_params['rv_disk'] = [(-60.0, 60.0), r'$v_\mathrm{disk}$']
+    # free_params.update({'nu': [(-1.0, 1.0), r'$\nu$']}) # angular asymmetry parameter
     
 ####################################################################################
 #
 ####################################################################################
 scale_flux = False
 scale_flux_eps = 0.00 # no scaling, set to 0.05 for a 5% deviation even with scale_flux=False
-scale_err  = False
+scale_err  = True
 # if scale_err == False:
 #     free_params['beta2'] = [(1.0, 10.0), r'b$^2$']
 #     invgamma_params.append('beta2')
@@ -522,6 +554,10 @@ trunc_dist = 4.0
 #         constant_params[f'a_{grating}_G'] = 1.0
 #         # free_params[f'log_l_{grating}_G'] = [log_l_prior_gratings[grating], r'$\log\ l_{G}$' + f'({grating})']
 #         # max_separation_gratings[grating] = 10.0**log_l_prior_gratings[grating][1] * trunc_dist
+# global error scaling per grating
+
+for grating in gratings:
+    free_params[f'b_{grating}'] = [(0.0, 3.0), r'$\log\ b$' + f'({grating})']
 
 free_params['log_l_G'] = [(1.4, 2.6), r'$\log\ l_G$ [km/s]'] # from 30 to ~200 km/s ~ 5 pixels
 # free_params['log_a_G'] = [(-1.0, 1.0), r'$\log\ a_G$']
@@ -530,8 +566,9 @@ cov_kwargs = {
     'scale_amplitude': True,
     'max_length_scale': 10.0**free_params['log_l_G'][0][1],
     'truncate': trunc_dist,
-    'local_sigma': 40.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
+    'local_sigma': 30.0,  # width of local kernel (km/s), 120 km/s ~ 3 pixels
     'local_threshold': 4.0, # number of standard deviations to use for local covariance
+    'max_outliers': 5, # maximum number of outliers to flag
 }
 
 # add all items in cov_kwargs to constant_params
@@ -573,13 +610,13 @@ if PT_mode == 'fixed':
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = False
+testing = True
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5
 evidence_tolerance = 0.5 if not testing else 0.5
-n_live_points = 800 if not testing else 600
-n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 2
+n_live_points = 800 if not testing else 400
+n_iter_before_update = n_live_points * 2 if not testing else n_live_points * 1
 # n_iter_before_update = 1
 # generate a .txt version of this file
 print(f' --> {free_params} free parameters')

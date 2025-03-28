@@ -467,6 +467,19 @@ class Parameters:
             # print(f' [Parameters.read_surface_gravity]: log_g = {np.log10(self.params["g"]):.2f}')
             
         return self
+    
+    def compute_mass(self, print=False):
+        if ('log_g' in self.param_keys) and ('R_p' in self.param_keys):
+            g_cgs = 10**self.params['log_g']
+            r_cm = self.params['R_p'] * 7.1492e9
+            mass_cgs = g_cgs * r_cm**2 / 6.67430e-8
+            mass_mjup = mass_cgs / 1.898e30
+            self.params['mass'] = mass_mjup
+            
+            if print:
+                print(f' [Parameters.compute_mass]: mass = {self.params["mass"]:.2e} Mjup')
+        return self
+        
             
             
     @classmethod

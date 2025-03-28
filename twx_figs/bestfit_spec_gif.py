@@ -57,8 +57,11 @@ def load_data(target, run):
     d_spec.err /= flux_factor
     return d_spec, m_spec
 
-runs = dict(TWA28='no_psf_corr_lbl10_G2G3_newGP_0',
-            TWA27A='no_psf_corr_lbl10_G2G3_newGP_0',
+runs = dict(
+            # TWA28='no_psf_corr_lbl10_G2G3_newGP_0',
+            # TWA27A='freeslab_lbl10_G1G2G3_0',
+            # TWA28='lbl11_G1G2G3_fastchem_GP_1',
+            TWA27A='freeslab_lbl10_G1G2G3_0',
             )
 
 d_specs, m_specs = {}, {}
@@ -92,6 +95,7 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     nans = np.isnan(flux)
     m_flux = m_spec.flux[idx] + offset
     m_flux_nans = np.where(~nans, np.nan, m_flux)
+    m_flux[nans] = np.nan
     
     ax[0].plot(wave, flux, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
     ax[0].plot(wave, flux, color=colors['data'], ls='none', marker='o', ms=2, alpha=0.8)
@@ -119,7 +123,7 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     
     color_residuals = colors['model'] if color_residuals is None else color_residuals
     ax[1].plot(wave, res_norm, color=color_residuals, lw=lw, alpha=0.4)
-    ax[1].scatter(wave, res_norm, color=color_residuals, s=2, alpha=0.8)
+    ax[1].scatter(wave, res_norm, color=color_residuals, s=1.0, alpha=0.7)
     ax[1].fill_between(wave, -err_norm, err_norm, color=colors['model'], alpha=0.3, lw=0.0)
     ax[1].axhline(0.0,color=colors['data'], lw=0.7)
     # if new_ax:
@@ -128,7 +132,8 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     ax[0].set_ylabel(r'$F_{\lambda}$ / erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$')
     if ylim_p is not None:
         p = np.nanpercentile(flux, ylim_p)
-        ax[0].set_ylim(p[0], p[1])
+        # ax[0].set_ylim(p[0], p[1])
+        ax[0].set_ylim(0.0, p[1])
     
     res_label = r'$\Delta F_{\lambda} / F_{\lambda}$' if relative_residuals else r'$\Delta F_{\lambda} / erg s$^{-1}$ cm$^{-2}$ nm$^{-1}$'
     ax[1].set_ylabel(res_label)
@@ -149,7 +154,7 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
         # plt.show()
     return ax, wave, flux, err
 
-colors = dict(TWA28={'data':'k', 'model':'orange'},
+colors = dict(TWA28={'data':'k', 'model':'dodgerblue'},
               TWA27A={'data':'k', 'model':'green'})
 
 def plot_idx(idx, fig=None, ax=None, ylim_p=None, ylim=None, targets=None, inset=None, inset_wave_range=None):  
@@ -177,16 +182,20 @@ def plot_idx(idx, fig=None, ax=None, ylim_p=None, ylim=None, targets=None, inset
          
 # Create output directory for frames if it doesn't exist
 transparent = False
+
+gslides_background_color = (246,178,107,100)
+gslides_background_color_norm = np.array(gslides_background_color) / 255.0
+gslides_background_color_norm[-1] = 1.0 # make the background color opaque
 frames_dir = path_figures / f'frames{"_transparent" if transparent else ""}'
 frames_dir.mkdir(exist_ok=True)
 
 # Get the full wavelength range
-xlim = np.nanmin(d_specs['TWA28'].wave), np.nanmax(d_specs['TWA28'].wave)
+xlim = np.nanmin(d_specs['TWA27A'].wave), np.nanmax(d_specs['TWA27A'].wave)
 ymin = np.nanmin([d_specs[t].flux for t in runs.keys()])
 ymax = np.nanmax([d_specs[t].flux for t in runs.keys()])
 
 # Create wavelength bins with fixed step size
-step_size = 8  # nm
+step_size = 18  # nm
 window_size = 140  # nm
 dpi = 150
 wavelength_bins = []
@@ -202,9 +211,12 @@ for i, (bin_start, bin_end) in tqdm(enumerate(wavelength_bins), total=len(wavele
     # Create a completely new figure for each frame
     plt.close('all')  # Close all existing figures
     fig, ax = fig_ax()
-    
+    fig.patch.set_facecolor(gslides_background_color_norm)
+    ax[0].patch.set_facecolor(gslides_background_color_norm)
+    ax[1].patch.set_facecolor(gslides_background_color_norm)
     # Create inset
     inset = inset_axes(ax[0], width="70%", height="60%", loc=1, borderpad=1.5)
+    inset.patch.set_facecolor(gslides_background_color_norm)
     inset_wave_range = (bin_start, bin_end)
     inset.set_xlim(inset_wave_range)
     
@@ -215,7 +227,7 @@ for i, (bin_start, bin_end) in tqdm(enumerate(wavelength_bins), total=len(wavele
     ax[1].set_ylim(-0.1, 0.1)
     
     # Plot data for all indices
-    for idx in range(d_specs['TWA28'].flux.shape[0]):
+    for idx in range(d_specs['TWA27A'].flux.shape[0]):
         plot_idx(idx, fig=fig, ax=ax, inset=inset, inset_wave_range=inset_wave_range)
     
     # Save frame with transparent background
@@ -224,7 +236,7 @@ for i, (bin_start, bin_end) in tqdm(enumerate(wavelength_bins), total=len(wavele
     plt.close(fig)  # Close the current figure
     frame_files.append(frame_file)
 
-def create_gif(frame_folder, output_gif, duration=100, loop=0):
+def create_gif(frame_folder, output_gif, background_color=(246,178,107,100), duration=100, loop=0):
     """
     Create a GIF from a series of PNG images in a folder.
     
@@ -243,7 +255,7 @@ def create_gif(frame_folder, output_gif, duration=100, loop=0):
     
     # Create a white background image
     first_image = Image.open(frames[0])
-    background = Image.new('RGBA', first_image.size, (255, 255, 255, 255))
+    background = Image.new('RGBA', first_image.size, background_color)
     
     # Process each frame
     processed_images = []
@@ -266,4 +278,4 @@ def create_gif(frame_folder, output_gif, duration=100, loop=0):
 
 # Create GIF
 gif_path = path_figures / f'spectrum_inset_{step_size}nm_{window_size}nm_{"transparent" if transparent else "opaque"}_dpi{dpi}.gif'
-create_gif(frames_dir, gif_path, duration=200, loop=0)
+create_gif(frames_dir, gif_path, background_color=gslides_background_color, duration=400, loop=0)

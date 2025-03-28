@@ -17,10 +17,12 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A=[('no_psf_corr_lbl10_G2G3_newGP_1', 'G2+G3')],
+    TWA27A=[('freeslab_lbl10_G2G3_0', 'G2+G3'),
+            ('freeslab_lbl10_G1G2G3_0', 'G1+G2+G3'),
+            ],
     TWA28=[
         # 'lbl11_G1G2G3_fastchem_0', 
-           ('no_psf_corr_lbl10_G2G3_newGP_1', 'G2+G3'), 
+           ('freeslab_lbl10_G2G3_0', 'G2+G3'), 
         #    ('lbl11_G2G3_fastchem_GP_0', 'G2+G3'),
            ],
             )
@@ -29,7 +31,7 @@ colors = dict(TWA28={'data':'k',
                     #  'model_labels':['G1+G2+G3', 'G2+G3', 'G2'],
                      'crires': 'orange'},
               TWA27A={'data':'#733b27',
-                      'model':['#0a74da'],
+                      'model':['#0a74da', 'purple'],
                       'model_labels':['G1+G2+G3']
                       })
 
@@ -239,7 +241,7 @@ def remove_spines(ax):
 
 [remove_spines(axi) for axi in axes]
 
-xlims = [(0.40, 0.70), (-0.5, 0.6), (30, 160), (3.0, 5.0)]
+xlims = [(0.36, 0.70), (-0.8, 0.8), (10, 160), (3.0, 5.0)]
 for axi, xlim in zip(axes, xlims):
     axi.set_xlim(xlim)
 # TODO: plot each target on a separate row, compare freechem and fastchem??

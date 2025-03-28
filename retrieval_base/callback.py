@@ -136,7 +136,6 @@ class CallBack:
             else:
                 print('{} = {:.2f}'.format(key_i, self.Param.params[key_i]))
                 self.bestfit_params.append(self.Param.params[key_i])
-        self.Param.compute_mass(print_mass=True)
 
         for w_set in self.LogLike.keys():
             print(f'\n--- {w_set} -------------------------')
@@ -282,6 +281,8 @@ class CallBack:
 
 
         # Remove attributes from memory
+        self.Param.compute_mass(print_mass=True)
+
         delattrs = ['Param', 'LogLike', 'PT', 'Chem', 'm_spec', 'pRT_atm', 'posterior']
         for attr in delattrs:
             if hasattr(self, attr):

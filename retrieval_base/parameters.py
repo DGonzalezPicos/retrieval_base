@@ -468,7 +468,7 @@ class Parameters:
             
         return self
     
-    def compute_mass(self, print=False):
+    def compute_mass(self, print_mass=False):
         if ('log_g' in self.param_keys) and ('R_p' in self.param_keys):
             g_cgs = 10**self.params['log_g']
             r_cm = self.params['R_p'] * 7.1492e9
@@ -476,7 +476,7 @@ class Parameters:
             mass_mjup = mass_cgs / 1.898e30
             self.params['mass'] = mass_mjup
             
-            if print:
+            if print_mass:
                 print(f' [Parameters.compute_mass]: mass = {self.params["mass"]:.2e} Mjup')
         return self
         

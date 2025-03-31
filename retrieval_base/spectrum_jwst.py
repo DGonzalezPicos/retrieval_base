@@ -132,7 +132,7 @@ class SpectrumJWST:
         # split into two filters
         # if split_filters:
         attrs = ['wave', 'flux', 'err']
-
+        print(f' [SpectrumJWST.read_data] grating = {self.grating}')
         if 'g540h' not in self.grating:
             print(f' Splitting data into two filters (grating {self.grating})')
             split_id = self.flux.shape[0] // 2
@@ -142,7 +142,7 @@ class SpectrumJWST:
             # self.err = np.array([self.err[:split_id], self.err[split_id:]])
             for attr in attrs:
                 setattr(self, attr, af.make_array([getattr(self, attr)[:split_id], getattr(self, attr)[split_id:]]))
-            print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
+            # print(f' [SpectrumJWST.read_data] self.wave.shape = {self.wave.shape}')
             self.grating = np.array([self.grating]*2)
         else:
             for attr in attrs:
@@ -166,10 +166,12 @@ class SpectrumJWST:
         # self.gratings = [f.split('_')[1].split('-')[0] for f in files]
         
         if len(files) == 1:
-            self.__init__(file=files[0], Nedge=self.Nedge)
+            self.__init__(file=files[0], grating=gratings[0], Nedge=self.Nedge,
+                          apply_psf_correction=apply_psf_correction)
         else:
             spec_list = []
             for f, grating in zip(files, gratings):
+                assert grating is not None, f'Grating must be specified for {f}'
                 spec_list.append(SpectrumJWST(file=f, 
                                               grating=grating,
                                               Nedge=self.Nedge,

@@ -76,7 +76,6 @@ if args.pre_processing:
     gratings_n = getattr(conf, 'gratings_n', {'g140h': 2, 'g235h': 4, 'g395h': 4})
 
     apply_psf_correction = conf_data.get('apply_psf_correction', False)
-
     spec = SpectrumJWST(Nedge=Nedge).load_gratings(files, 
                                                    gratings=gratings_keys, 
                                                    apply_psf_correction=apply_psf_correction)

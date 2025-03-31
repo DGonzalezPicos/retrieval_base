@@ -23,19 +23,20 @@ path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
 target = 'TWA28'
 # run = None
-run = 'lbl12_G1G2G3_fastchem_0'
+# run = 'lbl12_G1G2G3_fastchem_0'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A='lbl11_G1G2G3_fastchem_0',
-    TWA28='lbl11_G1G2G3_fastchem_0',
+    TWA27A='freeslab_lbl10_G1G2G3_0',
+    TWA28='freeslab_lbl10_G1G2G3_0',
             )
 
 dw = 90
 xc = [1110, 2290, 4510]
-inset_regions = [[(xc[0]-dw, xc[0]+dw), (7.1e-15, 2.30e-14)],
-                 [(xc[1]-dw, xc[1]+dw), (4.5e-15, 8.3e-15)],
-                 [(xc[2]-dw, xc[2]+dw), (8e-16, 1.42e-15)]]
+y_factor = 0.95e14
+inset_regions = [[(xc[0]-dw, xc[0]+dw), (1.2e-14*y_factor, 2.45e-14*y_factor)],
+                 [(xc[1]-dw, xc[1]+dw), (4.6e-15*y_factor, 8.7e-15*y_factor)],
+                 [(xc[2]-dw, xc[2]+dw), (8.5e-16*y_factor, 1.46e-15*y_factor)]]
 fig, ax, axins = create_insets(inset_regions)
 
 
@@ -49,6 +50,13 @@ def load_data(target, run):
         
     m_spec = af.pickle_load(f'{conf.prefix}data/bestfit_m_spec_NIRSpec.pkl')
     d_spec = af.pickle_load(f'{conf.prefix}data/d_spec_NIRSpec.pkl')
+    
+    cov = af.pickle_load(f'{conf.prefix}data/bestfit_Cov_NIRSpec.pkl')
+    # print(f'len(cov) = {len(cov)}')
+    # print(f'cov.shape = {cov.shape}')
+    err = np.array([cov[cov_i,0].get_err(mask=d_spec.mask_isfinite[cov_i]) for cov_i in range(len(cov))])
+    d_spec.err = err
+    print(d_spec.err.shape)
 
     m_spec.flux = m_spec.flux.squeeze()
     
@@ -68,19 +76,29 @@ lw = 0.9
 def plot_chunk(d_spec, m_spec, idx=0, relative_residuals=False, colors=None, ls='-',
                plot_bb=False):
     
-        
-    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx], color=colors['data'], lw=lw, alpha=0.8, ls=ls)
-    ax[0].plot(d_spec.wave[idx], m_spec.flux[idx], color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+    nans = np.isnan(d_spec.flux[idx])
+    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx], color=colors['data'], lw=lw, alpha=0.8, ls='-')
+    ax[0].plot(d_spec.wave[idx], np.where(nans, np.nan, m_spec.flux[idx]), color=colors['model'], lw=lw, alpha=0.8, ls=ls)
     
     res = (d_spec.flux[idx] - m_spec.flux[idx]) / d_spec.flux[idx]
-    ax[1].plot(d_spec.wave[idx], res, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+    ax[1].plot(d_spec.wave[idx], np.where(nans, np.nan, res), color=colors['model'], 
+               lw=lw, alpha=0.8,
+            #    ls=ls,
+            ls='',
+               marker='o',
+               markersize=0.7,
+               markevery=10,
+               )
+               
 
 
 fig, ax, axins = create_insets(inset_regions, residuals_plot=True)
 # add an inset showing the logscale y axis with the disk flux
 axins_disk = ax[0].inset_axes([0.5, 0.36, 0.48, 0.58])
 
-n_orders = d_specs['TWA28'].n_orders
+# n_orders = d_specs['TWA28'].n_orders
+n_orders = len(d_specs['TWA28'].wave)
+print(n_orders)
 for idx in range(n_orders):
     for t, target in enumerate(runs.keys()):
         d_spec, m_spec = d_specs[target], m_specs[target]
@@ -90,26 +108,39 @@ for idx in range(n_orders):
             x1, x2 = region[0]
             mask = (d_spec.wave[idx] > x1) & (d_spec.wave[idx] < x2)
             if mask.sum() > 0:
-                axins[r].plot(d_spec.wave[idx][mask], d_spec.flux[idx][mask], color=colors[target]['data'], lw=lw, alpha=0.8)
-                axins[r].plot(d_spec.wave[idx][mask], m_spec.flux[idx][mask], color=colors[target]['model'], lw=lw, alpha=0.8)
+                nans = np.isnan(d_spec.flux[idx][mask])
+                # axins[r].plot(d_spec.wave[idx][mask], d_spec.flux[idx][mask], color=colors[target]['data'], lw=lw, alpha=0.8)
+                # axins[r].fill_between(d_spec.wave[idx][mask], d_spec.flux[idx][mask] - d_spec.err[idx][mask], d_spec.flux[idx][mask] + d_spec.err[idx][mask], 
+                #                       color=colors[target]['data'], alpha=0.2, lw=0.5)
+                axins[r].errorbar(d_spec.wave[idx][mask], d_spec.flux[idx][mask], yerr=d_spec.err[idx][mask], 
+                                 color=colors[target]['data'], lw=lw, alpha=0.8,
+                                 marker='o',
+                                 markersize=0.7,
+                                 markevery=10,
+                                 zorder=-1
+                                 )
+                axins[r].plot(d_spec.wave[idx][mask], np.where(nans, np.nan, m_spec.flux[idx][mask]), color=colors[target]['model'], lw=lw, alpha=0.8)
                 
+        nans = np.isnan(d_spec.flux[idx])
         axins_disk.plot(d_spec.wave[idx], d_spec.flux[idx], color=colors[target]['data'], lw=lw*0.6, alpha=0.8)
-        axins_disk.plot(d_spec.wave[idx], m_spec.flux[idx], color=colors[target]['model'], lw=lw*0.6, alpha=0.8)
-        axins_disk.plot(d_spec.wave[idx], m_spec.flux_bb[idx], color=colors[target]['model'], lw=lw*1.7, alpha=0.8, ls='--')
+        axins_disk.plot(d_spec.wave[idx], np.where(nans, np.nan, m_spec.flux[idx]), color=colors[target]['model'], lw=lw*0.6, alpha=0.8)
+        axins_disk.plot(d_spec.wave[idx], m_spec.flux_bb[idx] * d_spec.flux_unit_factor, color=colors[target]['model'], lw=lw*1.7, alpha=0.8, ls='--')
         # axins_disk.plot(d_spec.wave[idx],m_spec.flux[idx] -  m_spec.flux_bb[idx], color=colors[target]['model'], lw=lw, alpha=0.8, ls='--')
         
-ax[0].set_ylim(1e-16, 2.5e-14)
+ax[0].set_ylim(1e-16*y_factor, 2.5e-14*y_factor)
 ax[0].set_xlim(920, 5300)
 ax[1].axhline(0, color='k', lw=0.5)
 # make ylims for residuals symmetric
 ylim = ax[1].get_ylim()
 ylim_s = max(abs(ylim[0]), abs(ylim[1]))
-ax[1].set_ylim(-ylim_s, ylim_s)
+# ax[1].set_ylim(-ylim_s, ylim_s)
+ax[1].set_ylim(-0.15, 0.15)
 # add label to the y axis
-ax[0].set_ylabel(r'$F_{\lambda}$' '  / ' 'erg ' r'$s^{-1} cm^{-2} nm^{-1}$')
+y_label = r'$F_{\lambda}$' '  / 10$^{14}$ ' 'erg ' r'$\text{s}^{-1} \text{cm}^{-2} \text{nm}^{-1}$'
+ax[0].set_ylabel(y_label)
 ax[1].set_ylabel(r'$\Delta F_{\lambda} / F_{\lambda}$')
 
-axins_disk.set_ylabel(r'$F_{\lambda}$' '  / ' 'erg ' r'$s^{-1} cm^{-2} nm^{-1}$')
+# axins_disk.set_ylabel(y_label)
 axins_disk.set_xlabel(r'Wavelength / nm')
 # add common xlabel 
 fig.text(0.5, -0.53, r'Wavelength / nm', ha='center', va='center')
@@ -145,11 +176,11 @@ mark_inset(ax[0], axins[1], loc1=1, loc2=2, fc="none", ec="0.5", zorder=-1)
 mark_inset(ax[0], axins[2], loc1=1, loc2=2, fc="none", ec="0.5", zorder=-1)
 
 # add text indicating position of lines in each axins
-lines = {'Na': [(1141, 1144, 1.08e-14, 9e-15, 'Na', 0)],
-         'K': [(1177, 1190, 8.8e-15, 7.7e-15, 'Na', 0)],
+lines = {'Na': [(1141, 1144, 1.2e-14*y_factor, 9e-15*y_factor, 'Na', 0)],
+         'K': [(1177, 1190, 8.8e-15*y_factor, 7.7e-15*y_factor, 'Na', 0)],
         #  'CO': [(2294, 2362, 5.3e-15, 4.65e-15, 'CO', 1)],
-         '12CO': [(2294, 2298, 5.3e-15, 4.69e-15, 'Na', 1)],
-         '13CO': [(2345, 2349, 6.9e-15, 7.4e-15, 'Na', 1)],
+         '12CO': [(2294, 2298, 5.3e-15*y_factor, 4.69e-15*y_factor, 'Na', 1)],
+         '13CO': [(2345, 2349, 6.9e-15*y_factor, 7.4e-15*y_factor, 'Na', 1)],
 
          }  # x-position, y-position for text
 
@@ -261,31 +292,31 @@ def add_underline(ax, text, x, y, width=None, pad=0.1, **text_kwargs):
     
     return text_obj
 
-draw_L(axins[0], 1135, 1.075e-14, 1135, 1.05e-14, 1146, 1.05e-14,close=True,
+draw_L(axins[0], 1135, 1.075e-14*y_factor, 1135, 1.05e-14*y_factor, 1146, 1.05e-14*y_factor,close=True,
        text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 0.00, 'ypad': -1e-15},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
-draw_L(axins[0], 1168, 8.80e-15, 1168, 8.5e-15, 1183, 8.5e-15,close=True,
+draw_L(axins[0], 1168, 8.80e-15*y_factor, 1168, 8.5e-15*y_factor, 1183, 8.5e-15*y_factor,close=True,
        text='K', text_loc='center', text_args={'fontsize': 10, 'xpad': 0, 'ypad': -8e-16},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 
-draw_L(axins[1], (2203+2212)/2, 6.5e-15, (2203+2212)/2, 6e-15, 2214, 6e-15,close=False,
+draw_L(axins[1], (2203+2212)/2, 6.5e-15*y_factor, (2203+2212)/2, 6e-15*y_factor, 2214, 6e-15*y_factor,close=False,
        text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 11, 'ypad': 0.0},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
-draw_L(axins[1], 2203, 6.53e-15, 2203, 6.5e-15, 2212, 6.5e-15,close=True,
+draw_L(axins[1], 2203, 6.53e-15*y_factor, 2203, 6.5e-15*y_factor, 2212, 6.5e-15*y_factor,close=True,
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 
-draw_L(axins[1], 2293, 5.3e-15, 2293, 4.65e-15, 2370, 4.65e-15,close=False,
+draw_L(axins[1], 2293, 5.3e-15*y_factor, 2293, 4.65e-15*y_factor, 2370, 4.65e-15*y_factor,close=False,
        text=r'$^{12}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -23, 'ypad': 1.5e-16},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 
-draw_L(axins[1], 2344.5, 6.9e-15, 2344.5, 7.4e-15, 2376, 7.4e-15,close=False,
+draw_L(axins[1], 2344.5, 6.9e-15*y_factor, 2344.5, 7.4e-15*y_factor, 2376, 7.4e-15*y_factor,close=False,
        text=r'$^{13}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -10, 'ypad': 1.4e-16},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 
-draw_L(axins[2], 4440, 1.38e-15, 4450, 1.38e-15, 4500, 1.38e-15,close=False,
+draw_L(axins[2], 4440, 1.38e-15*y_factor, 4450, 1.38e-15*y_factor, 4500, 1.38e-15*y_factor,close=False,
        text='CO', text_loc='center', text_args={'fontsize': 10, 'xpad': 40, 'ypad': -5e-18},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
-draw_L(axins[2], 4530, 1.38e-15, 4530, 1.38e-15, 4590, 1.38e-15,close=False,
+draw_L(axins[2], 4530, 1.38e-15*y_factor, 4530, 1.38e-15*y_factor, 4590, 1.38e-15*y_factor,close=False,
        text='',
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 # Add annotations for each line
@@ -295,7 +326,7 @@ draw_L(axins[2], 4530, 1.38e-15, 4530, 1.38e-15, 4590, 1.38e-15,close=False,
 #         add_arrow(axins[axins_id], x1, y1, x2, y2, line, style=style)
 
 axins_disk.set_yscale('log')
-axins_disk.set_ylim(1e-16, 4e-14)
+axins_disk.set_ylim(1e-16*y_factor, 4e-14*y_factor)
 axins_disk.set_xlim(920, 5300)
 
 # plot nirspec bands on axins_disk
@@ -303,22 +334,23 @@ gratings = dict(g140h=(900, 1900),
                 g235h=(1650, 3180),
                 g395h=(2890, 5290),
                 )
-gratings_text = dict(g140h=6e-16,
-                     g235h=6e-16,
-                     g395h=7e-15)
+gratings_text = dict(g140h=6e-16 * y_factor,
+                     g235h=6e-16 * y_factor,
+                     g395h=7e-15 * y_factor)
 colors = ['navy', 'green', 'brown']
 # use a faded grey for the bands
 
 for band, color in zip(gratings.keys(), colors):
     axins_disk.axvspan(gratings[band][0], gratings[band][1], color=color, alpha=0.12, lw=0)
     xc = gratings[band][0] + (gratings[band][1] - gratings[band][0])/2
-    if band == 'g140h':
-        xc -= 90
-        add_underline(axins_disk, band.upper(), xc, gratings_text[band], 
-                     color=color, fontsize=10, fontweight='bold', width=100)
-    else:
-        axins_disk.text(xc, gratings_text[band], band.upper(), color=color, fontsize=10,
-                        ha='center', va='center', fontweight='bold')
+    # if band == 'g140h':
+    #     xc -= 90
+    #     # add_underline(axins_disk, band.upper(), xc, gratings_text[band], 
+    #     #              color=color, fontsize=10, fontweight='bold', width=100)
+    # else:
+    xc_offset = -90 if band == 'g140h' else 0
+    axins_disk.text(xc+xc_offset, gratings_text[band], band.upper(), color=color, fontsize=10,
+                    ha='center', va='center', fontweight='bold')
 
 
 # axins[1].axvline(2345, color='red', lw=0.5)

@@ -61,6 +61,7 @@ runs = dict(
             # TWA28='no_psf_corr_lbl10_G2G3_newGP_0',
             # TWA27A='freeslab_lbl10_G1G2G3_0',
             # TWA28='lbl11_G1G2G3_fastchem_GP_1',
+            TWA28='freeslab_lbl10_G1G2G3_0',
             TWA27A='freeslab_lbl10_G1G2G3_0',
             )
 
@@ -93,6 +94,11 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     flux = d_spec.flux[idx] + offset
     err = d_spec.err[idx]
     nans = np.isnan(flux)
+    large_err = err > np.nanquantile(err, 0.99)
+    nans = nans | large_err
+    flux = np.where(nans, np.nan, flux)
+    err = np.where(nans, np.nan, err)
+    
     m_flux = m_spec.flux[idx] + offset
     m_flux_nans = np.where(~nans, np.nan, m_flux)
     m_flux[nans] = np.nan
@@ -189,14 +195,17 @@ gslides_background_color_norm[-1] = 1.0 # make the background color opaque
 frames_dir = path_figures / f'frames{"_transparent" if transparent else ""}'
 frames_dir.mkdir(exist_ok=True)
 
+frames_dir_high_res = path_figures / f'frames_high_res{"_transparent" if transparent else ""}'
+frames_dir_high_res.mkdir(exist_ok=True)
+
 # Get the full wavelength range
 xlim = np.nanmin(d_specs['TWA27A'].wave), np.nanmax(d_specs['TWA27A'].wave)
 ymin = np.nanmin([d_specs[t].flux for t in runs.keys()])
 ymax = np.nanmax([d_specs[t].flux for t in runs.keys()])
 
 # Create wavelength bins with fixed step size
-step_size = 18  # nm
-window_size = 140  # nm
+step_size = 8  # nm
+window_size = 180  # nm
 dpi = 150
 wavelength_bins = []
 current_start = xlim[0]
@@ -206,6 +215,10 @@ while current_start + window_size <= xlim[1]:
 
 # Generate frames
 frame_files = []
+# save some bins in high resolution (300 dpi)
+high_res_bins = [(980, 1140),
+                 (2200, 2400)]
+
 # use tqdm to show progress
 for i, (bin_start, bin_end) in tqdm(enumerate(wavelength_bins), total=len(wavelength_bins)):
     # Create a completely new figure for each frame
@@ -233,6 +246,12 @@ for i, (bin_start, bin_end) in tqdm(enumerate(wavelength_bins), total=len(wavele
     # Save frame with transparent background
     frame_file = frames_dir / f'frame_{i:03d}.png'
     plt.savefig(frame_file, dpi=dpi, bbox_inches='tight', transparent=transparent, facecolor='none', edgecolor='none')
+    
+    # check if wavelength bin is in high resolution bins
+    if (i%50) == 0:
+        # print(f'Saving high resolution frame {i} with wavelength range {bin_start:.0f} - {bin_end:.0f} nm')
+        frame_file_high_res = frames_dir_high_res / f'frame_{i:03d}.png'
+        plt.savefig(frame_file_high_res, dpi=dpi*2, bbox_inches='tight', transparent=transparent, facecolor='none', edgecolor='none')
     plt.close(fig)  # Close the current figure
     frame_files.append(frame_file)
 

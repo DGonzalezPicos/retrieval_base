@@ -31,10 +31,11 @@ w_set='NIRSpec'
 #     TWA28='lbl11_G1G2G3_fastchem_0',
 #             )
 runs = dict(
-    TWA27A='no_psf_corr_lbl10_G2G3_newGP_1',
-    TWA28='no_psf_corr_lbl10_G2G3_newGP_1',
+    TWA27A='freeslab_lbl10_G1G2G3_0',
+    TWA28='freeslab_lbl10_G1G2G3_0',
             )
 
+flux_plot_unit = 1e14
 
 colors = dict(TWA28={'data':'k', 'model':'orange'},
               TWA27A={'data':'#733b27', 'model':'#0a74da'})
@@ -111,23 +112,27 @@ lw = 0.6
 def plot_chunk(d_spec, m_spec, idx=0, colors=None, ls='-', lw=1.0):
     
     f = d_spec.flux_unit_factor
-    ax[0].plot(d_spec.wave[idx], d_spec.flux[idx] / f, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
-    ax[0].plot(d_spec.wave[idx], m_spec.flux[idx] / f, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+    ax[0].plot(d_spec.wave[idx], flux_plot_unit*d_spec.flux[idx] / f, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
+    ax[0].plot(d_spec.wave[idx], flux_plot_unit*m_spec.flux[idx] / f, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
     
     residuals_list = []
     if hasattr(m_spec, 'flux_slab'):
         print(f'm_spec.flux_slab.shape = {m_spec.flux_slab.shape}')
-        ax[1].plot(m_spec.wave[idx], m_spec.flux_slab[idx] / f, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+        ax[1].plot(m_spec.wave[idx], flux_plot_unit*m_spec.flux_slab[idx] / f, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
         m_flux_no_slab = m_spec.flux[idx] - m_spec.flux_slab[idx]
-        res_slab = (d_spec.flux[idx] - m_flux_no_slab) / d_spec.flux[idx]
+        res_slab = flux_plot_unit*(d_spec.flux[idx] - m_flux_no_slab) / f
+        # res_slab /= d_spec.flux[idx]
         MAD = np.nanmedian(np.abs(res_slab))
-        print(f'MAD = {MAD:.2e} (no slab)')
-        ax[2].plot(d_spec.wave[idx], res_slab, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+        
+        chi2_r = np.nansum((d_spec.flux[idx] - m_flux_no_slab)**2 / d_spec.err[idx]**2) / np.sum(~np.isnan(d_spec.flux[idx]))
+        print(f'chi2_r = {chi2_r:.2e} (no slab)')
+        ax[2].plot(d_spec.wave[idx], 10*res_slab, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
         residuals_list.append(res_slab)
-    res = (d_spec.flux[idx] - m_spec.flux[idx]) / d_spec.flux[idx]
+    res = flux_plot_unit*(d_spec.flux[idx] - m_spec.flux[idx]) / f
+    # res /= d_spec.flux[idx]
     MAD = np.nanmedian(np.abs(res))
     print(f'MAD = {MAD:.2e} (total)')
-    ax[-1].plot(d_spec.wave[idx], res, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+    ax[-1].plot(d_spec.wave[idx], 10*res, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
     residuals_list.append(res)
     return residuals_list
     
@@ -138,7 +143,7 @@ for target in runs.keys():
     
     residuals_no_slab = 0.0
     residuals_with_slab = 0.0
-    for idx in [-3, -2, -1]:
+    for idx in [-3,-2, -1]:
         residuals_list = plot_chunk(d_spec, m_spec, idx=idx, colors=colors[target], lw=lw)
         residuals_no_slab += residuals_list[0]
         residuals_with_slab += residuals_list[1]
@@ -147,7 +152,7 @@ for target in runs.keys():
     
 xlim = (4200, 5200)
 ax[0].set_xlim(xlim)
-ax[0].set_ylim(0.60e-15, 1.65e-15)
+ax[0].set_ylim(flux_plot_unit*0.60e-15, flux_plot_unit*1.65e-15)
 
 ax[1].text(0.02, 0.84, r'$^{12}\mathrm{CO}$ slab', transform=ax[1].transAxes, fontsize=11, ha='left', va='top')
 
@@ -161,7 +166,7 @@ for axi, text in zip(ax[2:], res_text):
 # add text in upper right corner of ax[0] listing the MAD values for both objects and both cases
 xm = 0.64
 ym = 0.848
-ax[0].text(s='MAD / %', x=xm+0.174, y=ym+0.12, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
+ax[0].text(s='MAD / 10$^{-16}$', x=xm+0.152, y=ym+0.12, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
 ax[0].text(s='slab', x=xm, y=ym, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
 ax[0].text(s='no', x=xm+0.16, y=ym, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
 ax[0].text(s='yes', x=xm+0.265, y=ym, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
@@ -177,9 +182,9 @@ for t, target in enumerate(runs.keys()):
                weight='bold')
 
 # add axes labels
-fig.text(-0.14, 0.12, r'$F_{\lambda}$' + r' / $\mathrm{erg\,s^{-1}\,cm^{-2}}$', transform=ax[0].transAxes, fontsize=11, ha='left', va='center', rotation='vertical')
+fig.text(-0.14, 0.12, r'$F_{\lambda}$' + r' / 10$^{-14}$ $\mathrm{erg\,s^{-1}\,cm^{-2}}$', transform=ax[0].transAxes, fontsize=11, ha='left', va='center', rotation='vertical')
 fig.text(0.5, -0.92, r'Wavelength / nm', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom')
-fig.text(-0.14, 0.12, r'Residuals / %', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom', rotation='vertical')
+fig.text(-0.14, 0.12, r'Residuals', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom', rotation='vertical')
 # fig_name = path / 'twx_figs' / 'fig_ring_emission.pdf'
 fig_name = path_figures / 'fig_ring_emission.pdf'
 fig.savefig(fig_name, bbox_inches='tight')

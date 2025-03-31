@@ -12,9 +12,9 @@ lbl = 10
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-# gratings = ['g235h']
+gratings = ['g235h']
 # gratings = ['g235h', 'g395h']
-gratings = ['g140h', 'g235h', 'g395h']
+# gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -217,7 +217,7 @@ species_wave = {
     'TiO': [[0,1450],[4500.0, 5300.0]],
     # '46TiO': [[0, np.inf]],
     'SiO': [[2650,5300]],
-    'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
+    # 'H2S': [[0.0, np.inf]],# Feb 18: not detected... alpha < -1.2 (+0.32, -0.42)
     # 'AlH': [[3000, 4600]],
     'AlH': [[2920, 4600]],
     # 'CH': [[0.0, 2200], [3000, np.inf]],
@@ -329,8 +329,8 @@ if 'g395h' in gratings:
     
 else:
     # add disk params from best fit of g140h+g235h+g395h
-    constant_params['R_d'] =  15.79 # from lbl11_G1G2G3_fastchem_0
-    constant_params['T_d'] =  607.32 # from lbl11_G1G2G3_fastchem_0
+    constant_params['R_d'] =  11.48 # from freeslab_lbl10_G1G2G3_0 (31-03-2025)
+    constant_params['T_d'] =  654.07 # from freeslab_lbl10_G1G2G3_0 (31-03-2025)
 
 fc_species_dict={
     'H2': 'H2',

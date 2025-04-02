@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
 import argparse
+from PIL import Image
 
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
@@ -23,6 +24,7 @@ run = args.run
 w_set='NIRSpec'
 run_bestfit = None
 
+
 cwd = os.getcwd()
 if target not in cwd:
     nwd = os.path.join(cwd, target)
@@ -31,7 +33,10 @@ if target not in cwd:
 
 
 conf = Config(path=path, target=target, run=run)(config_file)        
-    
+# Create the GIF after generating all frames
+fig_path = pathlib.Path(f'{conf.path}/{conf.target}/{conf.prefix}plots/ring_line_emission')
+fig_path.mkdir(exist_ok=True)
+
 ret = Retrieval(
     conf=conf, 
     evaluation=False
@@ -137,12 +142,11 @@ def plot_species(ret,
     params_dict_copy['log_R_jup'] = log_R_disk
         
     title = 'w/o disk'
-    fig_path = pathlib.Path(f'{conf.path}/{conf.target}/{conf.prefix}plots/disk_gif_frames')
-    fig_path.mkdir(exist_ok=True)
+    
     fig_name = fig_path / f'frame_{frame_number:03d}.png'
     
         
-    lw = kwargs.get('lw', 0.9)    
+    lw = kwargs.get('lw', 1.4)    
     
     ret.evaluate_model(np.array(list(params_dict_copy.values())))
     ret.PMN_lnL_func()
@@ -163,17 +167,20 @@ def plot_species(ret,
                                                                     'bottom': 0.1},
                                 sharex=True)
         
+        # set background color
+        ax[0].set_facecolor(background_color_norm)
+        ax[1].set_facecolor(background_color_norm)
         
         mask_i = ret.d_spec[w_set].mask_isfinite[order,0]
         err_ij = Cov[order,0].get_err(mask=mask_i) / f
 
         
-        ax[0].plot(wave[order,], d_flux[order], color='black', lw=lw, label='Data')
+        ax[0].plot(wave[order,], d_flux[order], color='black', lw=lw, label='Data', marker='o', markersize=2)
         
         chi2_full_order = np.nansum((d_flux[order] - m_flux_full[order,])**2 / err_ij**2) / mask_i.sum()
         chi2_order = np.nansum((d_flux[order] - m_flux[order,])**2 / err_ij**2) / mask_i.sum()
         
-        ax[0].plot(wave[order,], m_flux_full[order,], color='dodgerblue', lw=lw, label='Full model ('+r'$\chi^2_{r}='+f'{chi2_full_order:.2f})$')
+        # ax[0].plot(wave[order,], m_flux_full[order,], color='dodgerblue', lw=lw, label='Full model ('+r'$\chi^2_{r}='+f'{chi2_full_order:.2f})$')
         ax[0].plot(wave[order,], m_flux[order,], color=color, lw=lw, label=f'Ring radius (log) ={log_R_disk:.2f} ('+r'$\chi^2_{r}='+f'{chi2_order:.2f})$')
 
         # ax[0].plot(wave[order,], m_flux[order,], color=color, lw=lw, label=
@@ -184,7 +191,7 @@ def plot_species(ret,
         res = d_flux[order] - m_flux[order,]
         ax[1].plot(wave[order,], res, color=color, lw=lw, alpha=0.9, ls='-', marker='o', markersize=3)
         
-        ax[0].set_ylim(0.80e-15, 1.30e-15)
+        ax[0].set_ylim(0.90e-15, 1.30e-15)
         ax[1].set_ylim(-5e-17, 5e-17)
         ax[0].set_xlim(np.nanpercentile(wave[order,], 15), np.nanpercentile(wave[order,], 85))
 
@@ -194,21 +201,28 @@ def plot_species(ret,
         if order==0:
             ax[0].set_title(title)
         
-        ax[0].legend()
+        ax[0].legend(frameon=False, loc='upper right')
         if order==n_orders-1:
             ax[1].set_xlabel('Wavelength / nm')
             # ax[1].legend()
             
         
 
-    fig.savefig(fig_name, dpi=300, bbox_inches='tight')
+    fig.savefig(fig_name, dpi=300, bbox_inches='tight', transparent=True)
     plt.close()
     print(f'--> Saved {fig_name}')
 
 
-log_R_disk_range = np.linspace(0.0, 1.6, 14)
+# log_R_disk_range = np.linspace(0.0, 1.6, 20)
+log_R_disk_range = np.hstack([
+    np.linspace(0.0, 1.0, 8),
+    np.linspace(1.0, 1.2, 10),
+    np.linspace(1.2, 1.6, 8),
+    ]).flatten()
+background_color=(246,178,107,100)
+background_color_norm = np.array(background_color) / 255.0
 # get colors from cmap
-colors = plt.cm.viridis(np.linspace(0.32, 0.94, len(log_R_disk_range)))
+colors = plt.cm.Blues_r(np.linspace(0.12, 0.94, len(log_R_disk_range)))
 for i, log_R_disk in enumerate(log_R_disk_range):
     plot_species(ret, wave, 
                  m_flux_full.copy(), 
@@ -217,3 +231,48 @@ for i, log_R_disk in enumerate(log_R_disk_range):
                  order=16,
                  color=colors[i],
                  frame_number=i)
+
+def create_gif(frame_folder, output_gif, background_color=(246,178,107,100), duration=100, loop=0):
+    """
+    Create a GIF from a series of PNG images in a folder.
+    
+    Parameters:
+        frame_folder (str): Path to the folder containing PNG frames.
+        output_gif (str): Path to save the output GIF.
+        duration (int): Duration of each frame in milliseconds.
+        loop (int): Number of times the GIF loops (0 = infinite).
+    """
+    frames = sorted(
+        [os.path.join(frame_folder, f) for f in os.listdir(frame_folder) if f.endswith(".png")]
+    )
+    
+    if not frames:
+        raise ValueError("No PNG files found in the specified folder.")
+    
+    # Create a background image with specified color
+    first_image = Image.open(frames[0])
+    background = Image.new('RGBA', first_image.size, background_color)
+    
+    # Process each frame
+    processed_images = []
+    for frame in frames:
+        # Open the transparent frame
+        frame_image = Image.open(frame)
+        # Composite the frame onto the background
+        composite = Image.alpha_composite(background, frame_image)
+        processed_images.append(composite)
+    
+    # Save the GIF
+    processed_images[0].save(
+        output_gif,
+        save_all=True,
+        append_images=processed_images[1:],
+        duration=duration,
+        loop=loop
+    )
+    print(f"GIF saved at {output_gif}")
+
+
+
+output_gif = fig_path.parent / 'ring_line_emission_blues.gif'
+create_gif(str(fig_path), str(output_gif), background_color=background_color, duration=300, loop=0)

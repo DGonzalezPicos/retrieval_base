@@ -19,10 +19,12 @@ def define_runs_and_colors():
         'TWA27A': [
             ('freeslab_lbl10_G2G3_0', 'G2+G3'),
             ('freeslab_lbl10_G1G2G3_0', 'G1+G2+G3'),
+            ('freeslab_lbl10_G2_0', 'G2')
         ],
         'TWA28': [
             ('freeslab_lbl10_G2G3_0', 'G2+G3'),
             ('freeslab_lbl10_G1G2G3_0', 'G1+G2+G3'),
+            ('freeslab_lbl10_G2_0', 'G2')
         ]
     }
     
@@ -30,12 +32,13 @@ def define_runs_and_colors():
     colors = {
         'TWA28': {
             'data': 'k',
-            'model': ['#E69F00', 'orangered'],  # Orange, Orangered
-            'crires': '#009E73'  # Green
+            'model': ['#0072B2', 'gold', 'seagreen'],  # Orange, Orangered, Green
+            # 'crires': '#009E73'  # Green
+            'crires': '#CC79A7'
         },
         'TWA27A': {
             'data': '#733b27',
-            'model': ['#CC79A7', '#0072B2'],  # Pink, Dark blue
+            'model': ['#0072B2', 'gold', 'seagreen'],  # Pink, Dark blue, Green
             'zhang2025': 'black'
         }
     }
@@ -240,8 +243,8 @@ def main():
         if target == 'TWA28':
             for col, key in enumerate(param_order):
                 plot_hist(ax[row,col], crires_data[key], colors[target]['crires'],
-                         label=r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)', bins=20, alpha=0.65,
-                         density=True, linestyle='-', fill_alpha=0.3)
+                         label=r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)', bins=20, alpha=0.90,
+                         density=True, linestyle='-', fill_alpha=0.7)
         elif target == 'TWA27A':
             for col, key in enumerate(param_order):
                 plot_hist(ax[row,col], zhang2025_data[key], 
@@ -272,7 +275,7 @@ def main():
                         labels.append(l)
             leg_elements = {k:v for k,v in zip(labels, handles)}
             # sort by label list
-            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G2+G3', 'TWA 27 b\n(Zhang et al. 2025)', 'Solar', 'ISM']
+            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G2+G3', 'NIRSpec/G2', 'TWA 27 b\n(Zhang et al. 2025)', 'Solar', 'ISM']
             handles = [leg_elements[l] for l in label_list]
             labels = label_list
             # ax[row,2].legend(handles, labels, frameon=True, fontsize=10, loc=(-0.80+0.11*row, 0.5), facecolor='white', edgecolor='k')
@@ -280,7 +283,7 @@ def main():
             # sort by label list
             handles, labels = ax[row,1].get_legend_handles_labels()
             leg_elements = {k:v for k,v in zip(labels, handles)}
-            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G2+G3',r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
+            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G2+G3', 'NIRSpec/G2', r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
             handles = [leg_elements[l] for l in label_list]
             labels = label_list
         ax[row,2].legend(handles, labels, frameon=True, fontsize=10, loc=(-0.80+0.11*row, 0.40+0.1*row), facecolor='white', edgecolor='k')
@@ -288,6 +291,9 @@ def main():
     # Save figure
     fig_name = path_figures / 'metallicity_CO_C_ratio.pdf'
     fig.savefig(fig_name, bbox_inches='tight', dpi=300)
+    # save as png
+    fig_name_png = path_figures / 'metallicity_CO_C_ratio.png'
+    fig.savefig(fig_name_png, bbox_inches='tight', dpi=300)
     print(f'Saved {fig_name}')
     plt.close('all')
 

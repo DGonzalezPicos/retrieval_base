@@ -28,8 +28,8 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A='no_psf_corr_lbl10_G2G3_newGP_1',
-    TWA28='no_psf_corr_lbl10_G2G3_newGP_1',
+    TWA27A='freeslab_lbl10_G1G2G3_0',
+    TWA28='freeslab_lbl10_G1G2G3_0',
             )
 
 
@@ -80,7 +80,11 @@ def get_VMR(target, run, cache=True):
         ret.evaluation = True
         ret.PMN_lnL_func()
         ret.get_PT_mf_envelopes(posterior)
-        ret.Chem.get_VMRs_posterior(save_to=envelopes_dir)
+        # ret.Chem.get_VMRs_posterior(save_to=envelopes_dir)
+        
+        # np.save(file_posterior, np.array(list(ret.Chem.VMRs_posterior.values())))
+        np.save(VMR_envelopes_file, np.array(list(ret.Chem.VMRs_envelopes.values())))
+        np.save(VMR_labels_file, np.array(list(ret.Chem.VMRs_posterior.keys())))
         ret.copy_integrated_contribution_emission()
 
         # save PT envelopes as npy file with pressure and temperature envelopes
@@ -95,8 +99,6 @@ def get_VMR(target, run, cache=True):
     PT_envelopes = np.load(PT_envelopes_file)
     
     free_params_keys = conf.free_params.keys()
-    # print(f' --> free_params_keys: {free_params_keys}')
-    # print(f' --> VMR_envelopes.keys: {VMR_envelopes.keys()}')
     posterior = dict(zip(free_params_keys, np.load(posterior_file).T))
     
     alpha_params = {k:posterior[f'alpha_{k}'] for k in VMR_labels_data if f'alpha_{k}' in free_params_keys}
@@ -148,14 +150,16 @@ def plot_target(target, run, ax, x_offset=0, species_list=[]):
         # sort species by VMR_peak
         sorted_species = sorted(VMR_peak.keys(), key=lambda x: VMR_peak[x], reverse=True)
         print(f' --> Sorted species: {sorted_species}')
-        species_list = sorted_species
+        ignore_species = ['Mg']
+        print(f' --> ignore_species: {ignore_species}')
+        species_list = [species for species in sorted_species if species not in ignore_species]
     
     # sort dictionary alpha_quantiles by the order of sorted_species
     alpha_quantiles = {k:alpha_quantiles[k] for k in species_list if k in alpha_quantiles.keys()}
-    print(f' --> alpha_quantiles.keys(): {alpha_quantiles.keys()}')
+    # print(f' --> alpha_quantiles.keys(): {alpha_quantiles.keys()}')
     species_list = []
     for i, species in enumerate(alpha_quantiles.keys()):
-        
+        # print(f' --> species: {species}: {alpha_quantiles[species]}')
         ns = len(sigma)
         for s in range(ns):
         # plot vertical line at alpha_quantiles[species][1], extending from alpha_quantiles[species][0] to alpha_quantiles[species][2]
@@ -190,14 +194,33 @@ replace_species = {
 }
 species_list = [replace_species[species] if species in replace_species else species for species in species_list]
 ax.set_xticklabels(species_list, rotation=55)
-ax.set(ylabel='Chemical offset\n' + r'$\alpha$', ylim=(-0.2, 2.0))
+ax.set(ylabel='Abundance offset\n' + r'$\alpha$', ylim=(-1.6, 1.6))
 
 # create custom handles for legend witht the color of each target, set lw of handles to 2
 from matplotlib.lines import Line2D
 handles = [Line2D([0], [0], color=colors[target], lw=2) for target in runs.keys()]
 legend_labels = [f'TWA {target[3:]}' for target in runs.keys()]
-# change extent of legend to make it tighter
-ax.legend(handles, legend_labels, loc='upper right', frameon=True, framealpha=0.4, bbox_to_anchor=(1.0, 1.0))
+# change extent of legend to make it tighter, increase edgewidth
+# change length of legend handles
+for handle in handles:
+    handle.set_linewidth(2.5)
+    handle.set_alpha(0.8)
+
+ax.legend(handles,
+          legend_labels, 
+          loc='upper left', 
+          frameon=True, 
+          framealpha=0.4,
+          ncol=2,
+          edgecolor='black',
+          handlelength=1.5,
+          )
+# change length of legend handles
+
+# add text with string "s" at bottom right
+s = r'$\alpha=0 \rightarrow$' + ' chemical equilibrium at solar composition'
+ax.text(0.57, 0.05, s, ha='center', va='bottom', fontsize=11, color='black',
+        transform=ax.transAxes)
 
     
 
@@ -207,5 +230,4 @@ ax.axhline(0.0, color='black', lw=0.5, ls='-')
 # save figure as pdf
 fig.savefig(path_figures / 'fig_alpha.pdf', bbox_inches='tight')
 print(f' --> Saved figure to {path_figures / "fig_alpha.pdf"}')
-
 

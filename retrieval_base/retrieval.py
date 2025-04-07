@@ -704,15 +704,20 @@ class Retrieval:
 
         self.CB.return_PT_mf = False
         
-    def get_PT_mf_envelopes(self, posterior, n_samples=None, cache=True):
+    def check_PT_mf_envelopes_file(self):
+        
+        self.file_temperature_VMRs_COH = f'{self.conf.prefix}data/temperature_VMRs_COH.npy'
+        self.file_line_species = f'{self.conf.prefix}data/line_species.npy'
+        return os.path.exists(self.file_temperature_VMRs_COH) and os.path.exists(self.file_line_species)
+        
+    def get_PT_mf_envelopes(self, posterior=None, n_samples=None, cache=True):
 
         if n_samples is not None:
             print(f' Using first {n_samples} samples')
             posterior = posterior[:n_samples]
-            
-        file = f'{self.conf.prefix}data/temperature_VMRs_COH.npy'
-        file_line_species = f'{self.conf.prefix}data/line_species.npy'
-        if (not cache) or (not os.path.exists(file)):
+        
+        
+        if (not cache) or (not self.check_PT_mf_envelopes_file()):
             temperature_list, mass_fractions_list, C_list, O_list, H_list = [], [], [], [], []
             
             for i, sample in enumerate(posterior):
@@ -753,15 +758,15 @@ class Retrieval:
             
             stack_array = np.vstack((temperature_array, VMRs_array, COH_array))
             print(f'Stacked array shape: {stack_array.shape}')
-            np.save(file, stack_array)
-            print(f'Saved {file}!')
+            np.save(self.file_temperature_VMRs_COH, stack_array)
+            print(f'Saved {self.file_temperature_VMRs_COH}!')
             
             # save file with line species list
-            np.save(file_line_species, np.array(line_species_list))
-            print(f'Saved {file_line_species}!')
+            np.save(self.file_line_species, np.array(line_species_list))
+            print(f'Saved {self.file_line_species}!')
             
-        stack_array = np.load(file)
-        line_species_list = np.load(file_line_species)
+        stack_array = np.load(self.file_temperature_VMRs_COH)
+        line_species_list = np.load(self.file_line_species)
         # print(f'line_species_list = {line_species_list}')
         self.PT.temperature_posterior = stack_array[0,:,:]
        

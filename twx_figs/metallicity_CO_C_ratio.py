@@ -32,13 +32,14 @@ def define_runs_and_colors():
     colors = {
         'TWA28': {
             'data': 'k',
-            'model': ['#0072B2', 'gold', 'seagreen'],  # Orange, Orangered, Green
+            'model': ['#0072B2', 'gold', 'darkolivegreen'],  # Orange, Orangered, Green
             # 'crires': '#009E73'  # Green
-            'crires': '#CC79A7'
+            # 'crires': '#CC79A7'
+            'crires': 'brown'
         },
         'TWA27A': {
             'data': '#733b27',
-            'model': ['#0072B2', 'gold', 'seagreen'],  # Pink, Dark blue, Green
+            'model': ['#0072B2', 'gold', 'darkolivegreen'],  # Pink, Dark blue, Green
             'zhang2025': 'black'
         }
     }
@@ -79,9 +80,21 @@ def get_posteriors(chem, log_g_posterior):
         np.mean(chem.COH_posterior['C'], axis=-1),
         np.mean(chem.COH_posterior['H'], axis=-1)
     )
-    isotope_ratios = {
-        '12C/13C': np.mean(chem.VMRs_posterior['12CO'] / chem.VMRs_posterior['13CO'], axis=-1)
-    }
+    isotope_ratios_pairs = [
+        ('12CO', '13CO'),
+        ('12CO', 'C18O'),
+        ('12CO', 'C17O'),
+        ('H2O', 'H2O_181')
+    
+    ]
+    isotope_ratios = {}
+    for pair in isotope_ratios_pairs:
+        if pair[1] in chem.VMRs_posterior.keys():
+            isotope_ratios[pair[0]+'/'+pair[1]] = np.mean(chem.VMRs_posterior[pair[0]] / chem.VMRs_posterior[pair[1]], axis=-1)
+            
+    # copy 12CO/13CO to 12C/13C
+    isotope_ratios['12C/13C'] = isotope_ratios['12CO/13CO']
+    
     return CO_posterior, CH_posterior, isotope_ratios
 
 def load_crires_data(path, target):
@@ -230,10 +243,19 @@ def main():
                 '[C/H]': CH_posterior,
                 'log_g': log_g_posterior
             }
-            
+            # use tabulate to print data_dict with 1,3 sigma uncertainties
+            quantiles = np.array([0.16, 0.5, 0.84])
+            quantiles_data = {k: np.percentile(v, quantiles*100) for k, v in data_dict.items()}
+            print(f' --> {target} {run}')
+            print(tabulate(quantiles_data, headers='keys', tablefmt='grid'))
+            # print the C/O results as q50 +- q84-q16
+            print(f' --> C/O: {quantiles_data["C/O"][1]:.3f} +- {quantiles_data["C/O"][2]-quantiles_data["C/O"][0]:.3f}')
             color = colors[target]['model'][r]
             # Simplified label without target name
             label = f'NIRSpec/{label}'
+            
+            quantiles_isotope_ratios = {k: np.percentile(v, quantiles*100) for k, v in isotope_ratios.items()}
+            print(tabulate(quantiles_isotope_ratios, headers='keys', tablefmt='grid'))
             
             for col, param in enumerate(param_order):
                 plot_hist(ax[row,col], data_dict[param], color, label=label)
@@ -243,7 +265,7 @@ def main():
         if target == 'TWA28':
             for col, key in enumerate(param_order):
                 plot_hist(ax[row,col], crires_data[key], colors[target]['crires'],
-                         label=r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)', bins=20, alpha=0.90,
+                         label=r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)', bins=20, alpha=0.40,
                          density=True, linestyle='-', fill_alpha=0.7)
         elif target == 'TWA27A':
             for col, key in enumerate(param_order):
@@ -283,10 +305,12 @@ def main():
             # sort by label list
             handles, labels = ax[row,1].get_legend_handles_labels()
             leg_elements = {k:v for k,v in zip(labels, handles)}
-            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G2+G3', 'NIRSpec/G2', r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
+            # label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G2+G3', 'NIRSpec/G2', r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
+            label_list = [r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
             handles = [leg_elements[l] for l in label_list]
+            
             labels = label_list
-        ax[row,2].legend(handles, labels, frameon=True, fontsize=10, loc=(-0.80+0.11*row, 0.40+0.1*row), facecolor='white', edgecolor='k')
+        ax[row,2].legend(handles, labels, frameon=True, fontsize=10, loc=(-0.80+0.11*row, 0.40+0.16*row), facecolor='white', edgecolor='k')
 
     # Save figure
     fig_name = path_figures / 'metallicity_CO_C_ratio.pdf'

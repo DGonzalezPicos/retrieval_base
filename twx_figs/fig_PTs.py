@@ -97,12 +97,14 @@ def get_bestfit_params(target,run):
 #             )
 
 runs = dict(
-    TWA27A='no_psf_corr_lbl10_G2G3_newGP_1',
-    TWA28='no_psf_corr_lbl10_G2G3_newGP_1',
+    TWA27A='freeslab_lbl10_G1G2G3_0',
+    TWA28='freeslab_lbl10_G1G2G3_0',
             )
 colors = dict(TWA28={'data':'k', 
                      'model':'orange', 
-                     'crires': 'brown'},
+                     'crires': 'brown'
+                     },
+                    # 'crires': '#CC79A7'
               TWA27A={'data':'#733b27',
                       'model':'#0a74da',
                       })
@@ -181,7 +183,7 @@ def plot_envelopes(p, t_env, ax=None, cf=None, use_altitude=False, **kwargs):
                             label=label if i ==0 else '',
                             # ls='--',
                             )
-    ax.plot(t_env[3,:], y, color=color, lw=0.5, ls=kwargs.pop('ls', '-'), alpha=0.75)
+    ax.plot(t_env[3,:], y, color=color, lw=1.2, ls=kwargs.pop('ls', '-'), alpha=0.75)
 
     if cf is not None:
         fill_cf = kwargs.pop('fill_cf', False)
@@ -198,8 +200,8 @@ def plot_envelopes(p, t_env, ax=None, cf=None, use_altitude=False, **kwargs):
         
     return ax
 
-fig, ax = plt.subplots(1,1,figsize=(6,4), tight_layout=True)
-use_altitude = True
+fig, ax = plt.subplots(1,1,figsize=(4,4), tight_layout=True)
+use_altitude = False
 altitude_label = '_altitude' if use_altitude else ''
 def plot_crires(ax):
     run_full = 'final_full'
@@ -228,25 +230,27 @@ for t, target in enumerate(runs.keys()):
     p, t, cf, logg = get_PT(path, target, runs[target], cache=True)
     ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'], alpha=0.3, fill_cf=True,
                         label='TWA ' + target.replace('TWA', ''),
-                        ls_cf='-', lw_cf=1.0, use_altitude=True)
+                        ls_cf='-', lw_cf=1.0, use_altitude=use_altitude)
 
     
 
 z = pressure_to_altitude(p, t[3,:], logg) if use_altitude else p
 # ylim = (np.min(z), np.max(z)) if use_altitude else (np.max(p), np.min(p))
 ylim = (np.max(z), np.min(z))
-yscale = 'log' if use_altitude else 'log'
+yscale = 'log'
 ylabel = r'Scaled pressure ' + r'(P$\cdot$ g)' if use_altitude else 'Pressure / bar'
 ax.set(yscale=yscale, ylim=ylim, ylabel=ylabel, xlabel='Temperature / K')
 ax.set_xlim(None, 5000)
 # make legend labels bold
 # ax.legend(fontsize=8, 
 ax.legend(prop={'size': 14, 'weight': 'bold'}, loc='upper right')
-# make the order of legend reverse
 handles, labels = ax.get_legend_handles_labels()
-leg = ax.legend(handles[::-1], labels[::-1], 
+labels_sort = ['2430 K', 'TWA 27A', '2382 K', 'TWA 28', 'TWA 28\n(CRIRES$^{+}$)']
+legend_dict = dict(zip(labels, handles))
+handles_sort = [legend_dict[label] for label in labels_sort]
+leg = ax.legend(handles_sort, labels_sort, 
                 prop={'size': 10, 'weight': 'bold'}, 
-                loc=(1.01, 0.0),
+                loc=(0.54, 0.6),
                 frameon=False, ncol=1)
 
 # for lh in leg.get_lines():
@@ -256,10 +260,10 @@ for p, patch in enumerate(leg.get_patches()):
     # print(patch)
     patch.set_alpha(0.55)
     # add edge to patch
-    if p == 2:
-        patch.set_edgecolor('orange')
-        patch.set_linewidth(0.95)
-        patch.set_linestyle('dashed')
+    # if p == 2:
+    #     patch.set_edgecolor('orange')
+    #     patch.set_linewidth(0.95)
+        # patch.set_linestyle('dashed')
 
 # plt.show()
 fig_name = path_figures / f'fig_PTs{altitude_label}.pdf'

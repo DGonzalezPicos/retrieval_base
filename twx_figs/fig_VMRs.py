@@ -27,9 +27,9 @@ config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A=['lbl11_G1G2G3_fastchem_0'],
+    TWA27A=['freeslab_lbl10_G1G2G3_0'],
     TWA28=[
-        'lbl11_G1G2G3_fastchem_0', 
+        'freeslab_lbl10_G1G2G3_0', 
            ],
             )
 

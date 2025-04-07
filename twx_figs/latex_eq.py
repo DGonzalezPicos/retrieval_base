@@ -13,8 +13,8 @@ w_set='NIRSpec'
 # load best fit parameters of MultiNest
 
 runs = dict(
-    TWA27A='lbl11_G2G3_fastchem_GP_0',
-    TWA28='lbl11_G2G3_fastchem_GP_0',
+    TWA27A='freeslab_lbl10_G1G2G3_0',
+    TWA28='freeslab_lbl10_G1G2G3_0',
     )
 
 targets = list(runs.keys())

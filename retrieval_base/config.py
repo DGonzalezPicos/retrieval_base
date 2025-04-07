@@ -19,11 +19,16 @@ class Config:
     
         if self.target is None:
             self.data_path = self.path / 'retrieval_outputs' / self.run / 'test_data'
+    
         else:
             assert self.target not in self.path.parts, f'{self.target} not in {self.path.parts}'
             self.data_path = self.path / self.target / 'retrieval_outputs' / self.run / 'test_data'
             
         self.data_path.mkdir(parents=True, exist_ok=True)
+        # replace data with outputs
+        self.output_path = self.data_path.parent / 'output'
+        self.output_path.mkdir(parents=True, exist_ok=True)
+        
         
         
         # self.full_prefix = self.path / self.prefix
@@ -88,7 +93,18 @@ class Config:
             file.write(json.dumps(json_dump))
         print(f'Wrote {outfile}')
         return None
+    
+    def get_file(self, type):
+        available_files = ['alpha_posterior', 'temperature_VMRs_COH', 'line_species']
+        if type not in available_files:
+            raise ValueError(f'{type} not in {available_files}')
         
+        file = self.output_path / f'{type}.npy'
+        if not file.exists():
+            return False
+        else:
+            return file
+    
 if __name__ == '__main__':
     
         

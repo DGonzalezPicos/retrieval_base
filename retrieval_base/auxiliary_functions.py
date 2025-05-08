@@ -502,7 +502,7 @@ def compare_evidence(ln_Z_A, ln_Z_B):
         print(f'{labels[0]} vs. {labels[1]}: ln(B)={ln_B:.2f} | sigma={sigma:.2f}')
     return ln_B, sigma
 
-def load_romano_models(mass_range='1_8', Z_min=None):
+def load_romano_models(mass_range='1_8', Z_min=None, return_time=False):
     
     mass_range_files = {'1_8': 'abunda.bncmrkTHIN18_300',
                         '3_8': 'abunda.bncmrkTHIN_300'}
@@ -512,6 +512,7 @@ def load_romano_models(mass_range='1_8', Z_min=None):
     assert file.exists(), f'File {file} does not exist'
     data = np.loadtxt(file, skiprows=0)
     
+    time = data[:, 0]
     Z = data[:, 1]
     c12 = data[:, 5] / 12
     c13 = data[:, 6] / 13
@@ -525,7 +526,11 @@ def load_romano_models(mass_range='1_8', Z_min=None):
         Z = Z[mask]
         c12c13 = c12c13[mask]
         o16o18 = o16o18[mask]
-    return Z, c12c13, o16o18
+        time = time[mask]
+    if return_time:
+        return Z, c12c13, o16o18, time
+    else:
+        return Z, c12c13, o16o18
 
 
 def find_run(base_path='/home/dario/phd/retrieval_base/',
@@ -570,3 +575,63 @@ def axhspan_gradient(ax, x, y_range=(0,10), rgb_color=(0,1,0), gamma=3, n=100, l
     poly = PolyCollection(verts, facecolors=colors, edgecolor='none')
     ax.add_collection(poly)
     return poly, label
+
+def axvspan_gradient(ax, x_range=(0, 10), y_range=(0, 10), rgb_color=(0, 1, 0), gamma=3, n=100, label='', reverse=False):
+    """
+    Add a vertical gradient effect to an axis.
+
+    This function displays a vertical gradient covering the area defined by x_range (horizontal) 
+    and y_range (vertical). The transparency (alpha value) of the colour varies along the y-axis.
+
+    Parameters:
+    ax : matplotlib.axes.Axes
+        The axis to add the gradient to.
+    x_range : tuple of float
+        The x-coordinate limits over which the gradient is drawn.
+    y_range : tuple of float
+        The y-coordinate limits over which the gradient is drawn.
+    rgb_color : tuple of float
+        The RGB colour of the gradient.
+    gamma : float
+        Gamma correction factor for the gradient.
+        gamma = 1: linear gradient;
+        gamma > 1: an exponential style gradient.
+    n : int
+        The number of horizontal bands used to create the gradient.
+    label : str
+        The legend label.
+    reverse : bool
+        If True, the gradient is reversed.
+    """
+    import numpy as np
+    from matplotlib.collections import PolyCollection
+    import matplotlib.patches as mpatches
+
+    # Generate the gradient values
+    gradient = np.linspace(0, 1, n)**gamma
+    if reverse:
+        gradient = gradient[::-1]
+    gradient = gradient / gradient.max()  # normalise to 1
+
+    # Create an array of y positions defining the horizontal band edges
+    y_vals = np.linspace(y_range[0], y_range[1], n)
+
+    # Construct a list of vertices for each horizontal band between adjacent y_vals.
+    verts = [
+        ((x_range[0], y_vals[i]), (x_range[1], y_vals[i]), 
+         (x_range[1], y_vals[i+1]), (x_range[0], y_vals[i+1]))
+        for i in range(n-1)
+    ]
+
+    # Apply the computed alpha to each band.
+    # Note: We use n values for alpha, though the number of patches is n-1.
+    # This approach smoothly transitions the gradient with minimal visual discontinuity.
+    colors = [(rgb_color[0], rgb_color[1], rgb_color[2], alpha) for alpha in gradient]
+
+    # Create a legend patch using a solid colour.
+    patch = mpatches.Patch(color=rgb_color, label=label)
+    poly = PolyCollection(verts, facecolors=colors, edgecolor='none')
+    ax.add_collection(poly)
+
+    return poly, patch
+

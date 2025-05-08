@@ -279,7 +279,7 @@ fig = plt.figure(figsize=(6, 6))  # Adjust the figure size as needed
 gs = fig.add_gridspec(10, 12, hspace=0.20, wspace=0.0)
 
 ax_spectrum = fig.add_subplot(gs[0:3, :])
-ax_residuals = fig.add_subplot(gs[3, :], sharex=ax_spectrum)
+ax_residuals = fig.add_subplot(gs[3, :])
 
 
 
@@ -290,12 +290,17 @@ axes = [ax_carbon, ax_oxygen]
 from bestfit_model_nat import plot
 my_targets_id = ['338B', '205', '411', '436','699', '1286']
 my_targets = ['gl'+t for t in my_targets_id]
-xlim = (2285, 2364)
-text_x = (xlim[0]+1., xlim[1]-3)
-    
+# xlim = (2285, 2364)
+# text_x = (xlim[0]+1., xlim[1]-3)
+order = 0
+# xlim = (2282, 2364)
+xlim = (2342.01, 2359.99)
+text_x = (xlim[0]+0.4, xlim[1]+2.0)
+kwargs = {'show_lines': True, 'lw': 0.8}
 plot(0, names, my_targets, text_x=text_x, xlim=xlim, add_cbar=False, teff=teff, spt=spt,
      axes=[ax_spectrum, ax_residuals],
-      cmap=cmap, norm=norm, lw=0.6)
+      cmap=cmap, norm=norm, **kwargs)
+ax_spectrum.set_xticklabels([])
 
 # add handles for subplots: a, b, c
 thandles = ['a', 'b', 'c']

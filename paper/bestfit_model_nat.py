@@ -11,9 +11,10 @@ import pathlib
 # plt.style.use('/home/dario/phd/retrieval_base/HBDs/my_science.mplstyle')
 import scienceplots
 
-
+import matplotlib.patches as patches
 
 import matplotlib.patheffects as path_effects
+
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
 
@@ -163,11 +164,12 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, *
 def plot(order, names, my_targets, 
          teff, spt,
          cmap, norm,
-         text_x=None, xlim=None, axes=None, add_cbar=True, **kwargs):
+         text_x=None, xlim=None, axes=None, add_cbar=True,
+         show_lines=False, **kwargs):
     
     fig = None
     if axes is None:
-        fig, ax = plt.subplots(2,1, figsize=(3.35,3.35/2), sharex=True, gridspec_kw={'height_ratios': [4, 1],
+        fig, ax = plt.subplots(2,1, figsize=(3.35,3.35/2), sharex=False, gridspec_kw={'height_ratios': [4, 1],
                                                                             'hspace': 0.08,
                                                                             'top': 0.97,
                                                                             'bottom': 0.13,
@@ -204,6 +206,35 @@ def plot(order, names, my_targets,
         
         
     ax[-1].axhline(0.0, color='k', lw=0.5, zorder=-1)
+    lw = kwargs.get('lw', 0.7)
+    # print(f' lw = {lw}')
+    if show_lines:
+        # load from npy file
+        lines = {}
+        lines['13CO'] = np.load("/home/dario/phd/retrieval_base/gl205/retrieval_outputs/fc5/test_output/13CO_lines.npy")[0]
+        lines['C18O'] = np.load("/home/dario/phd/retrieval_base/gl205/retrieval_outputs/fc5/test_output/C18O_lines.npy")[0]
+        print(f' lines[13CO].shape = {lines["13CO"].shape}')
+        colors_lines = ['orange', 'green']
+        for s, species in enumerate(lines.keys()):
+            for line in lines[species]:
+                print(f' line = {line}')
+                for axx in ax:
+                    axx.axvline(line, color=colors_lines[s], lw=lw*1.6,
+                                ymin=0.95 if axx == ax[0] else 0.84, 
+                                ymax=0.98 if axx == ax[0] else 0.92)
+                    
+        # create patches and labels for custom legend
+        handles = [patches.Patch(color=colors_lines[0], label=r'$^{13}$' + 'CO'),
+                   patches.Patch(color=colors_lines[1], label='C' + r'$^{18}$' + 'O')]
+        ax[-1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1.0, 1.11),
+                      fontsize=lw*10,
+                      frameon=False,
+                      handlelength=0.3,
+                      handletextpad=0.5)
+        # change linelength and linewidth of legend
+        # for handle in handles:
+        #     handle.set_linewidth(1.5)
+        #     handle.set_linestyle('--')
     
     if add_cbar:
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -220,10 +251,11 @@ def plot(order, names, my_targets,
 
     if xlim is not None:
         ax[0].set_xlim(xlim)
+        ax[1].set_xlim(xlim)
     else:
         xlim = ax.get_xlim()
         ax[0].set_xlim((xlim[0]-5, xlim[1]-3))
-
+        ax[1].set_xlim((xlim[0]-5, xlim[1]-3))
 
     ax[0].set_ylim(0.45, 4.0)
     ax[-1].set_xlabel('Wavelength (nm)')
@@ -237,6 +269,9 @@ def plot(order, names, my_targets,
     if fig is not None:
         fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
         fig.savefig(fig_name, bbox_inches='tight')
+        # save as png too
+        fig_name = nat_path + 'png/best_fit_model' + "-".join(orders_str) + ".png"
+        fig.savefig(fig_name, dpi=300, bbox_inches='tight')
         print(f'Figure saved as {fig_name}')    
         plt.close(fig)
         
@@ -275,9 +310,13 @@ if __name__ == '__main__':
     my_targets = ['gl'+t for t in my_targets_id]
 
     order = 0
-    xlim = (2282, 2364)
-    text_x = (xlim[0]+1., xlim[1]-3)
+    # xlim = (2282, 2364)
+    xlim = (2341, 2364)
+    text_x = (xlim[0]+0.4, xlim[1]+1.2)
     plot(order, names, my_targets, 
          teff=teff, spt=spt,
          cmap=cmap, norm=norm,
-         text_x=text_x, xlim=xlim, add_cbar=True)
+         text_x=text_x, 
+         xlim=xlim,
+         add_cbar=True,
+         show_lines=True)

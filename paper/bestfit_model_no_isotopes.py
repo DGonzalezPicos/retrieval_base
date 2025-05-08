@@ -180,37 +180,38 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, *
     np.save(file_name, np.array([wave[order], residuals_i, err[order]]))
     print(f'Residuals saved as {file_name}')
     
-    
+    alpha_fill = 0.2
+
     ax[0].plot(wave[order], flux[order], color='k',lw=lw)
-    ax[0].fill_between(wave[order], flux[order]-err[order], flux[order]+err[order], alpha=0.2, color='k', lw=0)
+    ax[0].fill_between(wave[order], flux[order]-err[order], flux[order]+err[order], alpha=alpha_fill, color='k', lw=0)
     ax[0].plot(wave[order], m[order], label=target,lw=lw, color=colors[0])
     # fill between m and m_no13CO
     # add path_effects to line with white edge
     pe = [path_effects.withStroke(linewidth=2, foreground='w')]
     ax[0].plot(wave[order], m_no13CO[order], lw=lw/1.5, color=colors[1], ls='-', zorder=-1)
-    ax[0].fill_between(wave[order], m[order], m_no13CO[order], alpha=0.7, color=colors[1], lw=0)
+    ax[0].fill_between(wave[order], m[order], m_no13CO[order], alpha=alpha_fill, color=colors[1], lw=0)
     # ax[0].plot(wave[order], m_no13CO[order], label=target,lw=lw, color=colors[1], zorder=-1)
     
     ax[1].plot(wave[order], residuals_i, color=color, lw=lw, alpha=0.8)
     ax[1].plot(wave[order], residuals_i_no13CO, color=colors[1], lw=lw, alpha=0.8, zorder=-1)
-    ax[1].fill_between(wave[order], residuals_i, residuals_i_no13CO, alpha=0.4, color=colors[1], lw=0, zorder=-2)
+    ax[1].fill_between(wave[order], residuals_i, residuals_i_no13CO, alpha=alpha_fill, color=colors[1], lw=0, zorder=-2)
     
     ax[0].plot(wave[order], m_noC18O[order], lw=lw/1.5, color=colors[2], ls='-', zorder=-1)
-    ax[0].fill_between(wave[order], m[order], m_noC18O[order], alpha=0.8, color=colors[2], lw=0, zorder=-2)
+    ax[0].fill_between(wave[order], m[order], m_noC18O[order], alpha=alpha_fill, color=colors[2], lw=0, zorder=-2)
     ax[1].plot(wave[order], residuals_i_noC18O, color=colors[2], lw=lw, alpha=0.8, zorder=-2)
-    ax[1].fill_between(wave[order], residuals_i, residuals_i_noC18O, alpha=0.4, color=colors[2], lw=0, zorder=-3)
+    ax[1].fill_between(wave[order], residuals_i, residuals_i_noC18O, alpha=alpha_fill, color=colors[2], lw=0, zorder=-3)
     
     # add text above spectra in units of data
     show_name = kwargs.get('show_name', False)
     if show_name:
-        text_pos = [np.nanmin(wave[order, mask[order]]), np.nanquantile(flux[order, :len(flux[order]//2)], 0.90)-0.15]
+        text_pos = [np.nanmin(wave[order, mask[order]]), np.nanquantile(flux[order, :len(flux[order]//2)], 0.90)-0.14]
         if text_x is not None:
             text_pos[0] = text_x[0]
         if kwargs.get('text_y', None) is not None:
             text_pos[1] = kwargs.get('text_y')
         # add white box around text
         
-        pe = [path_effects.withStroke(linewidth=2, foreground='w')]
+        pe = [path_effects.withStroke(linewidth=2.5, foreground='w')]
         s = target.replace('gl','')
         ax[0].text(*text_pos, s, color='k', fontsize=9, weight='bold', transform=ax[0].transData,
                     path_effects=pe)
@@ -249,7 +250,7 @@ my_targets_id = [
                 #  '1286',
                  ]
 my_targets = ['gl'+t for t in my_targets_id]
-def plot(orders, name, text_x=None, xlim=None, **kwargs):
+def plot(orders, name, text_x=None, xlim=None, show_lines=False, **kwargs):
     
     fig = plt.figure(figsize=(5, 3.5))  # Increase the height to accommodate spacing
     gs = gridspec.GridSpec(11, 10, wspace=0.2, hspace=0.05, 
@@ -327,7 +328,6 @@ def plot(orders, name, text_x=None, xlim=None, **kwargs):
                 **kwargs)
         
         
-        
         ax_s.set_xlim(xlim[order])
         ax_s.set_ylim(0.55, 1.14)
         
@@ -341,7 +341,7 @@ def plot(orders, name, text_x=None, xlim=None, **kwargs):
         rv, CCF_SNR, ACF_SNR = np.loadtxt(ccf_file).T
         print(f' Loaded {ccf_file}')
         ccf_ax.plot(rv, CCF_SNR, color=colors[s+1], lw=lw_ccf)
-        ccf_ax.fill_between(rv, CCF_SNR, alpha=0.1, color=colors[s+1])
+        # ccf_ax.fill_between(rv, CCF_SNR, alpha=0.1, color=colors[s+1])
         ccf_ax.plot(rv, ACF_SNR, color=colors[s+1], ls='--', alpha=0.9,
                     lw=lw_ccf)
         ccf_res_ax.plot(rv, CCF_SNR - ACF_SNR, color=colors[s+1],
@@ -350,8 +350,10 @@ def plot(orders, name, text_x=None, xlim=None, **kwargs):
     ccf_res_ax.set(xlabel=r'RV [km s$^{-1}$]', ylabel='CCF - ACF')
     ccf_ax.set_xlim(-150, 150)
     ccf_ax.set_title('Cross-correlation function', fontsize=8)
-    ccf_ax.set_ylabel('SNR')
+    ccf_ax.set_ylabel('S/N')
     ccf_ax.set_ylim(-9.99, None)
+    for key in ['h', 'v']:
+        getattr(ccf_ax, f'ax{key}line')(0, color='k', lw=0.5, zorder=0, alpha=0.7)
     
     ccf_res_yticks = [-4.0, 0.0, 4.0]
     ccf_res_ax.set_yticks(ccf_res_yticks)
@@ -401,4 +403,4 @@ if __name__ == '__main__':
     name = 'Gl 205'
     temperature = teff[name]
     colors = [cmap(norm(temperature)), 'orange', 'seagreen']
-    plot(orders, name=name, text_x=text_x, xlim=xlim_list, text_y=1.07)
+    plot(orders, name=name, text_x=text_x, xlim=xlim_list, text_y=1.07, show_lines=True)

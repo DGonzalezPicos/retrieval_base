@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-# pdf pages
+import matplotlib.patheffects as pe
 
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
@@ -107,7 +107,7 @@ d_specs, m_specs = {}, {}
 for target in runs.keys():
     d_specs[target], m_specs[target] = load_data(target, runs[target])
 
-fig, ax = plt.subplots(4,1, figsize=(6, 5), gridspec_kw={'height_ratios': [2, 1, 0.6, 0.6]}, sharex=True)
+fig, ax = plt.subplots(4,1, figsize=(6, 7), gridspec_kw={'height_ratios': [2, 1, 0.6, 0.6]}, sharex=True)
 lw = 0.6
 def plot_chunk(d_spec, m_spec, idx=0, colors=None, ls='-', lw=1.0):
     
@@ -157,11 +157,16 @@ ax[0].set_ylim(flux_plot_unit*0.60e-15, flux_plot_unit*1.65e-15)
 ax[1].text(0.02, 0.84, r'$^{12}\mathrm{CO}$ slab', transform=ax[1].transAxes, fontsize=11, ha='left', va='top')
 
 res_text = ['w/o slab', 'w/ slab']
+pe = pe.withStroke(linewidth=1, foreground='white')
+yticks = [-0.03, 0.0, 0.03]
 for axi, text in zip(ax[2:], res_text):
-    axi.set(ylim=(-0.07, 0.07))
+    axi.set(ylim=(-0.035, 0.05))
     axi.axhline(0, color='k', lw=0.5,zorder=-1)
     axi.text(0.02, 0.84, text, transform=axi.transAxes, fontsize=11, ha='left', va='top',
-             bbox=dict(facecolor='white', alpha=0.5, edgecolor='none'))
+            #  bbox=dict(facecolor='white', alpha=0.5, edgecolor='none'),
+             path_effects=[pe],
+             )
+    axi.set_yticks(yticks)
     
 # add text in upper right corner of ax[0] listing the MAD values for both objects and both cases
 xm = 0.64
@@ -182,7 +187,7 @@ for t, target in enumerate(runs.keys()):
                weight='bold')
 
 # add axes labels
-fig.text(-0.14, 0.12, r'$F_{\lambda}$' + r' / 10$^{-14}$ $\mathrm{erg\,s^{-1}\,cm^{-2}}$', transform=ax[0].transAxes, fontsize=11, ha='left', va='center', rotation='vertical')
+fig.text(-0.15, 0.12, r'$F_{\lambda}$' + r' / 10$^{-14}$ $\mathrm{erg\,s^{-1}\,cm^{-2}}$', transform=ax[0].transAxes, fontsize=11, ha='left', va='center', rotation='vertical')
 fig.text(0.5, -0.92, r'Wavelength / nm', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom')
 fig.text(-0.14, 0.12, r'Residuals', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom', rotation='vertical')
 # fig_name = path / 'twx_figs' / 'fig_ring_emission.pdf'

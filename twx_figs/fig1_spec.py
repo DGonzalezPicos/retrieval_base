@@ -33,7 +33,7 @@ runs = dict(
 
 dw = 90
 xc = [1110, 2290, 4510]
-y_factor = 0.95e14
+y_factor = 0.96e14
 inset_regions = [[(xc[0]-dw, xc[0]+dw), (1.2e-14*y_factor, 2.45e-14*y_factor)],
                  [(xc[1]-dw, xc[1]+dw), (4.6e-15*y_factor, 8.7e-15*y_factor)],
                  [(xc[2]-dw, xc[2]+dw), (8.5e-16*y_factor, 1.46e-15*y_factor)]]
@@ -176,11 +176,11 @@ mark_inset(ax[0], axins[1], loc1=1, loc2=2, fc="none", ec="0.5", zorder=-1)
 mark_inset(ax[0], axins[2], loc1=1, loc2=2, fc="none", ec="0.5", zorder=-1)
 
 # add text indicating position of lines in each axins
-lines = {'Na': [(1141, 1144, 1.2e-14*y_factor, 9e-15*y_factor, 'Na', 0)],
-         'K': [(1177, 1190, 8.8e-15*y_factor, 7.7e-15*y_factor, 'Na', 0)],
+lines = {'Na': [(1141, 1144, 1.4, 1.2, 'Na', 0)],
+         'K': [(1177, 1190, 8.8, 7.7, 'Na', 0)],
         #  'CO': [(2294, 2362, 5.3e-15, 4.65e-15, 'CO', 1)],
-         '12CO': [(2294, 2298, 5.3e-15*y_factor, 4.69e-15*y_factor, 'Na', 1)],
-         '13CO': [(2345, 2349, 6.9e-15*y_factor, 7.4e-15*y_factor, 'Na', 1)],
+         '12CO': [(2294, 2298, 5.3, 4.69, 'Na', 1)],
+         '13CO': [(2345, 2349, 6.9, 7.4, 'Na', 1)],
 
          }  # x-position, y-position for text
 
@@ -292,31 +292,36 @@ def add_underline(ax, text, x, y, width=None, pad=0.1, **text_kwargs):
     
     return text_obj
 
-draw_L(axins[0], 1135, 1.075e-14*y_factor, 1135, 1.05e-14*y_factor, 1146, 1.05e-14*y_factor,close=True,
-       text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 0.00, 'ypad': -1e-15},
-       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
-draw_L(axins[0], 1168, 8.80e-15*y_factor, 1168, 8.5e-15*y_factor, 1183, 8.5e-15*y_factor,close=True,
-       text='K', text_loc='center', text_args={'fontsize': 10, 'xpad': 0, 'ypad': -8e-16},
+draw_L(axins[0], 1041, 1.52, 1041, 1.44, 1080, 1.44,close=True,
+       text='VO', text_loc='center', text_args={'fontsize': 10, 'xpad': 0.00, 'ypad': -0.08},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 
-draw_L(axins[1], (2203+2212)/2, 6.5e-15*y_factor, (2203+2212)/2, 6e-15*y_factor, 2214, 6e-15*y_factor,close=False,
-       text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 11, 'ypad': 0.0},
+draw_L(axins[0], 1134, 1.35, 1134, 1.27, 1146, 1.27,close=True,
+       text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 0.00, 'ypad': -0.06},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
-draw_L(axins[1], 2203, 6.53e-15*y_factor, 2203, 6.5e-15*y_factor, 2212, 6.5e-15*y_factor,close=True,
-       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
-
-draw_L(axins[1], 2293, 5.3e-15*y_factor, 2293, 4.65e-15*y_factor, 2370, 4.65e-15*y_factor,close=False,
-       text=r'$^{12}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -23, 'ypad': 1.5e-16},
+draw_L(axins[0], 1168, 1.30, 1168, 1.22, 1183, 1.22,close=True,
+       text='K', text_loc='center', text_args={'fontsize': 10, 'xpad': 13, 'ypad': -0.02},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 
-draw_L(axins[1], 2344.5, 6.9e-15*y_factor, 2344.5, 7.4e-15*y_factor, 2376, 7.4e-15*y_factor,close=False,
-       text=r'$^{13}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -10, 'ypad': 1.4e-16},
+draw_L(axins[1], (2203+2212)/2, 0.65, (2203+2212)/2, 0.6, 2214, 0.60,close=False,
+       text='Na', text_loc='center', text_args={'fontsize': 10, 'xpad': 12, 'ypad': 0.0},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+# draw_L(axins[1], 2203, 0.65, 2203, 0.60, 2212, 0.60,close=True,
+#        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+
+draw_L(axins[1], 2293.5, 0.525, 2293.5, 0.46, 2370, 0.46,close=False,
+       text=r'$^{12}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -23, 'ypad': 0.015},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 
-draw_L(axins[2], 4440, 1.38e-15*y_factor, 4450, 1.38e-15*y_factor, 4500, 1.38e-15*y_factor,close=False,
-       text='CO', text_loc='center', text_args={'fontsize': 10, 'xpad': 40, 'ypad': -5e-18},
+draw_L(axins[1], 2344.5, 0.695, 2344.5, 0.74, 2376, 0.74,close=False,
+       text=r'$^{13}$CO', text_loc='center', text_args={'fontsize': 10, 'xpad': -4, 'ypad': 0.015},
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
-draw_L(axins[2], 4530, 1.38e-15*y_factor, 4530, 1.38e-15*y_factor, 4590, 1.38e-15*y_factor,close=False,
+
+y_co_mband = 0.137
+draw_L(axins[2], 4440, y_co_mband, 4450, y_co_mband, 4500, y_co_mband,close=False,
+       text='CO', text_loc='center', text_args={'fontsize': 10, 'xpad': 40, 'ypad': -0.001},
+       line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
+draw_L(axins[2], 4530, y_co_mband*1, 4530, y_co_mband*1, 4590, y_co_mband*1,close=False,
        text='',
        line_args={'alpha': 1.0, 'linewidth': 0.8, 'color': 'gray'})
 # Add annotations for each line
@@ -352,6 +357,22 @@ for band, color in zip(gratings.keys(), colors):
     axins_disk.text(xc+xc_offset, gratings_text[band], band.upper(), color=color, fontsize=10,
                     ha='center', va='center', fontweight='bold')
 
+# add a,b,c,d,e labels to each panel for easy reference
+panels = ['a', 'b', 'c', 'd', 'e', 'f']
+import matplotlib.patheffects as pe
+pe = pe.withStroke(linewidth=2, foreground='w')
+ax[0].text(0.02, 0.08, 'a', transform=ax[0].transAxes, fontsize=12, fontweight='bold',
+            ha='left', va='top', path_effects=[pe])
+ax[1].text(0.02, 0.35, 'b', transform=ax[1].transAxes, fontsize=12, fontweight='bold',
+            ha='left', va='top', path_effects=[pe])
+axins_disk.text(0.02, 0.15, 'c', transform=axins_disk.transAxes, fontsize=12, fontweight='bold',
+            ha='left', va='top', path_effects=[pe])
+
+for i, axx in enumerate([axins[0], axins[1], axins[2]]):
+    xtext = 0.05
+    ytext = 0.1
+    axx.text(xtext, ytext, panels[i+3], transform=axx.transAxes, fontsize=12, fontweight='bold',
+            ha='left', va='top', path_effects=[pe])
 
 # axins[1].axvline(2345, color='red', lw=0.5)
 # fig_name = path / 'twx_figs/fig1_spec.pdf'

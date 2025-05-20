@@ -28,7 +28,8 @@ class ComparisonTable:
         self.descriptions = descriptions
         self.table = []
         
-    def print_prior(self, prior: tuple[float, float], decimals: int = 2) -> str:
+    def print_prior(self, prior: tuple[float, float], decimals: int = 2,
+                    gaussian: bool = False) -> str:
         """Format prior range for LaTeX table.
         
         Args:
@@ -38,10 +39,13 @@ class ComparisonTable:
         Returns:
             Formatted string for LaTeX table
         """
-        return f'[{prior[0]:.{decimals}f}, {prior[1]:.{decimals}f}]'
+        distribution = r'$\mathcal{N}$' if gaussian else r'$\mathcal{U}$'
+        return f'{distribution}({prior[0]:.{decimals}f}, {prior[1]:.{decimals}f})'
         
     def print_bestfit(self, bestfit: tuple[float, float, float], decimals: int = 2,
-                      show_sign: bool = True) -> str:
+                      show_sign: bool = True,
+                      is_lower_limit: bool = False,
+                      is_upper_limit: bool = False) -> str:
         """Format best-fit value with uncertainties for LaTeX table.
         
         Args:
@@ -53,11 +57,15 @@ class ComparisonTable:
         """
         v_low = bestfit[1] - bestfit[0]
         v_high = bestfit[2] - bestfit[1]
+        sign = ''
         if show_sign:
             sign = '+' if bestfit[1] > 0 else ''
-            return f'{sign}${bestfit[1]:.{decimals}f}^{{+{v_high:.{decimals}f}}}_{{-{v_low:.{decimals}f}}}$'
+        if is_lower_limit:
+            return f' < {sign}{bestfit[0]:.{decimals}f}'
+        elif is_upper_limit:
+            return f' > {sign}{bestfit[2]:.{decimals}f}'
         else:
-            return f'${bestfit[1]:.{decimals}f}^{{+{v_high:.{decimals}f}}}_{{-{v_low:.{decimals}f}}}$'
+            return f'${sign}{bestfit[1]:.{decimals}f}^{{+{v_high:.{decimals}f}}}_{{-{v_low:.{decimals}f}}}$'
     
     def load_data(self, target: str, cache: bool = True) -> dict:
         """Load data for a target.
@@ -174,15 +182,36 @@ class ComparisonTable:
             use_descriptions=True
             )
         
-        
+        print(sorted_params)
         decimals = {
             '0': ['T_0'],
             '1': [k for k in sorted_params if k.startswith('log_')],
-            '2': ['log_g', 'log_P_RCE', 'log_Hminus', 'log_12CO/13CO', 'log_12CO/C18O', 'log_12CO/C17O', 'log_H2O/H2O_181'],
-            '3': ['R_p', 'log_R_d', 'log_R_jup', 'log_l_G', 'log_CH4'] +
+            '2': ['log_N_mol','log_AlO','log_g', 'log_P_RCE', 'log_Hminus', 'log_12CO/13CO', 'log_12CO/C18O', 'log_12CO/C17O', 'log_H2O/H2O_181'],
+            '3': ['log_T_ex','R_p', 'log_R_d', 'log_R_jup', 'log_l_G', 'log_CH4'] +
             [k for k in sorted_params if k.startswith('dlnT_dlnP_')]
             
         }
+        prior_decimals = {
+            '0': ['rv', 'T_0','T_d', 'rv_disk',
+                  'log_N_mol', 'log_R_jup', 'log_R_d', 'log_CH4', 'log_AlO','log_H2S', 'log_Hminus']+
+            [k for k in sorted_params if k.startswith('alpha_')]+
+            [k for k in sorted_params if k.startswith('b_')],
+            '1': ['log_g','R_p', 'log_T_ex', 'log_P_RCE','log_l_G','dlog_P_1','dlog_P_3',
+                  'log_12CO/13CO', 'log_12CO/C18O', 'log_12CO/C17O', 'log_H2O/H2O_181'],
+            
+            '2': []+
+             [k for k in sorted_params if k.startswith('dlnT_dlnP_')],
+             
+            # '3': ['log_T_ex','R_p', 'log_R_d', 'log_R_jup', 'log_l_G', 'log_CH4']
+        }
+        prior_decimals_rev = {}
+        for k, v in prior_decimals.items():
+            for param in v:
+                prior_decimals_rev[param] = k
+        
+        lower_limits = ['dlnT_dlnP_0']
+        upper_limits = ['log_T_ex']
+        
         decimals_rev = {}
         for k, v in decimals.items():
             for param in v:
@@ -192,13 +221,19 @@ class ComparisonTable:
             dec = decimals_rev.get(key, 2)
                 
             # Get prior from first target (assuming same priors)
-            prior_str = self.print_prior(target_data[self.targets[0]]['priors'][key], decimals=dec)
+            prior_str = self.print_prior(target_data[self.targets[0]]['priors'][key], 
+                                         decimals=prior_decimals_rev.get(key, dec),
+                                         gaussian=key in self.conf.gaussian_params)
             
             # Get bestfit values for each target
             bestfit_values = []
             for target in self.targets:
                 if key in target_data[target]['bestfit']:
-                    bestfit_values.append(self.print_bestfit(target_data[target]['bestfit'][key], decimals=dec, show_sign=True))
+                    bestfit_values.append(self.print_bestfit(target_data[target]['bestfit'][key], 
+                                                             decimals=dec, 
+                                                             show_sign=True,
+                                                             is_lower_limit=key in lower_limits,
+                                                                is_upper_limit=key in upper_limits))
                 else:
                     bestfit_values.append('---')
                     
@@ -326,7 +361,7 @@ def main():
         # Atmospheric structure parameters
         'R_p': 'Radius in Jupiter radii',
          # Kinematic parameters
-        'rv': 'Radial velocity [km/s]',
+        'rv': 'Radial velocity',
         'log_g': 'Surface gravity of the atmosphere',
         'T_0': 'Temperature at the bottom of the atmosphere',
         'log_P_RCE': 'Pressure at radiative-convective equilibrium',
@@ -340,20 +375,20 @@ def main():
         'dlnT_dlnP_3': 'Temperature gradient at $P_3=P_{\\text{RCE}}+1 \\Delta P_{\\text{high}}$',
         'dlnT_dlnP_4': 'Temperature gradient at $P_4=P_{\\text{RCE}}+2 \\Delta P_{\\text{high}}$',
         'dlnT_dlnP_5': 'Temperature gradient at $P_5=10^{-5}$ bar',
-        'dlnT_dlnP_RCE': 'Temperature gradient at the $P_{\\text{RCE}}$',
+        'dlnT_dlnP_RCE': 'Temperature gradient at $P_{\\text{RCE}}$',
         
         # Disk parameters
-        'log_R_d': 'Radius of blackbody emission',
-        'T_d': 'Temperature of blackbody emission',
+        'log_R_d': 'Effective radius of the blackbody emission',
+        'T_d': 'Temperature of the blackbody emission',
         
-        'log_R_jup': 'Radius of slab model at $T_{\\text{ex}}$',
+        'log_R_jup': 'Effective radius of the slab model',
         'log_N_mol': 'Column density of slab model',
-        'log_T_ex': 'Temperature of slab model',
-        'rv_disk': 'Radial velocity of disk emission [km/s]',
+        'log_T_ex': 'Excitation temperature of slab model',
+        'rv_disk': 'Radial velocity of disk emission',
         
         
          # Data processing parameters
-        'log_l_G': 'Correlation length for Gaussian Process covariance',
+        'log_l_G': 'Global correlation length',
         'b_g140h': 'Error scaling factor for G140H grating',
         'b_g235h': 'Error scaling factor for G235H grating',
         'b_g395h': 'Error scaling factor for G395H grating',
@@ -401,11 +436,18 @@ def main():
 
     
     replace_names = {
-        'R_d'
+        # 'R_p' : '$R_{\\text{p}} / R_{\\text{jup}}$',
+        'log_R_d' : '$\\log R_{\\text{d}} / R_{\\text{jup}}$',
         'log_R_jup' : '$\\log R_{\\text{slab}} / R_{\\text{jup}}$',
         'log_T_ex' : '$\\log T_{\\text{ex}} / \\text{K}$',
         'log_N_mol' : '$\\log N_{\\text{mol}} / \\text{cm}^{-2}$',
         'log_Hminus' : '$\\log \\text{H}^{-}$',
+        'rv' : '$v_{\\text{rad}} / \\text{km s}^{-1}$',
+        'rv_disk' : '$v_{\\text{disk}} / \\text{km s}^{-1}$',
+        'log_l_G' : '$\\log l_{\\text{G}} / \\text{km s}^{-1}$',
+        'dlog_P_1' : '$\\log \\Delta P_{\\text{low}} / \\text{bar}$',
+        'dlog_P_3' : '$\\log \\Delta P_{\\text{high}} / \\text{bar}$',
+        'log_P_RCE' : '$\\log P_{\\text{RCE}} / \\text{bar}$',
     }
         
         
@@ -413,7 +455,7 @@ def main():
     # Create and save table
     path_tables = Path('/home/dario/phd/twa2x_paper/tables')
     captions = [
-        'Prior ranges and best-fit values of the free parameters in the retrieval for TWA 27A and TWA 28. The best-fit values are the median of the posterior distribution with 1$\\sigma$ uncertainties.',
+        'Summary of the free parameters and the retrieved values with 1$\\sigma$ uncertainties. The prior ranges and the distributions used (uniform or normal) are indicated.',
         'Continued from Table 1.'
     ]
     for d, descriptions in enumerate([descriptions_1, descriptions_2]):

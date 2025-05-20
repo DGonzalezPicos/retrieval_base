@@ -233,10 +233,16 @@ if __name__ =='__main__':
     
     path = pathlib.Path(get_path())
     grating = 'g395h'
-    T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0)
-    N_mol_range = np.logspace(15, 22, 6*2)
+    # T_ex_range = np.arange(300.0, 1350.0+50.0, 50.0)
+    # N_mol_range = np.logspace(15, 22, 6*2)
+    
+    # hot range (2025-05-15)
+    T_ex_range = np.arange(1400.0, 2000.0+100.0, 100.0)
+    N_mol_min, N_mol_max = 14.0, 18.0
+    N_mol_range = np.logspace(N_mol_min, N_mol_max, 6)
+    
     # species = ['12CO', '13CO', 'H2O']
-    species = ['12CO']
+    species = ['H2O'] # Done!
     for species in species:         
     
         slab = SlabGrid(species=species, grating=grating, path=path)

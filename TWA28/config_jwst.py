@@ -169,6 +169,7 @@ opacity_params = {
     'log_SiH': ([(-14,-2), r'$\log\ \mathrm{SiH}$'], 'SiH_SiGHTLY_main_iso'),
 }
 
+
 species_wave = {
     '12CO': [[1500, 1900], [2200, 3200], [4200, 5400]],
     '13CO': [[2200, 3200], [4200, 5400]],

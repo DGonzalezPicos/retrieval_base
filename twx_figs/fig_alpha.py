@@ -178,8 +178,34 @@ def plot_target(target, run, ax, x_offset=0, species_list=[]):
       
       
 species_list = []
+# Store median alpha values for each target
+median_alpha_by_target = {}
 for t, target in enumerate(runs.keys()):
     x_offset = -0.2 + t*0.40
+    # Get VMRs and alpha_params for this target
+    VMR_envelopes, PT_envelopes, conf, alpha_params = get_VMR(target, runs[target])
+    # Use the sigma_to_quantiles function to get quantiles
+    q_pos = sigma_to_quantiles(sigma)
+    q_neg = [1-q_i for q_i in q_pos]
+    q = np.concatenate([q_neg, [0.5], q_pos])
+    q = np.sort(q)
+    # Get the list of species to plot (sorted, ignoring Mg)
+    if len(species_list) == 0:
+        pressure = PT_envelopes[0]
+        icf = PT_envelopes[-1]
+        VMR_median = {k:VMR_envelopes[k][1] for k in VMR_envelopes.keys()}
+        VMR_peak = {k:VMR_median[k][np.argmax(icf)] for k in VMR_envelopes.keys()}
+        sorted_species = sorted(VMR_peak.keys(), key=lambda x: VMR_peak[x], reverse=True)
+        ignore_species = ['Mg']
+        species_list = [species for species in sorted_species if species not in ignore_species]
+    # Get alpha medians for the species in species_list
+    alpha_medians = [np.median(alpha_params[k]) for k in species_list if k in alpha_params]
+    if alpha_medians:
+        median_alpha = np.median(alpha_medians)
+        median_alpha_by_target[target] = median_alpha
+        # Plot horizontal dashed line at median alpha
+        ax.axhline(median_alpha, color=colors[target], ls='--', lw=1.5, alpha=0.8, zorder=-2)
+    # Now plot the vertical lines as before
     species_list = plot_target(target, runs[target], ax, x_offset=x_offset, species_list=species_list)
     print(f' len(species_list): {len(species_list)} for {target}')
 

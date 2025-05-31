@@ -111,9 +111,9 @@ def generate_latex_table(data_dict):
         r"\label{tab:isotope_ratios}",
         r"\begin{tabular}{lcc}",
         r"\hline\hline",
-        r"\rule{0pt}{4ex}Target & TWA 27A & TWA 28 \\[2ex]", # Add extra vertical space after header
+        r"\rule{0pt}{3ex}Target & TWA 27A & TWA 28 \\[1ex]", # Add extra vertical space after header
         r"\hline",
-        r"\rule{0pt}{4ex}" # Add extra vertical space after hline
+        r"\rule{0pt}{3ex}" # Add extra vertical space after hline
     ]
 
     # Define the isotope ratios and their LaTeX labels

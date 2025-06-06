@@ -28,7 +28,7 @@ targets_rv = {
     # 'gl752A': 35.884,
     # 'gl849': -15.3,
     # 'gl876': -1.47,
-    # 'gl880': -27.5,
+    'gl880': -27.5,
     # 'gl905': -77.51,
     # 'gl1002': -33.7,
     # 'gl1151': -35.12,
@@ -36,19 +36,19 @@ targets_rv = {
     # 'gl3622': 2.18,
     # 'gl4063': 12.533,
     # 'gl48': 1.56,
-    'gl317': 87.94,
-    'gl410': -14.04,
-    'gl480': -4.19,
-    'gl514': 14.47,
-    'gl617B': -18.36,
-    'gl846': 18.25,
-    'gl4333': -6.31
+    # 'gl317': 87.94,
+    # 'gl410': -14.04,
+    # 'gl480': -4.19,
+    # 'gl514': 14.47,
+    # 'gl617B': -18.36,
+    # 'gl846': 18.25,
+    # 'gl4333': -6.31
  }
 targets = list(targets_rv.keys())
 print(f' len(targets) = {len(targets)}')
-run = 'fc5_noC18O'
+# run = 'fc5_noC18O'
 # run = 'fc5_no13CO'
-# run = 'fc5'
+run = 'fc6' # 2025-06-06: 2nd ref. report --> adjust prior of upper PT gradients and P_RCE
 resume = False
 fat = True
 genoa_label = 'fat_' if fat else ''

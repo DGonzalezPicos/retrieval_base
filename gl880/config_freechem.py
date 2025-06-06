@@ -7,7 +7,7 @@ file_params = 'config_freechem.py'
 # Files and physical parameters
 ####################################################################################
 
-run = 'fc5_noC18O'
+run = 'fc6'
 prefix = f'./retrieval_outputs/{run}/test_'
 copy_pRT_from = None
 
@@ -47,7 +47,7 @@ opacity_params = {
     'log_C18O': ([(-14,-2), r'$\log\ \mathrm{C^{18}O}$'], 'CO_28_high_Sam'),
     'log_C17O': ([(-14,-2), r'$\log\ \mathrm{C^{17}O}$'], 'CO_27_high_Sam'),
         
-    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso'),
+    'log_H2O': ([(-14,-2), r'$\log\ \mathrm{H_2O}$'], 'H2O_pokazatel_main_iso_Sam'),
     'log_H2O_181': ([(-14,-2), r'$\log\ \mathrm{H_2^{18}O}$'], 'H2O_181_HotWat78'),
     
     'log_HF': ([(-14,-2), r'$\log\ \mathrm{HF}$'], 'HF_high'),
@@ -60,7 +60,7 @@ opacity_params = {
     'log_OH': ([(-14,-2), r'$\log\ \mathrm{OH}$'], 'OH_MYTHOS_main_iso'),
     'log_CN': ([(-14,-2), r'$\log\ \mathrm{CN}$'], 'CN_high'),
 }
-ignore_opacity_params = ['log_C18O']
+ignore_opacity_params = []
 if len(ignore_opacity_params) > 0:
     opacity_params = {k:v for k,v in opacity_params.items() if k not in ignore_opacity_params}
 print(f' --> {len(opacity_params)} opacity parameters')
@@ -86,15 +86,15 @@ free_params = {
     'rv': [(float(rv_min), float(rv_max)), r'$v_\mathrm{rad}$'],
         
     'T_0': [(4e3,16e3), r'$T_0$'], 
-    'log_P_RCE': [(-2.0,1.2), r'$\log\ P_\mathrm{RCE}$'],
+    'log_P_RCE': [(-2.0,0.0), r'$\log\ P_\mathrm{RCE}$'], # 2025-06-06: 1.2 --> 0.0
     'dlog_P_1' : [(0.2, 1.6), r'$\Delta\log\ P_1$'], 
     'dlog_P_3' : [(0.2, 1.6), r'$\Delta\log\ P_3$'],
     'dlnT_dlnP_0':   [(0.04, 0.44), r'$\nabla_{T,0}$'],
     'dlnT_dlnP_1':   [(0.04, 0.44), r'$\nabla_{T,1}$'],
-    'dlnT_dlnP_RCE': [(0.04, 0.44), r'$\nabla_{T,RCE}$'],
     'dlnT_dlnP_2':   [(0.04, 0.44), r'$\nabla_{T,2}$'],
-    'dlnT_dlnP_3':   [(0.00, 0.32), r'$\nabla_{T,3}$'],
-    'dlnT_dlnP_4':   [(0.00, 0.32), r'$\nabla_{T,4}$'],
+    'dlnT_dlnP_RCE': [(0.04, 0.44), r'$\nabla_{T,RCE}$'],
+    'dlnT_dlnP_3':   [(0.04, 0.32), r'$\nabla_{T,3}$'], # 2025-06-06: 0.00 --> 0.04
+    'dlnT_dlnP_4':   [(0.02, 0.32), r'$\nabla_{T,4}$'], # 2025-06-06: 0.00 --> 0.02
     'dlnT_dlnP_5':   [(0.00, 0.32), r'$\nabla_{T,5}$'], # new points
 }
 fc_species_dict = species_to_formula = {

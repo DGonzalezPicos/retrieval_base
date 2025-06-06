@@ -3,7 +3,7 @@ name,pRT_name,mass,color,mathtext_name,C,O,H
 13CO,CO_36_high_Sam,29.002355,#e30b5d,$^{13}$CO,1.0,1.0,0.0
 C18O,CO_28_high_Sam,30.010161,C6,C$^{18}$O,1.0,1.0,0.0
 C17O,CO_27_high_Sam,29.010130999999998,C7,C$^{17}$O,1.0,1.0,0.0
-H2O,H2O_pokazatel_main_iso,18.014680000000002,#3881bb,H$_2$O,0.0,1.0,2.0
+H2O,H2O_pokazatel_main_iso_Sam,18.014680000000002,#3881bb,H$_2$O,0.0,1.0,2.0
 H2O_181,H2O_181_HotWat78,20.014841,C7,H$_2^{18}$O,0.0,1.0,2.0
 HDO,HDO_voronin,19.02084,b,HDO,0.0,1.0,2.0
 CH4,CH4_hargreaves_main_iso,16.04236,#ff71ce,CH$_4$,1.0,0.0,4.0

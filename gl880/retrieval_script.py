@@ -13,7 +13,7 @@ import config_freechem as conf
 
 config_file = 'config_freechem.txt'
 # target = 'gl436'
-run = 'fc5_noC18O' # important to set this to the correct run
+run = 'fc6' # important to set this to the correct run
 
 if __name__ == '__main__':
 
@@ -26,6 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--ccf', '-ccf', action='store_true', help='Cross-correlation function', default=False)
     parser.add_argument('--target', '-t', type=str, help='Target name', default='gl436')
     parser.add_argument('--run', '-run', type=str, help='Run name', default='None')
+    parser.add_argument('--resume', '-resume', type=int, help='Resume from last run', default=1)
     parser.add_argument('--cache_pRT', '-cache_pRT', type=str, help='Cache pRT', default='False')
     parser.add_argument('--to_snellius', '-to_snellius', action='store_true')
     # parser.add_argument('--synthetic', action='store_true')
@@ -82,18 +83,17 @@ if __name__ == '__main__':
         print(f' Succesful copy for {target}!\n')
         
     if args.retrieval:
-        conf = Config(path=path, target=target, run=run)
-        conf(config_file)
+        conf = Config(path=path, target=target, run=run)(config_file)
     
         ret = Retrieval(
             conf=conf, 
             evaluation=args.evaluation
             )
+        ret.PMN_resume = bool(args.resume)
         ret.PMN_run()
 
     if args.evaluation:
-        conf = Config(path=path, target=target, run=run)
-        conf(config_file)
+        conf = Config(path=path, target=target, run=run)(config_file)
     
         ret = Retrieval(
             conf=conf, 

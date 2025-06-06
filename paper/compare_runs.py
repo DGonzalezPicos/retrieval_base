@@ -9,7 +9,7 @@ import pathlib
 import corner
 
 base_path = '/home/dario/phd/retrieval_base/'
-target = 'gl15A'
+target = 'gl880'
 
 if target not in os.getcwd():
     os.chdir(base_path + target)
@@ -21,10 +21,11 @@ config_file = 'config_freechem.txt'
 # run 16 was fitting for `resolution`, `log_g`, `Z` --> not useful for comparison with run 17
 # run 18 is now running identical to run 17 but with fixed resolution=69k
 runs_dict = {
-    # 'sphinx1':('SPHINX nl=40', 'darkorange'),
+    'sphinx18':('SPHINX nl=40', 'darkorange'),
         # 'fc1':('FastChem nl=40', 'indianred'),
-        'fc1':('FastChem 1', 'royalblue'),
-        'fc2':('FastChem 2', 'forestgreen'),
+        # 'fc1':('FastChem 1', 'royalblue'),
+        # 'fc2':('FastChem 2', 'forestgreen'),
+        'fc5':('FastChem', 'royalblue'),
 }
 runs = list(runs_dict.keys())
 legend_labels = [v[0] for v in runs_dict.values()]
@@ -42,6 +43,10 @@ if any(['sphinx' in run for run in runs]):
     ignore_params += RCE_params
     ignore_params += ['log_HF', 'alpha_HF']
     ignore_params += ['log_CN', 'alpha_CN']
+    ignore_params += ['alpha_Si']
+    ignore_params += ['log_12CO/C17O']
+    ignore_params += ['alpha_Mg', 'log_Sc']
+
     ignore_params += ['Teff']
     
     

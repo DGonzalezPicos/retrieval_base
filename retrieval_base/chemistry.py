@@ -529,9 +529,18 @@ class SPHINXChemistry(Chemistry):
     isotopologues = list(isotopologues_dict_rev.keys())
     
     def __init__(self, line_species, pressure, **kwargs):
-
+                    
         # Give arguments to the parent class
+        self.species_info = self.set_species_info(file=self.species_info_default_file)
+        if isinstance(line_species, dict):
+            self.species_info = self.set_species_info(line_species_dict=line_species)
+
+            line_species = list(line_species.values())
+            
+            
         super().__init__(line_species, pressure)
+        self.species = [self.pRT_name_dict.get(line_species_i, None) for line_species_i in self.line_species]
+        
         
         assert kwargs.get('vmr_interpolator') is not None, 'No VMR interpolator given'
         self.vmr_interpolator = kwargs.get('vmr_interpolator')

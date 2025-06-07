@@ -22,7 +22,7 @@ targets_rv = {
     # 'gl687': -28.65,
     # 'gl849': -15.3,
     # 'gl876': -1.47,
-    # 'gl880': -27.5,
+    'gl880': -27.5,
     # 'gl905': -77.51,
     # 'gl1002': -33.7,
     # 'gl1151': -35.12,
@@ -30,21 +30,22 @@ targets_rv = {
     # 'gl3622': 2.18,
     # 'gl4063': 12.533
     
-    'gl48': 1.56,
-    'gl317': 87.94,
-    'gl410': -14.04,
-    'gl480': -4.19,
-    'gl514': 14.47,
-    'gl617B': -18.36,
-    'gl846': 18.25,
-    'gl4333': -6.31
+    # 'gl48': 1.56,
+    # 'gl317': 87.94,
+    # 'gl410': -14.04,
+    # 'gl480': -4.19,
+    # 'gl514': 14.47,
+    # 'gl617B': -18.36,
+    # 'gl846': 18.25,
+    # 'gl4333': -6.31
  }
 
 targets = list(targets_rv.keys())
+run = 'fc6' # 2025-06-06: 2nd ref. report --> adjust prior of upper PT gradients and P_RCE
 # run = 'fc4_wo_C18O'
-run = 'fc5'
-# ignore=None
-ignore = 'C18O'
+# run = 'fc5'
+ignore=None
+# ignore = 'C18O'
 # ignore  = '13CO'
 if ignore is not None:
     print(f' Ignoring {ignore} in retrieval...')

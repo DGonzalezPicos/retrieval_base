@@ -21,11 +21,12 @@ config_file = 'config_freechem.txt'
 # run 16 was fitting for `resolution`, `log_g`, `Z` --> not useful for comparison with run 17
 # run 18 is now running identical to run 17 but with fixed resolution=69k
 runs_dict = {
-    'sphinx18':('SPHINX nl=40', 'darkorange'),
+    # 'sphinx18':('SPHINX nl=40', 'darkorange'),
         # 'fc1':('FastChem nl=40', 'indianred'),
         # 'fc1':('FastChem 1', 'royalblue'),
         # 'fc2':('FastChem 2', 'forestgreen'),
         'fc5':('FastChem', 'royalblue'),
+        'fc6':('FastChem (new priors)', 'forestgreen'),
 }
 runs = list(runs_dict.keys())
 legend_labels = [v[0] for v in runs_dict.values()]

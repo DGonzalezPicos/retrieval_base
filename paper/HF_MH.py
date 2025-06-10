@@ -9,6 +9,8 @@ import os
 import pathlib
 import matplotlib.patheffects as pe
 import scienceplots
+import pandas as pd
+from datetime import datetime
 
 # reset to default
 plt.style.use('default')
@@ -22,10 +24,108 @@ plt.rcParams.update({
 
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
+out_path = '/home/dario/phd/red_dwarf_isotopes/data/'
 
 y_labels = '[F/H]'
 y_lims = (-0.5, 0.5)
 
+def save_hf_measurements_to_csv(target, F_H_quantiles, metallicity_value, metallicity_error, 
+                               A_F_sun=4.40, A_F_sun_err=0.25):
+    """
+    Save HF measurements and metallicity data to CSV file for reproducibility.
+    
+    Parameters:
+    -----------
+    target : str
+        Target name
+    F_H_quantiles : array-like
+        [F/H] quantiles [q16, q50, q84]
+    metallicity_value : float
+        Metallicity [M/H] value
+    metallicity_error : float
+        Metallicity [M/H] uncertainty
+    A_F_sun : float
+        Solar fluorine abundance (default: 4.40)
+    A_F_sun_err : float
+        Solar fluorine abundance uncertainty (default: 0.25)
+    """
+    
+    # Create output directory for target
+    target_dir = pathlib.Path(out_path) / target
+    target_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Prepare data
+    data = {
+        'fluorine_abundance_q16': [F_H_quantiles[0]],
+        'fluorine_abundance_q50': [F_H_quantiles[1]], 
+        'fluorine_abundance_q84': [F_H_quantiles[2]],
+        'metallicity_mh': [metallicity_value],
+        'metallicity_mh_error': [metallicity_error]
+    }
+    
+    # Create DataFrame
+    df = pd.DataFrame(data)
+    
+    # Create comprehensive header with metadata
+    header_lines = [
+        "# Supplementary data for fluorine abundances in M dwarf atmospheres",
+        f"# Target: {target}",
+        f"# Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "# Authors: Darío González Picos, Ignas Snellen and Sam de Regt",
+        "# Contact: picos@strw.leidenuniv.nl",
+        "#",
+        "# Data description:",
+        "# This file contains fluorine abundance measurements from high-resolution",
+        "# infrared spectroscopy and Bayesian atmospheric retrieval analysis of M dwarf stars.",
+        "# Fluorine abundances are derived from HF molecular lines in the K-band.",
+        "#",
+        f"# Solar reference values used for normalization:",
+        f"# A(F)_sun = {A_F_sun:.2f} ± {A_F_sun_err:.2f} (Maiorca et al. 2014)",
+        "# where A(F) = log10(N_F/N_H) + 12",
+        "#",
+        "# Methodology:",
+        "# - Fluorine abundances derived from HF_high line list",
+        "# - Solar-normalized: [F/H] = log10(N_F/N_H) - A(F)_sun",
+        "# - Atmospheric retrieval using petitRADTRANS radiative transfer",
+        "# - Uncertainties represent 1-sigma (68% confidence) intervals",
+        "#",
+        "# Column descriptions:",
+        "# fluorine_abundance_q16: [F/H] 16th percentile (1-sigma lower bound)",
+        "# fluorine_abundance_q50: [F/H] 50th percentile (median)",
+        "# fluorine_abundance_q84: [F/H] 84th percentile (1-sigma upper bound)",
+        "# metallicity_mh: [M/H] metallicity from literature",
+        "# metallicity_mh_error: [M/H] metallicity uncertainty",
+        "#",
+        "# Units:",
+        "# Fluorine abundances: dex (solar-normalized logarithmic scale)",
+        "# Metallicity: dex (solar-normalized logarithmic scale)",
+        "#",
+        "# References:",
+        "# - Solar F abundance: Maiorca et al. (2014), ApJ, 788, 149",
+        "# - Metallicity values: Cristofari et al. (2023), MNRAS, 522, 1342",
+        "# - HF line list: Li et al. (2013), ApJS, 216, 15",
+        "#",
+        "# Notes:",
+        "# - Negative [F/H] values indicate sub-solar fluorine abundances",
+        "# - Positive [F/H] values indicate super-solar fluorine abundances",
+        "# - [M/H] represents overall stellar metallicity relative to the Sun",
+        "#"
+    ]
+    
+    # Save to CSV file
+    csv_file = target_dir / 'supplementary_fig_fluorine_metallicity.csv'
+    
+    # Write header and data
+    with open(csv_file, 'w') as f:
+        # Write header lines
+        for line in header_lines:
+            f.write(line + '\n')
+        
+        # Write DataFrame to CSV (append mode, no header since we wrote custom header)
+        df.to_csv(f, index=False, float_format='%.2f')
+    
+    print(f'Saved HF measurements to {csv_file}')
+    return csv_file
 
 def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
          cache=True, **kwargs):
@@ -134,11 +234,15 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
     else:
         F_H_posterior = np.load(posterior_file)
         C_H_posterior = np.load(posterior_file_CH)
+        A_F_sun = 4.40  # Solar reference value
+        A_F_sun_err = 0.25
         
     q=[0.16, 0.5, 0.84]
     F_H_quantiles = np.quantile(F_H_posterior, q)
     C_H_quantiles = np.quantile(C_H_posterior, q)
-        
+    
+    # Save HF measurements to CSV for reproducibility
+    save_hf_measurements_to_csv(target, F_H_quantiles, x, xerr, A_F_sun, A_F_sun_err)
 
     ax_new = ax is None
     ax = ax or plt.gca()
@@ -200,18 +304,12 @@ def main(target, x, xerr=None, label='', ax=None, run=None, xytext=None,
     return F_H_quantiles
         
 
-
 df = read_spirou_sample_csv()
 names = df['Star'].to_list()
+ignore_targets = ['gl3622']
+
+
 teff =  dict(zip(names, [float(t.split('+-')[0]) for t in df['Teff (K)'].to_list()]))
-valid = dict(zip(names, df['Valid'].to_list()))
-
-ignore_targets = [name.replace('Gl ', 'gl') for name in names if valid[name] == 0]
-# ignore_more_targets = ['gl3622']
-ignore_more_targets = []
-ignore_targets += ignore_more_targets
-
-
 
 # x_param = 'Teff (K)'
 x_param = '[M/H]'
@@ -279,7 +377,8 @@ for name in names:
                     ax=ax, 
                     # label=name, 
                     label='',
-                    run=None,
+                    # run=None,
+                    run='5', # DGP 2025-06-10: fix run to fc5
                     color=color,
                     xytext=xytext.get(name, None),
                     cache=cache,
@@ -304,7 +403,7 @@ sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])  # Only needed for color bar
 
 # define cbar_ax for colorbar
-cbar_ax = fig.add_axes([0.80, 0.06, 0.027, top-0.06])
+cbar_ax = fig.add_axes([0.78, 0.125, 0.027, top-0.125])
 cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=1)
 cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
 
@@ -325,7 +424,8 @@ ax.set_ylim(ylim)
 # x_param_label = x_param.split('(')[0].strip()
 # fig_name = base_path + f'paper/latex/figures/{main_label}_HFs_{x_param_label}{loglog_label}.pdf'
 c23_label = '_C23' if load_c23 else ''
-fig_name = nat_path + f'HF_metallicity{loglog_label}{c23_label}.pdf'
+testing_label = '_testing' if testing else ''
+fig_name = nat_path + f'HF_metallicity{loglog_label}{c23_label}{testing_label}.pdf'
 fig.savefig(fig_name)
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

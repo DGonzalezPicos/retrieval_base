@@ -9,6 +9,8 @@ import os
 import pathlib
 import matplotlib.patheffects as pe
 import scienceplots
+import pandas as pd
+from datetime import datetime
 
 # reset to default
 plt.style.use('default')
@@ -22,6 +24,7 @@ plt.rcParams.update({
 
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
+out_path = '/home/dario/phd/red_dwarf_isotopes/data/'
 
 water = False # take isotope ratio from H2O
 main_label = 'H2O' if water else 'CO'
@@ -29,6 +32,291 @@ isotope = 'oxygen'
 assert isotope in ['carbon', 'oxygen'], f'Isotope {isotope} not recognized (choose from oxygen, carbon)'
 y_labels = {'oxygen': r'$^{16}$O/$^{18}$O', 'carbon': r'$^{12}$C/$^{13}$C'}
 y_lims = {'oxygen': (30, 4000), 'carbon': (20, 400)}
+
+def save_isotope_ratios_to_csv(targets_isotopes, x_dict, x_err_dict, teff_dict, 
+                              sun_dict, ism_dict, crossfield_dict, alpha_fe_dict=None, alpha_fe_err_dict=None):
+    """
+    Save isotope ratio measurements to CSV file for Figure 1 reproducibility.
+    
+    Parameters:
+    -----------
+    targets_isotopes : dict
+        Dictionary containing isotope data for each target
+    x_dict : dict
+        Metallicity values for each target
+    x_err_dict : dict
+        Metallicity uncertainties for each target
+    teff_dict : dict
+        Effective temperatures for each target
+    sun_dict : dict
+        Solar isotope ratio values
+    ism_dict : dict
+        ISM isotope ratio values
+    crossfield_dict : dict
+        Crossfield+2019 comparison data
+    alpha_fe_dict : dict, optional
+        Alpha enhancement [α/Fe] values for each target
+    alpha_fe_err_dict : dict, optional
+        Alpha enhancement [α/Fe] uncertainties for each target
+    """
+    
+    # Create output directory
+    pathlib.Path(out_path).mkdir(parents=True, exist_ok=True)
+    
+    # Prepare data for CSV
+    data_rows = []
+    
+    for target, isotope_data in targets_isotopes.items():
+        if len(isotope_data['carbon']) == 0 or len(isotope_data['oxygen']) == 0:
+            continue
+            
+        name = target.replace('gl', 'Gl ')
+        
+        # Carbon isotope data
+        c_data = isotope_data['carbon']
+        c_q16, c_q50, c_q84, c_sigma = c_data[0], c_data[1], c_data[2], c_data[3]
+        
+        # Oxygen isotope data  
+        o_data = isotope_data['oxygen']
+        o_q16, o_q50, o_q84, o_sigma = o_data[0], o_data[1], o_data[2], o_data[3]
+        
+
+        
+        # Load lnB values
+        try:
+            # Find run and load ln B values for carbon and oxygen
+            run = find_run(base_path, target)
+            if run is None:
+                run = 'fc5'  # default
+                
+            outputs = pathlib.Path(base_path) / target / 'retrieval_outputs' / run / 'test_output'
+            
+            # Carbon ln B and sigma
+            c_lnb_file = outputs / 'lnB_sigma_13CO.dat'
+            if c_lnb_file.exists():
+                c_lnb, c_sigma_file = np.loadtxt(c_lnb_file)
+            else:
+                c_lnb, c_sigma_file = np.nan, c_sigma
+                
+            # Oxygen ln B and sigma
+            o_lnb_file = outputs / 'lnB_sigma_C18O.dat'
+            if o_lnb_file.exists():
+                o_lnb, o_sigma_file = np.loadtxt(o_lnb_file)
+            else:
+                o_lnb, o_sigma_file = np.nan, o_sigma
+                
+        except:
+            c_lnb, o_lnb = np.nan, np.nan
+            c_sigma_file, o_sigma_file = c_sigma, o_sigma
+        
+        # Get alpha/Fe values if available
+        alpha_fe_value = alpha_fe_dict.get(name, np.nan) if alpha_fe_dict else np.nan
+        alpha_fe_error = alpha_fe_err_dict.get(name, np.nan) if alpha_fe_err_dict else np.nan
+        
+        row_data = {
+            'target': target,
+            'star_name': name,
+            'teff_k': teff_dict[name],
+            'metallicity_mh': x_dict[name],
+            'alpha_fe': alpha_fe_value,
+            'alpha_fe_error': alpha_fe_error,
+            'carbon_isotope_ratio_q16': c_q16,
+            'carbon_isotope_ratio_q50': c_q50,
+            'carbon_isotope_ratio_q84': c_q84,
+            'carbon_lnb': c_lnb,
+            'carbon_sigma': c_sigma_file,
+            'oxygen_isotope_ratio_q16': o_q16,
+            'oxygen_isotope_ratio_q50': o_q50, 
+            'oxygen_isotope_ratio_q84': o_q84,
+            'oxygen_lnb': o_lnb,
+            'oxygen_sigma': o_sigma_file
+        }
+        data_rows.append(row_data)
+    
+    # Create DataFrame
+    df = pd.DataFrame(data_rows)
+    
+    # Create comprehensive header
+    header_lines = [
+        "# Supplementary data for Figure 1: Isotope ratios in M dwarf atmospheres",
+        f"# Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "# Authors: Darío González Picos, Ignas Snellen and Sam de Regt",
+        "# Contact: picos@strw.leidenuniv.nl",
+        "#",
+        "# Data description:",
+        "# This file contains carbon and oxygen isotope ratio measurements from",
+        "# high-resolution infrared spectroscopy and Bayesian atmospheric retrieval",
+        "# analysis of M dwarf stars. Isotope ratios are derived from CO molecular",
+        "# lines in the K-band using the petitRADTRANS radiative transfer code.",
+        "#",
+        "# Reference values:",
+        f"# Solar ¹²C/¹³C = {sun_dict['carbon'][0]:.1f} ± {sun_dict['carbon'][1]:.1f} (Ayres et al. 2013)",
+        f"# Solar ¹⁶O/¹⁸O = {sun_dict['oxygen'][0]:.1f} ± {sun_dict['oxygen'][1]:.1f} (Ayres et al. 2013)",
+        f"# ISM ¹²C/¹³C = {ism_dict['carbon'][0]:.1f} ± {ism_dict['carbon'][1]:.1f} (Milam et al. 2005)",
+        f"# ISM ¹⁶O/¹⁸O = {ism_dict['oxygen'][0]} ± {ism_dict['oxygen'][1]} (Wilson et al. 1999)",
+        "#",
+        "# Methodology:",
+        "# - Isotope ratios derived from CO line analysis in K-band spectra",
+        "# - Atmospheric retrieval using petitRADTRANS and PyMultiNest",
+        "# - Bayesian evidence (ln B) and significance (σ) calculated via nested sampling",
+        "# - σ > 3: significant detection, σ < 3: upper limit",
+        "# - Uncertainties represent 1-sigma (68% confidence) intervals",
+        "#",
+        "# Metallicity and alpha enhancement information:",
+        "# - [M/H] values from Cristofari et al. (2023), MNRAS, 522, 1342",
+        "# - [α/Fe] values from Cristofari et al. (2023), MNRAS, 522, 1342",
+        "# - Typical [M/H] uncertainty: ±0.10 dex",
+        "# - Typical [α/Fe] uncertainty: ±0.05 dex",
+        "#",
+        "# Column descriptions:",
+        "# target: Target identifier (gl format)",
+        "# star_name: Star name (Gl format)",
+        "# teff_k: Effective temperature in Kelvin",
+        "# metallicity_mh: [M/H] metallicity",
+        "# alpha_fe: [α/Fe] alpha enhancement",
+        "# alpha_fe_error: [α/Fe] uncertainty",
+        "# carbon_isotope_ratio_q16: ¹²C/¹³C 16th percentile (1-σ lower bound)",
+        "# carbon_isotope_ratio_q50: ¹²C/¹³C 50th percentile (median)",
+        "# carbon_isotope_ratio_q84: ¹²C/¹³C 84th percentile (1-σ upper bound)",
+        "# carbon_lnb: Natural logarithm of Bayesian evidence for ¹³CO detection",
+        "# carbon_sigma: Statistical significance of ¹³CO detection",
+        "# oxygen_isotope_ratio_q16: ¹⁶O/¹⁸O 16th percentile (1-σ lower bound)",
+        "# oxygen_isotope_ratio_q50: ¹⁶O/¹⁸O 50th percentile (median)",
+        "# oxygen_isotope_ratio_q84: ¹⁶O/¹⁸O 84th percentile (1-σ upper bound)",
+        "# oxygen_lnb: Natural logarithm of Bayesian evidence for C¹⁸O detection",
+        "# oxygen_sigma: Statistical significance of C¹⁸O detection",
+        "#",
+        "# Units:",
+        "# - Isotope ratios: dimensionless",
+        "# - Temperature: Kelvin",
+        "# - Metallicity: dex (solar-normalized logarithmic scale)",
+        "# - Alpha enhancement: dex (solar-normalized logarithmic scale)",
+        "# - ln B: dimensionless (natural logarithm)",
+        "# - σ: dimensionless (statistical significance)",
+        "#",
+        "# References:",
+        "# - Solar isotope ratios: Ayres et al. (2013), ApJ, 765, 46",
+        "# - ISM isotope ratios: Milam et al. (2005), ApJ, 634, 1126",
+        "# - ISM isotope ratios: Wilson et al. (1999), Reports on Progress in Physics, 62, 143",
+        "# - Metallicities: Cristofari et al. (2023), MNRAS, 522, 1342",
+        "# - CO line lists: Li et al. (2015), ApJS, 216, 15",
+        "#"
+    ]
+    
+    # Save to CSV file
+    csv_file = pathlib.Path(out_path) / 'figure_1_isotope_ratios.csv'
+    
+    with open(csv_file, 'w') as f:
+        # Write header
+        for line in header_lines:
+            f.write(line + '\n')
+        
+        # Write data
+        df.to_csv(f, index=False, float_format='%.2f')
+    
+    print(f'Saved isotope ratio data to {csv_file}')
+    return csv_file
+
+def save_gce_models_to_csv():
+    """
+    Save GCE model tracks to CSV file for Figure 1 reproducibility.
+    """
+    
+    # Load Romano+2022 models
+    mass_ranges = ['1_8', '3_8']
+    
+    # Initialize data dictionary
+    data = {'metallicity_mh': []}
+    
+    model_data = {}
+    for mass_range in mass_ranges:
+        Z, c12c13, o16o18 = load_romano_models(Z_min=-0.7, mass_range=mass_range)
+        model_data[mass_range] = {'Z': Z, 'c12c13': c12c13, 'o16o18': o16o18}
+    
+    # Use the metallicity grid from the first model
+    metallicity_grid = model_data[mass_ranges[0]]['Z']
+    data['metallicity_mh'] = metallicity_grid
+    
+    # Add model predictions for each mass range
+    for mass_range in mass_ranges:
+        mass_label = mass_range.replace('_', '-')
+        Z = model_data[mass_range]['Z']
+        c12c13 = model_data[mass_range]['c12c13']
+        o16o18 = model_data[mass_range]['o16o18']
+        
+        data[f'carbon_isotope_ratio_{mass_label}_msun'] = c12c13
+        data[f'oxygen_isotope_ratio_{mass_label}_msun'] = o16o18
+        data[f'carbon_oxygen_ratio_{mass_label}_msun'] = c12c13 / o16o18
+    
+    # Create DataFrame
+    df = pd.DataFrame(data)
+    
+    # Create comprehensive header
+    header_lines = [
+        "# Supplementary data for Figure 1: Galactic Chemical Evolution model predictions",
+        f"# Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "# Authors: Darío González Picos, Ignas Snellen and Sam de Regt",
+        "# Contact: picos@strw.leidenuniv.nl",
+        "#",
+        "# Data description:",
+        "# This file contains galactic chemical evolution (GCE) model predictions",
+        "# for carbon and oxygen isotope ratios as a function of metallicity.",
+        "# The models are from Romano et al. (2022) and represent different",
+        "# stellar initial mass function (IMF) assumptions.",
+        "#",
+        "# Model details:",
+        "# - GCE models from Romano et al. (2022), A&A, 660, A76",
+        "# - Two mass range scenarios for stellar nucleosynthesis:",
+        "#   * 1-8 M☉: Standard IMF truncated at 8 M☉",
+        "#   * 3-8 M☉: IMF truncated between 3-8 M☉",
+        "# - Models include contributions from AGB stars, supernovae, and novae",
+        "# - Metallicity range: -0.7 < [M/H] < +0.5 dex",
+        "#",
+        "# Physical interpretation:",
+        "# - Higher mass ranges lead to different isotope ratio evolution",
+        "# - Models predict the galactic enrichment history of isotopes",
+        "# - Useful for understanding stellar nucleosynthesis contributions",
+        "#",
+        "# Column descriptions:",
+        "# metallicity_mh: [M/H] metallicity grid for model calculations",
+        "# carbon_isotope_ratio_1-8_msun: ¹²C/¹³C for 1-8 M☉ IMF model",
+        "# oxygen_isotope_ratio_1-8_msun: ¹⁶O/¹⁸O for 1-8 M☉ IMF model",
+        "# carbon_oxygen_ratio_1-8_msun: (¹²C/¹³C)/(¹⁶O/¹⁸O) for 1-8 M☉ model",
+        "# carbon_isotope_ratio_3-8_msun: ¹²C/¹³C for 3-8 M☉ IMF model",
+        "# oxygen_isotope_ratio_3-8_msun: ¹⁶O/¹⁸O for 3-8 M☉ IMF model",
+        "# carbon_oxygen_ratio_3-8_msun: (¹²C/¹³C)/(¹⁶O/¹⁸O) for 3-8 M☉ model",
+        "#",
+        "# Units:",
+        "# - Metallicity: dex (solar-normalized logarithmic scale)",
+        "# - Isotope ratios: dimensionless",
+        "#",
+        "# References:",
+        "# - GCE models: Romano et al. (2022), A&A, 660, A76",
+        "# - Stellar nucleosynthesis: Karakas & Lugaro (2016), ApJ, 825, 26",
+        "# - Nova nucleosynthesis: José & Hernanz (1998), ApJ, 494, 680",
+        "# - Supernova yields: Kobayashi et al. (2006), ApJ, 653, 1145",
+        "#",
+        "# Notes:",
+        "# - Models assume closed-box galactic evolution",
+        "# - Each row represents a different metallicity point",
+        "# - Isotope ratios increase/decrease based on stellar mass contributions",
+        "# - Use for comparison with observational measurements",
+        "#"
+    ]
+    
+    # Save to CSV file
+    csv_file = pathlib.Path(out_path) / 'figure_1_gce_models.csv'
+    
+    with open(csv_file, 'w') as f:
+        # Write header
+        for line in header_lines:
+            f.write(line + '\n')
+        
+        # Write data
+        df.to_csv(f, index=False, float_format='%.2f')
+    
+    print(f'Saved GCE model data to {csv_file}')
+    return csv_file
 
 def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None,**kwargs):
     if target not in os.getcwd():
@@ -220,6 +508,15 @@ if x_param == '[M/H]':
         c23_names = ['Gl '+n[2:] for n in c23[:,0]]
         x = dict(zip(c23_names, c23[:,1].astype(float)))
         x_err = dict(zip(c23_names, c23[:,2].astype(float)))
+   
+load_alpha_fe = True
+if load_alpha_fe:
+    assert metallicity_ref == 'C23', f'Only implement [alpha/Fe] from C23, not {metallicity_ref}'
+    table_id=3 # fixed for now...
+    c23_alpha_fe = np.loadtxt(f'{base_path}paper/data/c23_table{table_id}_alpha_fe.txt', dtype=object)
+    c23_alpha_fe_names = ['Gl '+n[2:] for n in c23_alpha_fe[:,0]]
+    alpha_fe = dict(zip(c23_alpha_fe_names, c23_alpha_fe[:,1].astype(float)))
+    alpha_fe_err = dict(zip(c23_alpha_fe_names, c23_alpha_fe[:,2].astype(float)))
 
 runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sample.keys()]))
 
@@ -294,7 +591,8 @@ for i, isotope in enumerate(isotopes):
                             ax=ax, 
                             # label=name, 
                             label='',
-                            run=None,
+                            # run=None,
+                            run='5', # DGP 2025-06-10: fix run to fc5
                             color=color,
                             xytext=None,)
             
@@ -442,6 +740,14 @@ axes[-1].set(yscale='log')
 # axes[-1].set_xlim(axes[0].get_xlim())
 # axes[-1].set_xlim(40, 400)
 axes[-1].set_ylim(0.005, 0.4)
+
+# Save data to CSV files for reproducibility
+print("Saving data to CSV files...")
+alpha_fe_data = alpha_fe if load_alpha_fe else None
+alpha_fe_err_data = alpha_fe_err if load_alpha_fe else None
+save_isotope_ratios_to_csv(targets_isotopes, x, x_err, teff, sun_dict, ism_dict, crossfield_dict, 
+                          alpha_fe_data, alpha_fe_err_data)
+save_gce_models_to_csv()
 
 axes[0].legend(ncol=3, frameon=False, fontsize=8, loc=(-0.12, 1.01))
 loglog = True

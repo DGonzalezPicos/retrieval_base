@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import pathlib
+import pandas as pd
+from datetime import datetime
 # plt.style.use('/home/dario/phd/retrieval_base/HBDs/my_science.mplstyle')
 import scienceplots
 
@@ -28,7 +30,182 @@ import matplotlib.patheffects as path_effects
 
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
-def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, fl=1.0, cache=True, **kwargs):
+out_path = '/home/dario/phd/red_dwarf_isotopes/data' # store for reproducibility
+
+def save_all_orders_to_csv(target, run, wave, flux, err, model, spline_cont, 
+                          mask, rv=None, divide_spline=False, teff=None, spt=None, offset=0.0):
+    """
+    Save all spectral orders data to a single CSV file for reproducibility.
+    
+    Parameters:
+    -----------
+    target : str
+        Target name
+    run : str
+        Retrieval run identifier
+    wave : array
+        Wavelength array for all orders (RV corrected)
+    flux : array
+        Observed flux for all orders
+    err : array
+        Error on flux for all orders
+    model : array
+        Best fit model for all orders
+    spline_cont : array
+        Spline continuum correction for all orders
+    mask : array
+        Finite mask for valid data points
+    rv : float, optional
+        Radial velocity correction in km/s
+    divide_spline : bool
+        Whether spline continuum correction was applied
+    teff : float, optional
+        Effective temperature in K
+    spt : str, optional
+        Spectral type
+    offset : float, optional
+        Plotting offset applied to data (stored in header only)
+    """
+    
+    # Create output directory for target
+    target_dir = pathlib.Path(out_path) / target
+    target_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Flatten all arrays and create order column
+    wave_flat = []
+    flux_flat = []
+    err_flat = []
+    model_flat = []
+    spline_flat = []
+    order_flat = []
+    valid_flat = []
+    
+    n_orders = len(wave)
+    
+    for order in range(n_orders):
+        # Get data for this order (remove plotting offset from flux and model)
+        wave_order = wave[order]
+        flux_order = flux[order] - offset  # Remove plotting offset
+        err_order = err[order]
+        model_order = model[order] - offset  # Remove plotting offset
+        spline_order = spline_cont[order]
+        mask_order = mask[order]
+        
+        # Flatten and append
+        n_pixels = len(wave_order)
+        wave_flat.extend(wave_order)
+        flux_flat.extend(flux_order)
+        err_flat.extend(err_order)
+        model_flat.extend(model_order)
+        spline_flat.extend(spline_order)
+        order_flat.extend([order] * n_pixels)
+        valid_flat.extend(mask_order)
+    
+    # Convert to numpy arrays
+    wave_flat = np.array(wave_flat)
+    flux_flat = np.array(flux_flat)
+    err_flat = np.array(err_flat)
+    model_flat = np.array(model_flat)
+    spline_flat = np.array(spline_flat)
+    order_flat = np.array(order_flat)
+    valid_flat = np.array(valid_flat)
+    
+    # Create data dictionary
+    data = {
+        'spectral_order': order_flat,
+        'wavelength_nm': wave_flat,
+        'observed_flux': flux_flat,
+        'flux_error': err_flat,
+        'petitradtrans_model': model_flat,
+        'spline_continuum': spline_flat,
+        'valid_pixel': valid_flat.astype(int)
+    }
+    
+    # Create DataFrame
+    df = pd.DataFrame(data)
+    
+    # Create comprehensive header
+    header_lines = [
+        "# Supplementary data for best-fit atmospheric models - all spectral orders",
+        f"# Target: {target}",
+        f"# Retrieval run: {run}",
+        f"# Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "# Authors: Darío González Picos, Ignas Snellen and Sam de Regt",
+        "# Contact: picos@strw.leidenuniv.nl",
+        "#",
+        "# Data description:",
+        "# This file contains high-resolution K-band spectroscopic data and",
+        "# best-fit atmospheric models from Bayesian retrieval analysis of M dwarf",
+        "# stellar atmospheres. All spectral orders are included in a single file.",
+        "# Data obtained with SPIRou at CFHT.",
+        "#",
+        "# Target properties:",
+        f"# - Effective temperature: {teff:.0f} K" if teff else "# - Effective temperature: Not available",
+        f"# - Spectral type: {spt}" if spt else "# - Spectral type: Not available",
+        f"# - Number of spectral orders: {n_orders}",
+        f"# - Total data points: {len(wave_flat)}",
+        "#",
+        "# Observational details:",
+        f"# - Radial velocity correction: {rv:.3f} km/s" if rv else "# - Radial velocity correction: Not available",
+        f"# - RV correction applied: {'Yes' if rv else 'Unknown'} (wavelengths are barycentric)",
+        f"# - Spline continuum correction applied: {'Yes' if divide_spline else 'No'}",
+        f"# - Plotting offset: {offset:.3f} (removed from saved data)",
+        f"# - Spectral resolution: R ~ 75,000",
+        f"# - Wavelength coverage: {np.nanmin(wave_flat):.1f} - {np.nanmax(wave_flat):.1f} nm",
+        "#",
+        "# Column descriptions:",
+        "# spectral_order: SPIRou spectral order number (0, 1, 2 for K-band)",
+        "# wavelength_nm: Wavelength in nanometers (barycentric, RV corrected)",
+        "# observed_flux: Observed normalized flux",
+        "# flux_error: 1-sigma uncertainty on observed flux",
+        "# petitradtrans_model: Best-fit atmospheric model flux from petitRADTRANS",
+        "# spline_continuum: Spline continuum normalization function",
+        "# valid_pixel: 1 for valid data points, 0 for masked/invalid pixels",
+        "#",
+        "# Data processing notes:",
+        "# - Wavelengths corrected for radial velocity using:",
+        "#   λ_corrected = λ_observed × (1 - RV/c)",
+        "# - Flux normalized to continuum level",
+        f"# - Spline continuum {'divided out from model and applied to data' if divide_spline else 'not applied'}",
+        f"# - Plotting offset of {offset:.3f} has been removed from flux and model data",
+        "# - Invalid pixels (telluric contamination, cosmic rays) marked in valid_pixel column",
+        "#",
+        "# Units:",
+        "# - Wavelength: nanometers (nm)",
+        "# - Flux: normalized (dimensionless)",
+        "# - Error: normalized flux units",
+        "# - Temperature: Kelvin (K)",
+        "# - Radial velocity: km/s",
+        "#",
+        "# Quality metrics:",
+        f"# - Mean S/N ratio: {np.nanmean(flux_flat[valid_flat.astype(bool)]/err_flat[valid_flat.astype(bool)]):.1f}",
+        f"# - Valid pixels: {np.sum(valid_flat)} / {len(valid_flat)} ({100*np.sum(valid_flat)/len(valid_flat):.1f}%)",
+        f"# - RMS residuals: {np.nanstd((flux_flat - model_flat)[valid_flat.astype(bool)]):.4f}",
+        "#",
+        "# Notes:",
+        "# - Each row represents one wavelength point",
+        "# - NaN values are preserved as NaN (not converted to other values)",
+        "# - Residuals can be calculated as: observed_flux - petitradtrans_model",
+        "# - Spline model contains the fitted continuum with 25 equally spaced knots",
+        "# - Data and model values have plotting offset removed for scientific analysis",
+        "#"
+    ]
+    
+    # Save to CSV file
+    csv_file = target_dir / f'supplementary_best_fit_model_all_orders.csv'
+    
+    with open(csv_file, 'w') as f:
+        # Write header
+        for line in header_lines:
+            f.write(line + '\n')
+        
+        # Write data (preserve NaN values)
+        df.to_csv(f, index=False, float_format='%.6f', na_rep='nan')
+    
+    print(f'Saved all orders spectroscopic data to {csv_file}')
+    return csv_file
+
+def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, fl=1.0, cache=True, save_csv=False, **kwargs):
     
     
     assert len(ax) == 2, f'Lenght of ax must be 2, not {len(ax)}'
@@ -67,10 +244,16 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, f
     bestfit_spec_file = test_output / 'bestfit_spec.npy'
     
     cache = kwargs.get('cache', True)
+    rv_value = None  # Initialize RV value
+    
     if bestfit_spec_file.exists() and cache:
         
         print(f' Bestfit model found in {bestfit_spec_file}')
-        wave, flux, err, mask, m, spline_cont = np.load(bestfit_spec_file)
+        bestfit_data = np.load(bestfit_spec_file, allow_pickle=True)
+        if len(bestfit_data) == 7:  # New format with RV
+            wave, flux, err, mask, m, spline_cont, rv_value = bestfit_data
+        else:  # Old format without RV
+            wave, flux, err, mask, m, spline_cont = bestfit_data
         print(f' Bestfit model loaded from {bestfit_spec_file}')
         mask = mask.astype(bool)
         
@@ -86,9 +269,9 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, f
         ret.evaluate_model(bestfit_params)
         ret.PMN_lnL_func()
         
-        rv = bestfit_params[list(ret.Param.param_keys).index('rv')]
+        rv_value = bestfit_params[list(ret.Param.param_keys).index('rv')]
         
-        wave = np.squeeze(ret.d_spec['spirou'].wave) * (1 - rv/299792.458)
+        wave = np.squeeze(ret.d_spec['spirou'].wave) * (1 - rv_value/299792.458)
         flux = np.squeeze(ret.d_spec['spirou'].flux)
         
         s = ret.LogLike['spirou'].s
@@ -120,8 +303,8 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, f
             print(f'[DEBUG] sum(nans(err_order)) = {np.sum(np.isnan(err_order))}')
             err[ii] = err_order
         
-        # save file
-        np.save(bestfit_spec_file, np.array([wave, flux, err, mask, m, spline_cont]))
+        # save file with RV value
+        np.save(bestfit_spec_file, np.array([wave, flux, err, mask, m, spline_cont, rv_value], dtype=object))
         print(f'Bestfit model saved as {bestfit_spec_file}')
 
     divide_spline = kwargs.get('divide_spline', False)
@@ -190,6 +373,20 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, f
         
     
     
+    # Return data for CSV export if needed
+    if save_csv and order == 0:  # Only save CSV once per target (when processing first order)
+        return {
+            'wave': wave,
+            'flux': flux,
+            'err': err,
+            'model': m,
+            'spline_cont': spline_cont,
+            'mask': mask,
+            'rv': rv_value,
+            'divide_spline': divide_spline,
+            'median_flux': np.median(flux_nonans[-100:])
+        }
+    
     return np.median(flux_nonans[-100:])
 
 
@@ -216,7 +413,7 @@ my_targets_id = ['338B', '205', '411', '436','699', '1286']
 my_targets = [s.replace('Gl ', 'gl') for s in names if s not in ignore_names][::-1]
 
 
-def plot(orders, text_x=None, xlim=None, **kwargs):
+def plot(orders, text_x=None, xlim=None, save_csv=True, **kwargs):
     fig, ax = plt.subplots(2,1, figsize=(5,9), sharex=True, gridspec_kw={'height_ratios': [15, 1],
                                                                         'hspace': 0.03,
                                                                         'top': 0.97,
@@ -241,19 +438,49 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
         offset = 0.54*(len(my_targets)-my_targets.index(target)-1)
         fl  = 1.0
         cache = kwargs.pop('cache', True)
+        csv_data = None
+        
         for order in orders:
-            fl = main(target, ax=ax, offset=offset, order=order,
-                    run=None, 
+            result = main(target, ax=ax, offset=offset, order=order,
+                    # run=None, 
+                    run='5', # DGP 2025-06-10: fix run to fc5
                     lw=0.4, color=color,
                     text_x=text_x, 
                     divide_spline=True,
                     offset_x=-2*count,
                     fl=fl,
                     cache=cache if order == 0 else True,
+                    save_csv=save_csv,
                     **kwargs)
+            
+            # Handle CSV data export (only saved once per target)
+            if isinstance(result, dict):
+                csv_data = result
+                fl = result['median_flux']
+            else:
+                fl = result
+                
             if debug:
                 print(f'Checkpoint {target} {order}')
                 break
+        
+        # Save CSV data after processing all orders for this target
+        if save_csv and csv_data is not None:
+            save_all_orders_to_csv(
+                target=target,
+                run='fc5',
+                wave=csv_data['wave'],
+                flux=csv_data['flux'],
+                err=csv_data['err'],
+                model=csv_data['model'],
+                spline_cont=csv_data['spline_cont'],
+                mask=csv_data['mask'],
+                rv=csv_data['rv'],
+                divide_spline=csv_data['divide_spline'],
+                teff=temperature,
+                spt=spt[name],
+                offset=offset
+            )
         
         ax[0].text(s=spt[name].split('.')[0].replace('V',''), x=text_x[1]-3, y=1.02+offset, transform=ax[0].transData,
                     color=color, fontsize=7, weight='bold', path_effects=[path_effects.withStroke(linewidth=2, foreground='w')])
@@ -288,6 +515,7 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
     # fig_name = base_path + 'paper/latex/figures/best_fit_model' + "-".join(orders_str) + ".pdf"
     if debug:
         return
+    # fig name to nat path, data to out_path
     fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
     fig.savefig(fig_name, bbox_inches='tight')
     print(f'Figure saved as {fig_name}')
@@ -302,9 +530,9 @@ def plot(orders, text_x=None, xlim=None, **kwargs):
 #           (2358.0, 2438.),
 #           (2435.0, 2510.0),
 # ]
-debug = True
+debug = False
 order = 0
 # xlim = (2282, 2364) # for order 0
 xlim = (2270, 2500) # for all orders
 text_x = (xlim[0]+1.5, xlim[1]-9)
-plot([0,1,2], text_x=text_x, xlim=xlim, cache=False)
+plot([0,1,2], text_x=text_x, xlim=xlim, cache=False, save_csv=True)

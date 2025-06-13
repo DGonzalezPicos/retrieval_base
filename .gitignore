@@ -79,3 +79,4 @@ TWA28/estimate_data_covariance.py
 data/jwst_nirspec_disperser_0083.asdf
 *npy
 *.h5
+paper/compare_runs_isotope_ratios.py

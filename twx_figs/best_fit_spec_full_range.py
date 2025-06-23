@@ -61,10 +61,12 @@ for target in runs.keys():
     
 
 colors = dict(TWA28={'data':'k', 
-                     'model':['brown', 'darkgreen', 'darkblue'], 
+                    #  'model':['brown', 'darkgreen', 'darkblue'], 
+                    'model':['#e89c4b', 'darkgreen', 'darkblue'], 
                      'crires': 'orange'},
               TWA27A={'data':'#733b27',
-                      'model':['#0a74da'],
+                    #   'model':['#0a74da'],
+                      'model':['seagreen'],
                       })
 lw = 0.9
 def plot_chunk(d_spec, 

@@ -147,7 +147,7 @@ ax.axvspan(Teff[0]-Teff[1], Teff[0]+Teff[1], color='k', alpha=0.1, label=label_t
 # np.save(PT_file, np.vstack([PT.pressure, PT.temperature_envelopes, PT.int_contr_em]))
 # print(f' --> Saved {PT_file}')
 
-ax.set(yscale='log', ylim=(np.max(p), np.min(p)), ylabel='Pressure / bar', xlabel='Temperature / K')
+ax.set(yscale='log', ylim=(np.max(p), np.min(p)), ylabel='Pressure / bar', xlabel='Temperature (K)')
 ax.set_xlim(None, 5000)
 # make legend labels bold
 # ax.legend(fontsize=8, 

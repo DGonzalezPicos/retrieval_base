@@ -132,7 +132,7 @@ ax_contr.set_xticks([])
 # ax_contr
 
 ax_contr.set_xlim(0, 2*np.max(int_contr_em))
-ax_pt.set(xlabel='Temperature / K', ylabel='Pressure / bar',
+ax_pt.set(xlabel='Temperature (K)', ylabel='Pressure / bar',
         yscale='log', ylim=(pressure.max(), pressure.min()))
 
 color_i = 0

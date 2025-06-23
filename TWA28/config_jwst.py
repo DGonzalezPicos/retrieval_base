@@ -12,9 +12,9 @@ lbl = 10
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h']
+# # gratings = ['g235h']
 # gratings = ['g235h', 'g395h']
-# gratings = ['g140h', 'g235h', 'g395h']
+gratings = ['g140h', 'g235h', 'g395h']
 # gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 0
+index = 1
 run = f'freeslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -445,8 +445,9 @@ if 'g395h' in gratings:
     disk_species = ['12CO', '13CO', 'H2O']
     # disk_species = ['12CO', '13CO']
     # disk_species = ['12CO']
-    T_ex_range = np.arange(500.0, 1150.0+51.0, 50.0).tolist()
+    # T_ex_range = np.arange(500.0, 1150.0+51.0, 50.0).tolist()
     # T_ex_range = np.arange(200.0, 1000.0+100.0, 100.0).tolist()
+    T_ex_range = np.arange(500.0, 2000.0+100.0, 100.0).tolist() # updated 2025-06-23
     # T_ex_range = [400.0, 600.0, 1200.0]
     N_mol_min, N_mol_max = 14.0, 18.0
     N_mol_range = np.logspace(N_mol_min, N_mol_max, 6*2).tolist()
@@ -611,7 +612,7 @@ if PT_mode == 'fixed':
 ####################################################################################
 # Multinest parameters
 ####################################################################################
-testing = True
+testing = False
 const_efficiency_mode = True
 sampling_efficiency = 0.05 if not testing else 0.05
 # evidence_tolerance = 0.5

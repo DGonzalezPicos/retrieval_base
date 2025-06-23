@@ -120,8 +120,11 @@ def sigma_to_quantiles(sigma_levels):
 
 target = 'TWA28'
 run = runs[target]
-colors = dict(TWA28='orange',
-              TWA27A='#0a74da')
+colors = dict(
+            # TWA28='orange',
+            TWA28='#e89c4b',
+            TWA27A='seagreen',
+                )
 
 fig, ax = plt.subplots(1,1, figsize=(6,4))
 sigma = [1,2,3]

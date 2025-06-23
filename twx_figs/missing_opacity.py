@@ -208,16 +208,21 @@ species_colors = {
 species_to_plot = list(species_colors.keys())
 
 colors = dict(TWA28={'data':'k', 
-                     'model':'orange', 
+                    #  'model':'orange', 
+                    'model':'#e89c4b',
                      'crires': 'brown'
                      },
                     # 'crires': '#CC79A7'
-              TWA27A={'data':'#733b27',
-                      'model':'#0a74da',
+              TWA27A={
+                    # 'data':'#733b27',
+                    'data':'black',
+                    #   'model':'#0a74da',
+                    'model':'seagreen',
                       },
               )
-runs = dict(TWA28='freeslab_lbl10_G1G2G3_0',
-            # TWA27A='freeslab_lbl10_G1G2G3_0',
+runs = dict(
+            # TWA28='freeslab_lbl10_G1G2G3_0',
+            TWA27A='freeslab_lbl10_G1G2G3_0',
             )
 
 d_specs, m_specs = {}, {}
@@ -276,7 +281,8 @@ wave_range_gratings = dict(
 
 opas_grating = {g:load_opacities(g) for g in wave_range_gratings.keys()}
 
-def plot_band(segments, grating, fig=None, ax=None, res_ylim=None, show_ylabel=True):
+def plot_band(segments, grating, fig=None, ax=None, res_ylim=None, show_ylabel=True, target='TWA28'):
+    # starget = runs.keys()[0]
     # cs = custom_settings[band]
     # segments = cs['segments']
     opas, opas_wave, opas_species = opas_grating[grating]
@@ -285,7 +291,7 @@ def plot_band(segments, grating, fig=None, ax=None, res_ylim=None, show_ylabel=T
     ymin, ymax = [], []
     fluxes = []
     for idx in segments:
-        wave, flux, err = plot_idx(idx, fig=fig, ax=ax, targets=['TWA28'])
+        wave, flux, err = plot_idx(idx, fig=fig, ax=ax, targets=[target])
         nans = np.isnan(flux)
 
         wmin.append(np.nanmin(wave[~nans]))
@@ -316,22 +322,22 @@ def plot_band(segments, grating, fig=None, ax=None, res_ylim=None, show_ylabel=T
     ax_opas = ax[0].twinx()
     # for s, species in enumerate(species):
 
-    vmr_species_median = {k:np.nanmedian(v) for k,v in d_specs['TWA28'].VMRs.items()}
-    # sort by median vmr, descending
+    vmr_species_median = {k:np.nanmedian(v) for k,v in d_specs[target].VMRs.items()}
+    # sort by median vmr, descending    
     vmr_species_median = dict(sorted(vmr_species_median.items(), key=lambda item: item[1], reverse=True))
 
     wopas_max_thresh = 1e-3
     wopas_dict = {}
     for s, species in enumerate(vmr_species_median.keys()):
         
-        line_species = d_specs['TWA28'].pRT_name_dict_r[species]
+        line_species = d_specs[target].pRT_name_dict_r[species]
         if species not in species_to_plot:
             
             continue
         if line_species not in opas_species:
             print(f'{species} not in opas_species')
             continue
-        vmr_s = np.nanmedian(d_specs['TWA28'].VMRs[species])
+        vmr_s = np.nanmedian(d_specs[target].VMRs[species])
         s_idx = opas_species.index(line_species)
         # print(f'{species} {s_idx}')
         # color_s = next(deep_palette)
@@ -350,7 +356,7 @@ def plot_band(segments, grating, fig=None, ax=None, res_ylim=None, show_ylabel=T
     wopas_dict = dict(sorted(wopas_dict.items(), key=lambda item: np.nanmax(item[1]), reverse=True))
         
     for species, wopas in wopas_dict.items():
-        label = d_specs['TWA28'].opacity_labels[species]
+        label = d_specs[target].opacity_labels[species]
         zorder = -1 if species in ['H2O','AlO'] else 1
         ax_opas.plot(opas_wave[opas_mask], wopas[opas_mask], label=f'{label}', alpha=0.8, color=species_colors[species], zorder=zorder)
         # fill between x-axis and line
@@ -386,6 +392,7 @@ ax_spec = axes[0::2]
 ax_res = axes[1::2]
 gratings = ['g140h']*3 + ['g235h']*3 + ['g395h']*3
 
+
 custom_ylims = [
     (0.66, 2.66),
     (0.45, 2.30),
@@ -397,11 +404,26 @@ custom_ylims = [
     (0.05, 0.25),
     (0.06, 0.13),
 ]
+offset_ylims = np.linspace(0.62, 1.0, len(custom_ylims))[::-1]
+
+
+
 # assert len(custom_ylims) == nb, f'{len(custom_ylims)} != {nb}'
+target_keys = list(runs.keys())
+assert len(target_keys) == 1, f'{len(target_keys)} != 1'
+target = target_keys[0]
+
+if target == 'TWA27A':
+    # apply ylims offsets
+    for i, nb_i in enumerate(nb_range):
+        custom_ylims[nb_i] = (custom_ylims[nb_i][0] * offset_ylims[i], 
+                              custom_ylims[nb_i][1] * offset_ylims[i])
+        
 for i, nb_i in enumerate(nb_range):
     
     show_ylabel =  i == (nb2-nb1)//2
-    plot_band(segments=[nb_i*2, nb_i*2+1], grating=gratings[nb_i], fig=fig, ax=[ax_spec[i], ax_res[i]], show_ylabel=show_ylabel)
+    plot_band(segments=[nb_i*2, nb_i*2+1], grating=gratings[nb_i], fig=fig, ax=[ax_spec[i], ax_res[i]], show_ylabel=show_ylabel, 
+                target=target)
     if nb_i < nb2-1:
         ax_spec[i].set_xlabel('')
         ax_res[i].set_xlabel('')
@@ -417,7 +439,7 @@ for i, nb_i in enumerate(nb_range):
 # save as pdf
 # pdf_name = out_path / f'fig_spec_opacities.pdf'
 twx_paper = Path('/home/dario/phd/twa2x_paper/figures')
-pdf_name = twx_paper / f'fig_spec_opacities_{nb1}_{nb2}.pdf'
+pdf_name = twx_paper / f'fig_spec_opacities_{nb1}_{nb2}_{target}.pdf'
 fig.savefig(pdf_name, bbox_inches='tight')
 print(f'Saved {pdf_name}')
 plt.close(fig)

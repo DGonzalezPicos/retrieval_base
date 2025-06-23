@@ -101,12 +101,14 @@ runs = dict(
     TWA28='freeslab_lbl10_G1G2G3_0',
             )
 colors = dict(TWA28={'data':'k', 
-                     'model':'orange', 
+                    #  'model':'orange',
+                    'model':'#e89c4b',
                      'crires': 'brown'
                      },
                     # 'crires': '#CC79A7'
               TWA27A={'data':'#733b27',
-                      'model':'#0a74da',
+                    #   'model':'#0a74da',
+                    'model':'seagreen',
                       })
 
 def get_PT(path, target, run, config_file='config_jwst.txt', cache=True):
@@ -206,6 +208,7 @@ altitude_label = '_altitude' if use_altitude else ''
 def plot_crires(ax):
     run_full = 'final_full'
     p, t, cf, log_g = get_PT(path, 'TWA28', run=run_full, config_file='config_freechem.txt')
+    # print(f' temperature = {t}')
     y = pressure_to_altitude(p, t[3,:], log_g) if use_altitude else p
     ax = plot_envelopes(y, t, ax=ax, cf=cf, color=colors['TWA28']['crires'] , alpha=0.2, label='TWA 28\n' + r'(CRIRES$^{+}$)', fill_cf=True,
                         ls='--', ls_cf='--', lw_cf=1.0)
@@ -221,14 +224,15 @@ for t, target in enumerate(runs.keys()):
     # label_teff = r'T$_{\rm eff}$' + f' = {Teff[0]} K'
     label_teff = f'{Teff[0]:.0f} K'
     # ax.axvspan(Teff[0]-Teff[1], Teff[0]+Teff[1], color=colors[target]['model'], alpha=0.3, label=label_teff, lw=0, zorder=-1)
-    ax.axvline(Teff[0], color=colors[target]['model'], ls=':', lw=2, zorder=-10, alpha=0.6, label=label_teff)
+    ax.axvline(Teff[0], color=colors[target]['model'], ls=':', lw=2, zorder=-10, alpha=0.8, label=label_teff)
     
     if target == 'TWA28':
         plot_crires(ax)
         
     # for r, run in enumerate(runs[target]):
     p, t, cf, logg = get_PT(path, target, runs[target], cache=True)
-    ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'], alpha=0.3, fill_cf=True,
+    print(t)
+    ax = plot_envelopes(p, t, ax=ax, cf=cf, color=colors[target]['model'], alpha=0.4, fill_cf=True,
                         label='TWA ' + target.replace('TWA', ''),
                         ls_cf='-', lw_cf=1.0, use_altitude=use_altitude)
 
@@ -239,7 +243,7 @@ z = pressure_to_altitude(p, t[3,:], logg) if use_altitude else p
 ylim = (np.max(z), np.min(z))
 yscale = 'log'
 ylabel = r'Scaled pressure ' + r'(P$\cdot$ g)' if use_altitude else 'Pressure / bar'
-ax.set(yscale=yscale, ylim=ylim, ylabel=ylabel, xlabel='Temperature / K')
+ax.set(yscale=yscale, ylim=ylim, ylabel=ylabel, xlabel='Temperature (K)')
 ax.set_xlim(None, 5000)
 # make legend labels bold
 # ax.legend(fontsize=8, 
@@ -258,7 +262,7 @@ leg = ax.legend(handles_sort, labels_sort,
     
 for p, patch in enumerate(leg.get_patches()):
     # print(patch)
-    patch.set_alpha(0.55)
+    patch.set_alpha(0.70)
     # add edge to patch
     # if p == 2:
     #     patch.set_edgecolor('orange')

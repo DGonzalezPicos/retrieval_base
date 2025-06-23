@@ -69,8 +69,14 @@ d_specs, m_specs = {}, {}
 for target in runs.keys():
     d_specs[target], m_specs[target] = load_data(target, runs[target])
 
-colors = dict(TWA28={'data':'k', 'model':'orange'},
-              TWA27A={'data':'#733b27', 'model':'#0a74da'})
+colors = dict(TWA28={'data':'k', 
+                    #  'model':'orange',
+                    'model':'#e89c4b',
+                     },
+              TWA27A={'data':'#733b27', 
+                    #   'model':'#0a74da',
+                      'model':'seagreen',
+                      })
 
 lw = 0.9
 def plot_chunk(d_spec, m_spec, idx=0, relative_residuals=False, colors=None, ls='-',

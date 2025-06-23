@@ -37,8 +37,14 @@ runs = dict(
 
 flux_plot_unit = 1e14
 
-colors = dict(TWA28={'data':'k', 'model':'orange'},
-              TWA27A={'data':'#733b27', 'model':'#0a74da'})
+colors = dict(TWA28={'data':'k', 
+                    #  'model':'orange',
+                    'model':'#e89c4b',
+                     },
+              TWA27A={'data':'#733b27', 
+                    #   'model':'#0a74da',
+                      'model':'seagreen',
+                      })
 
 def load_data(target, run):
     cwd = os.getcwd()

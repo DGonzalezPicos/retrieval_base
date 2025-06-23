@@ -643,7 +643,7 @@ def fig_PT(PT,
             yticks=[],
             )
 
-    ax.set(xlabel='Temperature / K', ylabel='Pressure / bar',
+    ax.set(xlabel='Temperature (K)', ylabel='Pressure / bar',
             ylim=(p.max(), p.min()), yscale='log',
             # xlim=(0, None),
             xlim=xlim,

@@ -7,4 +7,4 @@ module load OpenBLAS/0.3.27-GCC-13.3.0
 module load OpenMPI/5.0.3-GCC-13.3.0
 module load libarchive/3.7.4-GCCcore-13.3.0
 
-source $HOME/retrieval_base/retrieval_dec24/bin/activate
+# source $HOME/retrieval_base/retrieval_dec24/bin/activate

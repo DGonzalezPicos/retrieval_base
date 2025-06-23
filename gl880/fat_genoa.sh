@@ -7,7 +7,7 @@
 #SBATCH --ntasks=192
 
 
-#SBATCH --job-name=fc2
+#SBATCH --job-name=gl880_fc6
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
@@ -30,9 +30,9 @@ echo "Number of tasks $SLURM_NTASKS"
 echo "Starting Python script"
 
 # define variable target
-target=gl436
-run=fc1
-resume=1 # 1 = True, 0 = False
+target=gl880
+run=fc6
+resume=0 # 1 = True, 0 = False
 
 mpiexec -np $SLURM_NTASKS --bind-to core python retrieval_script.py -r -t $target -run $run
 echo "Done"

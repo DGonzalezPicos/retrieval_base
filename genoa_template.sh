@@ -13,17 +13,14 @@
 #SBATCH --mail-user=picos@strw.leidenuniv.nl
 
 # Loading modules
-# module load 2022
-# module load Python/3.10.4-GCCcore-11.3.0
-# module load OpenBLAS/0.3.20-GCC-11.3.0
-# module load OpenMPI/4.1.4-GCC-11.3.0
-# module load libarchive/3.6.1-GCCcore-11.3.0
-# source $HOME/retrieval_base/activate.sh
-source $HOME/retrieval_base/modules23.sh
+module load 2022
+module load Python/3.10.4-GCCcore-11.3.0
+module load OpenBLAS/0.3.20-GCC-11.3.0
+module load OpenMPI/4.1.4-GCC-11.3.0
+module load libarchive/3.6.1-GCCcore-11.3.0
 
-# TODO: activate python environment with retrieval_base and everything else...
-# watch out with the python version....match my local installation
-
+# DGP 2025-06-06: keep loading the *deprecated* 2022 modules for now...
+# IMPORTANT: do not activate any python environment here! usr/python already has all necessary packages
 
 # Export environment variables
 export OMPI_MCA_pml=ucx

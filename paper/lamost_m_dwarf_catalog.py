@@ -370,6 +370,6 @@ if __name__ == '__main__':
     ax.grid(True, alpha=0.3)
     # plt.show()
     fig_name = output_dir / 'metallicity_density_distance_histogram.pdf'
-    plt.savefig(fig_name, bbox_inches='tight', dpi=300)
-    print(f'Saved figure to {fig_name}')
+    # plt.savefig(fig_name, bbox_inches='tight', dpi=300)
+    # print(f'Saved figure to {fig_name}')
     plt.close()

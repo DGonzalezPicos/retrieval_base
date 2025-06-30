@@ -234,7 +234,7 @@ class Covariance:
         return K_local
     
     def set_grating(self, grating):
-        assert grating.lower() in ['g140h', 'g235h', 'g395h'], f'Grating {grating} not supported'
+        assert grating.lower() in ['g140h', 'g235h', 'g395h', 'crires'], f'Grating {grating} not supported'
         self.grating = grating.lower()
     
     def __call__(self, 

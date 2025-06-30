@@ -316,8 +316,10 @@ class Retrieval:
                     #         continue
                     #     separation_ij = self.d_spec[w_set].separation[i,j]
                     #     err_eff_ij = self.d_spec[w_set].err_eff[i,j]
-                        
-                    grating = self.d_spec[w_set].gratings_list[i]
+                    if hasattr(self.d_spec[w_set], 'gratings_list'):
+                        grating = self.d_spec[w_set].gratings_list[i]
+                    else:
+                        grating = 'crires'
                     # max_separation = self.conf.cov_kwargs.pop(f'max_separation_{grating}', self.conf.cov_kwargs.pop('max_separation', None))
                 
                     self.Cov[w_set][i,j] = Covariance(x=wave_ij, 

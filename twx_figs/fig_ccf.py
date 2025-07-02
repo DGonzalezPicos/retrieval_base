@@ -53,8 +53,8 @@ runs = dict(
     TWA28='freeslab_lbl10_G2G3_0',
             )
 colors = dict(
-    TWA27A='seagreen',
-    TWA28='#e89c4b',
+    TWA27A='#009E73',
+    TWA28='#D55E00',
     )
 
 # for target, run in runs.items():

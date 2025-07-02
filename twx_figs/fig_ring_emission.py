@@ -31,19 +31,19 @@ w_set='NIRSpec'
 #     TWA28='lbl11_G1G2G3_fastchem_0',
 #             )
 runs = dict(
-    TWA27A='freeslab_lbl10_G1G2G3_0',
-    TWA28='freeslab_lbl10_G1G2G3_0',
+    TWA27A='freeslab_lbl10_G1G2G3_1',
+    TWA28='freeslab_lbl10_G1G2G3_1',
             )
 
 flux_plot_unit = 1e14
 
 colors = dict(TWA28={'data':'k', 
                     #  'model':'orange',
-                    'model':'#e89c4b',
+                    'model':'#D55E00',
                      },
-              TWA27A={'data':'#733b27', 
+              TWA27A={'data':'gray', 
                     #   'model':'#0a74da',
-                      'model':'seagreen',
+                      'model':'#009E73',
                       })
 
 def load_data(target, run):

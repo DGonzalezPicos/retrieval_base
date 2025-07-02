@@ -24,7 +24,8 @@ spitzer_files = dict(TWA28='spitzer/1102-3430.txt',
 )
 target = 'TWA27A'
 # w_set='NIRSpec'
-run = 'lbl11_G2G3_fastchem_GP_0'
+# run = 'lbl11_G2G3_fastchem_GP_0'
+run = 'freeslab_lbl10_G2G3_0'
 
 cwd = os.getcwd()
 if target not in cwd:

@@ -18,6 +18,7 @@ import seaborn as sns
 # import config_jwst as conf
 import colorcet as cc
 from scipy.stats import norm
+from matplotlib import patheffects as path_effects
 
 path = pathlib.Path(af.get_path())
 # path_figures = pathlib.Path('/home/dario/phd/retrieval_base/twx_figs')
@@ -27,9 +28,13 @@ config_file = 'config_jwst.txt'
 # target = 'TWA28'
 w_set='NIRSpec'
 
+# set global font size
+plt.rcParams.update({'font.size': 12})
+pe_white = [path_effects.withStroke(linewidth=2.0, foreground='w')]
+
 runs = dict(
-    TWA27A='freeslab_lbl10_G1G2G3_0',
-    TWA28='freeslab_lbl10_G1G2G3_0',
+    TWA27A='freeslab_lbl10_G1G2G3_1',
+    TWA28='freeslab_lbl10_G1G2G3_1',
             )
 
 
@@ -122,11 +127,11 @@ target = 'TWA28'
 run = runs[target]
 colors = dict(
             # TWA28='orange',
-            TWA28='#e89c4b',
-            TWA27A='seagreen',
+            TWA28='#D55E00',
+            TWA27A='#009E73',
                 )
 
-fig, ax = plt.subplots(1,1, figsize=(6,4))
+fig, ax = plt.subplots(1,1, figsize=(6,3.5))
 sigma = [1,2,3]
 
 def plot_target(target, run, ax, x_offset=0, species_list=[]):
@@ -239,7 +244,7 @@ ax.legend(handles,
           legend_labels, 
           loc='upper left', 
           frameon=True, 
-          framealpha=0.4,
+          framealpha=0.2,
           ncol=2,
           edgecolor='black',
           handlelength=1.5,
@@ -248,8 +253,9 @@ ax.legend(handles,
 
 # add text with string "s" at bottom right
 s = r'$\alpha=0 \rightarrow$' + ' chemical equilibrium at solar composition'
-ax.text(0.57, 0.05, s, ha='center', va='bottom', fontsize=11, color='black',
-        transform=ax.transAxes)
+ax.text(0.57, 0.03, s, ha='center', va='bottom', fontsize=11, color='black',
+        transform=ax.transAxes,
+        path_effects=pe_white)
 
     
 

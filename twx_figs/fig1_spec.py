@@ -71,11 +71,11 @@ for target in runs.keys():
 
 colors = dict(TWA28={'data':'k', 
                     #  'model':'orange',
-                    'model':'#e89c4b',
+                    'model':'#D55E00'
                      },
-              TWA27A={'data':'#733b27', 
+              TWA27A={'data':'gray', 
                     #   'model':'#0a74da',
-                      'model':'seagreen',
+                      'model':'#009E73'
                       })
 
 lw = 0.9

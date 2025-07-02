@@ -78,7 +78,7 @@ def fig_ax():
     return fig, ax
 
 def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=None, offset=0.0, ls='-', lw=1.4, new_fig=False,
-               color_residuals=None, ylim_p=None):
+               color_residuals=None, ylim_p=None, target=None):
     
     new_ax = (ax is None)
     if new_ax:
@@ -209,7 +209,7 @@ species_to_plot = list(species_colors.keys())
 
 colors = dict(TWA28={'data':'k', 
                     #  'model':'orange', 
-                    'model':'#e89c4b',
+                    'model':'#D55E00',
                      'crires': 'brown'
                      },
                     # 'crires': '#CC79A7'
@@ -217,24 +217,24 @@ colors = dict(TWA28={'data':'k',
                     # 'data':'#733b27',
                     'data':'black',
                     #   'model':'#0a74da',
-                    'model':'seagreen',
+                    'model':'#009E73',
                       },
               )
-runs = dict(
-            # TWA28='freeslab_lbl10_G1G2G3_0',
-            TWA27A='freeslab_lbl10_G1G2G3_0',
+runs_all = dict(
+            TWA28='freeslab_lbl10_G1G2G3_1',
+            TWA27A='freeslab_lbl10_G1G2G3_1',
             )
 
 d_specs, m_specs = {}, {}
-for target in runs.keys():
+for target in runs_all.keys():
     
     try:
-        d_specs[target], m_specs[target] = load_data(target, runs[target])
+        d_specs[target], m_specs[target] = load_data(target, runs_all[target])
     except Exception as e:
         print(f'Error loading data for {target}: {e}')
         continue
     
-runs = {k:v for k,v in runs.items() if k in d_specs.keys()}
+runs = {k:v for k,v in runs_all.items() if k in d_specs.keys()}
 
 def plot_idx(idx, fig=None, ax=None, ylim_p=None, ylim=None, targets=None):  
     new_fig = False
@@ -253,7 +253,8 @@ def plot_idx(idx, fig=None, ax=None, ylim_p=None, ylim=None, targets=None):
                                         colors=colors[target],
                                         new_fig=new_fig,
                                         color_residuals=colors[target]['model'],
-                                        ylim_p=ylim_p)
+                                        ylim_p=ylim_p,
+                                        target=target)
         
     return wave, flux, err
 
@@ -374,75 +375,108 @@ def plot_band(segments, grating, fig=None, ax=None, res_ylim=None, show_ylabel=T
     
 
 
-nb1 = 4 # 18/2
-# nb1 = 0
-nb2 = 9
-# nb2 = 4
-nb = nb2-nb1
-nb_range = np.arange(nb1, nb2)
-
-fig, axes = plt.subplots(nb*2,1, 
-                         figsize=(12,3.5*nb), 
-                         sharex=False,
-                        gridspec_kw={'height_ratios':[3,1]*nb,
-                                     'hspace':0.3})
-# group in pairs
-# axes = np.array_split(axes, 2)
-ax_spec = axes[0::2]
-ax_res = axes[1::2]
-gratings = ['g140h']*3 + ['g235h']*3 + ['g395h']*3
-
-
-custom_ylims = [
-    (0.66, 2.66),
-    (0.45, 2.30),
-    (0.30, 1.70),
-    (0.15, 1.60),
-    (0.05, 0.86),# 12CO bandhead
-    (0.12, 0.40), 
-    (0.16, 0.30),
-    (0.05, 0.25),
-    (0.06, 0.13),
-]
-offset_ylims = np.linspace(0.62, 1.0, len(custom_ylims))[::-1]
-
-
-
-# assert len(custom_ylims) == nb, f'{len(custom_ylims)} != {nb}'
-target_keys = list(runs.keys())
-assert len(target_keys) == 1, f'{len(target_keys)} != 1'
-target = target_keys[0]
-
-if target == 'TWA27A':
-    # apply ylims offsets
-    for i, nb_i in enumerate(nb_range):
-        custom_ylims[nb_i] = (custom_ylims[nb_i][0] * offset_ylims[i], 
-                              custom_ylims[nb_i][1] * offset_ylims[i])
-        
-for i, nb_i in enumerate(nb_range):
+# nb1 = 4 # 18/2
+# # nb1 = 0
+# nb2 = 9
+# # nb2 = 4
+# nb = nb2-nb1
+def main():
+    """Main function to generate spectral opacity figures for both targets"""
     
-    show_ylabel =  i == (nb2-nb1)//2
-    plot_band(segments=[nb_i*2, nb_i*2+1], grating=gratings[nb_i], fig=fig, ax=[ax_spec[i], ax_res[i]], show_ylabel=show_ylabel, 
-                target=target)
-    if nb_i < nb2-1:
-        ax_spec[i].set_xlabel('')
-        ax_res[i].set_xlabel('')
+    # Define output path
+    twx_paper = Path('/home/dario/phd/twa2x_paper/figures')
+    
+    # Define spectral regions (nb1, nb2) to plot
+    spectral_regions = [(0, 4), (4, 9)]
+    
+    # Define gratings for each spectral segment
+    gratings = ['g140h']*3 + ['g235h']*3 + ['g395h']*3
+    
+    # Define custom y-limits for each spectral segment  
+    custom_ylims = [
+        (0.66, 2.66),
+        (0.45, 2.30),
+        (0.30, 1.70),
+        (0.15, 1.60),
+        (0.05, 0.86),  # 12CO bandhead
+        (0.12, 0.40), 
+        (0.16, 0.30),
+        (0.05, 0.25),
+        (0.06, 0.13),
+    ]
+    
+    # Offset factors for TWA27A y-limits
+    offset_ylims = np.linspace(0.62, 1.0, len(custom_ylims))[::-1]
+    
+    # Loop over each target
+    for target in runs_all.keys():
+        if target not in d_specs:
+            print(f'Skipping {target} - data not loaded')
+            continue
+            
+        print(f'Plotting {target} with run {runs_all[target]}')
         
-    if not show_ylabel:
-        ax_spec[i].set_ylabel('')
-        ax_res[i].set_ylabel('')
-    ax_spec[i].set_ylim(custom_ylims[nb_i][0], custom_ylims[nb_i][1])
-        
+        # Loop over spectral regions
+        for nb1, nb2 in spectral_regions:
+            nb = nb2 - nb1
+            nb_range = np.arange(nb1, nb2)
+            
+            print(f'  Creating figure for spectral region {nb1}-{nb2}')
+            
+            # Create figure with subplots
+            fig, axes = plt.subplots(nb*2, 1, 
+                                    figsize=(12, 3.5*nb), 
+                                    sharex=False,
+                                    gridspec_kw={'height_ratios': [3, 1]*nb,
+                                                'hspace': 0.3})
+            
+            # Separate spectrum and residual axes
+            ax_spec = axes[0::2]
+            ax_res = axes[1::2]
+            
+            # Apply y-limit offsets for TWA27A
+            target_ylims = custom_ylims.copy()
+            if target == 'TWA27A':
+                for i, nb_i in enumerate(nb_range):
+                    target_ylims[nb_i] = (custom_ylims[nb_i][0] * offset_ylims[nb_i], 
+                                         custom_ylims[nb_i][1] * offset_ylims[nb_i])
+            
+            # Plot each spectral segment
+            for i, nb_i in enumerate(nb_range):
+                show_ylabel = (i == (nb2-nb1)//2)
+                
+                # Plot the spectral band with opacities
+                plot_band(segments=[nb_i*2, nb_i*2+1], 
+                         grating=gratings[nb_i], 
+                         fig=fig, 
+                         ax=[ax_spec[i], ax_res[i]], 
+                         show_ylabel=show_ylabel, 
+                         target=target)
+                
+                # Remove x-axis labels for all but the last subplot
+                if nb_i < nb2-1:
+                    ax_spec[i].set_xlabel('')
+                    ax_res[i].set_xlabel('')
+                
+                # Remove y-axis labels for non-middle subplots
+                if not show_ylabel:
+                    ax_spec[i].set_ylabel('')
+                    ax_res[i].set_ylabel('')
+                
+                # Set custom y-limits for this segment
+                ax_spec[i].set_ylim(target_ylims[nb_i][0], target_ylims[nb_i][1])
+            
+            # Save figure
+            pdf_name = twx_paper / f'fig_spec_opacities_{nb1}_{nb2}_{target}.pdf'
+            fig.savefig(pdf_name, bbox_inches='tight')
+            print(f'  Saved {pdf_name}')
+            plt.close(fig)
+    
+    print('All figures generated successfully!')
 
 
-# plt.show()
-# save as pdf
-# pdf_name = out_path / f'fig_spec_opacities.pdf'
-twx_paper = Path('/home/dario/phd/twa2x_paper/figures')
-pdf_name = twx_paper / f'fig_spec_opacities_{nb1}_{nb2}_{target}.pdf'
-fig.savefig(pdf_name, bbox_inches='tight')
-print(f'Saved {pdf_name}')
-plt.close(fig)
+if __name__ == '__main__':
+    main()
 
 
 

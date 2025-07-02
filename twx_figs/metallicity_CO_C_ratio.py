@@ -17,13 +17,13 @@ def setup_paths():
 def define_runs_and_colors():
     runs = {
         'TWA27A': [
-            ('freeslab_lbl10_G2G3_0', 'G2+G3'),
-            ('freeslab_lbl10_G1G2G3_0', 'G1+G2+G3'),
+            ('freeslab_lbl10_G2G3_2', 'G2+G3'),
+            ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3'),
             ('freeslab_lbl10_G2_0', 'G2')
         ],
         'TWA28': [
-            ('freeslab_lbl10_G2G3_0', 'G2+G3'),
-            ('freeslab_lbl10_G1G2G3_0', 'G1+G2+G3'),
+            ('freeslab_lbl10_G2G3_1', 'G2+G3'),
+            ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3'),
             ('freeslab_lbl10_G2_0', 'G2')
         ]
     }
@@ -32,14 +32,16 @@ def define_runs_and_colors():
     colors = {
         'TWA28': {
             'data': 'k',
-            'model': ['#0072B2', 'gold', 'darkolivegreen'],  # Orange, Orangered, Green
+            # 'model': ['#0072B2', 'gold', 'darkolivegreen'],  # Orange, Orangered, Green
+            'model': ['green', 'navy', 'brown'],  # Orange, Orangered, Green
             # 'crires': '#009E73'  # Green
             # 'crires': '#CC79A7'
-            'crires': 'brown'
+            'crires':'#65737e'
         },
         'TWA27A': {
             'data': '#733b27',
-            'model': ['#0072B2', 'gold', 'darkolivegreen'],  # Pink, Dark blue, Green
+            # 'model': ['#0072B2', 'gold', 'darkolivegreen'],  # Pink, Dark blue, Green
+            'model': ['green', 'navy', 'brown'],
             'zhang2025': 'black'
         }
     }
@@ -192,7 +194,7 @@ def setup_axes(fig, ax):
     targets = ['TWA 27A', 'TWA 28']
     for row, target in enumerate(targets):
         # Add text to the left of the first subplot in each row
-        fig.text(0.01, 0.75 - row*0.4, target, fontsize=12, fontweight='bold', 
+        fig.text(0.01, 0.75 - row*0.4, target, fontsize=16, fontweight='bold', 
                 rotation=90, va='center')
     
     for row in range(2):
@@ -204,7 +206,8 @@ def setup_axes(fig, ax):
             axi.set_yticks([])
             
             # Set x-label for both rows
-            axi.set_xlabel(param_labels[col], fontsize=12)
+            if row == 1:
+                axi.set_xlabel(param_labels[col], fontsize=14)
             
             axi.set_xlim(xlims[col])
     
@@ -216,7 +219,7 @@ def main():
     
     # Create figure with more width to accommodate row labels
     fig, ax = plt.subplots(2, 4, figsize=(12, 6))
-    fig.subplots_adjust(hspace=0.1, left=0.05)  # Adjust left margin for row labels
+    fig.subplots_adjust(hspace=0.12, left=0.05)  # Adjust left margin for row labels
     
     # Load CRIRES data for TWA28
     crires_data = load_crires_data(path, 'TWA28')
@@ -258,7 +261,8 @@ def main():
             print(tabulate(quantiles_isotope_ratios, headers='keys', tablefmt='grid'))
             
             for col, param in enumerate(param_order):
-                plot_hist(ax[row,col], data_dict[param], color, label=label)
+                plot_hist(ax[row,col], data_dict[param], color, label=label,
+                          fill_alpha=0.60)
                 
                 
         # Plot CRIRES data for TWA28

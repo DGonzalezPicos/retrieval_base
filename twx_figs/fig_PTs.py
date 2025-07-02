@@ -29,12 +29,12 @@ runs = dict(
 colors = dict(
     TWA28={
         'data': 'k', 
-        'model': '#e89c4b',
-        'crires': 'brown'
+        'model': '#D55E00',
+        'crires': 'royalblue',
     },
     TWA27A={
-        'data': '#733b27',
-        'model': 'seagreen',
+        'data': 'gray',
+        'model': '#009E73',
     }
 )
 
@@ -250,7 +250,7 @@ def get_figure_suffix(scaling_mode: str) -> str:
 def main():
     """Main plotting function."""
     # Set pressure scaling mode
-    scaling_mode = 'divide'  # Options: 'multiply', 'divide', 'none'
+    scaling_mode = 'none'  # Options: 'multiply', 'divide', 'none'
     
     fig, ax = plt.subplots(1, 1, figsize=(4, 4), tight_layout=True)
     

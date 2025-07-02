@@ -15,10 +15,10 @@ def setup_paths():
 def define_runs():
     runs = {
         'TWA27A': [
-            ('freeslab_lbl10_G1G2G3_0', 'G1+G2+G3'),
+            ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3'),
         ],
         'TWA28': [
-            ('freeslab_lbl10_G1G2G3_0', 'G1+G2+G3'),
+            ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3'),
         ]
     }
     # check only 1 run for each target

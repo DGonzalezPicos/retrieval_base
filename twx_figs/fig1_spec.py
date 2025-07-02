@@ -27,8 +27,8 @@ target = 'TWA28'
 w_set='NIRSpec'
 
 runs = dict(
-    TWA27A='freeslab_lbl10_G1G2G3_0',
-    TWA28='freeslab_lbl10_G1G2G3_0',
+    TWA27A='freeslab_lbl10_G1G2G3_1',
+    TWA28='freeslab_lbl10_G1G2G3_1',
             )
 
 dw = 90

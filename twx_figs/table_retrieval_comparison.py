@@ -209,8 +209,14 @@ class ComparisonTable:
             for param in v:
                 prior_decimals_rev[param] = k
         
-        lower_limits = ['dlnT_dlnP_0']
-        upper_limits = ['log_T_ex']
+        lower_limits = {
+            'TWA27A': ['dlnT_dlnP_0'],
+            'TWA28': ['dlnT_dlnP_0']
+        }
+        upper_limits = {
+            'TWA27A': ['log_T_ex'],
+            'TWA28': []
+        }
         
         decimals_rev = {}
         for k, v in decimals.items():
@@ -232,8 +238,8 @@ class ComparisonTable:
                     bestfit_values.append(self.print_bestfit(target_data[target]['bestfit'][key], 
                                                              decimals=dec, 
                                                              show_sign=True,
-                                                             is_lower_limit=key in lower_limits,
-                                                                is_upper_limit=key in upper_limits))
+                                                             is_lower_limit=key in lower_limits[target],
+                                                                is_upper_limit=key in upper_limits[target]))
                 else:
                     bestfit_values.append('---')
                     
@@ -352,8 +358,8 @@ def main():
     # Define targets and their runs
     targets = ['TWA27A', 'TWA28']
     runs = {
-        'TWA27A': 'freeslab_lbl10_G1G2G3_0',
-        'TWA28': 'freeslab_lbl10_G1G2G3_0'
+        'TWA27A': 'freeslab_lbl10_G1G2G3_1',
+        'TWA28': 'freeslab_lbl10_G1G2G3_1'
     }
     
     # Parameter descriptions with detailed explanations

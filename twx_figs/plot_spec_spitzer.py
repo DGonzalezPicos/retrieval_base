@@ -102,7 +102,8 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
         p = np.nanpercentile(flux, ylim_p)
         ax[0].set_ylim(p[0], p[1])
     
-    res_label = r'$\Delta F / F$' if relative_residuals else r'$\Delta F / erg/s/cm^2/nm$'
+    # res_label = r'$\Delta F / F$' if relative_residuals else r'$\Delta F / erg/s/cm^2/nm$'
+    res_label = '(Flux - Model)\n/ Flux' if relative_residuals else r'$\Delta F / erg/s/cm^2/nm$'
     ax[1].set_ylabel(res_label)
     
     if new_fig:
@@ -121,12 +122,15 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
         # plt.show()
     return ax, wave, flux, err
 
-colors = dict(TWA28={'data':'k', 'model':'orange'},
-              TWA27A={'data':'k', 'model':'green'})
+colors = dict(TWA28={'data':'k', 'model':'#D55E00'},
+              TWA27A={'data':'k', 'model':'#009E73'})
 
 
-runs = dict(TWA28='lbl11_G2G3_fastchem_GP_0',
-            TWA27A='lbl11_G2G3_fastchem_GP_0',
+# runs = dict(TWA28='lbl11_G2G3_fastchem_GP_0',
+#             TWA27A='lbl11_G2G3_fastchem_GP_0',
+#             )
+runs = dict(TWA28='freeslab_lbl10_G2G3_1',
+            TWA27A='freeslab_lbl10_G2G3_2',
             )
 
 d_specs, m_specs = {}, {}
@@ -166,7 +170,6 @@ ymin = np.nanmin([d_specs[t].flux for t in runs.keys()])
 ymax = np.nanmax([d_specs[t].flux for t in runs.keys()])
 # ax[0].set_xlim(xlim[0], 15e3)
 # ax[0].set_ylim(1e-17, ymax)
-ax[-1].set_ylim(-0.40, 0.40)
 
 for idx in range(d_specs['TWA28'].flux.shape[0]):
     plot_idx(idx, fig=fig, ax=ax)
@@ -178,12 +181,14 @@ prefix = '/home/dario/phd/retrieval_base'
 
 for t, target in enumerate(runs.keys()):
     spitzer = np.load(f'{prefix}/{target}/retrieval_outputs/{run_spitzer}/test_data/spitzer_model.npy')
-
+    d_spec_spitzer = af.pickle_load(f'{prefix}/{target}/retrieval_outputs/{run_spitzer}/test_data/d_spec_NIRSpec.pkl')
+    flux_unit_factor = d_spec_spitzer.flux_unit_factor
     wave_full = spitzer[0,:,:].flatten()
     bb_full = spitzer[3,:,:].flatten()
 
     wave, flux, err, bb, model_flux = spitzer[:,-1,:]
-    model_flux /= d_specs[target].flux_unit_factor
+    # model_flux /= d_specs[target].flux_unit_factor
+    model_flux /= flux_unit_factor # UPDATE 2025-07-02
     model_flux[:1] = np.nan
     ax[t].plot(wave, flux, color='k', marker='o', ms=2, alpha=0.8, ls='none', label='Observations')
     ax[t].plot(wave, model_flux, color=colors[target]['model'], lw=1.8, alpha=0.8, ls='-', label='Full model')
@@ -250,6 +255,12 @@ if xscale_log:
     xticks = [2000, 3000, 4000, 6000, 10000, 15000]
     axes[-1].set_xticks(xticks)
     axes[-1].set_xticklabels([f'{x:.0f}' for x in xticks])
+    
+ax[-1].set_ylim(-0.5, 0.5)
+
+yticks = [-0.40 , 0.0, 0.40]
+axes[-1].set_yticks(yticks)
+axes[-1].set_yticklabels([f'{y:.1f}' for y in yticks])
 
 targets = ['TWA 28', 'TWA 27A']
 for i in range(2):

@@ -12,10 +12,10 @@ lbl = 10
 # run = f'lbl{lbl}_G2G3_8'
 # run = f'lbl{lbl}_G1_2_freechem'
 # grating = 'g235h+g395h'
-gratings = ['g235h']
+# gratings = ['g235h']
 # gratings = ['g235h', 'g395h']
 # gratings = ['g140h', 'g235h', 'g395h']
-# gratings = ['g140h']
+gratings = ['g140h']
 grating_suffix = ''.join([str(g[:2]).upper() for g in gratings]) # e.g. G1G2
 chem_mode = 'fastchem'
 # chem_mode = 'freechem'
@@ -31,8 +31,10 @@ prefix = f'./retrieval_outputs/{run}/test_'
 # Define PT profile
 PT_interp_mode = 'linear' # ignored if PT_mode == 'fixed'
 PT_mode = 'RCE'
+if len(gratings) == 1 and gratings[0] == 'g140h':
+    PT_mode = 'fixed' # override to fixed PT profile
 # PT_mode = 'fixed'
-PT_run = 'lbl12_G1G2G3_fastchem_1' # ignored if PT_mode != 'fixed'
+PT_run = 'freeslab_lbl10_G1G2G3_1' # ignored if PT_mode != 'fixed'
 
 
 config_data = {
@@ -330,8 +332,8 @@ if 'g395h' in gratings:
     
 else:
     # add disk params from best fit of g140h+g235h+g395h
-    constant_params['R_d'] =  13.80 # from freeslab_lbl10_G1G2G3_0
-    constant_params['T_d'] =  654.37 # from freeslab_lbl10_G1G2G3_0
+    constant_params['R_d'] =  13.70 # from freeslab_lbl10_G1G2G3_1
+    constant_params['T_d'] =  651.0 # from freeslab_lbl10_G1G2G3_1
 
 fc_species_dict={
     'H2': 'H2',

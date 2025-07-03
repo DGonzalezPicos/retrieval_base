@@ -23,7 +23,7 @@ chem_mode = 'fastchem'
 cov_mode = 'newGP' # NEW 2025-02-27: use new GP mode, keep OLDCovariance for compatibility
 cov_mode_label = f'_{cov_mode}' if cov_mode != 'None' else ''
 
-index = 1
+index = 2
 run = f'freeslab_lbl{lbl}_{grating_suffix}_{index}'
 # run = 'test_g395h'
 prefix = f'./retrieval_outputs/{run}/test_'
@@ -170,6 +170,9 @@ opacity_params = {
     'log_NO':  ([(-14,-2), r'$\log\ \mathrm{NO}$'], 'NO_XABC_main_iso'),
     'log_SiH': ([(-14,-2), r'$\log\ \mathrm{SiH}$'], 'SiH_SiGHTLY_main_iso'),
 }
+
+if 'g140h' in gratings and index == 2:
+    opacity_params['log_TiO'] = ([(-14,-2), r'$\log\ \mathrm{TiO}$'], 'TiO_48_Exomol_McKemmish')
 
 
 species_wave = {

@@ -18,6 +18,7 @@ from retrieval_base.config import Config
 
 from fig1_insets import create_insets
 
+fontsize = 12
 path = af.get_path(return_pathlib=True)
 path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
@@ -160,7 +161,7 @@ xlim = (4200, 5200)
 ax[0].set_xlim(xlim)
 ax[0].set_ylim(flux_plot_unit*0.60e-15, flux_plot_unit*1.65e-15)
 
-ax[1].text(0.02, 0.84, r'$^{12}\mathrm{CO}$ slab', transform=ax[1].transAxes, fontsize=11, ha='left', va='top')
+ax[1].text(0.02, 0.84, r'$^{12}\mathrm{CO}$ slab', transform=ax[1].transAxes, fontsize=fontsize, ha='left', va='top')
 
 res_text = ['w/o slab', 'w/ slab']
 pe = pe.withStroke(linewidth=1, foreground='white')
@@ -168,34 +169,39 @@ yticks = [-0.03, 0.0, 0.03]
 for axi, text in zip(ax[2:], res_text):
     axi.set(ylim=(-0.035, 0.05))
     axi.axhline(0, color='k', lw=0.5,zorder=-1)
-    axi.text(0.02, 0.84, text, transform=axi.transAxes, fontsize=11, ha='left', va='top',
+    axi.text(0.02, 0.84, text, transform=axi.transAxes, fontsize=fontsize, ha='left', va='top',
             #  bbox=dict(facecolor='white', alpha=0.5, edgecolor='none'),
              path_effects=[pe],
              )
     axi.set_yticks(yticks)
     
 # add text in upper right corner of ax[0] listing the MAD values for both objects and both cases
-xm = 0.64
+xm = 0.62
 ym = 0.848
-ax[0].text(s='MAD / 10$^{-16}$', x=xm+0.152, y=ym+0.12, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
-ax[0].text(s='slab', x=xm, y=ym, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
-ax[0].text(s='no', x=xm+0.16, y=ym, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
-ax[0].text(s='yes', x=xm+0.265, y=ym, transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
+ax[0].text(s='MAD / 10$^{-16}$', x=xm+0.152, y=ym+0.12, transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top')
+ax[0].text(s='slab', x=xm, y=ym, transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top')
+ax[0].text(s='no', x=xm+0.16, y=ym, transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top')
+ax[0].text(s='yes', x=xm+0.265, y=ym, transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top')
 # TODO: add table lines in transAxes, only do when shape of the figure is final....
 ax[0].plot([xm+0.14, xm+0.35], [ym+0.02, ym+0.02], color='k', lw=0.5, ls='-', transform=ax[0].transAxes)
 ax[0].plot([xm-0.03, xm+0.35], [ym-0.10, ym-0.10], color='k', lw=0.5, ls='-', transform=ax[0].transAxes)
 
 for t, target in enumerate(runs.keys()):
-    ax[0].text(s=f'TWA {target.replace("TWA", "")}', x=xm-0.03, y=ym-0.12*(t+1) - 0.005, transform=ax[0].transAxes, fontsize=11, ha='left', va='top', weight='bold',
-               color=colors[target]['model'])
-    ax[0].text(s=f'{100*MAD_dict[target][0]:.2f}', x=xm+0.15, y=ym-0.12*(t+1), transform=ax[0].transAxes, fontsize=11, ha='left', va='top')
-    ax[0].text(s=f'{100*MAD_dict[target][1]:.2f}', x=xm+0.26, y=ym-0.12*(t+1), transform=ax[0].transAxes, fontsize=11, ha='left', va='top',
+    ax[0].text(s=f'TWA {target.replace("TWA", "")}', x=xm-0.04, y=ym-0.12*(t+1) - 0.005, transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top', weight='bold',
+               color=colors[target]['model'], path_effects=[pe])
+    ax[0].text(s=f'{100*MAD_dict[target][0]:.2f}', x=xm+0.15, y=ym-0.12*(t+1), transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top')
+    ax[0].text(s=f'{100*MAD_dict[target][1]:.2f}', x=xm+0.26, y=ym-0.12*(t+1), transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top',
                weight='bold')
-
+# add text to indicate a,b,c, of each panel for easy reference
+panels = ['a', 'b', 'c', 'd']
+ax[0].text(s=panels[0], x=0.02, y=0.12, transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='top', weight='bold', path_effects=[pe])
+ax[1].text(s=panels[1], x=0.02, y=0.22, transform=ax[1].transAxes, fontsize=fontsize, ha='left', va='top', path_effects=[pe], weight='bold')
+ax[2].text(s=panels[2], x=0.02, y=0.28, transform=ax[2].transAxes, fontsize=fontsize, ha='left', va='top', path_effects=[pe], weight='bold')
+ax[3].text(s=panels[3], x=0.02, y=0.28, transform=ax[3].transAxes, fontsize=fontsize, ha='left', va='top', path_effects=[pe], weight='bold')
 # add axes labels
-fig.text(-0.15, 0.12, r'$F_{\lambda}$' + r' / 10$^{-14}$ $\mathrm{erg\,s^{-1}\,cm^{-2}}$', transform=ax[0].transAxes, fontsize=11, ha='left', va='center', rotation='vertical')
-fig.text(0.5, -0.92, r'Wavelength / nm', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom')
-fig.text(-0.14, 0.12, r'Residuals', transform=ax[-1].transAxes, fontsize=11, ha='center', va='bottom', rotation='vertical')
+fig.text(-0.15, 0.12, r'$F_{\lambda}$' + r' / 10$^{-14}$ $\mathrm{erg\,s^{-1}\,cm^{-2}}$', transform=ax[0].transAxes, fontsize=fontsize, ha='left', va='center', rotation='vertical')
+fig.text(0.5, -0.92, r'Wavelength / nm', transform=ax[-1].transAxes, fontsize=fontsize, ha='center', va='bottom')
+fig.text(-0.14, 0.12, r'Residuals', transform=ax[-1].transAxes, fontsize=fontsize, ha='center', va='bottom', rotation='vertical')
 # fig_name = path / 'twx_figs' / 'fig_ring_emission.pdf'
 fig_name = path_figures / 'fig_ring_emission.pdf'
 fig.savefig(fig_name, bbox_inches='tight')

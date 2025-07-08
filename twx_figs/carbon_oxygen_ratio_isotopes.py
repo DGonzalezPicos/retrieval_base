@@ -58,25 +58,19 @@ def load_data(path, target, run, cache=True):
     conf = Config(path=path, target=target, run=run)(config_file)
     
     PT_VMRs_COH_file = f'{path}/{target}/retrieval_outputs/{run}/test_data/temperature_VMRs_COH.npy'
-    log_g_posterior_file = f'{conf.prefix}data/log_g_posterior.npy'
-    files = [PT_VMRs_COH_file, log_g_posterior_file]
+    files = [PT_VMRs_COH_file]
     
     posterior = None
     ret = Retrieval(conf=conf, evaluation=False)
     
     if not cache or not all(os.path.exists(file) for file in files):
         _, posterior = ret.PMN_analyze()
-        log_g_index = list(ret.Param.param_keys).index('log_g')
-        log_g_posterior = posterior[:,log_g_index]
-        np.save(log_g_posterior_file, log_g_posterior)
-        print(f'Saved {log_g_posterior_file}')
     
-    log_g_posterior = np.load(log_g_posterior_file)
     _ = ret.get_PT_mf_envelopes(posterior=posterior, n_samples=None, cache=cache)
     
-    return ret.Chem, log_g_posterior
+    return ret.Chem
 
-def get_posteriors(chem, log_g_posterior):
+def get_posteriors(chem):
     CO_posterior = np.mean(chem.COH_posterior['C'] / chem.COH_posterior['O'], axis=-1)
     CH_posterior = af.solar_metallicity(
         np.mean(chem.COH_posterior['C'], axis=-1),
@@ -97,6 +91,13 @@ def get_posteriors(chem, log_g_posterior):
     # copy 12CO/13CO to 12C/13C
     isotope_ratios['12C/13C'] = isotope_ratios['12CO/13CO']
     
+    # Handle both oxygen isotope ratios
+    if 'H2O/H2O_181' in isotope_ratios:
+        isotope_ratios['16O/18O_H2O'] = isotope_ratios['H2O/H2O_181']
+    
+    if '12CO/C18O' in isotope_ratios:
+        isotope_ratios['16O/18O_CO'] = isotope_ratios['12CO/C18O']
+    
     return CO_posterior, CH_posterior, isotope_ratios
 
 def load_crires_data(path, target):
@@ -104,27 +105,12 @@ def load_crires_data(path, target):
     file_crires = path / target / f'retrieval_outputs/final_full/test_data/bestfit_Chem.pkl'
     chem_crires = af.pickle_load(file_crires)
     
-    log_g_crires_file = path / target / f'retrieval_outputs/final_full/test_data/log_g_posterior.npy'
-    if os.path.exists(log_g_crires_file):
-        log_g_crires = np.load(log_g_crires_file)
-    else:
-        import pymultinest
-        conf = Config(path=path, target=target, run='final_full')('config_freechem.txt')
-        analyzer = pymultinest.Analyzer(
-            n_params=len(conf.free_params),
-            outputfiles_basename=conf.prefix
-        )
-        posterior = analyzer.get_equal_weighted_posterior()
-        posterior = posterior[:,:-1]
-        log_g_index = list(conf.free_params).index('log_g')
-        log_g_crires = posterior[:,log_g_index]
-        np.save(log_g_crires_file, log_g_crires)
-    
+    # print(chem_crires.VMRs_posterior.keys())
     crires_data = {
         'C/O': chem_crires.VMRs_posterior['C/O'],
         '[C/H]': chem_crires.VMRs_posterior['Fe/H'],
         '12C/13C': chem_crires.VMRs_posterior['12_13CO'],
-        'log_g': log_g_crires
+        '16O/18O_H2O': chem_crires.VMRs_posterior['H2_16_18O'],
     }
     return crires_data
 
@@ -141,7 +127,6 @@ def load_zhang2025_data():
     
     # add None for the other parameters
     measurements['12C/13C'] = None
-    measurements['log_g'] = None
     
     return measurements
 
@@ -179,9 +164,14 @@ def apply_gamma_corrections(data_dict, corrections):
     calibrated_dict = {
         'C/O': corrections['CO_calibrated'],
         '12C/13C': corrections['12C_13C_calibrated'],
-        '[C/H]': data_dict['[C/H]'],  # No calibration for metallicity
-        'log_g': data_dict['log_g']   # No calibration for log g
+        '16O/18O_H2O': data_dict['16O/18O_H2O'],  # No calibration for H2O oxygen isotopes
+        '16O/18O_CO': data_dict['16O/18O_CO'],    # No calibration for CO oxygen isotopes
     }
+    
+    # Apply gamma correction to 16O/18O_CO if available
+    if data_dict['16O/18O_CO'] is not None and corrections['gamma_factor'] is not None:
+        # The gamma factor corrects the 16O/18O ratio: corrected_ratio = original_ratio * gamma_factor
+        calibrated_dict['16O/18O_CO'] = data_dict['16O/18O_CO'] * corrections['gamma_factor']
     
     return calibrated_dict
 
@@ -206,12 +196,14 @@ def plot_reference_values(ax, row):
     solar = {
         'C/O': (0.59, 0.08),
         '12C/13C': (93.5, 3.1),
+        '16O/18O': (511, 10), # Ayres+2013
         'color': 'magenta',
         'label': 'Solar' if row == 0 else None
     }
     ism = {
         '12C/13C': (68, 14),
-        'color': 'mediumseagreen',
+        '16O/18O': (557, 30), # Wilson+1999
+        'color': 'deepskyblue',
         'label': 'ISM' if row == 0 else None
     }
     
@@ -225,11 +217,15 @@ def plot_reference_values(ax, row):
             ax[row,0].errorbar(value['C/O'][0], 55, xerr=value['C/O'][1], **eb_args)
         if value.get('12C/13C') is not None:
             ax[row,1].errorbar(value['12C/13C'][0], 0.05, xerr=value['12C/13C'][1], **eb_args)
+        if value.get('16O/18O') is not None:
+            # Plot on both oxygen isotope ratio plots
+            ax[row,2].errorbar(value['16O/18O'][0], 0.002, xerr=value['16O/18O'][1], **eb_args)
+            ax[row,3].errorbar(value['16O/18O'][0], 0.002, xerr=value['16O/18O'][1], **eb_args)
 
 def setup_axes(fig, ax):
     """Setup axes labels and appearance"""
-    param_labels = ['C/O', r'$\mathrm{^{12}C}/\mathrm{^{13}C}$', '[C/H]', 'log g']
-    xlims = [(0.36, 0.70), (10, 160), (-0.8, 0.8), (3.0, 5.0)]
+    param_labels = ['C/O', r'$\mathrm{^{12}C}/\mathrm{^{13}C}$', r'$\mathrm{^{16}O}/\mathrm{^{18}O}$ (H$_2$O)', r'$\mathrm{^{16}O}/\mathrm{^{18}O}$ (CO)']
+    xlims = [(0.36, 0.70), (10, 160), (200, 1400), (200, 1400)]
     
     # Add target names as row labels
     targets = ['TWA 27A', 'TWA 28']
@@ -257,34 +253,83 @@ def setup_axes(fig, ax):
 def add_correction_annotations(ax, row):
     """Add text annotations with arrows pointing to calibrated distributions"""
     if row == 0:  # TWA27A - has calibrations
-        # Single text box positioned between the two plots
+        import matplotlib.patheffects as pe
+        pe_white = pe.withStroke(linewidth=8, foreground='w')
+
+        # Single text box positioned between the first two plots
         text_x = 0.25  # Position between C/O and 12C/13C plots
         text_y = 0.65  # Upper part of the figure
-        
+        bbox = dict(boxstyle='round,pad=0.3', facecolor='navy', 
+                         edgecolor='navy', alpha=0.1, linewidth=1)
+        bbox_copy = bbox.copy()
+        bbox_copy['facecolor'] = 'none'
+        bbox_copy['edgecolor'] = 'navy'
+        bbox_copy['alpha'] = 0.9
+        bbox_copy['linewidth'] = 1.5
         # Add single text annotation in figure coordinates
-        fig = ax[0, 0].figure
-        fig.text(text_x, text_y, 
-                #  'calibrated', 
-                # r'${\rm H_2^{16}O/H_2^{18}O} \approx {\rm ^{12}CO/C^{18}O}$',
-                'calibrated',
+        # fig = ax[0, 0].figure
+        # fig.text(text_x, text_y, 
+        #         #  'calibrated', 
+        #         # r'${\rm H_2^{16}O/H_2^{18}O} \approx {\rm ^{12}CO/C^{18}O}$',
+        #         'calibrated',
+        #         fontsize=10, ha='center', va='center',
+        #         bbox=bbox,
+        #         zorder=20)
+        
+        
+        # fig.text(text_x, text_y, 
+        #         #  'calibrated', 
+        #         # r'${\rm H_2^{16}O/H_2^{18}O} \approx {\rm ^{12}CO/C^{18}O}$',
+        #         'calibrated',
+        #         fontsize=10, ha='center', va='center',
+        #         zorder=20,
+        #         bbox=bbox_copy)
+        
+        # Arrow pointing to C/O calibrated distribution (column 0) with white edge
+        # arrow1 = ax[row, 0].annotate('', 
+        #                    xy=(0.565, 11), xytext=(0.75, 25),  # Point to calibrated peak
+        #                    arrowprops=dict(arrowstyle='->', color='gray', 
+        #                                  lw=1.5, alpha=0.8, zorder=-1),
+        #                    zorder=0)
+        # arrow1.arrow_patch.set_path_effects([pe_white])
+        
+        # # Arrow pointing to 12C/13C calibrated distribution (column 1) with white edge
+        # arrow2 = ax[row, 1].annotate('', 
+        #                    xy=(77, 0.028), xytext=(-1, 0.052),  # Point to calibrated peak at ~79.4
+        #                    arrowprops=dict(arrowstyle='->', color='gray', 
+        #                                  lw=1.5, alpha=0.8, zorder=-1),
+        #                    zorder=0)
+        # arrow2.arrow_patch.set_path_effects([pe_white])
+        fig = ax[0, 3].figure
+        # Add annotation for 16O/18O_CO calibration (column 3) - same style as C/O
+        text_x_co = 0.84  # Position near the 16O/18O_CO plot
+        text_y_co = 0.65  # Same height as other annotation
+        
+        fig.text(text_x_co, text_y_co, 
+                'calibrated',  # Same text as C/O panel
                 fontsize=10, ha='center', va='center',
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
-                         edgecolor='gray', alpha=0.9, linewidth=1),
+                bbox=bbox,
+                zorder=20)
+        fig.text(text_x_co, text_y_co, 
+                'calibrated',  # Same text as C/O panel
+                fontsize=10, ha='center', va='center',
+                bbox=bbox_copy,
                 zorder=20)
         
-        # Arrow pointing to C/O calibrated distribution (column 0)
-        ax[row, 0].annotate('', 
-                           xy=(0.565, 11), xytext=(0.75, 25),  # Point to calibrated peak
+        arrow1 = ax[row, 0].annotate('', 
+                           xy=(0.58, 0.05), xytext=(0.48, 0.05),  # Point to calibrated peak
                            arrowprops=dict(arrowstyle='->', color='gray', 
                                          lw=1.5, alpha=0.8, zorder=-1),
                            zorder=0)
+        arrow1.arrow_patch.set_path_effects([pe_white, pe.Normal()])
         
-        # Arrow pointing to 12C/13C calibrated distribution (column 1)  
-        ax[row, 1].annotate('', 
-                           xy=(77, 0.028), xytext=(-1, 0.052),  # Point to calibrated peak at ~79.4
+        # Arrow pointing to 16O/18O_CO calibrated distribution (column 3) with white edge
+        arrow3 = ax[row, 3].annotate('', 
+                           xy=(500, 0.0035), xytext=(450, 0.0055),  # Point to calibrated distribution
                            arrowprops=dict(arrowstyle='->', color='gray', 
                                          lw=1.5, alpha=0.8, zorder=-1),
                            zorder=0)
+        arrow3.arrow_patch.set_path_effects([pe_white, pe.Normal()])
     # For TWA28 (row 1), no annotations needed since no calibrations are applied
 
 def main():
@@ -302,7 +347,7 @@ def main():
     zhang2025_data = load_zhang2025_data()
     
     # Define the order of parameters to plot
-    param_order = ['C/O', '12C/13C', '[C/H]', 'log_g']
+    param_order = ['C/O', '12C/13C', '16O/18O_H2O', '16O/18O_CO']
     
     for row, target in enumerate(runs.keys()):
         target_runs = runs[target]
@@ -310,15 +355,15 @@ def main():
         # Plot JWST data
         for r, run_name in enumerate(target_runs):
             run, label = run_name
-            chem, log_g_posterior = load_data(path, target, run)
-            CO_posterior, CH_posterior, isotope_ratios = get_posteriors(chem, log_g_posterior)
+            chem = load_data(path, target, run)
+            CO_posterior, CH_posterior, isotope_ratios = get_posteriors(chem)
             
             # Create data dictionary to match the new order
             data_dict = {
                 'C/O': CO_posterior,
                 '12C/13C': isotope_ratios['12C/13C'],
-                '[C/H]': CH_posterior,
-                'log_g': log_g_posterior
+                '16O/18O_H2O': isotope_ratios.get('16O/18O_H2O'),
+                '16O/18O_CO': isotope_ratios.get('16O/18O_CO'),
             }
             
             # Load gamma calibrations only for G1+G2+G3 runs
@@ -328,7 +373,7 @@ def main():
             
             # use tabulate to print data_dict with 1,3 sigma uncertainties
             quantiles = np.array([0.16, 0.5, 0.84])
-            quantiles_data = {k: np.percentile(v, quantiles*100) for k, v in data_dict.items()}
+            quantiles_data = {k: np.percentile(v, quantiles*100) if v is not None else None for k, v in data_dict.items()}
             print(f' --> {target} {run}')
             print(tabulate(quantiles_data, headers='keys', tablefmt='grid'))
             # print the C/O results as q50 +- q84-q16
@@ -337,7 +382,7 @@ def main():
             # Simplified label without target name
             label = f'NIRSpec/{label}'
             
-            quantiles_isotope_ratios = {k: np.percentile(v, quantiles*100) for k, v in isotope_ratios.items()}
+            quantiles_isotope_ratios = {k: np.percentile(v, quantiles*100) if v is not None else None for k, v in isotope_ratios.items()}
             print(tabulate(quantiles_isotope_ratios, headers='keys', tablefmt='grid'))
             
             for col, param in enumerate(param_order):
@@ -350,25 +395,69 @@ def main():
                 if calibrated_dict is not None:
                     calibrated_label = f'NIRSpec/{label} (γ-calibrated)'
                     for col, param in enumerate(param_order):
-                        if param in ['C/O', '12C/13C']:  # Only plot calibrations for these parameters
+                        if param in ['C/O', '12C/13C']:  # Plot C/O and 12C/13C calibrations
                             plot_hist(ax[row,col], calibrated_dict[param], color, 
                                      label=calibrated_label if col == 0 else None,
-                                     fill=True, fill_alpha=0.2, linestyle='-', alpha=0.9)
+                                     fill=True, fill_alpha=0.1, linestyle='-', alpha=0.9)
                             plot_hist(ax[row,col], calibrated_dict[param], color, 
                                      label=calibrated_label if col == 0 else None,
                                      fill=False, linestyle='-', alpha=0.9)
+                            
+                            # Add arrow showing the shift for C/O and 12C/13C
+                            if target == 'TWA27A' and data_dict[param] is not None and calibrated_dict[param] is not None:
+                                original_median = np.median(data_dict[param])
+                                calibrated_median = np.median(calibrated_dict[param])
+                                # Set arrow height based on parameter
+                                arrow_heights = {'C/O': 5, '12C/13C': 0.016, '16O/18O_H2O': 0.003, '16O/18O_CO': 0.003}
+                                arrow_height = arrow_heights[param]
+                                # Add arrow pointing from original to calibrated with white edge
+                                import matplotlib.patheffects as pe
+                                arrow = ax[row,col].annotate('', 
+                                                   xy=(calibrated_median, arrow_height), 
+                                                   xytext=(original_median, arrow_height),
+                                                   arrowprops=dict(arrowstyle='->', color=color, 
+                                                                 lw=2, alpha=0.8, zorder=15),
+                                                   zorder=15)
+                                arrow.arrow_patch.set_path_effects([pe.withStroke(linewidth=3, foreground='w')])
+                        elif param == '16O/18O_CO' and target == 'TWA27A':  # Plot 16O/18O_CO calibration for TWA27A only
+                            # Fill histogram with alpha=0.1
+                            plot_hist(ax[row,col], calibrated_dict[param], color, 
+                                     label=calibrated_label if col == 3 else None,
+                                     fill=True, fill_alpha=0.1, linestyle='-', alpha=0.9)
+                            # Unfilled outline
+                            plot_hist(ax[row,col], calibrated_dict[param], color, 
+                                     label=None,
+                                     fill=False, linestyle='-', alpha=0.9, zorder=10)
+                            
+                            # Add arrow showing the shift for 16O/18O_CO
+                            if data_dict[param] is not None and calibrated_dict[param] is not None:
+                                original_median = np.median(data_dict[param])
+                                calibrated_median = np.median(calibrated_dict[param])
+                                # Add arrow pointing from original to calibrated with white edge
+                                import matplotlib.patheffects as pe
+                                arrow = ax[row,col].annotate('', 
+                                                   xy=(calibrated_median, 0.0015), 
+                                                   xytext=(original_median, 0.0015),
+                                                   arrowprops=dict(arrowstyle='->', color=color, 
+                                                                 lw=2, alpha=0.8, zorder=15),
+                                                   zorder=15)
+                                arrow.arrow_patch.set_path_effects([pe.withStroke(linewidth=3, foreground='w')])
                 
         # Plot CRIRES data for TWA28
         if target == 'TWA28':
             for col, key in enumerate(param_order):
-                plot_hist(ax[row,col], crires_data[key], colors[target]['crires'],
-                         label=r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)', bins=20, alpha=0.40,
-                         density=True, linestyle='-', fill_alpha=0.7, fill=True)
+                if key in crires_data:
+                    median, lower, upper = np.percentile(crires_data[key], [50, 16, 84])
+                    print(f' --> {target} {key}: {median:.3f} (+ {upper-median:.3f} - {median-lower:.3f})')
+                    plot_hist(ax[row,col], crires_data[key], colors[target]['crires'],
+                             label=r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)', bins=20, alpha=0.40,
+                             density=True, linestyle='-', fill_alpha=0.7, fill=True)
         elif target == 'TWA27A':
             for col, key in enumerate(param_order):
-                plot_hist(ax[row,col], zhang2025_data[key], 
-                          colors[target]['zhang2025'],
-                        # ['orangered'],
+                if key in zhang2025_data:
+                    plot_hist(ax[row,col], zhang2025_data[key], 
+                              colors[target]['zhang2025'],
+                            # ['orangered'],
                          label='TWA 27 b\n(Zhang et al. 2025)', bins=20, alpha=0.65,
                          density=True, linestyle='-', fill_alpha=0.3, fill=True)
         
@@ -386,9 +475,10 @@ def main():
     # Add legend to the last plot of each row, add box around legend with alpha=0.5
     for row in range(2):
         if row == 0:
-            # combine legends from ax[row,1] and ax[row,2]
+            # combine legends from multiple columns including 16O/18O_CO calibrations
             handles, labels = [], []
-            for col in range(1,3):
+            # Include columns 0, 1, and 3 (C/O, 12C/13C, and 16O/18O_CO)
+            for col in [0, 1, 2, 3]:
                 h, l = ax[row,col].get_legend_handles_labels()
                 # add only if not already in handles
                 for hi, li in zip(h, l):
@@ -397,35 +487,40 @@ def main():
                         labels.append(li)
             leg_elements = {k:v for k,v in zip(labels, handles)}
             # sort by label list - include calibrated distributions
-            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G1+G2+G3 (γ-calibrated)', 'NIRSpec/G2+G3', 'NIRSpec/G2', 'TWA 27 b\n(Zhang et al. 2025)', 'Solar', 'ISM']
+            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G2+G3', 'NIRSpec/G2', 'TWA 27 b\n(Zhang et al. 2025)', 'Solar', 'ISM']
             handles = [leg_elements[l] for l in label_list if l in leg_elements]
             labels = [l for l in label_list if l in leg_elements]
         else:
             # sort by label list
-            handles, labels = ax[row,1].get_legend_handles_labels()
+            handles, labels = ax[row,0].get_legend_handles_labels()
             leg_elements = {k:v for k,v in zip(labels, handles)}
             # Include calibrated distributions for TWA28
-            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G1+G2+G3 (γ-calibrated)', r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
+            label_list = [r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
             handles = [leg_elements[l] for l in label_list if l in leg_elements]
             labels = [l for l in label_list if l in leg_elements]
         
         ax[row,2].legend(handles, labels, frameon=True, fontsize=9, loc=(-0.80+0.11*row, 0.40+0.16*row), facecolor='white', edgecolor='k')
 
     # Save figure with calibrated suffix
-    fig_name_calibrated = path_figures / 'metallicity_CO_C_ratio_calibrated.pdf'
+    fig_name_calibrated = path_figures / 'carbon_oxygen_isotope_ratios_calibrated.pdf'
     fig.savefig(fig_name_calibrated, bbox_inches='tight', dpi=300)
-    # save as png
-    fig_name_calibrated_png = path_figures / 'metallicity_CO_C_ratio_calibrated.png'
-    fig.savefig(fig_name_calibrated_png, bbox_inches='tight', dpi=300)
     print(f'Saved {fig_name_calibrated}')
+    save_png = False
+    if save_png:
+        # save as png
+        fig_name_calibrated_png = path_figures / 'carbon_oxygen_isotope_ratios_calibrated.png'
+        fig.savefig(fig_name_calibrated_png, bbox_inches='tight', dpi=300)
+        print(f'Saved {fig_name_calibrated_png}')
     
     # Also save original figure (for compatibility)
-    fig_name = path_figures / 'metallicity_CO_C_ratio.pdf'
+    fig_name = path_figures / 'carbon_oxygen_isotope_ratios.pdf'
     fig.savefig(fig_name, bbox_inches='tight', dpi=300)
-    # save as png
-    fig_name_png = path_figures / 'metallicity_CO_C_ratio.png'
-    fig.savefig(fig_name_png, bbox_inches='tight', dpi=300)
-    print(f'Saved {fig_name} (original functionality preserved)')
+    print(f'Saved {fig_name}')
+    if save_png:
+        # save as png
+        fig_name_png = path_figures / 'carbon_oxygen_isotope_ratios.png'
+        fig.savefig(fig_name_png, bbox_inches='tight', dpi=300)
+        print(f'Saved {fig_name_png}')
     
     plt.close('all')
 

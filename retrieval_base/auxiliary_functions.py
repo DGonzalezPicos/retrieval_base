@@ -798,7 +798,7 @@ def solar_metallicity(C, H, asplund_year=2021):
     asplund = {2021: 8.46, 2009: 8.43}
     return np.log10(C/H) - (asplund[asplund_year] - 12.0)
 
-def load_posterior(target, run):
+def load_posterior(target, run, cache=True):
     from retrieval_base.config import Config
     from retrieval_base.retrieval import Retrieval
     path = get_path(return_pathlib=True)
@@ -813,7 +813,7 @@ def load_posterior(target, run):
     conf = Config(path=path, target=target, run=run)(config_file)
     
     posterior_file = f'{conf.prefix}data/bestfit_posteriors.npy'
-    if not os.path.exists(posterior_file):
+    if not os.path.exists(posterior_file) or not cache:
         
         ret = Retrieval(
                 conf=conf,

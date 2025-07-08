@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import matplotlib.patheffects as pe
+pe_white = [pe.withStroke(linewidth=8.0, foreground='white'), pe.Normal()]
+
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
@@ -195,16 +198,6 @@ species_colors = {
     'Mg': '#f781bf',     # Pink
     'Si': '#999999'      # Gray
 }
-
-# species_to_plot_band = dict(J=['H2O', 'FeH', 'TiO', 'VO', 'K', 'Na', 'Fe', 'NaH', 'CrH', 'AlH'],
-#                             H=['H2O', 'FeH', 'OH', 'Fe', 'Na', '12CO', 'HF','HCl','CrH'],
-#                             K1=['H2O', 'FeH', 'OH', 'Fe', 'Na', '12CO', 'HF','HCl','CrH'],
-#                             K2=['H2O', 'FeH', 'OH', 'Fe', 'Na', '12CO', 'HF','HCl','CrH'],
-#                             L1=['H2O', 'CH4','H2S', 'HCl', 'HF','CO2','OH','VO','TiO','CrH','AlH','AlO','H2S','SiO'],
-#                             L2=['H2O', 'CH4','H2S', 'HCl', 'HF','CO2','OH','VO','TiO','CrH','AlH','AlO','H2S','SiO'],
-#                             M1=['H2O', 'CH4','H2S', 'HCl', 'HF','CO2','OH','VO','TiO','CrH','AlH','AlO','H2S','SiO'],
-#                             M2=['H2O', 'CH4','H2S', 'HCl', 'HF','CO2','OH','VO','TiO','CrH','AlH','AlO','H2S','SiO'],
-#                             )
 species_to_plot = list(species_colors.keys())
 
 colors = dict(TWA28={'data':'k', 
@@ -406,7 +399,9 @@ def main():
     ]
     
     # Offset factors for TWA27A y-limits
-    offset_ylims = np.linspace(0.62, 1.0, len(custom_ylims))[::-1]
+    # offset_ylims = np.linspace(0.62, 1.0, len(custom_ylims))[::-1]
+    offset_ylims = np.ones(len(custom_ylims))
+    offset_ylims[3:] = np.linspace(0.78, 1.0, len(custom_ylims[3:]))[::-1]
     
     # Loop over each target
     for target in runs_all.keys():
@@ -430,9 +425,23 @@ def main():
                                     gridspec_kw={'height_ratios': [3, 1]*nb,
                                                 'hspace': 0.3})
             
+            
+
             # Separate spectrum and residual axes
             ax_spec = axes[0::2]
             ax_res = axes[1::2]
+            
+            ax_spec[0].text(0.02, 0.92 if nb1 == 0 else 0.72,
+                            f'{target.replace("TWA", "TWA ")}', 
+                         transform=ax_spec[0].transAxes,
+                            ha='left', va='top', fontsize=14,
+                            color='black',
+                            weight='bold',
+                            bbox=dict(facecolor='none', 
+                                      alpha=1.0, edgecolor='k',
+                                    
+                            )
+            )
             
             # Apply y-limit offsets for TWA27A
             target_ylims = custom_ylims.copy()
@@ -443,6 +452,7 @@ def main():
             
             # Plot each spectral segment
             for i, nb_i in enumerate(nb_range):
+                
                 show_ylabel = (i == (nb2-nb1)//2)
                 
                 # Plot the spectral band with opacities
@@ -465,6 +475,8 @@ def main():
                 
                 # Set custom y-limits for this segment
                 ax_spec[i].set_ylim(target_ylims[nb_i][0], target_ylims[nb_i][1])
+            
+            
             
             # Save figure
             pdf_name = twx_paper / f'fig_spec_opacities_{nb1}_{nb2}_{target}.pdf'

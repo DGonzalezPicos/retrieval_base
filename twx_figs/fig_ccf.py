@@ -115,9 +115,24 @@ for t, target in enumerate(runs.keys()):
 
 # create custom manual legend with the colors of each target
 from matplotlib.lines import Line2D
-legend_elements = [Line2D([0], [0], color=colors[target], lw=lw*1.5, label=target.replace('TWA', 'TWA ')) for target in runs.keys()]
-ax_ccfs[0].legend(ncol=2,handles=legend_elements, loc=(0.11, 1.01), frameon=False, fontsize=10,
-                  handlelength=1.4, handleheight=1.0)
+# create legend elements for each target
+legend_elements = [Line2D([0], [0], color=colors[target],
+                          lw=lw*1.5, label=target.replace('TWA', 'TWA ')) for target in runs.keys()]
+
+# add CCF and ACF elements to the legend
+legend_elements.append(Line2D([0], [0], color='k', lw=lw*1.5, label='CCF', ls='-', alpha=0.9))
+legend_elements.append(Line2D([0], [0], color='k', lw=lw*1.5, label='ACF', ls='--', alpha=0.9))
+
+# create legend with bold font for target labels
+legend = ax_ccfs[0].legend(ncol=4, handles=legend_elements, loc=(-0.05, 1.01), frameon=False, fontsize=10,
+                          handlelength=1.4, handleheight=1.0,
+                          handletextpad=0.5,
+                          columnspacing=1.0)
+
+# make the first two legend labels (TWA targets) bold
+for i, text in enumerate(legend.get_texts()):
+    if i < len(runs):  # Only the target labels (first n entries)
+        text.set_fontweight('bold')
 
 ax_resids[-1].set_xlabel('RV / km s$^{-1}$')
 # set common ylabel

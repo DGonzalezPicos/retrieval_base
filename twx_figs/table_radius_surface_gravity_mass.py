@@ -31,11 +31,11 @@ def setup_paths():
 def define_runs():
     # only one run per target
     runs = {
-        'TWA28': {'freeslab_lbl10_G1G2G3_1': r'0.97-5.30 $\mu$m', # G1+G2+G3
-                    'freeslab_lbl10_G2G3_1': r'1.63-5.30 $\mu$m', # G2+G3
+        'TWA28': {'freeslab_lbl10_G1G2G3_1': r'0.97-5.27 $\mu$m', # G1+G2+G3
+                    'freeslab_lbl10_G2G3_1': r'1.63-5.27 $\mu$m', # G2+G3
                     },
-        'TWA27A': {'freeslab_lbl10_G1G2G3_1': r'0.97-5.30 $\mu$m', # G1+G2+G3
-                    'freeslab_lbl10_G2G3_2': r'1.63-5.30 $\mu$m', # G2+G3
+        'TWA27A': {'freeslab_lbl10_G1G2G3_1': r'0.97-5.27 $\mu$m', # G1+G2+G3
+                    'freeslab_lbl10_G2G3_2': r'1.63-5.27 $\mu$m', # G2+G3
                     },
     }
 
@@ -367,13 +367,13 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
     
     # Group runs by wavelength range
     wavelength_groups = {
-        'freeslab_lbl10_G1G2G3_1': r'0.97-5.30 $\mu$m',
-        'freeslab_lbl10_G2G3_1': r'1.63-5.30 $\mu$m',
-        'freeslab_lbl10_G2G3_2': r'1.63-5.30 $\mu$m'
+        'freeslab_lbl10_G1G2G3_1': r'0.97-5.27 $\mu$m',
+        'freeslab_lbl10_G2G3_1': r'1.63-5.27 $\mu$m',
+        'freeslab_lbl10_G2G3_2': r'1.63-5.27 $\mu$m'
     }
     
     # Process each wavelength range as a subblock
-    for wavelength_range in [r'0.97-5.30 $\mu$m', r'1.63-5.30 $\mu$m']:
+    for wavelength_range in [r'0.97-5.27 $\mu$m', r'1.63-5.27 $\mu$m']:
         latex_table.append(f"\\multicolumn{{4}}{{l}}{{\\quad {wavelength_range}}} \\\\")
         
         for target in ['TWA27A', 'TWA28']:
@@ -418,8 +418,8 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
     latex_table.append("Radius and surface gravity uncertainties are shown as symmetric (using the larger of the asymmetric uncertainties), ")
     latex_table.append("while mass uncertainties are shown asymmetrically where appropriate. ")
     latex_table.append("ATMO and BT-Settl refer to different atmospheric model grids from \\textit{Manjavacas et al.} (2024). ")
-    latex_table.append("Wavelength ranges indicate the spectral coverage: 0.97--5.30~$\\mu$m includes all three ")
-    latex_table.append("NIRSpec gratings (G140H, G235H, G395H), while 1.63--5.30~$\\mu$m uses only G235H and G395H. }")
+    latex_table.append("Wavelength ranges indicate the spectral coverage: 0.97--5.27~$\\mu$m includes all three ")
+    latex_table.append("NIRSpec gratings (G140H, G235H, G395H), while 1.63--5.27~$\\mu$m uses only G235H and G395H. }")
     latex_table.append("\\end{table}")
     
     # Join all lines

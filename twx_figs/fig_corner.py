@@ -191,6 +191,67 @@ def compute_quantiles(samples: np.ndarray, q: list = [0.16, 0.5, 0.84]) -> np.nd
     """Compute quantiles for parameter samples"""
     return af.quantiles(samples, q=q)
 
+def format_value_with_uncertainty(median: float, lower: float, upper: float) -> str:
+    """Format a value with uncertainty, using symmetric notation when appropriate"""
+    
+    # Check if uncertainties are symmetric (within relative tolerance)
+    tolerance = 0.05  # 5% relative tolerance
+    avg_error = (lower + upper) / 2
+    is_symmetric = (abs(lower - upper) / max(avg_error, 1e-10)) < tolerance if avg_error > 0 else lower == upper == 0
+    
+    if is_symmetric and avg_error > 0:
+        # Use symmetric notation: x = 10 ± 2
+        # Determine precision needed
+        if avg_error == 0.0:
+            # If error is exactly zero, increase precision until non-zero or max precision
+            max_decimals = 6
+            for decimals in range(2, max_decimals + 1):
+                if round(avg_error, decimals) != 0:
+                    break
+            else:
+                decimals = max_decimals
+        else:
+            # Determine precision based on median value magnitude
+            if abs(median) >= 1000:
+                decimals = 0
+            elif abs(median) >= 100:
+                decimals = 1
+            elif abs(median) >= 1:
+                decimals = 2
+            elif abs(median) >= 0.1:
+                decimals = 3
+            else:
+                decimals = 4
+                
+            # If the error rounds to zero at this precision, increase precision
+            while decimals <= 6 and round(avg_error, decimals) == 0:
+                decimals += 1
+        
+        return f"{median:.{decimals}f} $\\pm$ {avg_error:.{decimals}f}"
+    
+    else:
+        # Use asymmetric notation: x = 10^{+2}_{-1}
+        # Determine precision based on median value magnitude
+        if abs(median) >= 1000:
+            decimals = 0
+        elif abs(median) >= 100:
+            decimals = 1
+        elif abs(median) >= 1:
+            decimals = 2
+        elif abs(median) >= 0.1:
+            decimals = 3
+        else:
+            decimals = 4
+            
+        # Check if errors round to zero and increase precision if needed
+        while decimals <= 6 and (round(lower, decimals) == 0 or round(upper, decimals) == 0):
+            if lower > 0 or upper > 0:  # Only increase if there are non-zero errors
+                decimals += 1
+            else:
+                break
+        
+        return f"{median:.{decimals}f}$^{{+{upper:.{decimals}f}}}_{{-{lower:.{decimals}f}}}$"
+
 def format_quantile_title(param_name: str, quantiles_dict: dict, param_labels: dict, colors: dict) -> str:
     """Format parameter title with median and 1-sigma errors for both targets"""
     param_label = param_labels.get(param_name, param_name)
@@ -206,11 +267,8 @@ def format_quantile_title(param_name: str, quantiles_dict: dict, param_labels: d
             lower = quantiles[1] - quantiles[0]
             upper = quantiles[2] - quantiles[1]
             
-            # Format numbers appropriately
-            if abs(median) > 100 or abs(median) < 0.01:
-                value_str = f"{median:.2e}$^{{+{upper:.1e}}}_{{-{lower:.1e}}}$"
-            else:
-                value_str = f"{median:.2f}$^{{+{upper:.2f}}}_{{-{lower:.2f}}}$"
+            # Format using the new function
+            value_str = format_value_with_uncertainty(median, lower, upper)
             
             # Simple text without color coding in LaTeX
             title_parts.append(f"{value_str}")
@@ -389,22 +447,8 @@ def create_custom_corner_plot(data_dict: dict, param_order: list, colors: dict,
                             lower = quantiles[1] - quantiles[0]
                             upper = quantiles[2] - quantiles[1]
                             
-                            # Format numbers with appropriate decimal precision
-                            if abs(median) >= 1000:
-                                # Large numbers: use 0 decimal places
-                                value_str = f"{median:.0f}$^{{+{upper:.0f}}}_{{-{lower:.0f}}}$"
-                            elif abs(median) >= 100:
-                                # Medium-large numbers: use 1 decimal place
-                                value_str = f"{median:.1f}$^{{+{upper:.1f}}}_{{-{lower:.1f}}}$"
-                            elif abs(median) >= 1:
-                                # Numbers >= 1: use 2 decimal places
-                                value_str = f"{median:.2f}$^{{+{upper:.2f}}}_{{-{lower:.2f}}}$"
-                            elif abs(median) >= 0.1:
-                                # Numbers 0.1-1: use 3 decimal places
-                                value_str = f"{median:.3f}$^{{+{upper:.3f}}}_{{-{lower:.3f}}}$"
-                            else:
-                                # Small numbers < 0.1: use 4 decimal places
-                                value_str = f"{median:.4f}$^{{+{upper:.4f}}}_{{-{lower:.4f}}}$"
+                            # Format using the new function
+                            value_str = format_value_with_uncertainty(median, lower, upper)
                             
                             # Add colored text
                             color = colors[target]['corner']
@@ -483,7 +527,9 @@ def create_custom_corner_plot(data_dict: dict, param_order: list, colors: dict,
     
     if handles:
         legend = fig.legend(handles=handles, labels=labels, loc='upper right', 
-                           bbox_to_anchor=(0.68, 0.68), fontsize=16,
+                           bbox_to_anchor=(0.68, 0.68), fontsize=14,
+                           title='0.97-5.27 $\mu$m',
+                           title_fontsize=14,
                            framealpha=0.9, edgecolor='black', frameon=True)
         
         # Apply bold font and path effects to legend text

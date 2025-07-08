@@ -146,7 +146,7 @@ def load_zhang2025_data():
     return measurements
 
 def load_gamma_corrections(path, target, run):
-    """Load gamma calibration distributions for a target"""
+    """Load gamma correction distributions for a target"""
     gamma_corrections_file = path / target / 'retrieval_outputs' / run / 'test_data' / 'gamma_corrections.npz'
     
     if gamma_corrections_file.exists():
@@ -159,31 +159,31 @@ def load_gamma_corrections(path, target, run):
         }
         
         if corrections['correction_applied']:
-            corrections['12C_13C_calibrated'] = data['12C_13C_corrected']
-            corrections['CO_calibrated'] = data['CO_corrected']
+            corrections['12C_13C_corrected'] = data['12C_13C_corrected']
+            corrections['CO_corrected'] = data['CO_corrected']
         else:
-            corrections['12C_13C_calibrated'] = None
-            corrections['CO_calibrated'] = None
+            corrections['12C_13C_corrected'] = None
+            corrections['CO_corrected'] = None
             
-        print(f'Loaded gamma calibrations for {target} {run}')
+        print(f'Loaded gamma corrections for {target} {run}')
         return corrections
     else:
-        print(f'No gamma calibrations found for {target} {run}')
+        print(f'No gamma corrections found for {target} {run}')
         return None
 
 def apply_gamma_corrections(data_dict, corrections):
-    """Apply gamma calibrations to create calibrated data dictionary"""
+    """Apply gamma corrections to create corrected data dictionary"""
     if corrections is None or not corrections['correction_applied']:
         return None
     
-    calibrated_dict = {
-        'C/O': corrections['CO_calibrated'],
-        '12C/13C': corrections['12C_13C_calibrated'],
-        '[C/H]': data_dict['[C/H]'],  # No calibration for metallicity
-        'log_g': data_dict['log_g']   # No calibration for log g
+    corrected_dict = {
+        'C/O': corrections['CO_corrected'],
+        '12C/13C': corrections['12C_13C_corrected'],
+        '[C/H]': data_dict['[C/H]'],  # No correction for metallicity
+        'log_g': data_dict['log_g']   # No correction for log g
     }
     
-    return calibrated_dict
+    return corrected_dict
 
 def plot_hist(ax, data, color, label=None, bins=20, alpha=0.65, density=True, linestyle='-', fill_alpha=None, zorder=None, fill=True):
     """Plot filled histogram with outline"""
@@ -254,39 +254,6 @@ def setup_axes(fig, ax):
     
     return fig, ax
 
-def add_correction_annotations(ax, row):
-    """Add text annotations with arrows pointing to calibrated distributions"""
-    if row == 0:  # TWA27A - has calibrations
-        # Single text box positioned between the two plots
-        text_x = 0.25  # Position between C/O and 12C/13C plots
-        text_y = 0.65  # Upper part of the figure
-        
-        # Add single text annotation in figure coordinates
-        fig = ax[0, 0].figure
-        fig.text(text_x, text_y, 
-                #  'calibrated', 
-                # r'${\rm H_2^{16}O/H_2^{18}O} \approx {\rm ^{12}CO/C^{18}O}$',
-                'calibrated',
-                fontsize=10, ha='center', va='center',
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
-                         edgecolor='gray', alpha=0.9, linewidth=1),
-                zorder=20)
-        
-        # Arrow pointing to C/O calibrated distribution (column 0)
-        ax[row, 0].annotate('', 
-                           xy=(0.565, 11), xytext=(0.75, 25),  # Point to calibrated peak
-                           arrowprops=dict(arrowstyle='->', color='gray', 
-                                         lw=1.5, alpha=0.8, zorder=-1),
-                           zorder=0)
-        
-        # Arrow pointing to 12C/13C calibrated distribution (column 1)  
-        ax[row, 1].annotate('', 
-                           xy=(77, 0.028), xytext=(-1, 0.052),  # Point to calibrated peak at ~79.4
-                           arrowprops=dict(arrowstyle='->', color='gray', 
-                                         lw=1.5, alpha=0.8, zorder=-1),
-                           zorder=0)
-    # For TWA28 (row 1), no annotations needed since no calibrations are applied
-
 def main():
     path, path_figures = setup_paths()
     runs, colors = define_runs_and_colors()
@@ -321,9 +288,9 @@ def main():
                 'log_g': log_g_posterior
             }
             
-            # Load gamma calibrations only for G1+G2+G3 runs
+            # Load gamma corrections only for G1+G2+G3 runs
             corrections = None
-            if 'G1G2G3' in run:  # Only load calibrations for G1+G2+G3 runs
+            if 'G1G2G3' in run:  # Only load corrections for G1+G2+G3 runs
                 corrections = load_gamma_corrections(path, target, run)
             
             # use tabulate to print data_dict with 1,3 sigma uncertainties
@@ -344,19 +311,16 @@ def main():
                 plot_hist(ax[row,col], data_dict[param], color, label=label,
                           fill_alpha=0.60, fill=True)
             
-            # Plot calibrated distributions (unfilled, same color) for G1+G2+G3 runs
+            # Plot corrected distributions (unfilled, same color) for G1+G2+G3 runs
             if corrections is not None:
-                calibrated_dict = apply_gamma_corrections(data_dict, corrections)
-                if calibrated_dict is not None:
-                    calibrated_label = f'NIRSpec/{label} (γ-calibrated)'
+                corrected_dict = apply_gamma_corrections(data_dict, corrections)
+                if corrected_dict is not None:
+                    corrected_label = f'NIRSpec/{label} (γ-corrected)'
                     for col, param in enumerate(param_order):
-                        if param in ['C/O', '12C/13C']:  # Only plot calibrations for these parameters
-                            plot_hist(ax[row,col], calibrated_dict[param], color, 
-                                     label=calibrated_label if col == 0 else None,
-                                     fill=True, fill_alpha=0.2, linestyle='-', alpha=0.9)
-                            plot_hist(ax[row,col], calibrated_dict[param], color, 
-                                     label=calibrated_label if col == 0 else None,
-                                     fill=False, linestyle='-', alpha=0.9)
+                        if param in ['C/O', '12C/13C']:  # Only plot corrections for these parameters
+                            plot_hist(ax[row,col], corrected_dict[param], color, 
+                                     label=corrected_label if col == 0 else None,
+                                     fill=False, linestyle='--', alpha=0.9)
                 
         # Plot CRIRES data for TWA28
         if target == 'TWA28':
@@ -376,10 +340,6 @@ def main():
         # Add reference values
         plot_reference_values(ax, row)
     
-    # Add correction annotations for each row
-    for row in range(2):
-        add_correction_annotations(ax, row)
-    
     # Setup axes appearance
     fig, ax = setup_axes(fig, ax)
     
@@ -396,37 +356,28 @@ def main():
                         handles.append(hi)
                         labels.append(li)
             leg_elements = {k:v for k,v in zip(labels, handles)}
-            # sort by label list - include calibrated distributions
-            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G1+G2+G3 (γ-calibrated)', 'NIRSpec/G2+G3', 'NIRSpec/G2', 'TWA 27 b\n(Zhang et al. 2025)', 'Solar', 'ISM']
+            # sort by label list - include corrected distributions
+            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G1+G2+G3 (γ-corrected)', 'NIRSpec/G2+G3', 'NIRSpec/G2', 'TWA 27 b\n(Zhang et al. 2025)', 'Solar', 'ISM']
             handles = [leg_elements[l] for l in label_list if l in leg_elements]
             labels = [l for l in label_list if l in leg_elements]
         else:
             # sort by label list
             handles, labels = ax[row,1].get_legend_handles_labels()
             leg_elements = {k:v for k,v in zip(labels, handles)}
-            # Include calibrated distributions for TWA28
-            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G1+G2+G3 (γ-calibrated)', r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
+            # Include corrected distributions for TWA28
+            label_list = ['NIRSpec/G1+G2+G3', 'NIRSpec/G1+G2+G3 (γ-corrected)', r'CRIRES$^\mathrm{+}$'+'/K2166\n(González Picos et al. 2024)']
             handles = [leg_elements[l] for l in label_list if l in leg_elements]
             labels = [l for l in label_list if l in leg_elements]
         
         ax[row,2].legend(handles, labels, frameon=True, fontsize=9, loc=(-0.80+0.11*row, 0.40+0.16*row), facecolor='white', edgecolor='k')
 
-    # Save figure with calibrated suffix
-    fig_name_calibrated = path_figures / 'metallicity_CO_C_ratio_calibrated.pdf'
-    fig.savefig(fig_name_calibrated, bbox_inches='tight', dpi=300)
-    # save as png
-    fig_name_calibrated_png = path_figures / 'metallicity_CO_C_ratio_calibrated.png'
-    fig.savefig(fig_name_calibrated_png, bbox_inches='tight', dpi=300)
-    print(f'Saved {fig_name_calibrated}')
-    
-    # Also save original figure (for compatibility)
-    fig_name = path_figures / 'metallicity_CO_C_ratio.pdf'
+    # Save figure with corrected suffix
+    fig_name = path_figures / 'metallicity_CO_C_ratio_corrected.pdf'
     fig.savefig(fig_name, bbox_inches='tight', dpi=300)
     # save as png
-    fig_name_png = path_figures / 'metallicity_CO_C_ratio.png'
+    fig_name_png = path_figures / 'metallicity_CO_C_ratio_corrected.png'
     fig.savefig(fig_name_png, bbox_inches='tight', dpi=300)
-    print(f'Saved {fig_name} (original functionality preserved)')
-    
+    print(f'Saved {fig_name}')
     plt.close('all')
 
 if __name__ == "__main__":

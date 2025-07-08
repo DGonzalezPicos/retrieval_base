@@ -1,45 +1,137 @@
 """LaTeX equations for the paper"""
 
 import numpy as np
+import os
 from retrieval_base.config import Config
+from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 import pathlib
+import h5py
 
 path = af.get_path(return_pathlib=True)
 path_eq = pathlib.Path('/home/dario/phd/twa2x_paper/equations')
 config_file = 'config_jwst.txt'
 w_set='NIRSpec'
 
-# load best fit parameters of MultiNest
+def save_posterior_h5(posterior_dict: dict, param_keys: list, filename: str):
+    """Save posterior samples to HDF5 file for fast loading"""
+    with h5py.File(filename, 'w') as f:
+        # Save parameter names
+        f.create_dataset('param_keys', data=[k.encode('utf-8') for k in param_keys])
+        
+        # Save posterior samples for each parameter
+        for param, samples in posterior_dict.items():
+            f.create_dataset(param, data=samples)
+        
+        print(f'Saved posterior to {filename}')
 
+def load_posterior_h5(filename: str) -> tuple[dict, list]:
+    """Load posterior samples from HDF5 file"""
+    posterior_dict = {}
+    
+    with h5py.File(filename, 'r') as f:
+        # Load parameter names
+        param_keys = [k.decode('utf-8') for k in f['param_keys'][:]]
+        
+        # Load posterior samples
+        for param in param_keys:
+            posterior_dict[param] = f[param][:]
+    
+    print(f'Loaded posterior from {filename}')
+    return posterior_dict, param_keys
+
+def transform_parameters(posterior_dict):
+    """Transform log parameters to linear scale where needed"""
+    transformed_dict = posterior_dict.copy()
+    
+    # Convert log_R_d to R_d by taking 10^log_R_d
+    if 'log_R_d' in posterior_dict:
+        transformed_dict['R_d'] = 10**posterior_dict['log_R_d']
+        # Remove the log version to avoid confusion
+        if 'log_R_d' in transformed_dict:
+            del transformed_dict['log_R_d']
+            
+    if 'log_R_jup' in posterior_dict:
+        transformed_dict['R_jup'] = 10**posterior_dict['log_R_jup']
+        # Remove the log version to avoid confusion
+        if 'log_R_jup' in transformed_dict:
+            del transformed_dict['log_R_jup']
+            
+    if 'log_T_ex' in posterior_dict:
+        transformed_dict['T_ex'] = 10**posterior_dict['log_T_ex']
+        # Remove the log version to avoid confusion
+        if 'log_T_ex' in transformed_dict:
+            del transformed_dict['log_T_ex']
+        
+    return transformed_dict
+
+def load_data(path, target, run, cache=True):
+    """Load posterior data from H5 cache or generate from retrieval"""
+    cwd = os.getcwd()
+    if target not in cwd:
+        os.chdir(f'{path}/{target}')
+        print(f'Changed directory to {target}')
+    
+    config_file = 'config_jwst.txt'    
+    conf = Config(path=path, target=target, run=run)(config_file)
+    
+    posterior_file = f'{conf.prefix}data/posteriors.h5'
+    
+    if not cache or not os.path.exists(posterior_file):
+        ret = Retrieval(conf=conf, evaluation=False)
+        _, posterior = ret.PMN_analyze()
+        
+        # Create posterior dictionary
+        posterior_dict = {}
+        for i, param in enumerate(ret.Param.param_keys):
+            posterior_dict[param] = posterior[:, i]
+        
+        # Save to HDF5 file
+        save_posterior_h5(posterior_dict, ret.Param.param_keys, posterior_file)
+    else:
+        # Load from HDF5 file
+        posterior_dict, param_keys = load_posterior_h5(posterior_file)
+    
+    # Transform parameters (e.g., log_R_d to R_d)
+    posterior_dict = transform_parameters(posterior_dict)
+    
+    return posterior_dict
+
+# Load best fit parameters of MultiNest using H5 cache
 runs = dict(
-    TWA27A='freeslab_lbl10_G1G2G3_0',
-    TWA28='freeslab_lbl10_G1G2G3_0',
+    TWA27A='freeslab_lbl10_G1G2G3_1',
+    TWA28='freeslab_lbl10_G1G2G3_1',
     )
 
 targets = list(runs.keys())
 
-target = 'TWA28'
-run = runs[target]
+# Load posteriors using H5 caching
 posterior_list = []
 for target in targets:
     run = runs[target]
-    posterior = af.load_posterior(target, run)
-    posterior_list.append(posterior)
+    print(f'\nLoading data for {target}, run: {run}')
+    posterior_dict = load_data(path, target, run, cache=True)
+    posterior_list.append(posterior_dict)
 
 # blackbody parameters
-def get_blackbody_params(posterior):
+def get_blackbody_params(posterior_dict):
+    """Extract blackbody parameters from posterior dictionary"""
     q = [0.16, 0.5, 0.84]
-    keys = ['T_d', 'R_d']
     
-    for key in keys:
-        if key not in posterior:
-            log_key = f'log_{key}'
-            assert log_key in posterior
-            posterior[key] = 10.0**posterior[log_key]
-            
-    T_d = np.quantile(posterior['T_d'], q)
-    R_d = np.quantile(posterior['R_d'], q)
+    # Parameters should already be transformed by transform_parameters()
+    # but check if transformation is needed
+    if 'T_d' not in posterior_dict and 'log_T_d' in posterior_dict:
+        T_d_samples = 10.0**posterior_dict['log_T_d']
+    else:
+        T_d_samples = posterior_dict['T_d']
+        
+    if 'R_d' not in posterior_dict and 'log_R_d' in posterior_dict:
+        R_d_samples = 10.0**posterior_dict['log_R_d']
+    else:
+        R_d_samples = posterior_dict['R_d']
+    
+    T_d = af.quantiles(T_d_samples, q=q)
+    R_d = af.quantiles(R_d_samples, q=q)
     return T_d, R_d
 
 def blackbody_eq(T_d, R_d):

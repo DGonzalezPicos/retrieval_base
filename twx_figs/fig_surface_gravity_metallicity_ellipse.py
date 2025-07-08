@@ -6,14 +6,17 @@ from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
 import seaborn as sns
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Ellipse
 import h5py
+from scipy.stats import chi2
+import matplotlib.patheffects as PathEffects
+pe_white = PathEffects.withStroke(linewidth=2, foreground="white")
 
 fontsize = 14
 plt.rcParams['font.size'] = fontsize
 plt.rcParams['axes.linewidth'] = 2.0
 
-# Configuration - choose x-axis parameter
+# Configuration - choose x-axis parameter, for now only work with '12CO'
 X_AXIS_PARAM = "[C/H]"  # Options: "C/O", "[C/H]", "12C/13C", "12CO", "H2O"
 calculate_metallicity_from_carbon_monoxide = True
 
@@ -37,34 +40,52 @@ def setup_paths():
 def define_runs_and_colors():
     runs = {
         'TWA27A': [
-            ('freeslab_lbl10_G2G3_2', 'G2+G3'), # update to index 2
             ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3'),
+            ('freeslab_lbl10_G2G3_2', 'G2+G3'), # update to index 2
         ],
         'TWA28': [
-            ('freeslab_lbl10_G2G3_1', 'G2+G3'), # update to index 1
             ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3'),
+            ('freeslab_lbl10_G2G3_1', 'G2+G3'), # update to index 1
+
         ]
     }
     
     # Publication-quality colorblind-friendly palette with better contrast
+    # colors = {
+    #     'TWA28': {
+    #         'data': '#2C2C2C',  # Dark gray for data
+    #         'model': ['#FF6B35', '#1F77B4'],  # Orange, Blue
+    #         'crires': '#2E8B57',  # Sea green
+    #         'object_color': '#FF6B35'  # Main color for TWA28
+    #     },
+    #     'TWA27A': {
+    #         'data': '#733b27',
+    #         'model': ['#9467BD', '#737373'],  # Purple, Grey
+    #         'zhang2025': 'black',
+    #         'object_color': '#9467BD'  # Main color for TWA27A
+    #     }
+    # }
     colors = {
         'TWA28': {
-            'data': '#2C2C2C',  # Dark gray for data
-            'model': ['#FF6B35', '#1F77B4'],  # Orange, Blue
-            'crires': '#2E8B57',  # Sea green
+            # 'data': '#2C2C2C',  # Dark gray for data
+            'model': ['navy', 'purple'],  # Orange, Blue
+            # 'crires': '#2E8B57',  # Sea green
+            'crires':'#507356',
             'object_color': '#FF6B35'  # Main color for TWA28
         },
         'TWA27A': {
-            'data': '#733b27',
-            'model': ['#9467BD', '#737373'],  # Purple, Grey
-            'zhang2025': 'black',
+            # 'data': '#733b27',
+            'model': ['royalblue', 'plum'],  # Purple, Grey
+            # 'zhang2025': 'black',
             'object_color': '#9467BD'  # Main color for TWA27A
         }
     }
     
+    # IGNORE CMAPS
     cmaps = {
-        'TWA28': ['Oranges', 'Blues', 'BuGn'],
-        'TWA27A': ['Purples', 'Greys']
+        # 'TWA28': ['Oranges', 'Blues', 'BuGn'],
+        'TWA28': ['PuBu', 'OrRd', 'BuGn'],
+        'TWA27A': ['Purples', 'RdPu']
     }
     
     return runs, colors, cmaps
@@ -259,6 +280,11 @@ def load_crires_data(path, target):
         '12CO': np.log10(chem_crires.VMRs_posterior['12CO']),
         'H2O': np.log10(chem_crires.VMRs_posterior['H2O'])
     }
+    # get quantiles for crires log_g
+    q = [0.16, 0.5, 0.84]
+    log_g_quantiles = np.quantile(log_g_crires, q)
+    print(f"CRIRES log_g {log_g_quantiles[1]:.2f} (+{log_g_quantiles[1]-log_g_quantiles[0]:.2f} -{log_g_quantiles[2]-log_g_quantiles[1]:.2f})")
+    
     return crires_data
 
 def clean_data(log_g_posterior, x_posterior):
@@ -279,28 +305,122 @@ def clean_data(log_g_posterior, x_posterior):
     
     return log_g_clean, x_clean
 
-def create_correlation_plot(ax, log_g_clean, x_clean, color, label, cmap, alpha=0.6):
-    """Create a correlation plot with hexbin and regression line."""
+def compute_covariance_ellipse(x_data, y_data, confidence_level=0.68):
+    """
+    Compute confidence ellipse using eigendecomposition of covariance matrix.
+    
+    Parameters:
+    -----------
+    x_data, y_data : array-like
+        Data points
+    confidence_level : float
+        Confidence level (default: 0.68 for 1-sigma)
+    
+    Returns:
+    --------
+    center : tuple
+        (x_center, y_center) of ellipse
+    width, height : float
+        Full width and height of ellipse (2 * semi-axes)
+    angle : float
+        Rotation angle in degrees
+    semi_major, semi_minor : float
+        Semi-major and semi-minor axes lengths
+    """
+    # Stack data
+    data = np.vstack([x_data, y_data])
+    
+    # Compute covariance matrix
+    cov = np.cov(data)
+    
+    # Eigendecomposition
+    eigenvals, eigenvecs = np.linalg.eigh(cov)
+    
+    # Sort by eigenvalue (largest first)
+    order = eigenvals.argsort()[::-1]
+    eigenvals = eigenvals[order]
+    eigenvecs = eigenvecs[:, order]
+    
+    # Compute ellipse parameters
+    # Chi-squared value for confidence level (2 DOF)
+    chi2_val = chi2.ppf(confidence_level, df=2)
+    
+    # Semi-axes lengths
+    semi_major = np.sqrt(eigenvals[0] * chi2_val)
+    semi_minor = np.sqrt(eigenvals[1] * chi2_val)
+    
+    # Rotation angle (in degrees)
+    angle = np.degrees(np.arctan2(eigenvecs[1, 0], eigenvecs[0, 0]))
+    if angle > 90:
+        angle = angle - 180
+    if angle < -90:
+        angle = angle + 180
+    
+    # Center
+    center = (np.mean(x_data), np.mean(y_data))
+    
+    # Full width and height for matplotlib Ellipse
+    width = 2 * semi_major
+    height = 2 * semi_minor
+    
+    return center, width, height, angle, semi_major, semi_minor
+
+def create_correlation_plot(ax, log_g_clean, x_clean, color, label, cmap, alpha=0.4):
+    """Create a correlation plot with scatter points, regression line, and multiple confidence ellipses."""
     
     # Get slope and intercept of the regression line
     slope, intercept = np.polyfit(x_clean, log_g_clean, 1)
     correlation = np.corrcoef(log_g_clean, x_clean)[0, 1]
     
-    # Create hexbin plot with reduced alpha for better visibility
-    hb = ax.hexbin(x_clean, log_g_clean, gridsize=30, cmap=cmap, mincnt=1, 
-                   alpha=alpha, linewidths=0.2, edgecolors='white')
+    # Create scatter plot with smaller round markers
+    one_every = 5
+    scatter = ax.scatter(x_clean[::one_every], log_g_clean[::one_every], c=color, alpha=alpha, s=2, 
+                        edgecolors='none', rasterized=True, zorder=-1)
     
     # Add regression line with improved styling
-    if correlation > 0.5:
+    if abs(correlation) > 1.0:  # Only show regression line for moderate correlations
         sns.regplot(x=x_clean, y=log_g_clean, ax=ax, scatter=False, 
-                    line_kws={'color': color, 'linewidth': 2.0, 'alpha': 0.7})
+                    line_kws={'color': color, 'linewidth': 1.5, 'alpha': 0.7})
+    
+    # Define confidence levels and their visual properties
+    confidence_levels = [0.68, 0.95, 0.99]
+    line_styles = ['-', '--', '-.']
+    alphas = [0.8, 0.6, 0.4]
+    linewidths = [1.5, 1.25, 1.25]
+    
+    # Compute and draw multiple confidence ellipses
+    ellipse_params = []
+    ellipse_center = None
+    for i, (conf_level, linestyle, alpha_val, linewidth) in enumerate(zip(confidence_levels, line_styles, alphas, linewidths)):
+        center, width, height, angle, semi_major, semi_minor = compute_covariance_ellipse(
+            x_clean, log_g_clean, confidence_level=conf_level
+        )
+        
+        ellipse = Ellipse(center, width, height, angle=angle, 
+                         facecolor='none', edgecolor=color, linewidth=linewidth, 
+                         alpha=alpha_val, linestyle=linestyle, path_effects=[pe_white])
+        ax.add_patch(ellipse)
+        
+        # Store parameters for the 68% ellipse (first one)
+        if i == 0:
+            ellipse_params = [angle, semi_major, semi_minor]
+            ellipse_center = center
+    
+    # Print ellipse parameters (using 68% confidence ellipse)
+    print(f"\n{label}:")
+    print(f"  Correlation: {correlation:.3f}")
+    print(f"  68% confidence ellipse:")
+    print(f"    Semi-major axis: {ellipse_params[1]:.4f}")
+    print(f"    Semi-minor axis: {ellipse_params[2]:.4f}")
+    print(f"    Axis ratio: {ellipse_params[1]/ellipse_params[2]:.2f}")
+    print(f"    Rotation angle: {ellipse_params[0]:.1f}°")
     
     # Mark intercept with improved styling (only for metallicity)
     if X_AXIS_PARAM == '[C/H]':
-        ax.scatter(0, intercept, color=color, marker='s', s=40, 
-                  edgecolor='white', linewidth=1, alpha=0.9, zorder=10)
+        ax.scatter(0, intercept, color=color, marker='s', s=20, 
+                  edgecolor='white', linewidth=1, alpha=0.8, zorder=100)
     
-    return correlation, slope, intercept, hb
+    return correlation, slope, intercept, ellipse_params[0], ellipse_params[1], ellipse_params[2], ellipse_center
 
 def setup_plot():
     """Create and setup the plot figure and axis with improved styling."""
@@ -309,6 +429,8 @@ def setup_plot():
     # Enhanced axis styling
     ax.set_xlabel(get_parameter_label(X_AXIS_PARAM), fontsize=fontsize)
     ax.set_ylabel(r'$\log(g)$', fontsize=fontsize)
+    
+    ax.set_xlim(-4.05, -2.8)
     
     # Improve tick styling with increased width
     ax.tick_params(axis='both', which='major', labelsize=fontsize, width=2.0, length=6)
@@ -319,52 +441,47 @@ def setup_plot():
     
     return fig, ax
 
-def create_custom_legend(ax, correlations, colors):
-    """Create a custom legend structure with object groupings."""
+def create_custom_legend(ax, correlations, colors, runs):
+    """Create a custom legend structure with object groupings and ellipse angles."""
     
     # Create legend elements manually for better control
     legend_elements = []
     
     # TWA28 section - just text title
     dummy_patch = plt.Line2D([0], [0], color='none')
-    legend_elements.append((dummy_patch, 'TWA 28 (r, a, b)'))
+    legend_elements.append((dummy_patch, 'TWA 28 (ρ, θ°)'))
     
     # TWA28 entries
-    for i, (run, label) in enumerate([('freeslab_lbl10_G2G3_0', 'G2+G3'), 
-                                     ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3')]):
+    for i, (run, label) in enumerate(runs['TWA28']):
         color = colors['TWA28']['model'][i]
         corr = correlations.get(f"TWA28 {label}", 0)
-        slope = correlations.get(f"TWA28 {label}_slope", 0)
-        intercept = correlations.get(f"TWA28 {label}_intercept", 0)
+        angle = correlations.get(f"TWA28 {label}_angle", 0)
         
         line_patch = plt.Line2D([0], [0], color=color, linewidth=2.5, alpha=0.9)
-        label_text = f"  {label}: ({corr:.2f}, {slope:.2f}, {intercept:.2f})"
+        label_text = f"  {label}: ({corr:.2f}, {angle:.0f}°)"
         legend_elements.append((line_patch, label_text))
     
     # CRIRES entry (only for TWA28 and certain parameters)
     if X_AXIS_PARAM in ['C/O', '[C/H]', '12C/13C', '12CO', 'H2O']:
         crires_corr = correlations.get('CRIRES', 0)
-        crires_slope = correlations.get('CRIRES_slope', 0)
-        crires_intercept = correlations.get('CRIRES_intercept', 0)
+        crires_angle = correlations.get('CRIRES_angle', 0)
         crires_patch = plt.Line2D([0], [0], color=colors['TWA28']['crires'], 
                                  linewidth=2.5, alpha=0.9)
-        crires_text = f"  {'CRIRES' + r'$^{+}$'}: ({crires_corr:.2f}, {crires_slope:.2f}, {crires_intercept:.2f})"
+        crires_text = f"  {'CRIRES' + r'$^{+}$'}: ({crires_corr:.2f}, {crires_angle:.0f}°)"
         legend_elements.append((crires_patch, crires_text))
     
     # TWA27A section - just text title
     dummy_patch2 = plt.Line2D([0], [0], color='none')
-    legend_elements.append((dummy_patch2, 'TWA 27A (r, a, b)'))
+    legend_elements.append((dummy_patch2, 'TWA 27A (ρ, θ°)'))
     
     # TWA27A entries
-    for i, (run, label) in enumerate([('freeslab_lbl10_G2G3_0', 'G2+G3'), 
-                                     ('freeslab_lbl10_G1G2G3_1', 'G1+G2+G3')]):
+    for i, (run, label) in enumerate(runs['TWA27A']):
         color = colors['TWA27A']['model'][i]
         corr = correlations.get(f"TWA27A {label}", 0)
-        slope = correlations.get(f"TWA27A {label}_slope", 0)
-        intercept = correlations.get(f"TWA27A {label}_intercept", 0)
+        angle = correlations.get(f"TWA27A {label}_angle", 0)
         
         line_patch = plt.Line2D([0], [0], color=color, linewidth=2.5, alpha=0.9)
-        label_text = f"  {label}: ({corr:.2f}, {slope:.2f}, {intercept:.2f})"
+        label_text = f"  {label}: ({corr:.2f}, {angle:.0f}°)"
         legend_elements.append((line_patch, label_text))
     
     # Create the legend above the plot without frame
@@ -376,40 +493,137 @@ def create_custom_legend(ax, correlations, colors):
                       frameon=False,
                       fontsize=fontsize*0.8,
                       columnspacing=2.0,
-                      handlelength=2.0,
-                      handletextpad=0.5)
+                      handlelength=1.2,
+                      handletextpad=0.4)
     
     return legend
 
 def add_information_box(ax):
-    """Add information box with correlation and regression definitions."""
-    regression_eq = f"log(g) = a × {get_parameter_label(X_AXIS_PARAM)} + b"
+    """Add information box with correlation and ellipse definitions."""
     info_text = (
-        "r: Pearson coefficient\n" +
-        regression_eq
+        "ρ: Pearson coefficient\n"
+        "θ: Ellipse rotation angle"
+        # "Ellipses: 68% (--), 95% (-.·), 99% (···)"
     )
     
-    text_bbox = dict(facecolor='white', alpha=0.85, edgecolor='gray', 
+    text_bbox = dict(facecolor='white', alpha=0.8, edgecolor='gray', 
                      linewidth=1,
-                     boxstyle='round,pad=0.2')
-    ax.text(0.03, 0.94, info_text,
-            fontsize=fontsize,
+                     boxstyle='round,pad=0.3')
+    ax.text(0.56, 0.14, info_text,
+            fontsize=fontsize*0.75,
             transform=ax.transAxes,
             verticalalignment='top',
             bbox=text_bbox,
             zorder=15)
 
-def finalize_plot(fig, ax, correlations, colors):
+def add_grating_annotations(ax, ellipse_centers, colors):
+    """Add annotations with arrows pointing to ellipse centers to indicate grating combinations."""
+    
+    # Find ellipse centers for each grating combination
+    g2g3_data = []
+    g1g2g3_data = []
+    
+    for key, center in ellipse_centers.items():
+        if center is not None and 'CRIRES' not in key:
+            target = key.split()[0]
+            # Check for exact grating combination matches
+            if 'G1+G2+G3' in key:
+                g1g2g3_data.append({
+                    'center': center,
+                    'color': colors[target]['model'][0],  # Use first color for G1+G2+G3
+                    'target': target
+                })
+            elif 'G2+G3' in key:
+                g2g3_data.append({
+                    'center': center,
+                    'color': colors[target]['model'][1],  # Use second color for G2+G3
+                    'target': target
+                })
+    
+    if g2g3_data and g1g2g3_data:
+        # Get plot limits for positioning
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        x_range = xlim[1] - xlim[0]
+        y_range = ylim[1] - ylim[0]
+        
+        # Calculate centers of mass for each group
+        g2g3_center_x = np.mean([d['center'][0] for d in g2g3_data])
+        g2g3_center_y = np.mean([d['center'][1] for d in g2g3_data])
+        g1g2g3_center_x = np.mean([d['center'][0] for d in g1g2g3_data])
+        g1g2g3_center_y = np.mean([d['center'][1] for d in g1g2g3_data])
+        
+        # Position text boxes strategically
+        # G2+G3 text position
+        g2g3_text_x = xlim[0] + 0.2 * x_range
+        g2g3_text_y = ylim[1] - 0.3 * y_range
+        
+        # G1+G2+G3 text position
+        g1g2g3_text_x = xlim[1] - 0.17 * x_range
+        g1g2g3_text_y = ylim[1] - 0.45 * y_range
+        
+        # Use representative colors for text boxes
+        g2g3_text_color = g2g3_data[0]['color']  # Use first G2+G3 color
+        g1g2g3_text_color = g1g2g3_data[0]['color']  # Use first G1+G2+G3 color
+        
+        # Add G2+G3 annotation with consistent color
+        ax.text(g2g3_text_x, g2g3_text_y, 'G2+G3\n1.66-5.27 μm', 
+                fontsize=fontsize*0.8, fontweight='bold',
+                ha='center', va='center',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
+                         edgecolor='k', linewidth=1.0, alpha=0.95,
+                         pad=0.05),
+                zorder=25)
+        
+        # Add arrows from G2+G3 text to each G2+G3 ellipse center
+        for data in g2g3_data:
+            ax.annotate('', xy=data['center'], xytext=(g2g3_text_x, g2g3_text_y),
+                       arrowprops=dict(arrowstyle='->', color=data['color'], 
+                                     lw=2.0, alpha=0.9, shrinkA=5, shrinkB=5),
+                       zorder=24)
+        
+        # Add G1+G2+G3 annotation with consistent color
+        ax.text(g1g2g3_text_x, g1g2g3_text_y, 'G1+G2+G3\n0.97-5.27 μm', 
+                fontsize=fontsize*0.8, fontweight='bold',
+                ha='center', va='center',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
+                         edgecolor='k', linewidth=1.0, alpha=0.95,
+                         pad=0.05),
+                zorder=25)
+        
+        # Add arrows from G1+G2+G3 text to each G1+G2+G3 ellipse center
+        for data in g1g2g3_data:
+            ax.annotate('', xy=data['center'], xytext=(g1g2g3_text_x, g1g2g3_text_y),
+                       arrowprops=dict(arrowstyle='->', color=data['color'], 
+                                     lw=2.0, alpha=0.9, shrinkA=5, shrinkB=5),
+                       zorder=24)
+        
+        print(f"\nAdded grating annotations:")
+        print(f"  G2+G3 ellipses: {len(g2g3_data)} (text at {g2g3_text_x:.2f}, {g2g3_text_y:.2f})")
+        print(f"  G1+G2+G3 ellipses: {len(g1g2g3_data)} (text at {g1g2g3_text_x:.2f}, {g1g2g3_text_y:.2f})")
+        print(f"  G2+G3 text color: {g2g3_text_color}")
+        print(f"  G1+G2+G3 text color: {g1g2g3_text_color}")
+        for i, data in enumerate(g2g3_data):
+            print(f"    G2+G3 #{i+1}: center at {data['center'][0]:.3f}, {data['center'][1]:.3f}, color: {data['color']}")
+        for i, data in enumerate(g1g2g3_data):
+            print(f"    G1+G2+G3 #{i+1}: center at {data['center'][0]:.3f}, {data['center'][1]:.3f}, color: {data['color']}")
+    else:
+        print("No ellipse centers found for grating annotations")
+
+def finalize_plot(fig, ax, correlations, colors, ellipse_centers, runs):
     """Add final touches to the plot with improved styling."""
     
     # Create custom legend
-    legend = create_custom_legend(ax, correlations, colors)
+    legend = create_custom_legend(ax, correlations, colors, runs)
     
     # Add information box
     add_information_box(ax)
     
+    # Add grating annotations
+    add_grating_annotations(ax, ellipse_centers, colors)
+    
     # Style improvements
-    ax.set_ylim(None, 4.7)
+    ax.set_ylim(3.0, 4.55)
     
     # Add reference line only for metallicity
     if X_AXIS_PARAM == '[C/H]':
@@ -418,7 +632,7 @@ def finalize_plot(fig, ax, correlations, colors):
     # Improve spine styling with increased width
     for spine in ax.spines.values():
         spine.set_linewidth(2.0)
-        spine.set_color('gray')
+        # spine.set_color('gray')
     
     # Adjust layout to accommodate legend
     plt.subplots_adjust(top=0.85, bottom=0.12, left=0.12, right=0.95)
@@ -429,12 +643,14 @@ def main():
         print("Using CO-derived metallicity calculation")
     else:
         print("Using standard metallicity calculation")
+    print("=" * 60)
     
     path, path_figures = setup_paths()
     runs, colors, cmaps = define_runs_and_colors()
     
     fig, ax = setup_plot()
     correlations = {}
+    ellipse_centers = {}
     all_x_data = []  # Collect all x-axis data for scaling
     
     for target in runs.keys():
@@ -463,7 +679,7 @@ def main():
             # Create plot with enhanced styling
             color = colors[target]['model'][i]
             plot_label = f"{target} {label}"
-            correlation, slope, intercept, _ = create_correlation_plot(
+            correlation, slope, intercept, angle, semi_major, semi_minor, ellipse_center = create_correlation_plot(
                 ax, log_g_clean, x_clean, color, plot_label, cmaps[target][i]
             )
             
@@ -471,13 +687,17 @@ def main():
             correlations[plot_label] = correlation
             correlations[f"{plot_label}_slope"] = slope
             correlations[f"{plot_label}_intercept"] = intercept
+            correlations[f"{plot_label}_angle"] = angle
+            correlations[f"{plot_label}_semi_major"] = semi_major
+            correlations[f"{plot_label}_semi_minor"] = semi_minor
+            ellipse_centers[plot_label] = ellipse_center
     
     # Add CRIRES data for TWA28 (only if parameter is available)
     if X_AXIS_PARAM in ['C/O', '[C/H]', '12C/13C', '12CO', 'H2O']:
         crires_data = load_crires_data(path, 'TWA28')
         if X_AXIS_PARAM in crires_data:
             all_x_data.extend(crires_data[X_AXIS_PARAM])  # Collect for axis scaling
-            crires_correlation, crires_slope, crires_intercept, _ = create_correlation_plot(
+            crires_correlation, crires_slope, crires_intercept, crires_angle, crires_semi_major, crires_semi_minor, crires_center = create_correlation_plot(
                 ax, crires_data['log_g'], crires_data[X_AXIS_PARAM], 
                 colors['TWA28']['crires'], 'TWA 28 (CRIRES)', cmaps['TWA28'][-1]
             )
@@ -486,22 +706,27 @@ def main():
             correlations['CRIRES'] = crires_correlation
             correlations['CRIRES_slope'] = crires_slope
             correlations['CRIRES_intercept'] = crires_intercept
+            correlations['CRIRES_angle'] = crires_angle
+            correlations['CRIRES_semi_major'] = crires_semi_major
+            correlations['CRIRES_semi_minor'] = crires_semi_minor
+            ellipse_centers['CRIRES'] = crires_center
     
-    # Apply proper axis scaling
-    if all_x_data:
+    # Apply proper axis scaling (but keep the current hardcoded limits for 12CO if desired)
+    if all_x_data and X_AXIS_PARAM != '12CO':  # Skip auto-scaling for 12CO to keep current behavior
         x_limits = get_axis_limits(X_AXIS_PARAM, np.array(all_x_data))
         ax.set_xlim(x_limits)
         print(f"Set x-axis limits for {X_AXIS_PARAM}: {x_limits}")
     
-    finalize_plot(fig, ax, correlations, colors)
+    finalize_plot(fig, ax, correlations, colors, ellipse_centers, runs)
     
     # Save the figure with parameter-specific filename
     param_name = X_AXIS_PARAM.replace('/', '_').replace('[', '').replace(']', '')
-    output_path = path_figures / f'logg_{param_name}{get_filename_suffix()}_correlation.pdf'
+    output_path = path_figures / f'logg_{param_name}{get_filename_suffix()}_correlation_ellipse.pdf'
     plt.savefig(output_path, bbox_inches='tight', dpi=300, 
                 facecolor='white', edgecolor='none')
     plt.close()
-    print(f"Publication-ready figure saved to {output_path}")
+    print(f"\nPublication-ready figure saved to {output_path}")
+    print("=" * 60)
 
 if __name__ == "__main__":
     main()

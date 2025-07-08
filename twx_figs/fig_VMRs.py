@@ -117,8 +117,12 @@ def get_VMR(target, run, cache=True):
     alpha_params = {k:posterior[f'alpha_{k}'] for k in VMR_labels_data if f'alpha_{k}' in free_params_keys}
     return VMR_envelopes, PT_envelopes, conf, alpha_params
     
-fig, ax = plt.subplots(1,2, figsize=(9,3), sharey=True, sharex=True,
-                       gridspec_kw=dict(wspace=0.15))
+# Create figure with space for colorbar above panels
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.5), sharey=True, sharex=True,
+                      gridspec_kw=dict(wspace=0.10))
+
+# Create space for horizontal colorbar between titles
+fig.subplots_adjust(top=0.85)
 
 icf_colors = dict(TWA28='orange',
                   TWA27A='#0a74da')
@@ -189,7 +193,7 @@ def plot_target(target, run, ax, ax_icf=None, plot_species='all', color_species=
                             lw=0,
                             alpha=0.2, color=color)
             
-        ax.plot(VMR_envelopes[key][1,:], pressure, 
+        ax.plot(VMR_envelopes[key][2,:], pressure, 
                 color=color,
                 lw=1.5, alpha=0.75,
                 label=tex_labels[key],
@@ -210,19 +214,54 @@ def plot_target(target, run, ax, ax_icf=None, plot_species='all', color_species=
         xscale='log')
     ax.set_title('TWA ' + target.replace('TWA', ''))
     
-    return color_species, ls_dict
+    return color_species, ls_dict, pressure, icf
 
 
 color_species, ls_dict = {}, {}
 plot_species = ['12CO', 'H2O','SiO','OH','HF', 'FeH','TiO', 'NaH', 'CO2', 'VO', 'CrH']
 
+# Collect ICF data for colorbar
+all_icf = []
+all_pressure = []
+
 for t, target in enumerate(runs.keys()):
     target_runs = list(np.atleast_1d(runs[target]))
     for r, run_name in enumerate(target_runs):
 
-        color_species, ls_dict = plot_target(target, run_name, ax[t], None, plot_species=plot_species, color_species=color_species, ls_dict=ls_dict)
-    
-ax[1].legend(loc=(1.01, 0.0), fontsize=10,
+        color_species, ls_dict, pressure, icf = plot_target(target, run_name, ax[t], None, plot_species=plot_species, color_species=color_species, ls_dict=ls_dict)
+        all_icf.extend(icf)
+        all_pressure.extend(pressure)
+
+# Create colorbar for ICF values
+all_icf = np.array(all_icf)
+all_pressure = np.array(all_pressure)
+
+# Get actual range of ICF values and convert to percentage
+icf_min = np.min(all_icf)
+icf_max = np.max(all_icf)
+icf_percentage_min = (icf_min / icf_max) * 100
+icf_percentage_max = 20.0 # as set in weights * 0.2
+
+print(f'ICF range: {icf_min:.3e} to {icf_max:.3e}')
+print(f'ICF percentage range: {icf_percentage_min:.1f}% to {icf_percentage_max:.1f}%')
+
+# Create a dummy mappable for the colorbar using actual ICF range
+from matplotlib.colors import Normalize
+from matplotlib.cm import ScalarMappable
+
+norm = Normalize(vmin=icf_percentage_min, vmax=icf_percentage_max)
+sm = ScalarMappable(norm=norm, cmap='Greys')
+sm.set_array([])
+
+# Add horizontal colorbar between titles
+cax = fig.add_axes([0.45, -0.06, 0.10, 0.03])  # [left, bottom, width, height]
+cbar = plt.colorbar(sm, cax=cax, orientation='horizontal',
+                    )
+cbar.set_label(' Contribution function (%)', fontsize=10)
+cbar.ax.tick_params(labelsize=9)
+cbar.ax.xaxis.set_label_position('top')
+
+ax[1].legend(loc=(1.01, 0.0), fontsize=12,
         ncol=1,
         frameon=False,
         handlelength=1.5,

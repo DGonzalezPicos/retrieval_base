@@ -226,7 +226,7 @@ def plot(order, names, my_targets,
         # create patches and labels for custom legend
         handles = [patches.Patch(color=colors_lines[0], label=r'$^{13}$' + 'CO'),
                    patches.Patch(color=colors_lines[1], label='C' + r'$^{18}$' + 'O')]
-        ax[-1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1.0, 1.11),
+        ax[-1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1.0, 1.02),
                       fontsize=lw*10,
                       frameon=False,
                       handlelength=0.3,

@@ -1,4 +1,4 @@
-""" DGP 2025-07-10: copy of nat_fig_3.py. this generates the figure for the paper. """
+""" copy of isotopes_metallicity_horizontal.py """
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.figures as figs
 from retrieval_base.config import Config
@@ -17,14 +17,19 @@ from matplotlib.legend_handler import HandlerPatch
 plt.style.use('default')
 # plt.style.use(['latex-sans'])
 plt.style.use(['sans'])
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = ['Arial']
+plt.rcParams['axes.linewidth'] = 1.0
+
 # enable latex
 # plt.rcParams['text.usetex'] = True
+font_size = 7
 plt.rcParams.update({
-    "font.size": 8,
+    "font.size": font_size,
 })
 
 base_path = '/home/dario/phd/retrieval_base/'
-nat_path = '/home/dario/phd/nat/figures/'
+nat_path = '/home/dario/phd/nat/'
 
 df = read_spirou_sample_csv()
 flip_rows = True
@@ -219,7 +224,7 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
     if xytext is not None:
         # add text with target name next to point, offset text from point
         ax.annotate(label.replace('gl', 'Gl '), (x, isotope_quantiles[1]), textcoords="offset points", xytext=xytext, ha='left',
-                    fontsize=8, color=kwargs.get('color', 'k'), alpha=0.9)
+                    fontsize=font_size, color=kwargs.get('color', 'k'), alpha=0.9)
         
     return isotope_quantiles
         
@@ -267,8 +272,8 @@ crossfield_dict = {'oxygen': {'Gl 745 A': [(1220, 260), (3454, 31), (-0.43, 0.05
               'carbon': {'Gl 745 A': [(296, 45), (3454, 31), (-0.43, 0.05)],
                         'Gl 745 B': [(224, 26), (3440, 31), (-0.39, 0.05)]}
 }
-sun_dict = {'oxygen': (529.7, 1.7),# solar wind McKeegan et al. 2011
-            'carbon': (93.5, 3.0)}
+sun_dict = {'oxygen': (511, 10),# solar wind McKeegan et al. 2011
+            'carbon': (91.4, 1.3)}
 ism_dict = {'oxygen': (557, 30), # ISM value from Wilson et al. 1999
             'carbon': (68.0, 14.0)}
 
@@ -276,8 +281,12 @@ plot_crossfield = True
 
 top = 0.92
 
-fig = plt.figure(figsize=(6, 6))  # Adjust the figure size as needed
-gs = fig.add_gridspec(10, 12, hspace=0.20, wspace=0.0)
+width_mm = 180.0
+aspect_ratio = 4/4
+height_mm = width_mm/aspect_ratio
+inch_to_mm = 25.4
+fig = plt.figure(figsize=(width_mm/inch_to_mm, height_mm/inch_to_mm))  # Adjust the figure size as needed
+gs = fig.add_gridspec(10, 12, hspace=0.10, wspace=0.0)
 
 ax_spectrum = fig.add_subplot(gs[0:3, :])
 ax_residuals = fig.add_subplot(gs[3, :])
@@ -305,9 +314,14 @@ ax_spectrum.set_xticklabels([])
 
 # add handles for subplots: a, b, c
 thandles = ['a', 'b', 'c']
-fig.text(-0.11, 1.05, thandles[0], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
-fig.text(0.35, -0.85, thandles[1], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
-fig.text(0.95, -0.85, thandles[2], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
+x_text_label = -0.08
+y_offset_label =0.09
+fig.text(x_text_label, 0.95 + y_offset_label, thandles[0], transform=ax_spectrum.transAxes, fontsize=font_size, ha='left', va='top', weight='bold')
+# DGP 2025-07-10: change location of labels for consistency with a)
+# fig.text(0.35, -0.85, thandles[1], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
+# fig.text(0.95, -0.85, thandles[2], transform=ax_spectrum.transAxes, fontsize=12, ha='left', va='top', weight='bold')
+fig.text(x_text_label, -0.75 + y_offset_label, thandles[1], transform=ax_spectrum.transAxes, fontsize=font_size, ha='left', va='top', weight='bold')
+fig.text(x_text_label+0.58, -0.75 + y_offset_label, thandles[2], transform=ax_spectrum.transAxes, fontsize=font_size, ha='left', va='top', weight='bold')
 
 xytext = {'Gl 699' : (-28,5),
         #   'Gl 411' : (3,3),
@@ -316,6 +330,8 @@ xytext = {'Gl 699' : (-28,5),
           
 }
 isotopes = ['carbon', 'oxygen']
+ism_label_strs = {'carbon': 'ISM', 'oxygen': 'ISM'}
+sun_label_strs = {'carbon': 'Sun', 'oxygen': 'Sun'}
 for i, isotope in enumerate(isotopes):
     print(f' ** Isotope {isotope} **')
     ax = axes[i]
@@ -326,7 +342,9 @@ for i, isotope in enumerate(isotopes):
     sun = sun_dict[isotope]
 
     # ax.axhspan(sun[0]-sun[1], sun[0]+sun[1], color='gold', alpha=0.3, label='Solar',lw=0)
-    ax.plot(0.0, sun[0], color='gold', marker='*', ms=16, label='Sun', alpha=0.8, markeredgecolor='black', markeredgewidth=0.8, zorder=100)
+    decimal_places = 0 if isotope == 'oxygen' else 1
+    sun_label = sun_label_strs[isotope] + f'\n({sun[0]:.{decimal_places}f} ± {sun[1]:.{decimal_places}f})'
+    ax.plot(0.0, sun[0], color='gold', marker='*', ms=16, label=sun_label, alpha=0.8, markeredgecolor='black', markeredgewidth=0.8, zorder=100)
     
 
     plot_teff_max = 4400.0
@@ -374,8 +392,9 @@ for i, isotope in enumerate(isotopes):
     rgb_color = np.array([10, 191, 134]) / 255.0 # light green
     rgb_color *= 0.7
     
+    ism_label_strs[isotope] = 'ISM' + f'\n({ism[0]:.0f} ± {ism[1]:.0f})'
     poly, ism_label = axhspan_gradient(ax, x_span, y_range=(ism[0]-ism[1], ism[0]+ism[1]), rgb_color=rgb_color, gamma=3, n=120,
-                            label='ISM')
+                            label=ism_label_strs[isotope])
     
     # ax.text(0.95, 0.15, 'ISM', color='darkgreen', fontsize=12, transform=ax.transAxes, ha='right', va='top')
    
@@ -396,7 +415,7 @@ for i, isotope in enumerate(isotopes):
                 ax.annotate(k, (x_cf, v[0][0]), textcoords="offset points", 
                             xytext=(60,5), ha='center', va='center',
                             arrowprops=dict(facecolor='black', shrink=1, headwidth=1, width=0.5, headlength=0.1),
-                            fontsize=8,
+                            fontsize=font_size,
                             horizontalalignment='right', verticalalignment='top')
                     
         
@@ -412,9 +431,9 @@ for i, isotope in enumerate(isotopes):
         
         # define cbar_ax for colorbar
         # x, y = 0.912, 0.11
-        x, y = 0.912, 0.659
+        x, y = 0.912, 0.654
         # w, h = 0.027, top-y*1.36
-        w, h = 0.027,top-y*1.06
+        w, h = 0.010,top-y*1.061
         cbar_ax = fig.add_axes([x, y, w, h])
         cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', aspect=1)
         cbar.set_label(r'T$_{\mathrm{eff}}$ (K)')
@@ -439,43 +458,67 @@ for i, mass_range in enumerate(mass_ranges):
     
 
 axes[0].legend(ncol=3)
+axes[1].legend(ncol=3)
+
 # add handle of ism_label to existing legend
 handles, labels = axes[0].get_legend_handles_labels()
-# change alpha of ism_label
 ism_label.set_alpha(0.65)
-# change edgecolor of ism_label
-# ism_label.set_edgecolor('')
-# change edgewidth of ism_label
 ism_label.set_linewidth(0.0)
-# introdduce item in index 1 instead of append
 handles.insert(1, ism_label)
-labels.insert(1, 'ISM')
-# axes[0].legend(handles, labels, ncol=3, frameon=False, fontsize=8, loc=(0.32, 1.01)) # longcbar
-axes[0].legend(handles, labels, ncol=1, frameon=False, fontsize=8, loc=(2.42, 0.5)) # shortcbar
+labels.insert(1, ism_label_strs['carbon'])
+# 
+axes[0].legend(handles, labels, ncol=1, 
+               frameon=True, 
+               framealpha=0.4,
+               fontsize=font_size, loc=(0.605, 0.57)) # shortcbar
+
+handles, labels = axes[1].get_legend_handles_labels()
+ism_label.set_alpha(0.65)
+ism_label.set_linewidth(0.0)
+handles.insert(1, ism_label)
+labels.insert(1, ism_label_strs['oxygen'])
+# remove handle and label 3 from axes[1]
+handles.pop(2)
+labels.pop(2)
+axes[1].legend(handles, labels, ncol=1, frameon=False, fontsize=font_size, loc=(1.01, 0.64)) # shortcbar
+
 
 # create another legend for the sigma values with circles
+add_sigma_legend = True
+if add_sigma_legend:
+    sigma_handles = []
+    sigma_labels = []
+    from matplotlib.lines import Line2D
+    for sigma in ['3', '2', '1']:
+        # Create a circle patch for the legend
+        sigma_handles.append(Line2D([0], [0], marker='o', color='w', markeredgecolor=sigma_colors[sigma], markersize=6, markeredgewidth=0.9))
+        if sigma == '3':
+            sigma_labels.append('>99.7%')
+        elif sigma == '2':
+            sigma_labels.append('95.4-99.7%')
+        else:
+            sigma_labels.append('68.3-95.4%')
 
-sigma_handles = []
-sigma_labels = []
-from matplotlib.lines import Line2D
-for sigma in ['3', '2', '1']:
-    # Create a circle patch for the legend
-    sigma_handles.append(Line2D([0], [0], marker='o', color='w', markeredgecolor=sigma_colors[sigma], markersize=6, markeredgewidth=0.9))
-    if sigma == '3':
-        sigma_labels.append(f'$\geq${int(sigma)}$\sigma$')
-    else:
-        sigma_labels.append(f'{int(sigma)}$\sigma$ - {int(sigma)+1}$\sigma$')
+    # Create a new axes just for the sigma legend
+    sigma_legend_ax = fig.add_axes([0.60, 0.115, 0.1, 0.1])  # [left, bottom, width, height]
+    # sigma_legend_ax.set_visible(False)  # Hide the axes but keep it for the legend
+    # hide the spines and ticks
+    sigma_legend_ax.spines['top'].set_visible(False)
+    sigma_legend_ax.spines['right'].set_visible(False)
+    sigma_legend_ax.spines['bottom'].set_visible(False)
+    sigma_legend_ax.spines['left'].set_visible(False)
+    sigma_legend_ax.set_xticks([])
+    sigma_legend_ax.set_yticks([])
+    
+    # Create legend with custom handler map to ensure circles are drawn properly
+    legend = sigma_legend_ax.legend(sigma_handles, sigma_labels, 
+                                   framealpha=0.4,
+                                   fontsize=font_size,
+                                   title='Confidence interval',
+                                   loc='center')
 
-# Create legend with custom handler map to ensure circles are drawn properly
-legend = axes[-1].legend(sigma_handles, sigma_labels, 
-                         framealpha=0.4,
-                         fontsize=7,
-                        #  title='$\sigma$-level',
-                        #  loc=(0.32, 1.01)
-                         )
-
-# Make sure the circles appear round in the legend
-legend.get_frame().set_linewidth(0.5)
+    # Make sure the circles appear round in the legend
+    legend.get_frame().set_linewidth(0.5)
 
 loglog = True
 loglog_label = '_loglog' if loglog else ''
@@ -504,7 +547,8 @@ x_param_label = {
     '[C/H]': 'carbon_metallicity'
 }[x_param]
 # fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
-fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}_horizontal.pdf'
+# fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}_horizontal.pdf'
+fig_name = nat_path + f'nat_fig_3.pdf'
 fig.savefig(fig_name, bbox_inches='tight')
 print(f'Figure saved as {fig_name}')
 plt.close(fig)

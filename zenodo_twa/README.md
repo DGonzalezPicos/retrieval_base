@@ -12,9 +12,9 @@ This dataset contains the key data products from the atmospheric retrieval analy
 ## Data Products
 
 ### 1. Spectral Data (`*_spectral_data.h5`)
-- **Observational data**: Wavelength, flux, and uncertainties organised by grating (flattened arrays)
-- **Best-fit models**: Total model flux and blackbody disk component
-- **Grating coverage**: G140H (0.97-1.90 μm), G235H (1.65-3.18 μm), G395H (2.89-5.27 μm)
+- **Grating organization**: Data organized by grating (G140H, G235H, G395H), each containing 6 orders
+- **Observational data**: Wavelength, flux, and uncertainties for each order within each grating
+- **Best-fit models**: Total model flux and blackbody disk component for each order
 - **Metadata**: Instrument configuration, flux units, and processing information
 
 ### 2. Pressure-Temperature Profiles (`*_pt_profiles.h5`)
@@ -39,23 +39,10 @@ zenodo_twa/
 ├── TWA28_spectral_data.h5       # TWA 28 spectral data
 ├── TWA28_pt_profiles.h5         # TWA 28 PT profiles
 ├── TWA28_posteriors.h5          # TWA 28 posteriors
-├── examples/                     # Usage examples
-│   ├── load_spectral_data.py
-│   ├── load_pt_profiles.py
-│   └── load_posteriors.py
-└── figures/                      # Generated example figures
-    ├── TWA27A_spectrum_g140h.png
-    ├── TWA27A_spectrum_g235h.png
-    ├── TWA27A_spectrum_g395h.png
-    ├── TWA27A_spectrum_all_gratings.png
-    ├── TWA27A_pt_profile.png
-    ├── TWA27A_corner_plot.png
-    ├── TWA28_spectrum_g140h.png
-    ├── TWA28_spectrum_g235h.png
-    ├── TWA28_spectrum_g395h.png
-    ├── TWA28_spectrum_all_gratings.png
-    ├── TWA28_pt_profile.png
-    └── TWA28_corner_plot.png
+└── examples/                     # Usage examples
+    ├── load_spectral_data.py
+    ├── load_pt_profiles.py
+    └── load_posteriors.py
 ```
 
 ## Usage
@@ -75,10 +62,13 @@ import h5py
 import numpy as np
 
 with h5py.File('TWA28_spectral_data.h5', 'r') as f:
-    # Load G235H grating data
-    wavelength = f['g235h/observational_data/wavelength'][:]
-    flux = f['g235h/observational_data/flux'][:]
-    model_flux = f['g235h/model_data/flux_total'][:]
+    # Load data for G235H grating, order 0
+    grating = 'g235h'
+    order = 0
+    
+    wavelength = f[grating][f'order_{order}']['observational_data']['wavelength'][:]
+    flux = f[grating][f'order_{order}']['observational_data']['flux'][:]
+    model_flux = f[grating][f'order_{order}']['model_data']['flux_total'][:]
 ```
 
 2. **Load PT profiles:**
@@ -99,14 +89,9 @@ with h5py.File('TWA28_posteriors.h5', 'r') as f:
 ### Examples
 
 See the `examples/` directory for complete working examples:
-- `load_spectral_data.py`: Load and plot observed vs. model spectra by grating with 3:1 height ratios
-- `load_pt_profiles.py`: Load and plot pressure-temperature profiles with confidence envelopes
-- `load_posteriors.py`: Load and analyze posterior distributions with corner plots
-
-**Figure styling**: All example scripts use the same colour scheme and formatting as the published paper:
-- TWA 28: Orange (#D55E00) for models, black for data
-- TWA 27A: Green (#009E73) for models, grey for data
-- Publication-ready formatting with 300 DPI output
+- `load_spectral_data.py`: Load and plot observed vs. model spectra by grating and order
+- `load_pt_profiles.py`: Load and plot pressure-temperature profiles
+- `load_posteriors.py`: Load and analyze posterior distributions
 
 ## Data Format
 
@@ -120,13 +105,21 @@ Each file contains a `metadata` attribute with:
 - Instrument configuration
 - Data-specific parameters
 
-### Data Groups
-- **g140h/**, **g235h/**, **g395h/**: Grating-specific spectral data
-  - **observational_data/**: Raw observational data
-  - **model_data/**: Best-fit model results
+### Spectral Data Groups
+- **{grating}/order_{i}/observational_data/**: Raw observational data for each order
+- **{grating}/order_{i}/model_data/**: Best-fit model results for each order
+- **{grating}**: Grating-level metadata (G140H, G235H, G395H)
+
+### Other Data Groups
 - **pt_profiles/**: Pressure-temperature information
 - **posterior_samples/**: MCMC parameter samples
 - **statistics/**: Summary statistics
+
+### Grating Organization
+Each grating contains up to 6 orders:
+- **G140H**: Orders 0-5 (global indices 0-5)
+- **G235H**: Orders 0-5 (global indices 6-11)
+- **G395H**: Orders 0-5 (global indices 12-17)
 
 ### Units
 - Wavelength: nm

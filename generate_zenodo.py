@@ -122,42 +122,33 @@ def extract_spectral_data(path: pathlib.Path, target: str, run: str,
     # Apply flux unit factor
     flux_factor = conf.config_data['NIRSpec'].get('flux_unit_factor', 1.0)
     
-    # Define grating wavelength ranges (in nm)
-    grating_ranges = {
-        'g140h': (900, 1900),
-        'g235h': (1650, 3180), 
-        'g395h': (2890, 5290)
+    # Define grating wavelength ranges (in nm) and order indices
+    grating_info = {
+        'g140h': {'range': (900, 1900), 'orders': list(range(0, 6))},
+        'g235h': {'range': (1650, 3180), 'orders': list(range(6, 12))}, 
+        'g395h': {'range': (2890, 5290), 'orders': list(range(12, 18))}
     }
     
-    # Function to flatten and combine orders for a grating
-    def flatten_grating_data(wave_data, flux_data, mask_data, wave_range):
-        """Flatten orders within a grating's wavelength range"""
-        all_wave = []
-        all_flux = []
-        all_mask = []
+    # Function to extract orders for a specific grating
+    def extract_grating_data(wave_data, flux_data, mask_data, grating_orders):
+        """Extract orders for a specific grating without flattening"""
+        grating_wave = []
+        grating_flux = []
+        grating_mask = []
         
-        for order_idx in range(len(wave_data)):
-            # Handle different data shapes - squeeze to get 1D arrays
-            wave_order = wave_data[order_idx].squeeze()
-            flux_order = flux_data[order_idx].squeeze()
-            mask_order = mask_data[order_idx].squeeze()
-            
-            # Find points within grating range
-            in_range = (wave_order >= wave_range[0]) & (wave_order <= wave_range[1])
-            
-            if np.any(in_range):
-                all_wave.extend(wave_order[in_range])
-                all_flux.extend(flux_order[in_range])
-                all_mask.extend(mask_order[in_range])
+        for order_idx in grating_orders:
+            if order_idx < len(wave_data):
+                # Handle different data shapes - squeeze to get 1D arrays
+                wave_order = wave_data[order_idx].squeeze()
+                flux_order = flux_data[order_idx].squeeze()
+                mask_order = mask_data[order_idx].squeeze()
+                
+                # Store each order separately
+                grating_wave.append(wave_order)
+                grating_flux.append(flux_order)
+                grating_mask.append(mask_order)
         
-        if all_wave:
-            # Sort by wavelength
-            sort_idx = np.argsort(all_wave)
-            return (np.array(all_wave)[sort_idx], 
-                   np.array(all_flux)[sort_idx], 
-                   np.array(all_mask)[sort_idx])
-        else:
-            return np.array([]), np.array([]), np.array([])
+        return grating_wave, grating_flux, grating_mask
     
     # Create output file
     output_file = zenodo_dir / f"{target}_spectral_data.h5"
@@ -167,74 +158,98 @@ def extract_spectral_data(path: pathlib.Path, target: str, run: str,
         metadata = create_metadata(target, run, "spectral_data", 
                                  flux_unit_factor=flux_factor,
                                  n_orders=len(d_spec.wave),
-                                 grating_organization=True)
+                                 grating_organization=True,
+                                 orders_per_grating=6)
         
         # Save metadata as JSON string
         f.attrs['metadata'] = json.dumps(metadata, indent=2)
         
         # Process each grating
-        for grating, wave_range in grating_ranges.items():
+        for grating, info in grating_info.items():
             print(f"Processing grating {grating.upper()}...")
             
-            # Flatten observational data
-            obs_wave, obs_flux, obs_mask = flatten_grating_data(
-                d_spec.wave, d_spec.flux, d_spec.mask_isfinite, wave_range)
+            # Extract orders for this grating
+            obs_wave, obs_flux, obs_mask = extract_grating_data(
+                d_spec.wave, d_spec.flux, d_spec.mask_isfinite, info['orders'])
             
-            # Flatten model data
-            model_wave, model_flux, model_mask = flatten_grating_data(
-                m_spec.wave, m_spec.flux, d_spec.mask_isfinite, wave_range)
+            # Extract model data
+            model_wave, model_flux, model_mask = extract_grating_data(
+                m_spec.wave, m_spec.flux, d_spec.mask_isfinite, info['orders'])
             
-            # Flatten blackbody data
-            _, bb_flux, _ = flatten_grating_data(
-                m_spec.wave, m_spec.flux_bb, d_spec.mask_isfinite, wave_range)
+            # Extract blackbody data
+            _, bb_flux, _ = extract_grating_data(
+                m_spec.wave, m_spec.flux_bb, d_spec.mask_isfinite, info['orders'])
             
-            # Flatten error data
-            _, obs_err, _ = flatten_grating_data(
-                d_spec.wave, d_spec.err, d_spec.mask_isfinite, wave_range)
+            # Extract error data
+            _, obs_err, _ = extract_grating_data(
+                d_spec.wave, d_spec.err, d_spec.mask_isfinite, info['orders'])
             
             if len(obs_wave) > 0:
                 # Create grating group
                 grating_grp = f.create_group(grating)
                 
-                # Observational data
-                obs_grp = grating_grp.create_group('observational_data')
-                obs_grp.create_dataset('wavelength', data=obs_wave, compression='gzip')
-                obs_grp.create_dataset('flux', data=obs_flux, compression='gzip')
-                obs_grp.create_dataset('flux_error', data=obs_err, compression='gzip')
-                obs_grp.create_dataset('mask_isfinite', data=obs_mask, compression='gzip')
+                # Convert lists to numpy arrays for storage
+                obs_wave_array = np.array(obs_wave, dtype=object)
+                obs_flux_array = np.array(obs_flux, dtype=object)
+                obs_err_array = np.array(obs_err, dtype=object)
+                obs_mask_array = np.array(obs_mask, dtype=object)
                 
-                # Model data
-                model_grp = grating_grp.create_group('model_data')
-                model_grp.create_dataset('wavelength', data=model_wave, compression='gzip')
-                model_grp.create_dataset('flux_total', data=model_flux, compression='gzip')
-                model_grp.create_dataset('flux_blackbody', data=bb_flux, compression='gzip')
+                model_wave_array = np.array(model_wave, dtype=object)
+                model_flux_array = np.array(model_flux, dtype=object)
+                bb_flux_array = np.array(bb_flux, dtype=object)
                 
-                # Add units and descriptions
-                obs_grp['wavelength'].attrs['units'] = 'nm'
-                obs_grp['wavelength'].attrs['description'] = f'Wavelength grid for {grating.upper()}'
-                obs_grp['flux'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
-                obs_grp['flux'].attrs['description'] = f'Observed flux for {grating.upper()}'
-                obs_grp['flux_error'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
-                obs_grp['flux_error'].attrs['description'] = f'Flux uncertainties for {grating.upper()}'
-                
-                model_grp['wavelength'].attrs['units'] = 'nm'
-                model_grp['wavelength'].attrs['description'] = f'Wavelength grid for {grating.upper()}'
-                model_grp['flux_total'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
-                model_grp['flux_total'].attrs['description'] = f'Best-fit model flux for {grating.upper()}'
-                model_grp['flux_blackbody'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
-                model_grp['flux_blackbody'].attrs['description'] = f'Blackbody disk component for {grating.upper()}'
+                # Store each order separately
+                for order_idx, order_in_grating in enumerate(range(len(obs_wave))):
+                    order_grp = grating_grp.create_group(f'order_{order_idx}')
+                    
+                    # Observational data
+                    obs_grp = order_grp.create_group('observational_data')
+                    obs_grp.create_dataset('wavelength', data=obs_wave[order_idx], compression='gzip')
+                    obs_grp.create_dataset('flux', data=obs_flux[order_idx], compression='gzip')
+                    obs_grp.create_dataset('flux_error', data=obs_err[order_idx], compression='gzip')
+                    obs_grp.create_dataset('mask_isfinite', data=obs_mask[order_idx], compression='gzip')
+                    
+                    # Model data
+                    model_grp = order_grp.create_group('model_data')
+                    model_grp.create_dataset('wavelength', data=model_wave[order_idx], compression='gzip')
+                    model_grp.create_dataset('flux_total', data=model_flux[order_idx], compression='gzip')
+                    model_grp.create_dataset('flux_blackbody', data=bb_flux[order_idx], compression='gzip')
+                    
+                    # Add units and descriptions
+                    obs_grp['wavelength'].attrs['units'] = 'nm'
+                    obs_grp['wavelength'].attrs['description'] = f'Wavelength grid for {grating.upper()} order {order_idx}'
+                    obs_grp['flux'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
+                    obs_grp['flux'].attrs['description'] = f'Observed flux for {grating.upper()} order {order_idx}'
+                    obs_grp['flux_error'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
+                    obs_grp['flux_error'].attrs['description'] = f'Flux uncertainties for {grating.upper()} order {order_idx}'
+                    
+                    model_grp['wavelength'].attrs['units'] = 'nm'
+                    model_grp['wavelength'].attrs['description'] = f'Wavelength grid for {grating.upper()} order {order_idx}'
+                    model_grp['flux_total'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
+                    model_grp['flux_total'].attrs['description'] = f'Best-fit model flux for {grating.upper()} order {order_idx}'
+                    model_grp['flux_blackbody'].attrs['units'] = 'erg s^-1 cm^-2 nm^-1'
+                    model_grp['flux_blackbody'].attrs['description'] = f'Blackbody disk component for {grating.upper()} order {order_idx}'
+                    
+                    # Add order-specific metadata
+                    order_grp.attrs['global_order_index'] = info['orders'][order_idx]
+                    order_grp.attrs['order_in_grating'] = order_idx
+                    order_grp.attrs['n_points'] = len(obs_wave[order_idx])
+                    order_grp.attrs['wavelength_range_nm'] = (np.nanmin(obs_wave[order_idx]), np.nanmax(obs_wave[order_idx]))
                 
                 # Add grating-specific metadata
-                grating_grp.attrs['wavelength_range_nm'] = wave_range
-                grating_grp.attrs['n_points'] = len(obs_wave)
+                grating_grp.attrs['wavelength_range_nm'] = info['range']
+                grating_grp.attrs['n_orders'] = len(obs_wave)
+                grating_grp.attrs['global_order_indices'] = info['orders'][:len(obs_wave)]
                 
-                print(f"  ✓ {grating.upper()}: {len(obs_wave)} data points, {wave_range[0]}-{wave_range[1]} nm")
+                total_points = sum(len(wave) for wave in obs_wave)
+                print(f"  ✓ {grating.upper()}: {len(obs_wave)} orders, {total_points} total data points")
         
         # Save additional information
         info_grp = f.create_group('info')
         info_grp.attrs['flux_unit_factor'] = flux_factor
         info_grp.attrs['n_orders'] = len(d_spec.wave)
-        info_grp.attrs['grating_ranges'] = json.dumps(grating_ranges)
+        info_grp.attrs['grating_info'] = json.dumps(grating_info, default=str)
+        info_grp.attrs['orders_per_grating'] = 6
         
     print(f"✓ Spectral data saved to {output_file}")
 
@@ -420,48 +435,114 @@ def load_spectral_data(filename):
         print(f"Target: {metadata['data_info']['target']}")
         print(f"Run: {metadata['data_info']['run']}")
         
-        # Load observational data
-        obs_wave = f['observational_data/wavelength'][:]
-        obs_flux = f['observational_data/flux'][:]
-        obs_err = f['observational_data/flux_error'][:]
+        # Load data by grating
+        data = {'metadata': metadata}
         
-        # Load model data
-        model_wave = f['model_data/wavelength'][:]
-        model_flux = f['model_data/flux_total'][:]
-        model_bb = f['model_data/flux_blackbody'][:]
+        # Get grating information
+        grating_info = json.loads(f['info'].attrs['grating_info'])
+        data['grating_info'] = grating_info
         
-        return {
-            'metadata': metadata,
-            'obs_wave': obs_wave,
-            'obs_flux': obs_flux,
-            'obs_err': obs_err,
-            'model_wave': model_wave,
-            'model_flux': model_flux,
-            'model_bb': model_bb
-        }
+        for grating in ['g140h', 'g235h', 'g395h']:
+            if grating in f:
+                grating_data = {'orders': []}
+                n_orders = f[grating].attrs['n_orders']
+                
+                for order_idx in range(n_orders):
+                    order_key = f'order_{order_idx}'
+                    if order_key in f[grating]:
+                        order_data = {}
+                        
+                        # Load observational data
+                        obs_grp = f[grating][order_key]['observational_data']
+                        order_data['obs_wave'] = obs_grp['wavelength'][:]
+                        order_data['obs_flux'] = obs_grp['flux'][:]
+                        order_data['obs_err'] = obs_grp['flux_error'][:]
+                        order_data['obs_mask'] = obs_grp['mask_isfinite'][:]
+                        
+                        # Load model data
+                        model_grp = f[grating][order_key]['model_data']
+                        order_data['model_wave'] = model_grp['wavelength'][:]
+                        order_data['model_flux'] = model_grp['flux_total'][:]
+                        order_data['model_bb'] = model_grp['flux_blackbody'][:]
+                        
+                        # Add order metadata
+                        order_data['global_order_index'] = f[grating][order_key].attrs['global_order_index']
+                        order_data['order_in_grating'] = f[grating][order_key].attrs['order_in_grating']
+                        order_data['n_points'] = f[grating][order_key].attrs['n_points']
+                        order_data['wavelength_range_nm'] = f[grating][order_key].attrs['wavelength_range_nm']
+                        
+                        grating_data['orders'].append(order_data)
+                
+                data[grating] = grating_data
+        
+        return data
 
-def plot_spectrum(data, order=0):
-    """Plot observed and model spectra for a given order"""
+def plot_grating_spectrum(data, grating='g235h', order_in_grating=0):
+    """Plot observed and model spectra for a specific grating and order"""
+    if grating not in data:
+        print(f"Grating {grating} not found in data")
+        return
+    
+    if order_in_grating >= len(data[grating]['orders']):
+        print(f"Order {order_in_grating} not found in grating {grating}")
+        return
+    
+    order_data = data[grating]['orders'][order_in_grating]
+    
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
     
     # Plot spectra
-    ax1.plot(data['obs_wave'][order], data['obs_flux'][order], 'k-', alpha=0.7, label='Observed')
-    ax1.plot(data['model_wave'][order], data['model_flux'][order], 'r-', alpha=0.8, label='Model')
-    ax1.plot(data['model_wave'][order], data['model_bb'][order], 'b--', alpha=0.6, label='Blackbody disk')
+    ax1.plot(order_data['obs_wave'], order_data['obs_flux'], 'k-', alpha=0.7, label='Observed')
+    ax1.plot(order_data['model_wave'], order_data['model_flux'], 'r-', alpha=0.8, label='Model')
+    ax1.plot(order_data['model_wave'], order_data['model_bb'], 'b--', alpha=0.6, label='Blackbody disk')
     
     ax1.set_ylabel('Flux (erg s⁻¹ cm⁻² nm⁻¹)')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
+    ax1.set_title(f'{grating.upper()} - Order {order_in_grating} (Global Order {order_data["global_order_index"]})')
     
     # Plot residuals
-    residuals = (data['obs_flux'][order] - data['model_flux'][order]) / data['obs_flux'][order]
-    ax2.plot(data['obs_wave'][order], residuals, 'g-', alpha=0.7)
+    residuals = (order_data['obs_flux'] - order_data['model_flux']) / order_data['obs_flux']
+    ax2.plot(order_data['obs_wave'], residuals, 'g-', alpha=0.7)
     ax2.axhline(0, color='k', linestyle='--', alpha=0.5)
     
     ax2.set_xlabel('Wavelength (nm)')
     ax2.set_ylabel('Relative residuals')
     ax2.grid(True, alpha=0.3)
     
+    plt.tight_layout()
+    plt.show()
+
+def plot_all_orders(data, grating='g235h'):
+    """Plot all orders for a specific grating"""
+    if grating not in data:
+        print(f"Grating {grating} not found in data")
+        return
+    
+    n_orders = len(data[grating]['orders'])
+    fig, axes = plt.subplots(n_orders, 1, figsize=(12, 2*n_orders), sharex=True)
+    
+    if n_orders == 1:
+        axes = [axes]
+    
+    for i, order_data in enumerate(data[grating]['orders']):
+        ax = axes[i]
+        
+        # Plot spectra
+        ax.plot(order_data['obs_wave'], order_data['obs_flux'], 'k-', alpha=0.7, label='Observed')
+        ax.plot(order_data['model_wave'], order_data['model_flux'], 'r-', alpha=0.8, label='Model')
+        ax.plot(order_data['model_wave'], order_data['model_bb'], 'b--', alpha=0.6, label='Blackbody disk')
+        
+        ax.set_ylabel('Flux\\n(erg s⁻¹ cm⁻² nm⁻¹)')
+        ax.grid(True, alpha=0.3)
+        ax.set_title(f'Order {i} (Global Order {order_data["global_order_index"]})')
+        
+        if i == 0:
+            ax.legend()
+        if i == n_orders - 1:
+            ax.set_xlabel('Wavelength (nm)')
+    
+    plt.suptitle(f'{grating.upper()} - All Orders')
     plt.tight_layout()
     plt.show()
 
@@ -473,11 +554,25 @@ if __name__ == "__main__":
     print(f"Loading spectral data for {target}...")
     data = load_spectral_data(filename)
     
-    print(f"Data shape: {data['obs_flux'].shape}")
-    print(f"Wavelength range: {np.min(data['obs_wave']):.1f} - {np.max(data['obs_wave']):.1f} nm")
+    # Print summary
+    print("\\nData Summary:")
+    for grating in ['g140h', 'g235h', 'g395h']:
+        if grating in data:
+            n_orders = len(data[grating]['orders'])
+            total_points = sum(order['n_points'] for order in data[grating]['orders'])
+            wave_ranges = [order['wavelength_range_nm'] for order in data[grating]['orders']]
+            min_wave = min(wr[0] for wr in wave_ranges)
+            max_wave = max(wr[1] for wr in wave_ranges)
+            print(f"  {grating.upper()}: {n_orders} orders, {total_points} total points, {min_wave:.1f}-{max_wave:.1f} nm")
     
-    # Plot first order
-    plot_spectrum(data, order=0)
+    # Plot examples
+    print("\\nPlotting examples...")
+    
+    # Plot single order
+    plot_grating_spectrum(data, grating='g235h', order_in_grating=0)
+    
+    # Plot all orders for a grating
+    plot_all_orders(data, grating='g235h')
 ''')
     
     # Create PT profiles example
@@ -710,8 +805,9 @@ This dataset contains the key data products from the atmospheric retrieval analy
 ## Data Products
 
 ### 1. Spectral Data (`*_spectral_data.h5`)
-- **Observational data**: Wavelength, flux, and uncertainties for each spectral order
-- **Best-fit models**: Total model flux and blackbody disk component
+- **Grating organization**: Data organized by grating (G140H, G235H, G395H), each containing 6 orders
+- **Observational data**: Wavelength, flux, and uncertainties for each order within each grating
+- **Best-fit models**: Total model flux and blackbody disk component for each order
 - **Metadata**: Instrument configuration, flux units, and processing information
 
 ### 2. Pressure-Temperature Profiles (`*_pt_profiles.h5`)
@@ -759,9 +855,13 @@ import h5py
 import numpy as np
 
 with h5py.File('TWA28_spectral_data.h5', 'r') as f:
-    wavelength = f['observational_data/wavelength'][:]
-    flux = f['observational_data/flux'][:]
-    model_flux = f['model_data/flux_total'][:]
+    # Load data for G235H grating, order 0
+    grating = 'g235h'
+    order = 0
+    
+    wavelength = f[grating][f'order_{{order}}']['observational_data']['wavelength'][:]
+    flux = f[grating][f'order_{{order}}']['observational_data']['flux'][:]
+    model_flux = f[grating][f'order_{{order}}']['model_data']['flux_total'][:]
 ```
 
 2. **Load PT profiles:**
@@ -782,7 +882,7 @@ with h5py.File('TWA28_posteriors.h5', 'r') as f:
 ### Examples
 
 See the `examples/` directory for complete working examples:
-- `load_spectral_data.py`: Load and plot observed vs. model spectra
+- `load_spectral_data.py`: Load and plot observed vs. model spectra by grating and order
 - `load_pt_profiles.py`: Load and plot pressure-temperature profiles
 - `load_posteriors.py`: Load and analyze posterior distributions
 
@@ -798,12 +898,21 @@ Each file contains a `metadata` attribute with:
 - Instrument configuration
 - Data-specific parameters
 
-### Data Groups
-- **observational_data/**: Raw observational data
-- **model_data/**: Best-fit model results
+### Spectral Data Groups
+- **{{grating}}/order_{{i}}/observational_data/**: Raw observational data for each order
+- **{{grating}}/order_{{i}}/model_data/**: Best-fit model results for each order
+- **{{grating}}**: Grating-level metadata (G140H, G235H, G395H)
+
+### Other Data Groups
 - **pt_profiles/**: Pressure-temperature information
 - **posterior_samples/**: MCMC parameter samples
 - **statistics/**: Summary statistics
+
+### Grating Organization
+Each grating contains up to 6 orders:
+- **G140H**: Orders 0-5 (global indices 0-5)
+- **G235H**: Orders 0-5 (global indices 6-11)
+- **G395H**: Orders 0-5 (global indices 12-17)
 
 ### Units
 - Wavelength: nm

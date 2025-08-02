@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Example script to load and plot spectral data from Zenodo dataset organized by grating
+Example script to load and plot spectral data from Zenodo dataset
+
+This script generates one figure per grating showing the complete spectrum
+with best-fit model and residuals. The order structure is maintained for
+data management but plots show the full grating coverage.
 
 Usage:
     python load_spectral_data.py
@@ -10,226 +14,293 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-import os
 
 def load_spectral_data(filename):
-    """Load spectral data from HDF5 file organized by grating"""
-    data = {}
-    
+    """Load spectral data from HDF5 file"""
     with h5py.File(filename, 'r') as f:
         # Load metadata
         metadata = json.loads(f.attrs['metadata'])
-        data['metadata'] = metadata
         print(f"Target: {metadata['data_info']['target']}")
         print(f"Run: {metadata['data_info']['run']}")
         
-        # Load data for each grating
-        gratings = ['g140h', 'g235h', 'g395h']
-        data['gratings'] = {}
+        # Load data by grating
+        data = {'metadata': metadata}
         
-        for grating in gratings:
+        # Get grating information
+        grating_info = json.loads(f['info'].attrs['grating_info'])
+        data['grating_info'] = grating_info
+        
+        for grating in ['g140h', 'g235h', 'g395h']:
             if grating in f:
-                grating_data = {}
+                grating_data = {'orders': []}
+                n_orders = f[grating].attrs['n_orders']
                 
-                # Load observational data
-                obs_grp = f[grating]['observational_data']
-                grating_data['obs_wave'] = obs_grp['wavelength'][:]
-                grating_data['obs_flux'] = obs_grp['flux'][:]
-                grating_data['obs_err'] = obs_grp['flux_error'][:]
-                grating_data['obs_mask'] = obs_grp['mask_isfinite'][:]
+                for order_idx in range(n_orders):
+                    order_key = f'order_{order_idx}'
+                    if order_key in f[grating]:
+                        order_data = {}
+                        
+                        # Load observational data
+                        obs_grp = f[grating][order_key]['observational_data']
+                        order_data['obs_wave'] = obs_grp['wavelength'][:]
+                        order_data['obs_flux'] = obs_grp['flux'][:]
+                        order_data['obs_err'] = obs_grp['flux_error'][:]
+                        order_data['obs_mask'] = obs_grp['mask_isfinite'][:]
+                        
+                        # Load model data
+                        model_grp = f[grating][order_key]['model_data']
+                        order_data['model_wave'] = model_grp['wavelength'][:]
+                        order_data['model_flux'] = model_grp['flux_total'][:]
+                        order_data['model_bb'] = model_grp['flux_blackbody'][:]
+                        
+                        # Add order metadata
+                        order_data['global_order_index'] = f[grating][order_key].attrs['global_order_index']
+                        order_data['order_in_grating'] = f[grating][order_key].attrs['order_in_grating']
+                        order_data['n_points'] = f[grating][order_key].attrs['n_points']
+                        order_data['wavelength_range_nm'] = f[grating][order_key].attrs['wavelength_range_nm']
+                        
+                        grating_data['orders'].append(order_data)
                 
-                # Load model data
-                model_grp = f[grating]['model_data']
-                grating_data['model_wave'] = model_grp['wavelength'][:]
-                grating_data['model_flux'] = model_grp['flux_total'][:]
-                
-                # Load grating metadata
-                grating_data['wave_range'] = f[grating].attrs['wavelength_range_nm']
-                grating_data['n_points'] = f[grating].attrs['n_points']
-                
-                data['gratings'][grating] = grating_data
-                print(f"  {grating.upper()}: {grating_data['n_points']} points, "
-                      f"{grating_data['wave_range'][0]:.0f}-{grating_data['wave_range'][1]:.0f} nm")
+                data[grating] = grating_data
         
         return data
 
-def plot_grating_spectrum(data, grating='g235h'):
-    """Plot observed and model spectra for a specific grating with publication quality"""
-    if grating not in data['gratings']:
+def plot_grating_spectrum(data, grating='g235h', order_in_grating=0):
+    """Plot observed and model spectra for a specific grating and order"""
+    if grating not in data:
         print(f"Grating {grating} not found in data")
         return
     
-    grating_data = data['gratings'][grating]
-    target = data['metadata']['data_info']['target']
+    if order_in_grating >= len(data[grating]['orders']):
+        print(f"Order {order_in_grating} not found in grating {grating}")
+        return
     
-    # Create figure with 3:1 height ratio
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), 
-                                   gridspec_kw={'height_ratios': [3, 1]}, 
-                                   sharex=True)
+    order_data = data[grating]['orders'][order_in_grating]
     
-    # Filter out NaN values for plotting
-    wave = grating_data['obs_wave']
-    obs_flux = grating_data['obs_flux']
-    obs_err = grating_data['obs_err']
-    model_flux = grating_data['model_flux']
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
     
-    valid = ~np.isnan(obs_flux) & grating_data['obs_mask']
-    wave_valid = wave
-    obs_flux_valid = np.where(valid, obs_flux, np.nan)
-    obs_err_valid = np.where(valid, obs_err, np.nan)
-    model_flux_valid = np.where(valid, model_flux, np.nan)
-
-    # Define colors based on target (consistent with published paper)
-    if target == 'TWA28':
-        colors = {'data': 'k', 'model': '#D55E00'}  # Orange for TWA28
-    else:  # TWA27A
-        colors = {'data': 'gray', 'model': '#009E73'}  # Green for TWA27A
+    # Plot spectra
+    ax1.plot(order_data['obs_wave'], order_data['obs_flux'], 'k-', alpha=0.7, label='Observed')
+    ax1.plot(order_data['model_wave'], order_data['model_flux'], 'r-', alpha=0.8, label='Model')
+    ax1.plot(order_data['model_wave'], order_data['model_bb'], 'b--', alpha=0.6, label='Blackbody disk')
     
-    # Plot spectra with publication colours (consistent with fig1_spec.py)
-    lw = 0.9
-    ax1.plot(wave_valid, obs_flux_valid, color=colors['data'], linewidth=lw, alpha=0.8, label='Data')
-    ax1.plot(wave_valid, model_flux_valid, color=colors['model'], linewidth=lw, alpha=0.8, label='Model')
+    ax1.set_ylabel('Flux (erg s⁻¹ cm⁻² nm⁻¹)')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    ax1.set_title(f'{grating.upper()} - Order {order_in_grating} (Global Order {order_data["global_order_index"]})')
     
-    # Format main plot (consistent with fig1_spec.py)
-    y_label = r'$F_{\lambda}$' '  / 10$^{14}$ ' 'erg ' r'$\text{s}^{-1} \text{cm}^{-2} \text{nm}^{-1}$'
-    ax1.set_ylabel(y_label)
-    ax1.legend(loc='upper right', frameon=False, fontsize=10, handlelength=1.3)
+    # Plot residuals
+    residuals = (order_data['obs_flux'] - order_data['model_flux']) / order_data['obs_flux']
+    ax2.plot(order_data['obs_wave'], residuals, 'g-', alpha=0.7)
+    ax2.axhline(0, color='k', linestyle='--', alpha=0.5)
     
-    # Set y-axis to scientific notation if needed
-    if np.max(obs_flux_valid) < 1e-10 or np.max(obs_flux_valid) > 1e4:
-        ax1.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
-    
-    # Plot residuals (consistent with fig1_spec.py)
-    residuals = (obs_flux_valid - model_flux_valid) / obs_flux_valid
-    ax2.plot(wave_valid, residuals, color=colors['model'], linewidth=lw, alpha=0.8,
-             ls='', marker='o', markersize=1.5)
-    ax2.axhline(0, color='k', linewidth=0.5)
-    
-    # Format residuals plot
-    ax2.set_xlabel(r'Wavelength / nm')
-    ax2.set_ylabel(r'$\Delta F_{\lambda} / F_{\lambda}$')
-    
-    # Set reasonable y-limits for residuals (consistent with fig1_spec.py)
-    ax2.set_ylim(-0.15, 0.15)
-    
-    # Add grating information as text
-    wave_min, wave_max = np.min(wave_valid), np.max(wave_valid)
-    ax1.text(0.02, 0.95, f'{target} - {grating.upper()}\n{wave_min:.0f}–{wave_max:.0f} nm', 
-             transform=ax1.transAxes, fontsize=10, verticalalignment='top',
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+    ax2.set_xlabel('Wavelength (nm)')
+    ax2.set_ylabel('Relative residuals')
+    ax2.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.subplots_adjust(hspace=0.0)  # Consistent with fig1_spec.py
-    
-    # Create figures directory if it doesn't exist
-    os.makedirs("../figures", exist_ok=True)
-    
-    # Save figure with high quality
-    fig_path = f"../figures/{target}_spectrum_{grating}.png"
-    plt.savefig(fig_path, dpi=300, bbox_inches='tight', facecolor='white')
-    print(f"Figure saved to {fig_path}")
-    plt.close()  # Close figure to save memory
+    plt.show()
 
-def plot_all_gratings(data):
-    """Plot all gratings in a single figure for comparison"""
+def plot_full_grating_spectrum(data, grating='g235h', save_fig=False, figsize=(14, 10)):
+    """Plot the complete grating spectrum by combining all orders"""
+    if grating not in data:
+        print(f"Grating {grating} not found in data")
+        return
+    
+    # Combine all orders for this grating
+    all_obs_wave = []
+    all_obs_flux = []
+    all_obs_err = []
+    all_model_wave = []
+    all_model_flux = []
+    all_model_bb = []
+    
+    for order_data in data[grating]['orders']:
+        # Only include finite data points
+        mask = order_data['obs_mask']
+        
+        all_obs_wave.extend(order_data['obs_wave'][mask])
+        all_obs_flux.extend(order_data['obs_flux'][mask])
+        all_obs_err.extend(order_data['obs_err'][mask])
+        all_model_wave.extend(order_data['model_wave'][mask])
+        all_model_flux.extend(order_data['model_flux'][mask])
+        all_model_bb.extend(order_data['model_bb'][mask])
+    
+    # Convert to numpy arrays and sort by wavelength
+    all_obs_wave = np.array(all_obs_wave)
+    all_obs_flux = np.array(all_obs_flux)
+    all_obs_err = np.array(all_obs_err)
+    all_model_wave = np.array(all_model_wave)
+    all_model_flux = np.array(all_model_flux)
+    all_model_bb = np.array(all_model_bb)
+    
+    # Sort by wavelength
+    sort_idx = np.argsort(all_obs_wave)
+    all_obs_wave = all_obs_wave[sort_idx]
+    all_obs_flux = all_obs_flux[sort_idx]
+    all_obs_err = all_obs_err[sort_idx]
+    
+    sort_idx_model = np.argsort(all_model_wave)
+    all_model_wave = all_model_wave[sort_idx_model]
+    all_model_flux = all_model_flux[sort_idx_model]
+    all_model_bb = all_model_bb[sort_idx_model]
+    
+    # Create figure with two panels
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=figsize, sharex=True)
+    
+    # Top panel: Spectra
+    ax1.plot(all_obs_wave, all_obs_flux, 'k-', alpha=0.7, linewidth=0.8, label='Observed')
+    ax1.plot(all_model_wave, all_model_flux, 'r-', alpha=0.8, linewidth=1.0, label='Best-fit model')
+    ax1.plot(all_model_wave, all_model_bb, 'b--', alpha=0.6, linewidth=1.0, label='Blackbody disk')
+    
+    # Add error envelope (optional, can be commented out if too cluttered)
+    # ax1.fill_between(all_obs_wave, all_obs_flux - all_obs_err, all_obs_flux + all_obs_err, 
+    #                  alpha=0.2, color='gray', label='1σ uncertainty')
+    
+    ax1.set_ylabel('Flux (erg s⁻¹ cm⁻² nm⁻¹)')
+    ax1.legend(loc='upper right')
+    ax1.grid(True, alpha=0.3)
+    
+    # Add grating information to title
     target = data['metadata']['data_info']['target']
+    run = data['metadata']['data_info']['run']
+    n_orders = len(data[grating]['orders'])
+    n_points = sum(order['n_points'] for order in data[grating]['orders'])
+    wave_min = np.min(all_obs_wave)
+    wave_max = np.max(all_obs_wave)
     
-    # Define colors based on target
-    if target == 'TWA28':
-        colors = {'data': 'k', 'model': '#D55E00'}
-    else:
-        colors = {'data': 'gray', 'model': '#009E73'}
+    # Create a more informative title
+    title = f'{target} - {grating.upper()} Spectrum\n'
+    title += f'{n_orders} orders, {n_points} points, {wave_min:.0f}-{wave_max:.0f} nm'
+    ax1.set_title(title, fontsize=12, pad=20)
     
-    # Create figure
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), 
-                                   gridspec_kw={'height_ratios': [3, 1]}, 
-                                   sharex=True)
+    # Add run information as text
+    ax1.text(0.02, 0.95, f'Run: {run}', transform=ax1.transAxes, 
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8),
+             verticalalignment='top', fontsize=10)
     
-    # Plot each grating
-    gratings = ['g140h', 'g235h', 'g395h']
-    grating_colors = ['navy', 'green', 'brown']
+    # Bottom panel: Residuals
+    # Interpolate model to observed wavelengths for residuals
+    model_flux_interp = np.interp(all_obs_wave, all_model_wave, all_model_flux)
+    residuals = (all_obs_flux - model_flux_interp) / all_obs_flux
     
-    for grating, grating_color in zip(gratings, grating_colors):
-        if grating in data['gratings']:
-            grating_data = data['gratings'][grating]
-            
-            wave = grating_data['obs_wave']
-            obs_flux = grating_data['obs_flux']
-            model_flux = grating_data['model_flux']
-            
-            valid = ~np.isnan(obs_flux) & grating_data['obs_mask']
-            wave_valid = wave
-            obs_flux_valid = np.where(valid, obs_flux, np.nan)
-            model_flux_valid = np.where(valid, model_flux, np.nan)
-            
-            # Plot spectra
-            lw = 0.9
-            ax1.plot(wave_valid, obs_flux_valid, color=colors['data'], linewidth=lw, alpha=0.8)
-            ax1.plot(wave_valid, model_flux_valid, color=colors['model'], linewidth=lw, alpha=0.8)
-            
-            # Add grating band shading
-            wave_range = grating_data['wave_range']
-            ax1.axvspan(wave_range[0], wave_range[1], color=grating_color, alpha=0.12, lw=0)
-            
-            # Add grating label
-            xc = wave_range[0] + (wave_range[1] - wave_range[0])/2
-            ymax = ax1.get_ylim()[1]
-            ax1.text(xc, ymax*0.9, grating.upper(), color=grating_color, fontsize=10,
-                    ha='center', va='center', fontweight='bold')
-            
-            # Plot residuals
-            residuals = (obs_flux_valid - model_flux_valid) / obs_flux_valid
-            ax2.plot(wave_valid, residuals, color=colors['model'], linewidth=lw, alpha=0.8,
-                     ls='', marker='o', markersize=1.5)
+    ax2.plot(all_obs_wave, residuals, 'g-', alpha=0.7, linewidth=0.8)
+    ax2.axhline(0, color='k', linestyle='--', alpha=0.5)
     
-    # Format plots
-    y_label = r'$F_{\lambda}$' '  / 10$^{14}$ ' 'erg ' r'$\text{s}^{-1} \text{cm}^{-2} \text{nm}^{-1}$'
-    ax1.set_ylabel(y_label)
-    ax1.legend(['Data', 'Model'], loc='upper right', frameon=False, fontsize=10, handlelength=1.3)
+    # Add horizontal lines for ±1σ, ±2σ, ±3σ
+    residual_std = np.nanstd(residuals)
+    for sigma, alpha, color in [(1, 0.4, 'gray'), (2, 0.3, 'orange'), (3, 0.2, 'red')]:
+        ax2.axhline(sigma * residual_std, color=color, linestyle=':', alpha=alpha, linewidth=1)
+        ax2.axhline(-sigma * residual_std, color=color, linestyle=':', alpha=alpha, linewidth=1)
     
-    ax2.axhline(0, color='k', linewidth=0.5)
-    ax2.set_xlabel(r'Wavelength / nm')
-    ax2.set_ylabel(r'$\Delta F_{\lambda} / F_{\lambda}$')
-    ax2.set_ylim(-0.15, 0.15)
+    ax2.set_xlabel('Wavelength (nm)')
+    ax2.set_ylabel('Relative residuals')
+    ax2.grid(True, alpha=0.3)
     
-    # Add target information
-    ax1.text(0.02, 0.95, f'{target} - All Gratings\n0.97–5.27 μm', 
-             transform=ax1.transAxes, fontsize=10, verticalalignment='top',
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+    # Add residual statistics
+    residual_rms = np.sqrt(np.nanmean(residuals**2))
+    residual_mean = np.nanmean(residuals)
+    stats_text = f'RMS = {residual_rms:.4f}\nMean = {residual_mean:.4f}\nStd = {residual_std:.4f}'
+    ax2.text(0.02, 0.95, stats_text, transform=ax2.transAxes, 
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8),
+             verticalalignment='top', fontsize=9)
+    
+    # Add sigma level legend
+    ax2.text(0.98, 0.95, '1σ, 2σ, 3σ levels', transform=ax2.transAxes, 
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8),
+             verticalalignment='top', horizontalalignment='right', fontsize=9)
     
     plt.tight_layout()
-    plt.subplots_adjust(hspace=0.0)
     
-    # Create figures directory if it doesn't exist
-    os.makedirs("../figures", exist_ok=True)
+    if save_fig:
+        fig_name = f'{target}_{grating}_spectrum.png'
+        plt.savefig(fig_name, dpi=300, bbox_inches='tight')
+        print(f"  Saved figure: {fig_name}")
     
-    # Save figure
-    fig_path = f"../figures/{target}_spectrum_all_gratings.png"
-    plt.savefig(fig_path, dpi=300, bbox_inches='tight', facecolor='white')
-    print(f"Figure saved to {fig_path}")
-    plt.close()
+    plt.show()
+    
+    return fig
+
+def generate_all_grating_figures(data, save_fig=True, figsize=(14, 10)):
+    """Generate figures for all available gratings"""
+    target = data['metadata']['data_info']['target']
+    print(f"\nGenerating all grating figures for {target}...")
+    
+    figures = {}
+    for grating in ['g140h', 'g235h', 'g395h']:
+        if grating in data:
+            print(f"  Plotting {grating.upper()} spectrum...")
+            fig = plot_full_grating_spectrum(data, grating=grating, save_fig=save_fig, figsize=figsize)
+            figures[grating] = fig
+    
+    print(f"Generated {len(figures)} grating figures")
+    return figures
+
+def plot_all_orders(data, grating='g235h'):
+    """Plot all orders for a specific grating"""
+    if grating not in data:
+        print(f"Grating {grating} not found in data")
+        return
+    
+    n_orders = len(data[grating]['orders'])
+    fig, axes = plt.subplots(n_orders, 1, figsize=(12, 2*n_orders), sharex=True)
+    
+    if n_orders == 1:
+        axes = [axes]
+    
+    for i, order_data in enumerate(data[grating]['orders']):
+        ax = axes[i]
+        
+        # Plot spectra
+        ax.plot(order_data['obs_wave'], order_data['obs_flux'], 'k-', alpha=0.7, label='Observed')
+        ax.plot(order_data['model_wave'], order_data['model_flux'], 'r-', alpha=0.8, label='Model')
+        ax.plot(order_data['model_wave'], order_data['model_bb'], 'b--', alpha=0.6, label='Blackbody disk')
+        
+        ax.set_ylabel('Flux\n(erg s⁻¹ cm⁻² nm⁻¹)')
+        ax.grid(True, alpha=0.3)
+        ax.set_title(f'Order {i} (Global Order {order_data["global_order_index"]})')
+        
+        if i == 0:
+            ax.legend()
+        if i == n_orders - 1:
+            ax.set_xlabel('Wavelength (nm)')
+    
+    plt.suptitle(f'{grating.upper()} - All Orders')
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     # Example usage
     target = "TWA28"  # Change to TWA27A for the other target
-    filename = f"../{target}_spectral_data.h5"
+    filename = f"{target}_spectral_data.h5"
     
     print(f"Loading spectral data for {target}...")
     data = load_spectral_data(filename)
     
-    print(f"\nWavelength coverage:")
-    for grating in data['gratings'].keys():
-        wave_range = data['gratings'][grating]['wave_range']
-        n_points = data['gratings'][grating]['n_points']
-        print(f"  {grating.upper()}: {n_points} points, {wave_range[0]:.0f}-{wave_range[1]:.0f} nm")
-    
-    # Plot individual gratings
-    print(f"\nPlotting individual gratings...")
+    # Print summary
+    print("\nData Summary:")
     for grating in ['g140h', 'g235h', 'g395h']:
-        if grating in data['gratings']:
-            print(f"Plotting {grating.upper()}...")
-            plot_grating_spectrum(data, grating=grating)
+        if grating in data:
+            n_orders = len(data[grating]['orders'])
+            total_points = sum(order['n_points'] for order in data[grating]['orders'])
+            wave_ranges = [order['wavelength_range_nm'] for order in data[grating]['orders']]
+            min_wave = min(wr[0] for wr in wave_ranges)
+            max_wave = max(wr[1] for wr in wave_ranges)
+            print(f"  {grating.upper()}: {n_orders} orders, {total_points} total points, {min_wave:.1f}-{max_wave:.1f} nm")
     
-    # Plot all gratings together
-    print(f"\nPlotting all gratings together...")
-    plot_all_gratings(data)
+    # Generate one figure per grating
+    print("\nGenerating grating spectra...")
+    
+    # Use the convenience function to generate all figures
+    figures = generate_all_grating_figures(data, save_fig=True)
+    
+    print("\nAll grating spectra generated successfully!")
+    
+    # Optional: Also show examples of individual order plots and all orders
+    print("\nOptional: Individual order examples (uncomment to use):")
+    print("# plot_grating_spectrum(data, grating='g235h', order_in_grating=0)")
+    print("# plot_all_orders(data, grating='g235h')")
+    
+    # Uncomment these lines to see individual order plots
+    # plot_grating_spectrum(data, grating='g235h', order_in_grating=0)
+    # plot_all_orders(data, grating='g235h')

@@ -18,7 +18,7 @@ import matplotlib.patheffects as path_effects
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/figures/'
 
-def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, **kwargs):
+def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_y=0.0, offset_x=0.0, **kwargs):
     
     
     assert len(ax) == 2, f'Lenght of ax must be 2, not {len(ax)}'
@@ -137,9 +137,13 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, *
     text_pos = [np.nanmin(wave[order, mask[order]]), np.nanquantile(flux[order, :len(flux[order]//2)], 0.90)-0.15]
     if text_x is not None:
         text_pos[0] = text_x[0]
-    # add white box around text
     
-    pe = [path_effects.withStroke(linewidth=2, foreground='w')]
+    text_pos[1] += offset_y
+    # add white box around text
+    if kwargs.get('include_path_effects', True):
+        pe = [path_effects.withStroke(linewidth=2, foreground='w')]
+    else:
+        pe = None
     s = target.replace('gl','')
     ax[0].text(*text_pos, s, color='k', fontsize=9, weight='bold', transform=ax[0].transData,
                 path_effects=pe)
@@ -164,8 +168,13 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, *
 def plot(order, names, my_targets, 
          teff, spt,
          cmap, norm,
-         text_x=None, xlim=None, axes=None, add_cbar=True,
-         show_lines=False, **kwargs):
+         text_x=None, 
+         text_y_offset=0.0, 
+         xlim=None, 
+         axes=None, 
+         add_cbar=True,
+         show_lines=False,
+         include_path_effects=True, **kwargs):
     
     fig = None
     if axes is None:
@@ -197,12 +206,22 @@ def plot(order, names, my_targets,
         ret = main(target, ax=ax, offset=offset, order=order,
                 run=None, 
                 color=color,
-                text_x=text_x, divide_spline=True,
+                text_x=text_x, 
+                offset_y=text_y_offset,
+                divide_spline=True,
                 offset_x=-0.7*count,
+                include_path_effects=include_path_effects,
                 **kwargs)
         
+        if include_path_effects:
+            pe = [path_effects.withStroke(linewidth=2, foreground='w')]
+        else:
+            print(f' No path effects for {name}')
+            pe = None
+        
         ax[0].text(s=spt[name].split('.')[0].replace('V',''), x=text_x[1]-3, y=1.0+offset, transform=ax[0].transData,
-                    color=color, fontsize=7, weight='bold', path_effects=[path_effects.withStroke(linewidth=2, foreground='w')])
+                    color=color, fontsize=7, weight='bold',                   
+                    path_effects=pe)
         
         
     ax[-1].axhline(0.0, color='k', lw=0.5, zorder=-1)

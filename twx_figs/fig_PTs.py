@@ -9,17 +9,47 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import copy
+import sys
+
+# Add Sonora Diamondback path to sys.path
+sonora_path = '/home/dario/phd/SonoraDiamondBack/pressure-temperature_profiles'
+if sonora_path not in sys.path:
+    sys.path.insert(0, sonora_path)
 
 from retrieval_base.retrieval import Retrieval
 import retrieval_base.auxiliary_functions as af
 from retrieval_base.config import Config
 import seaborn as sns
 
+# Import Sonora Diamondback functions
+try:
+    from plot_chemistry_pt_profiles import load_pt_profile, find_closest_parameters, parse_filename_parameters
+    SONORA_AVAILABLE = True
+    print("✓ Successfully imported Sonora Diamondback functions")
+except ImportError as e:
+    SONORA_AVAILABLE = False
+    print(f"⚠ Warning: Could not import Sonora Diamondback functions: {e}")
+    print("  Sonora Diamondback models will not be plotted")
+
 # Configuration
 path = pathlib.Path(af.get_path())
 path_figures = pathlib.Path('/home/dario/phd/twa2x_paper/figures')
 config_file = 'config_jwst.txt'
 w_set = 'NIRSpec'
+
+# Sonora Diamondback configuration
+sonora_config = {
+    'data_dir': '/home/dario/phd/SonoraDiamondBack/pressure-temperature_profiles',
+    'teff': 2400,           # Effective temperature in K
+    'logg': 4.0,            # log10 surface gravity
+    'metallicity': 0.0,     # Solar metallicity [M/H]
+    'c_o_ratio': 1.0,       # Carbon-to-oxygen ratio
+    'fsed': None,           # No clouds
+    'color': 'magenta',      # Plot color
+    'linewidth': 2,          # Line width
+    'alpha': 0.7,           # Transparency
+    'zorder': 5             # Plotting order
+}
 
 runs = dict(
     TWA27A='freeslab_lbl10_G1G2G3_1',
@@ -247,12 +277,195 @@ def get_figure_suffix(scaling_mode: str) -> str:
     else:
         return ''
 
+def get_sonora_pt_profile(sonora_data_dir: pathlib.Path, 
+                          target_teff: int = 2400,
+                          target_logg: float = 4.0,
+                          target_metallicity: float = 0.0,
+                          target_c_o_ratio: float = 1.0) -> tuple:
+    """
+    Load Sonora Diamondback PT profile for specified parameters.
+    
+    Parameters:
+        sonora_data_dir: Directory containing Sonora PT profile files
+        target_teff: Target effective temperature in K
+        target_logg: Target log10 surface gravity
+        target_metallicity: Target metallicity [M/H]
+        target_c_o_ratio: Target carbon-to-oxygen ratio
+        
+    Returns:
+        tuple: (pressure, temperature) or (None, None) if not available
+    """
+    if not SONORA_AVAILABLE:
+        return None, None
+        
+    try:
+        # Convert log(g) to gravity in m/s²
+        target_gravity = 10.0**target_logg
+        
+        # Find PT profile files
+        pt_files = list(sonora_data_dir.glob("*.pt"))
+        
+        if not pt_files:
+            print(f"⚠ No PT profile files found in {sonora_data_dir}")
+            return None, None
+        
+        print(f"🔍 Searching for Sonora model with parameters:")
+        print(f"   T_eff = {target_teff} K")
+        print(f"   log(g) = {target_logg:.1f} (g = {target_gravity:.0f} m/s²)")
+        print(f"   [M/H] = {target_metallicity:.1f}")
+        print(f"   C/O = {target_c_o_ratio:.1f}")
+        if sonora_config['fsed'] is None:
+            print("   Clouds = No clouds")
+        else:
+            print(f"   Clouds = fsed={sonora_config['fsed']}")
+        
+        # Target parameters for Sonora model
+        target_params = {
+            'teff': target_teff,
+            'gravity': target_gravity,
+            'fsed': sonora_config['fsed'],  # Use config value
+            'metallicity': target_metallicity,
+            'c_o_ratio': target_c_o_ratio
+        }
+        
+        # Tolerance for parameter matching
+        tolerance = {
+            'teff': 50,        # ±50K
+            'gravity': 10,     # ±10 m/s²
+            'fsed': 1,         # ±1 (but we want None for no clouds)
+            'metallicity': 0.1,  # ±0.1
+            'c_o_ratio': 0.1     # ±0.1
+        }
+        
+        # Find closest matching file
+        closest_file = find_closest_parameters(pt_files, target_params, tolerance)
+        file_params = parse_filename_parameters(closest_file.name)
+        
+        print(f"✓ Found Sonora model: {closest_file.name}")
+        print(f"  Actual parameters: T={file_params['teff']}K, g={file_params['gravity']:.0f} m/s², "
+              f"m={file_params['metallicity']:.1f}, C/O={file_params['c_o_ratio']:.1f}")
+        if file_params['fsed'] is not None:
+            print(f"  Cloud parameter: fsed={file_params['fsed']}")
+        else:
+            print("  Cloud parameter: No clouds (nc)")
+        
+        # Load PT profile
+        pressure, temperature = load_pt_profile(closest_file)
+        
+        return pressure, temperature
+        
+    except Exception as e:
+        print(f"⚠ Error loading Sonora PT profile: {e}")
+        return None, None
+
+def find_multiple_sonora_models(sonora_data_dir: pathlib.Path, 
+                               target_params_list: list) -> list:
+    """
+    Find multiple Sonora Diamondback PT profiles for different parameter sets.
+    
+    Parameters:
+        sonora_data_dir: Directory containing Sonora PT profile files
+        target_params_list: List of parameter dictionaries
+        
+    Returns:
+        list: List of tuples (pressure, temperature, params) for found models
+    """
+    if not SONORA_AVAILABLE:
+        return []
+        
+    found_models = []
+    
+    for params in target_params_list:
+        try:
+            p, t = get_sonora_pt_profile(
+                sonora_data_dir,
+                target_teff=params['teff'],
+                target_logg=params['logg'],
+                target_metallicity=params['metallicity'],
+                target_c_o_ratio=params['c_o_ratio']
+            )
+            if p is not None and t is not None:
+                found_models.append((p, t, params))
+        except Exception as e:
+            print(f"⚠ Error loading Sonora model for params {params}: {e}")
+            continue
+    
+    return found_models
+
+def list_available_sonora_models(sonora_data_dir: pathlib.Path) -> None:
+    """
+    List available Sonora Diamondback models in the directory for debugging.
+    
+    Parameters:
+        sonora_data_dir: Directory containing Sonora PT profile files
+    """
+    if not SONORA_AVAILABLE:
+        print("⚠ Sonora functions not available")
+        return
+        
+    try:
+        pt_files = list(sonora_data_dir.glob("*.pt"))
+        
+        if not pt_files:
+            print(f"⚠ No PT profile files found in {sonora_data_dir}")
+            return
+        
+        print(f"📁 Found {len(pt_files)} Sonora PT profile files:")
+        
+        # Parse and group files by parameters
+        model_groups = {}
+        for filepath in pt_files[:20]:  # Show first 20 files
+            try:
+                params = parse_filename_parameters(filepath.name)
+                key = (params['teff'], params['gravity'], params['metallicity'])
+                if key not in model_groups:
+                    model_groups[key] = []
+                model_groups[key].append(filepath.name)
+            except ValueError:
+                continue
+        
+        # Display grouped models
+        for (teff, gravity, metallicity), files in sorted(model_groups.items()):
+            logg = np.log10(gravity)
+            print(f"   T={teff}K, log(g)={logg:.1f}, [M/H]={metallicity:.1f}: {len(files)} files")
+            
+        if len(pt_files) > 20:
+            print(f"   ... and {len(pt_files) - 20} more files")
+            
+    except Exception as e:
+        print(f"⚠ Error listing Sonora models: {e}")
+
 def main():
     """Main plotting function."""
     # Set pressure scaling mode
     scaling_mode = 'none'  # Options: 'multiply', 'divide', 'none'
     
     fig, ax = plt.subplots(1, 1, figsize=(4, 4), tight_layout=True)
+    
+    # Load Sonora Diamondback PT profiles
+    sonora_data_dir = pathlib.Path(sonora_config['data_dir'])
+    
+    # List available models for debugging
+    print("\n" + "="*60)
+    print("SEARCHING FOR SONORA DIAMONDBACK MODELS")
+    print("="*60)
+    list_available_sonora_models(sonora_data_dir)
+    print("="*60)
+    
+    # Define multiple Sonora models to search for
+    sonora_models = [
+        {'teff': 2400, 'logg': 4.0, 'metallicity': 0.0, 'c_o_ratio': 1.0, 'label': 'T=2400K, log(g)=4.0'},
+        {'teff': 2400, 'logg': 4.5, 'metallicity': 0.0, 'c_o_ratio': 1.0, 'label': 'T=2400K, log(g)=4.5'},
+        {'teff': 2200, 'logg': 4.0, 'metallicity': 0.0, 'c_o_ratio': 1.0, 'label': 'T=2200K, log(g)=4.0'},
+        {'teff': 2600, 'logg': 4.0, 'metallicity': 0.0, 'c_o_ratio': 1.0, 'label': 'T=2600K, log(g)=4.0'},
+    ]
+    
+    found_sonora_models = find_multiple_sonora_models(sonora_data_dir, sonora_models)
+    
+    if found_sonora_models:
+        print(f"✓ Found {len(found_sonora_models)} Sonora Diamondback models")
+    else:
+        print("⚠ No Sonora Diamondback models found")
     
     # Plot effective temperature lines and data
     for target in runs.keys():
@@ -273,6 +486,23 @@ def main():
                            target_name=target,
                            ls_cf='-', lw_cf=1.0)
 
+    # Plot Sonora Diamondback models if available
+    for i, (sonora_p, sonora_t, params) in enumerate(found_sonora_models):
+        # Scale pressure if needed
+        sonora_y = scale_pressure(sonora_p, params['logg'], scaling_mode)
+        
+        # Plot Sonora model with specified styling
+        ax.plot(sonora_t, sonora_y, color=sonora_config['color'], 
+                lw=sonora_config['linewidth'], ls='-', 
+                alpha=sonora_config['alpha'], 
+                label=f'Sonora: {params["label"]}', 
+                zorder=sonora_config['zorder'])
+        
+        print(f"✓ Plotted Sonora model: {params['label']}")
+    
+    if not found_sonora_models:
+        print("⚠ Sonora Diamondback models not plotted (unavailable)")
+
     # Set plot limits and labels
     y_scaled = scale_pressure(p, logg, scaling_mode)
     ylim = (np.max(y_scaled), np.min(y_scaled))
@@ -283,13 +513,22 @@ def main():
     
     # Configure legend
     handles, labels = ax.get_legend_handles_labels()
-    labels_sort = ['2430 K', 'TWA 27A', '2382 K', 'TWA 28', 'TWA 28\n(CRIRES$^{+}$)']
-    legend_dict = dict(zip(labels, handles))
-    handles_sort = [legend_dict[label] for label in labels_sort]
     
+    # Update legend labels to include Sonora models
+    if found_sonora_models:
+        # Create labels for all Sonora models
+        sonora_labels = [f'Sonora: {params["label"]}' for _, _, params in found_sonora_models]
+        labels_sort = ['2430 K', 'TWA 27A', '2382 K', 'TWA 28', 'TWA 28\n(CRIRES$^{+}$)'] + sonora_labels
+    else:
+        labels_sort = ['2430 K', 'TWA 27A', '2382 K', 'TWA 28', 'TWA 28\n(CRIRES$^{+}$)']
+    
+    legend_dict = dict(zip(labels, handles))
+    handles_sort = [legend_dict[label] for label in labels_sort if label in legend_dict]
+    
+    # Adjust legend position and size for better readability
     leg = ax.legend(handles_sort, labels_sort, 
-                    prop={'size': 10, 'weight': 'bold'}, 
-                    loc=(0.54, 0.6),
+                    prop={'size': 8, 'weight': 'bold'}, 
+                    loc=(0.54, 0.5),
                     frameon=False, ncol=1)
     
     # Style legend patches

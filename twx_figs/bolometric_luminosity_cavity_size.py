@@ -11,7 +11,8 @@ from typing import Union, Tuple
 
 # stefan boltzmann constant in cgs units
 sigma = 5.6703744191843561646e-5 # erg s^-1 cm^-2 K^-4
-rjup_to_cm = 7.1492e10 # cm
+JUPITER_RADIUS = 7.1492e9  # cm (R_jup)
+rjup_to_cm = JUPITER_RADIUS
 
 # convert bolometric luminosity to Lsun
 l_sun = 3.828e33 # erg s^-1
@@ -112,6 +113,56 @@ def bolometric_luminosity(teff: float, radius_rjup: float,
     
     return l_bol, l_bol_err
 
+def log10_bolometric_luminosity(teff: float, radius_rjup: float,
+                               teff_err: float = None, 
+                               radius_err: float = None,
+                               solar_norm: bool = False) -> Union[Tuple[float, float], float]:
+    """
+    Calculate log10 of bolometric luminosity with propagated uncertainties.
+    
+    For log10(x), the error propagation formula is:
+    d(log10(x)) = (1/ln(10)) * (dx/x) = 0.434 * (dx/x)
+    
+    Parameters:
+    -----------
+    teff : float
+        Effective temperature in K
+    radius_rjup : float
+        Disk radius in Jupiter radii
+    teff_err : float, optional
+        Uncertainty in effective temperature in K
+    radius_err : float, optional
+        Uncertainty in disk radius in Jupiter radii
+        
+    Returns:
+    --------
+    Union[Tuple[float, float], float]
+        If errors provided: (log10_luminosity, log10_luminosity_error)
+        If no errors: log10_luminosity
+        
+    Raises:
+    -------
+    ValueError
+        If teff <= 0 or radius_rjup <= 0
+        If any error values are negative
+    """
+    # Get bolometric luminosity and its error
+    if teff_err is not None or radius_err is not None:
+        l_bol, l_bol_err = bolometric_luminosity(teff, radius_rjup, teff_err, radius_err)
+        if solar_norm:
+            l_bol = l_bol / l_sun
+            l_bol_err = l_bol_err / l_sun  # Error scales with the same factor
+        log_l_bol = np.log10(l_bol)
+        # Error propagation for log10: d(log10(x)) = (1/ln(10)) * (dx/x)
+        log_l_bol_err = (1.0 / np.log(10)) * (l_bol_err / l_bol)
+        return log_l_bol, log_l_bol_err
+    else:
+        l_bol = bolometric_luminosity(teff, radius_rjup)
+        if solar_norm:
+            l_bol = l_bol / l_sun
+        log_l_bol = np.log10(l_bol)
+        return log_l_bol
+
 def cavity_size(teff_bb: float, l_bol: float,
                 teff_bb_err: float = None, 
                 l_bol_err: float = None) -> Union[Tuple[float, float], float]:
@@ -197,28 +248,23 @@ if __name__ == '__main__':
         teff_bb, teff_bb_err = targets[target]['teff_bb']
         radius_bb, radius_bb_err = targets[target]['radius_bb']
         
+        # Without uncertainties
         l_bol = bolometric_luminosity(teff, radius)
+        log_l_bol = log10_bolometric_luminosity(teff, radius)
+        log_l_bol_solar_norm = log10_bolometric_luminosity(teff, radius, solar_norm=True)
         r_cavity = cavity_size(teff_bb, l_bol)
         
-        print(f'L_bol = {l_bol:.2e} erg/s, {l_bol/l_sun:.2f} Lsun')
-        print(f'R_cavity = {r_cavity:.2f} Rjup')
-        
-        # Example with uncertainties
-        teff_err = 100.0  # ±100 K
-        radius_err = 0.5   # ±0.5 Rjup
-        teff_bb_err = 50.0 # ±50 K
-        
+        # With actual uncertainties from data
         l_bol_with_err, l_bol_err = bolometric_luminosity(teff, radius, teff_err, radius_err)
+        log_l_bol_with_err, log_l_bol_err = log10_bolometric_luminosity(teff, radius, teff_err, radius_err)
+        log_l_bol_solar_norm_with_err, log_l_bol_solar_norm_err = log10_bolometric_luminosity(teff, radius, teff_err, radius_err, solar_norm=True)
         r_cavity_with_err, r_cavity_err = cavity_size(teff_bb, l_bol_with_err, teff_bb_err, l_bol_err)
         
         print(f'\nWith uncertainties:')
-        print(f'L_bol = ({l_bol_with_err:.2e} ± {l_bol_err:.2e}) erg/s')
-        print(f'L_bol = ({l_bol_with_err/l_sun:.2f} ± {l_bol_err/l_sun:.2f}) Lsun')
+        # print(f'L_bol = ({l_bol_with_err:.2e} ± {l_bol_err:.2e}) erg/s')
+        # print(f'L_bol = ({l_bol_with_err/l_sun:.2f} ± {l_bol_err/l_sun:.2f}) Lsun')
+        print(f'log(L_bol/L_sun) = {log_l_bol_solar_norm_with_err:.2f} ± {log_l_bol_solar_norm_err:.2f}')
         print(f'R_cavity = ({r_cavity_with_err:.2f} ± {r_cavity_err:.2f}) Rjup')
         
-        # Example with partial uncertainties (only temperature error)
-        l_bol_partial, l_bol_partial_err = bolometric_luminosity(teff, radius, teff_err, None)
-        print(f'\nPartial uncertainties (only T_eff error):')
-        print(f'L_bol = ({l_bol_partial:.2e} ± {l_bol_partial_err:.2e}) erg/s')
-        print('')
+        print('--------------------------------')
         

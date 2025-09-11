@@ -41,6 +41,18 @@ def define_runs():
 
     return runs
 
+def my_effective_temperature(target, run):
+    teff_dict = {
+        'TWA28': {'freeslab_lbl10_G1G2G3_1': (2594, 2),
+                  'freeslab_lbl10_G2G3_1': (None, None),
+                  },
+        'TWA27A': {'freeslab_lbl10_G1G2G3_1': (2692, 3),
+                  'freeslab_lbl10_G2G3_2': (None, None),
+                  },
+    }
+    
+    return teff_dict[target][run]
+
 def save_posterior_h5(posterior_dict: dict, param_keys: list, filename: str):
     """Save posterior samples to HDF5 file for fast loading"""
     with h5py.File(filename, 'w') as f:
@@ -156,12 +168,14 @@ def manjavacas_results():
     twa28 = {
         'ATMO':
             {
+                'T_eff': (2400, 100),
                 'R_p': (2.90, 0.24),
                 'log_g': (4.0, 0.5),
                 'mass': (32.0, 22.2, 67.0),
             },
         'BT-Settl':
             {
+                'T_eff': (2577, 100),
                 'R_p': (2.55, 0.19),
                 'log_g': (4.0, 0.5),
                 'mass': (26.0, 16.9, 53.5),
@@ -170,12 +184,14 @@ def manjavacas_results():
     twa27a = {
         'ATMO':
             {
+                'T_eff': (2600, 100),
                 'R_p': (2.70, 0.21),
                 'log_g': (4.0, 0.5),
                 'mass': (28.1, -19.8, 61.8),
             },
         'BT-Settl':
             {
+                'T_eff': (2605, 100),
                 'R_p': (2.70, 0.20),
                 'log_g': (4.0, 0.5),
                 'mass': (29.3, 19.8, 62.8),
@@ -192,11 +208,13 @@ def venuti_results():
     mass_sun_g = 1.989e33
     mass_jupiter_g = 1.898e30
     twa27a = {
+        'T_eff': (2640, 20),
         'R_p': 0.35 * solar_radius_cm / jupiter_radius_cm,
         'log_g': (3.75, 0.14),
         'mass': np.array([0.019, 0.006]) * mass_sun_g / mass_jupiter_g,
     }
     twa28 = {
+        'T_eff': (2660, 70),
         'R_p': 0.29 * solar_radius_cm / jupiter_radius_cm,
         'log_g': (4.1, 0.3),
         'mass': np.array([0.020, 0.005]) * mass_sun_g / mass_jupiter_g,
@@ -281,15 +299,16 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
     latex_table.append("\\centering")
     latex_table.append("\\caption{Physical properties of TWA 27A and TWA 28 from different studies.}")
     latex_table.append("\\label{tab:physical_properties}")
-    latex_table.append("\\renewcommand{\\arraystretch}{1.3}")  # Increase row spacing
-    latex_table.append("\\begin{tabular}{lccc}")
+    latex_table.append("\\renewcommand{\\arraystretch}{1.2}")  # Slightly reduce row spacing
+    latex_table.append("\\setlength{\\tabcolsep}{4pt}")  # Reduce column separation
+    latex_table.append("\\begin{tabular}{lcccc}")
     latex_table.append("\\hline")
-    latex_table.append("Target & Radius & $\\log g$ & Mass \\\\")
-    latex_table.append(" & ($R_{\\mathrm{Jup}}$) & (cgs) & ($M_{\\mathrm{Jup}}$) \\\\")
+    latex_table.append("Target & $T_{\\rm eff}$ & Radius & $\\log g$ & Mass \\\\")
+    latex_table.append(" & (K) & ($R_{\\mathrm{Jup}}$) & (cgs) & ($M_{\\mathrm{Jup}}$) \\\\")
     latex_table.append("\\hline")
     
     # Venuti et al. 2019 block
-    latex_table.append("\\multicolumn{4}{c}{\\textit{Venuti et al.} (2019)} \\\\")
+    latex_table.append("\\multicolumn{5}{c}{\\textit{Venuti et al.} (2019)} \\\\")
     # latex_table.append("\\vspace{0.5em}")  # Add spacing
     latex_table.append("\\hline")
     
@@ -297,36 +316,41 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
     r_27a = twa27a_venuti['R_p']
     logg_27a = twa27a_venuti['log_g']
     mass_27a = twa27a_venuti['mass']
+    teff_27a = twa27a_venuti['T_eff']
     
     r_27a_str = format_value_with_uncertainty(r_27a, precision=2)
     logg_27a_str = format_value_with_uncertainty(logg_27a[0], logg_27a[1], precision=2)
     mass_27a_str = format_value_with_uncertainty(mass_27a[0], mass_27a[1], precision=1)
+    teff_27a_str = format_value_with_uncertainty(teff_27a[0], teff_27a[1], precision=0)
     
-    latex_table.append(f"TWA 27A & {r_27a_str} & {logg_27a_str} & {mass_27a_str} \\\\")
+    latex_table.append(f"TWA 27A & {teff_27a_str} & {r_27a_str} & {logg_27a_str} & {mass_27a_str} \\\\")
     
     # TWA 28 - Venuti
     r_28 = twa28_venuti['R_p']
     logg_28 = twa28_venuti['log_g']
     mass_28 = twa28_venuti['mass']
+    teff_28 = twa28_venuti['T_eff']
     
     r_28_str = format_value_with_uncertainty(r_28, precision=2)
     logg_28_str = format_value_with_uncertainty(logg_28[0], logg_28[1], precision=2)
     mass_28_str = format_value_with_uncertainty(mass_28[0], mass_28[1], precision=1)
+    teff_28_str = format_value_with_uncertainty(teff_28[0], teff_28[1], precision=0)
     
-    latex_table.append(f"TWA 28 & {r_28_str} & {logg_28_str} & {mass_28_str} \\\\")
+    latex_table.append(f"TWA 28 & {teff_28_str} & {r_28_str} & {logg_28_str} & {mass_28_str} \\\\")
     latex_table.append("\\hline")
     
     # Manjavacas et al. 2024 block
-    latex_table.append("\\multicolumn{4}{c}{\\textit{Manjavacas et al.} (2024)} \\\\")
+    latex_table.append("\\multicolumn{5}{c}{\\textit{Manjavacas et al.} (2024)} \\\\")
     # latex_table.append("\\vspace{0.5em}")  # Add spacing
     latex_table.append("\\hline")
     
     # ATMO model subblock
-    latex_table.append("\\multicolumn{4}{l}{\\quad ATMO} \\\\")
+    latex_table.append("\\multicolumn{5}{l}{\\quad ATMO} \\\\")
     for target_name, target_data in [('TWA 27A', twa27a_manjavacas), ('TWA 28', twa28_manjavacas)]:
         data = target_data['ATMO']
         r_str = format_value_with_uncertainty(data['R_p'][0], data['R_p'][1], precision=2)
         logg_str = format_value_with_uncertainty(data['log_g'][0], data['log_g'][1], precision=1)
+        teff_str = format_value_with_uncertainty(data['T_eff'][0], data['T_eff'][1], precision=0)
         
         # Handle asymmetric mass uncertainties (keep asymmetric for mass)
         mass_central = data['mass'][0]
@@ -337,14 +361,15 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
                                                uncertainty_upper=mass_upper, 
                                                precision=1)
         
-        latex_table.append(f"{target_name} & {r_str} & {logg_str} & {mass_str} \\\\")
+        latex_table.append(f"{target_name} & {teff_str} & {r_str} & {logg_str} & {mass_str} \\\\")
     
     # BT-Settl model subblock
-    latex_table.append("\\multicolumn{4}{l}{\\quad BT-Settl} \\\\")
+    latex_table.append("\\multicolumn{5}{l}{\\quad BT-Settl} \\\\")
     for target_name, target_data in [('TWA 27A', twa27a_manjavacas), ('TWA 28', twa28_manjavacas)]:
         data = target_data['BT-Settl']
         r_str = format_value_with_uncertainty(data['R_p'][0], data['R_p'][1], precision=2)
         logg_str = format_value_with_uncertainty(data['log_g'][0], data['log_g'][1], precision=1)
+        teff_str = format_value_with_uncertainty(data['T_eff'][0], data['T_eff'][1], precision=0)
         
         # Handle asymmetric mass uncertainties (keep asymmetric for mass)
         mass_central = data['mass'][0]
@@ -355,11 +380,11 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
                                                uncertainty_upper=mass_upper,
                                                precision=1)
         
-        latex_table.append(f"{target_name} & {r_str} & {logg_str} & {mass_str} \\\\")
+        latex_table.append(f"{target_name} & {teff_str} & {r_str} & {logg_str} & {mass_str} \\\\")
     latex_table.append("\\hline")
     
     # This work block
-    latex_table.append("\\multicolumn{4}{c}{This work} \\\\")
+    latex_table.append("\\multicolumn{5}{c}{This work} \\\\")
     # latex_table.append("\\vspace{0.5em}")  # Add spacing
     latex_table.append("\\hline")
     
@@ -374,7 +399,7 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
     
     # Process each wavelength range as a subblock
     for wavelength_range in [r'0.97-5.27 $\mu$m', r'1.63-5.27 $\mu$m']:
-        latex_table.append(f"\\multicolumn{{4}}{{l}}{{\\quad {wavelength_range}}} \\\\")
+        latex_table.append(f"\\multicolumn{{5}}{{l}}{{\\quad {wavelength_range}}} \\\\")
         
         for target in ['TWA27A', 'TWA28']:
             target_runs = runs[target]
@@ -409,15 +434,22 @@ def generate_latex_table(data_dict: dict, output_path: str = None):
                                                                uncertainty_upper=mass_q[2]-mass_q[1],
                                                                precision=1)
                         
+                        # Get T_eff from constant parameters (T_star)
+                        teff_data = my_effective_temperature(target, run_key)  # From config files
+                        if teff_data[0] is None or teff_data[1] is None:
+                            teff_str = "--"
+                        else:
+                            teff_str = format_value_with_uncertainty(teff_data[0], teff_data[1], precision=0)
+                        
                         target_name = target.replace('TWA', 'TWA ')
-                        latex_table.append(f"{target_name} & {r_str} & {logg_str} & {mass_str} \\\\")
+                        latex_table.append(f"{target_name} & {teff_str} & {r_str} & {logg_str} & {mass_str} \\\\")
     
     latex_table.append("\\hline")
     latex_table.append("\\end{tabular}")
     latex_table.append("\\tablefoot{")
-    latex_table.append("Radius and surface gravity uncertainties are shown as symmetric (using the larger of the asymmetric uncertainties), ")
-    latex_table.append("while mass uncertainties are shown asymmetrically where appropriate. ")
-    latex_table.append("ATMO and BT-Settl refer to different atmospheric model grids from \\textit{Manjavacas et al.} (2024). ")
+    latex_table.append("Effective temperature")
+    latex_table.append(r'(T$_{\rm eff}$) and mass are inferred from the models, while radius and surface gravity are directly retrieved as free parameters.')
+    latex_table.append("ATMO and BT-Settl refer to different atmospheric model grids from M24. ")
     latex_table.append("Wavelength ranges indicate the spectral coverage: 0.97--5.27~$\\mu$m includes all three ")
     latex_table.append("NIRSpec gratings (G140H, G235H, G395H), while 1.63--5.27~$\\mu$m uses only G235H and G395H. }")
     latex_table.append("\\end{table}")

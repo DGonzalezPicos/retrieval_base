@@ -76,10 +76,15 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     m_flux = m_spec.flux[idx] + offset
     m_flux_nans = np.where(~nans, np.nan, m_flux)
     
+    m_bb = m_spec.blackbody_disk(**m_spec.blackbody_disk_args, wave_cm=wave*1e-7)
+    m_atm = m_flux - m_bb
+    
     ax[0].plot(wave, flux, color=colors['data'], lw=lw, alpha=0.8, ls=ls)
     ax[0].plot(wave, flux, color=colors['data'], ls='none', marker='o', ms=1, alpha=0.8)
     ax[0].fill_between(wave, flux - err, flux + err, color=colors['data'], alpha=0.2, lw=0.0)
     ax[0].plot(wave, m_flux, color=colors['model'], lw=lw, alpha=0.8, ls=ls)
+    ax[0].plot(wave, m_atm, color=colors['model'], lw=lw, alpha=0.8, ls='--')
+    # ax[0].fill_between(wave[~nans], m_flux[~nans] - m_bb[~nans], color=colors['model'], alpha=0.3, lw=0.0)
     # ax[0].plot(wave, m_flux_nans, color='red', lw=lw, alpha=0.8, ls=ls)
     
     res = flux - m_flux
@@ -120,7 +125,7 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     # ax[1].axhline(0.0,color=colors['model'], lw=0.7)
         # ax.set_title(f'Chunk {idx}')
         # plt.show()
-    return ax, wave, flux, err
+    return ax, wave, flux, err, m_atm
 
 colors = dict(TWA28={'data':'k', 'model':'#D55E00'},
               TWA27A={'data':'k', 'model':'#009E73'})
@@ -144,20 +149,30 @@ def plot_idx(idx, fig=None, ax=None, ylim_p=None, ylim=None):
         fig, ax = fig_ax()
         new_fig = True
         ax[0].set_ylim(ylim[0], ylim[1])
+        
+    wave_atm = {t: [] for t in runs.keys()}
+    flux_atm = {t: [] for t in runs.keys()}
     for t, target in enumerate(runs.keys()):
         d_spec, m_spec = d_specs[target], m_specs[target]
     # assert len(ax) == 2, f'ax must be a list of 2 elements, not {len(ax)}'
-        _, wave, flux, err = plot_chunk(d_spec, m_spec, ax=ax[[t,-1]], relative_residuals=True, 
+        _, wave, flux, err, m_atm = plot_chunk(d_spec, m_spec, ax=ax[[t,-1]], relative_residuals=True, 
                                         idx=idx,
                                         colors=colors[target],
                                         new_fig=new_fig,
                                         color_residuals=colors[target]['model'],
                                         ylim_p=ylim_p)
-         
+        wave_atm[target].append(wave)
+        flux_atm[target].append(m_atm)
+    return wave_atm, flux_atm
 # fig, ax = fig_ax()
 fig, axes = plt.subplots(4,1, figsize=(10,5), sharex=False, gridspec_kw={'height_ratios':[0.5,3,3,1]})
-ax = axes[1:]  # Use axes[1:] for the data plots    
-
+ax = axes[1:]  # Use axes[1:] for the data plots   
+ 
+for axx in ax:
+    # Make major/minor ticks visible on all sides
+    axx.tick_params(axis='x', which='both', top=True)     # mirror x ticks to top
+    # Enable minor ticks
+    axx.minorticks_on()
 
 # Clean up the label axes (axes[0])
 axes[0].set_xticks([])
@@ -170,11 +185,24 @@ ymin = np.nanmin([d_specs[t].flux for t in runs.keys()])
 ymax = np.nanmax([d_specs[t].flux for t in runs.keys()])
 # ax[0].set_xlim(xlim[0], 15e3)
 # ax[0].set_ylim(1e-17, ymax)
-
+wave_atm_all = {t: [] for t in runs.keys()}
+flux_atm_all = {t: [] for t in runs.keys()}
 for idx in range(d_specs['TWA28'].flux.shape[0]):
-    plot_idx(idx, fig=fig, ax=ax)
+    wave_atm, flux_atm = plot_idx(idx, fig=fig, ax=ax)
+    for t in runs.keys():
+        wave_atm_all[t].append(wave_atm[t])
+        flux_atm_all[t].append(flux_atm[t])
     
     
+wave_atm_flat = {t: np.array(wave_atm_all[t]).flatten() for t in runs.keys()}
+flux_atm_flat = {t: np.array(flux_atm_all[t]).flatten() for t in runs.keys()}
+
+for t, target in enumerate(runs.keys()):
+    nans = np.isnan(flux_atm_flat[target]) 
+    # ax[t].plot(wave_atm_flat[target][~nans], flux_atm_flat[target][~nans], color='r')
+    ax[t].fill_between(wave_atm_flat[target][~nans], flux_atm_flat[target][~nans], color=colors[target]['model'],
+                       alpha=0.3, lw=0.0)
+
 run_spitzer = 'spitzer_G2G3'
 target = 'TWA28'
 prefix = '/home/dario/phd/retrieval_base'
@@ -185,6 +213,9 @@ for t, target in enumerate(runs.keys()):
     flux_unit_factor = d_spec_spitzer.flux_unit_factor
     wave_full = spitzer[0,:,:].flatten()
     bb_full = spitzer[3,:,:].flatten()
+    
+    # wave_all_sorted = np.linspace(np.nanmin(wave_full), np.nanmax(wave_full), 1000)
+    # bb_all_sorted =np.interp(wave_all_sorted, wave_full, bb_full)
 
     wave, flux, err, bb, model_flux = spitzer[:,-1,:]
     # model_flux /= d_specs[target].flux_unit_factor
@@ -193,7 +224,12 @@ for t, target in enumerate(runs.keys()):
     ax[t].plot(wave, flux, color='k', marker='o', ms=2, alpha=0.8, ls='none', label='Observations')
     ax[t].plot(wave, model_flux, color=colors[target]['model'], lw=1.8, alpha=0.8, ls='-', label='Full model')
     ax[t].plot(wave, model_flux - bb, color=colors[target]['model'], lw=1.8, alpha=0.8, ls='--', label='Atmosphere')
+    # fill between model and x-axis
+    ax[t].fill_between(wave, model_flux - bb, color=colors[target]['model'], alpha=0.3, lw=0.0)
     ax[t].plot(wave_full, bb_full, color='brown', lw=1.8, alpha=0.8, ls='--', label='Blackbody')
+    
+    
+    ax[t].fill_between(wave_full, bb_full, color='brown', alpha=0.2, lw=0.0)
 
 
     # ax[t].plot(wave, bb, color=colors[target]['model'], lw=1.8, alpha=0.8, ls=':')

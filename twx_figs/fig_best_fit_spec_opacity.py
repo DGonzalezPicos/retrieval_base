@@ -18,7 +18,6 @@ w_set='NIRSpec'
 # set global font size
 plt.rcParams.update({'font.size': 12})
 
-
 def load_data(target, run):
     cwd = os.getcwd()
     if target not in cwd:
@@ -141,6 +140,12 @@ def plot_chunk(d_spec, m_spec, ax=None, idx=0, relative_residuals=False, colors=
     
     res_label = r'$\Delta F / F$' if relative_residuals else r'$\Delta F / erg/s/cm^2/nm$'
     ax[1].set_ylabel(res_label)
+    
+    for axx in ax:
+        # Make major/minor ticks visible on all sides
+        axx.tick_params(axis='x', which='both', top=True)     # mirror x ticks to top
+        # Enable minor ticks
+        axx.minorticks_on()
     
     if new_fig:
         

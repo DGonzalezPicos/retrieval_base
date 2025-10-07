@@ -437,7 +437,7 @@ def setup_plot():
     ax.tick_params(axis='both', which='minor', width=1.5, length=3, labelsize=fontsize)
     
     # Add grid for better readability
-    ax.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
+    # ax.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
     
     return fig, ax
 

@@ -42,7 +42,8 @@ def plot_settings(ax, setting='K2166', wave_units='um', color='k', alpha=0.1, **
             ax.axvspan(wave_min * wave_factor, wave_max * wave_factor, color=color, alpha=alpha, label=label, **kwargs)
     return ax
 
-teff_range = np.arange(5200, 5600+100, 100)
+# teff_range = np.arange(5200, 5600+100, 100)
+teff_range = np.arange(3000, 9000, 1000)
 teff_colors = plt.cm.coolwarm_r(np.linspace(0, 1, len(teff_range)))
 wave_range = [1900, 2490]
 fig, (ax, ax_zoom) = plt.subplots(2,1,figsize=(12, 4))
@@ -81,7 +82,12 @@ ax_zoom.set_ylabel('Flux [normalized]')
 # ax_zoom.set_title('Zoomed in on the H2O line at 2352.9 nm')
 
 # plt.show()
-fig_name = 'solar_type_k_band_spectrum.pdf'
-fig.savefig(fig_name, bbox_inches='tight')
+png = True
+fig_name = 'stellar_spectrum.pdf'
+if png:
+    fig_name = fig_name.replace('.pdf', '.png')
+    fig.savefig(fig_name, dpi=300, bbox_inches='tight')
+else:
+    fig.savefig(fig_name, bbox_inches='tight')
 print(f'Saved figure to {fig_name}')
 plt.close()

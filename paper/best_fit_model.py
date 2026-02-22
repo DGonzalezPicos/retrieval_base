@@ -121,8 +121,11 @@ runs = dict(zip(spirou_sample.keys(), [spirou_sample[k][1] for k in spirou_sampl
 norm = plt.Normalize(min(teff.values()), 4000.0)
 cmap = plt.cm.plasma
 
+dark_background = True
+
 def plot(orders, text_x=None):
-    fig, ax = plt.subplots(1,1, figsize=(12,6), tight_layout=True)
+    fig, ax = plt.subplots(1,1, figsize=(12,6), tight_layout=True,
+                            facecolor='black' if dark_background else 'white')
 
     # orders = [0]
     orders_str = [str(o) for o in orders]
@@ -150,7 +153,9 @@ def plot(orders, text_x=None):
     ax.set_xlabel('Wavelength (nm)')
     ax.set_ylabel('Flux + offset')
     fig_name = base_path + 'paper/latex/figures/best_fit_model' + "-".join(orders_str) + ".pdf"
-    fig.savefig(fig_name)
+    if dark_background:
+        fig_name = fig_name.replace('.pdf', '_dark.pdf')
+    fig.savefig(fig_name, dpi=300, facecolor='black' if dark_background else 'white')
     print(f'Figure saved as {fig_name}')
 
     show = False

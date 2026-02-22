@@ -329,6 +329,7 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, f
     
     lw = kwargs.get('lw', 0.7)
     color = kwargs.get('color', 'orange')
+    color_data = kwargs.get('color_data', 'k')
     # for i, order in enumerate(orders):
 
     
@@ -338,8 +339,8 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_x=0.0, f
     print(f'Residuals saved as {file_name}')
     
     
-    ax[0].plot(wave[order], flux[order], color='k',lw=lw)
-    ax[0].fill_between(wave[order], flux[order]-err[order], flux[order]+err[order], alpha=0.2, color='k', lw=0)
+    ax[0].plot(wave[order], flux[order], color=color_data,lw=lw)
+    ax[0].fill_between(wave[order], flux[order]-err[order], flux[order]+err[order], alpha=0.2, color=color_data, lw=0)
     ax[0].plot(wave[order], m[order], label=target,lw=lw, color=color)
     
     ax[1].plot(wave[order], residuals_i, color=color, lw=lw, alpha=0.6)
@@ -412,15 +413,16 @@ my_targets_id = ['338B', '205', '411', '436','699', '1286']
 # my_targets = ['gl'+t for t in my_targets_id]
 my_targets = [s.replace('Gl ', 'gl') for s in names if s not in ignore_names][::-1]
 
-
+dark_background = True
 def plot(orders, text_x=None, xlim=None, save_csv=True, **kwargs):
     fig, ax = plt.subplots(2,1, figsize=(5,9), sharex=True, gridspec_kw={'height_ratios': [15, 1],
                                                                         'hspace': 0.03,
                                                                         'top': 0.97,
                                                                         'bottom': 0.13,
                                                                         'left': 0.10,
-                                                                        'right': 0.99})
-    
+                                                                        'right': 0.99},
+                            facecolor='black' if dark_background else 'white')
+    color_data = kwargs.get('color_data','k')
 
     # orders = [0]
     orders_str = [str(o) for o in orders]
@@ -486,16 +488,27 @@ def plot(orders, text_x=None, xlim=None, save_csv=True, **kwargs):
                     color=color, fontsize=7, weight='bold', path_effects=[path_effects.withStroke(linewidth=2, foreground='w')])
         
         
-    ax[-1].axhline(0.0, color='k', lw=0.5, zorder=-1)
+    ax[-1].axhline(0.0, color=color_data, lw=0.5, zorder=-1)
     
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])  # Only needed for color bar
-    
+    if dark_background:
+        for axx in ax:
+            axx.set_facecolor('black')
+            axx.tick_params(colors='white', which='both')
+            for spine in axx.spines.values():
+                spine.set_color('white')
+            axx.yaxis.label.set_color('white')
+            axx.xaxis.label.set_color('white')
     # create ax for colorbar
     cbar_ax = fig.add_axes([1.005, 0.1932, 0.02, 0.777])
     cbar = plt.colorbar(sm, cax=cbar_ax, orientation='vertical', pad=0.01, aspect=80, location='right')
     # cbar = plt.colorbar(sm, ax=ax, orientation='vertical', pad=0.01, aspect=80, location='right')
     cbar.set_label('Temperature (K)')
+    if dark_background:
+        cbar.ax.yaxis.label.set_color('white')
+        cbar.ax.tick_params(colors='white')
+        
 
     if xlim is not None:
         ax[0].set_xlim(xlim)
@@ -516,8 +529,12 @@ def plot(orders, text_x=None, xlim=None, save_csv=True, **kwargs):
     if debug:
         return
     # fig name to nat path, data to out_path
-    fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + ".pdf"
-    fig.savefig(fig_name, bbox_inches='tight')
+    suffix = 'png' if dark_background else 'pdf'
+    fig_name = nat_path + 'best_fit_model' + "-".join(orders_str) + f".{suffix}"
+    if dark_background:
+        fig_name = fig_name.replace(f'.{suffix}', f'_dark.{suffix}')
+    fig.savefig(fig_name, bbox_inches='tight', facecolor='black' if dark_background else 'white', 
+                dpi=600 if dark_background else 300)
     print(f'Figure saved as {fig_name}')
 
     show = False
@@ -535,4 +552,5 @@ order = 0
 # xlim = (2282, 2364) # for order 0
 xlim = (2270, 2500) # for all orders
 text_x = (xlim[0]+1.5, xlim[1]-9)
-plot([0,1,2], text_x=text_x, xlim=xlim, cache=False, save_csv=True)
+plot([0,1,2], text_x=text_x, xlim=xlim, cache=False, save_csv=True, 
+     color_data='white' if dark_background else 'k')

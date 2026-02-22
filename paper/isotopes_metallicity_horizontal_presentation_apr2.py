@@ -21,11 +21,21 @@ plt.style.use(['sans'])
 plt.rcParams.update({
     "font.size": 8,
 })
-
+dark_theme = True
+if dark_theme:
+    plt.rcParams['text.color'] = 'white'
+    plt.rcParams['axes.labelcolor'] = 'white'
+    plt.rcParams['xtick.color'] = 'white'
+    plt.rcParams['ytick.color'] = 'white'
+    plt.rcParams['grid.color'] = 'white'
+    plt.rcParams['figure.facecolor'] = 'black'
+    plt.rcParams['axes.facecolor'] = 'black'
+    
 base_path = '/home/dario/phd/retrieval_base/'
 # nat_path = '/home/dario/phd/nat/figures/'
-presentation_path = '/home/dario/phd/presentations/apr2_mdwarfs/'
-
+presentation_path = '/home/dario/phd/presentations/aas_phoenix/'
+suffix = 'png' if dark_theme else 'pdf'
+black = 'k' if not dark_theme else 'w'
 df = read_spirou_sample_csv()
 flip_rows = True
 if flip_rows:
@@ -45,7 +55,7 @@ y_labels = {'oxygen': r'$^{16}$O/$^{18}$O', 'carbon': r'$^{12}$C/$^{13}$C'}
 y_lims = {'oxygen': (30, 4000), 'carbon': (20, 400)}
 
 sigma_colors = {
-                '3':'k',
+                '3':black,
                 '2': '#0C823E',
                 '1': '#ff6a90'
                 }
@@ -282,14 +292,21 @@ plot_teff_max = 4400.0
 xlims = (-0.6, 0.6)
 xytext = {'Gl 699' : (-28,5)}
 mass_ranges = ['1_8', '3_8']
-gce_colors = ['black', 'purple']
+gce_colors = [black, 'purple']
 
-def setup_figure():
+def setup_figure(dark_theme=False):
     """Create and setup the base figure with subplots."""
     fig = plt.figure(figsize=(9, 3))
     gs = fig.add_gridspec(5, 5, hspace=0.00, wspace=0.0)
     ax_carbon = fig.add_subplot(gs[:, :2])
     ax_oxygen = fig.add_subplot(gs[:, 3:])
+    if dark_theme:
+        for ax in [ax_carbon, ax_oxygen]:
+            ax.tick_params(colors='white', which='both')
+            for spine in ax.spines.values():
+                spine.set_color('white')
+            ax.yaxis.label.set_color('white')
+            ax.xaxis.label.set_color('white')
     return fig, [ax_carbon, ax_oxygen]
 
 def plot_sun(ax, sun):
@@ -328,7 +345,7 @@ def plot_romano_models(axes, mass_ranges, gce_colors):
         axes[1].plot(Z, o16o18, color=gce_colors[j], lw=1.5, 
                     label=mass_range_label, alpha=0.8, path_effects=path_effects)
 
-def setup_axes(axes, isotopes, y_labels, x_param, loglog=True):
+def setup_axes(axes, isotopes, y_labels, x_param, loglog=True, dark_theme=False):
     """Setup axes properties."""
     if loglog:
         ylims = {'oxygen': (200, 4000), 'carbon': (40, 400)}
@@ -345,6 +362,12 @@ def setup_axes(axes, isotopes, y_labels, x_param, loglog=True):
             ax.set_xlabel(x_param)
             ax.set_ylabel(y_labels[isotope])
             ax.set_xlim(*xlims)
+            if dark_theme:
+                ax.tick_params(colors='white', which='both')
+                for spine in ax.spines.values():
+                    spine.set_color('white')
+                ax.yaxis.label.set_color('white')
+                ax.xaxis.label.set_color('white')
 
 def add_colorbar(fig, axes, norm, cmap):
     """Add colorbar to the figure."""
@@ -356,7 +379,9 @@ def add_colorbar(fig, axes, norm, cmap):
 def save_frame(fig, frame_dir, counter, dpi=300):
     """Save frame as PNG with specified DPI."""
     frame_path = os.path.join(frame_dir, f'frame_{counter:03d}.png')
-    fig.savefig(frame_path, bbox_inches='tight', dpi=dpi)
+    fig.savefig(frame_path, dpi=dpi, format='png', facecolor='white' if not dark_theme else 'black',
+                bbox_inches='tight', edgecolor='none')
+    print(f'Frame saved as {frame_path}')
     return frame_path
 
 def create_gif(frame_dir, output_path, duration=1000):
@@ -428,7 +453,7 @@ def generate_frames():
     frame_counter = 0
 
     # First frame: Sun, ISM, and Crossfield only
-    fig, axes = setup_figure()
+    fig, axes = setup_figure(dark_theme=dark_theme)
     for i, isotope in enumerate(isotopes):
         ax = axes[i]
         ax.set_ylim(*y_lims[isotope])
@@ -439,10 +464,10 @@ def generate_frames():
         if plot_crossfield:
             plot_crossfield(ax, crossfield_dict[isotope], x_param)
     
-    setup_axes(axes, isotopes, y_labels, x_param, loglog=True)
+    setup_axes(axes, isotopes, y_labels, x_param, loglog=True, dark_theme=dark_theme)
     setup_legends(axes, ism_label)  # Add legends
     add_colorbar(fig, axes, norm, cmap)
-    save_frame(fig, frames_dir, frame_counter)
+    save_frame(fig, frames_dir, frame_counter, dpi=600)
     frame_counter += 1
     plt.close(fig)
 
@@ -454,7 +479,7 @@ def generate_frames():
         if name in ignore_targets:
             continue
 
-        fig, axes = setup_figure()
+        fig, axes = setup_figure(dark_theme=dark_theme)
         
         # Plot baseline for both panels
         for i, isotope in enumerate(isotopes):
@@ -494,7 +519,7 @@ def generate_frames():
             print(f'Error plotting {name}: {e}')
             continue
             
-        setup_axes(axes, isotopes, y_labels, x_param, loglog=True)
+        setup_axes(axes, isotopes, y_labels, x_param, loglog=True, dark_theme=dark_theme)
         setup_legends(axes, ism_label)  # Add legends
         add_colorbar(fig, axes, norm, cmap)
         save_frame(fig, frames_dir, frame_counter)
@@ -502,7 +527,7 @@ def generate_frames():
         plt.close(fig)
 
     # Final frame: add Romano models
-    fig, axes = setup_figure()
+    fig, axes = setup_figure(dark_theme=dark_theme)
     
     # Plot baseline and all targets
     for i, isotope in enumerate(isotopes):
@@ -534,7 +559,7 @@ def generate_frames():
     # Add Romano models
     plot_romano_models(axes, mass_ranges, gce_colors)
     
-    setup_axes(axes, isotopes, y_labels, x_param, loglog=True)
+    setup_axes(axes, isotopes, y_labels, x_param, loglog=True, dark_theme=dark_theme)
     setup_legends(axes, ism_label)  # Add legends
     add_colorbar(fig, axes, norm, cmap)
     

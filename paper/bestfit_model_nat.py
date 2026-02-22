@@ -116,6 +116,8 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_y=0.0, o
     
     lw = kwargs.pop('lw', 0.4)
     color = kwargs.pop('color', 'orange')
+    dark_theme = kwargs.get('dark_theme', False)
+    black = 'k' if not dark_theme else 'w'
     # for i, order in enumerate(orders):
 
     
@@ -125,8 +127,8 @@ def main(target, ax, order=0, offset=0.0, run=None, text_x=None, offset_y=0.0, o
     print(f'Residuals saved as {file_name}')
     
     
-    ax[0].plot(wave[order], flux[order], color='k',lw=lw)
-    ax[0].fill_between(wave[order], flux[order]-err[order], flux[order]+err[order], alpha=0.2, color='k', lw=0)
+    ax[0].plot(wave[order], flux[order], color=black,lw=lw)
+    ax[0].fill_between(wave[order], flux[order]-err[order], flux[order]+err[order], alpha=0.2, color=black, lw=0)
     ax[0].plot(wave[order], m[order], label=target,lw=lw, color=color)
     
     ax[1].plot(wave[order], residuals_i, color=color, lw=lw, alpha=0.8)
@@ -188,7 +190,7 @@ def plot(order, names, my_targets,
         assert len(axes) == 2, f'Axes must have length 2, not {len(axes)}'
         ax = axes
     
-
+    dark_theme = kwargs.get('dark_theme', False)
     # orders = [0]
     orders_str = [str(order)]
     # colors = plt.cm.
@@ -223,8 +225,8 @@ def plot(order, names, my_targets,
                     color=color, fontsize=7, weight='bold',                   
                     path_effects=pe)
         
-        
-    ax[-1].axhline(0.0, color='k', lw=0.5, zorder=-1)
+    black = 'k' if not dark_theme else 'w'
+    ax[-1].axhline(0.0, color=black, lw=0.5, zorder=-1)
     lw = kwargs.get('lw', 0.7)
     # print(f' lw = {lw}')
     if show_lines:
@@ -267,7 +269,6 @@ def plot(order, names, my_targets,
         cbar_ticks = np.linspace(3000, 3900, 7)
         cbar.set_ticks(cbar_ticks)
         cbar.set_ticklabels([str(int(t)) for t in cbar_ticks])
-
     if xlim is not None:
         ax[0].set_xlim(xlim)
         ax[1].set_xlim(xlim)

@@ -4,7 +4,7 @@ import matplotlib.animation as animation
 import os
 import pathlib
 import pandas as pd
-
+import matplotlib.patheffects as path_effects
 path = pathlib.Path('/home/dario/phd/pRT_input/input_data/stellar_specs')
 
 def load_stellar_params(path):
@@ -34,14 +34,15 @@ def load_spec(file, wave_min_nm=2200.0, wave_max_nm=2500.0, normalize=True):
 # Initialize plot with transparent background
 fig = plt.figure(facecolor='black')
 
-fig, ax = plt.subplots(1, 1, figsize=(16, 8), facecolor='black', tight_layout=True)
-ax.set_xlim(2200, 2500)
-ax.set_ylim(0.5, 1.35)
+fig, ax = plt.subplots(1, 1, figsize=(10, 7), facecolor='black', tight_layout=True)
+ax.set_xlim(2220, 2460)
+ax.set_ylim(0.45, 1.65)
 ax.set_xlabel("Wavelength (nm)", color='white', fontsize=16)
 
 # Increase font size of ticks
 ax.tick_params(axis='x', colors='white', labelsize=14)
 ax.tick_params(axis='y', colors='white', labelsize=14)
+ax.spines['bottom'].set_color('white')
 
 # remove yticks
 ax.set_yticks([])
@@ -57,15 +58,24 @@ ax.set_facecolor('black')
 spt = load_stellar_params(path)
 teff = 10.0 ** np.array([s[1] for s in spt])
 files = [path / f'spec_{i:02d}.dat' for i in range(len(spt))]
+reverse = True
 
-# Sort by teff, high to low
-spt = [x for _, x in sorted(zip(teff, spt))][::-1]
-files = [x for _, x in sorted(zip(teff, files))][::-1]
-teff = sorted(teff)[::-1]
+# Sort by teff, low to high
+spt = [x for _, x in sorted(zip(teff, spt))]
+files = [x for _, x in sorted(zip(teff, files))]
+teff = sorted(teff)
+
+
+reverse_teff = False
+if reverse_teff:
+    # show high to low
+    spt = spt[::-1]
+    files = files[::-1]
+    teff = teff[::-1]
 
 # Remove teffs that are too high or too low
-teff_max = 9000.0
-teff_min = 2900.0
+teff_max = 6000.0
+teff_min = 2000.0
 spt = [s for s, t in zip(spt, teff) if teff_min < t < teff_max]
 files = [f for f, t in zip(files, teff) if teff_min < t < teff_max]
 teff = [t for t in teff if teff_min < t < teff_max]
@@ -75,7 +85,9 @@ norm = plt.Normalize(min(teff), teff_max)
 cmap = plt.cm.jet_r
 
 # Placeholder for the text to be updated during animation
-text_box = ax.text(0.05, 0.88, "", color='white', transform=ax.transAxes, fontsize=22, weight='bold')
+text_box = ax.text(0.05, 0.88, "", color='white',
+                   transform=ax.transAxes, fontsize=22, weight='bold',
+                   path_effects=[path_effects.withStroke(linewidth=2, foreground='white')])
 
 def init():
     """Initialize animation."""
@@ -114,15 +126,22 @@ def animate(i):
     return line_current, line_previous, text_box
 
 # Create animation with looping
-ani = animation.FuncAnimation(fig, animate, init_func=init, frames=len(spt), interval=400, blit=True, repeat=False)
+ani = animation.FuncAnimation(fig, animate,
+                              init_func=init,
+                              frames=len(spt),
+                              interval=400, 
+                              blit=True, 
+                              repeat=False)
 
 # Save the animation as a GIF
-save_path = '/home/dario/phd/pRT_input/stellar_spectra_animation.gif'
+name = 'stellar_spectra_animation_jan2026.gif'
+path = pathlib.Path('/home/dario/phd/pRT_input')
+save_path = path / name
 ani.save(save_path, writer='pillow', fps=2)
 print(f' Animation saved to {save_path}!')
 # save last frame as png
-save_path = '/home/dario/phd/pRT_input/stellar_spectra_last_frame.png'
-fig.savefig(save_path, dpi=300, facecolor='darkgray')
+save_path = path / name.replace('.gif', '.png')
+fig.savefig(save_path, dpi=300, facecolor='black')
 print(f' Last frame saved to {save_path}!')
 
 # Show the animation

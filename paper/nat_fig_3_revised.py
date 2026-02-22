@@ -34,13 +34,20 @@ plt.rcParams['ps.fonttype']    = 42
 plt.rcParams['svg.fonttype']   = 'none'
 plt.rcParams['text.usetex']    = False
 
+dark_theme = True
+plt.rcParams['text.color'] = 'white' if dark_theme else 'black'
+plt.rcParams['axes.labelcolor'] = 'white' if dark_theme else 'black'
+plt.rcParams['xtick.color'] = 'white' if dark_theme else 'black'
+plt.rcParams['ytick.color'] = 'white' if dark_theme else 'black'
+plt.rcParams['grid.color'] = 'white' if dark_theme else 'black'
+
 # enable latex
 # plt.rcParams['text.usetex'] = True
 
 
 # Ensure RGB color mode for Nature requirements
-plt.rcParams['figure.facecolor'] = 'white'
-plt.rcParams['axes.facecolor'] = 'white'
+plt.rcParams['figure.facecolor'] = 'white' if not dark_theme else 'black'
+plt.rcParams['axes.facecolor'] = 'white' if not dark_theme else 'black'
 
 base_path = '/home/dario/phd/retrieval_base/'
 nat_path = '/home/dario/phd/nat/'
@@ -152,6 +159,13 @@ def main(target, isotope, x, xerr=None, label='', ax=None, run=None, xytext=None
 
     ax_new = ax is None
     ax = ax or plt.gca()
+    if dark_theme:
+        ax.set_facecolor('black')
+        ax.tick_params(colors='white', which='both')
+        for spine in ax.spines.values():
+            spine.set_color('white')
+        ax.yaxis.label.set_color('white')
+        ax.xaxis.label.set_color('white')
     print(f' {target}: log {main_label} isotope = {isotope_quantiles[1]:.2f} +{isotope_quantiles[2]-isotope_quantiles[1]:.2f} -{isotope_quantiles[1]-isotope_quantiles[0]:.2f}\n')
     # add black edge to points
     xerr = [x,x] if xerr is None else xerr
@@ -311,6 +325,15 @@ ax_carbon = fig.add_subplot(gs[5:, :5])  # Last 7 rows, half the width
 ax_oxygen = fig.add_subplot(gs[5:, 7:])  # Last 7 rows, half the width
 axes = [ax_carbon, ax_oxygen]
 
+if dark_theme:
+    for ax in [ax_spectrum, ax_residuals, *axes]:
+        ax.set_facecolor('black')
+        ax.tick_params(colors='white', which='both')
+        for spine in ax.spines.values():
+            spine.set_color('white')
+        ax.yaxis.label.set_color('white')
+        ax.xaxis.label.set_color('white')
+
 from bestfit_model_nat import plot
 my_targets_id = ['338B', '205', '411', '436','699', '1286']
 my_targets = ['gl'+t for t in my_targets_id]
@@ -324,7 +347,7 @@ text_x = (
             xlim[0]+0.2,
           xlim[1]+2.0,
           )
-kwargs = {'show_lines': True, 'lw': 0.8}
+kwargs = {'show_lines': True, 'lw': 0.8, 'dark_theme': dark_theme}
 plot(0, names,
      my_targets, 
      text_x=text_x, 
@@ -480,7 +503,8 @@ for i, isotope in enumerate(isotopes):
 # load Romano+2022 models
 mass_ranges = ['1_8', '3_8']
 
-gce_colors = ['black', 'purple']
+gce_colors = ['black' if not dark_theme else 'w',
+              'purple']
 # Remove path_effects to ensure editable text as required by Nature
 # path_effects = [pe.Stroke(linewidth=2.5, foreground='white'), pe.Normal()]
 
@@ -583,10 +607,13 @@ x_param_label = {
 }[x_param]
 # fig_name = base_path + f'paper/latex/figures/{main_label}_isotopes_{x_param_label}{loglog_label}.pdf'
 # fig_name = nat_path + f'{main_label}_isotopes_metallicity_{metallicity_ref}{loglog_label}{table_id_label}_horizontal.pdf'
-fig_name = nat_path + f'nat_fig_3_revised.pdf'
+dark_theme_label = '_dark' if dark_theme else ''
+suffix = 'png' if dark_theme else 'pdf'
+
+fig_name = nat_path + f'nat_fig_3_revised{dark_theme_label}.{suffix}'
 # Save in RGB mode with editable text as required by Nature
-fig.savefig(fig_name, bbox_inches='tight', dpi=300, format='pdf', 
-            facecolor='white', edgecolor='none', 
+fig.savefig(fig_name, bbox_inches='tight', dpi=300, format=suffix, 
+            facecolor='white' if not dark_theme else 'black', edgecolor='none', 
             metadata={'Creator': 'Dario Gonzalez Picos', 
                       'Producer': 'matplotlib'})
 print(f'Figure saved as {fig_name}')

@@ -80,3 +80,4 @@ data/jwst_nirspec_disperser_0083.asdf
 *npy
 *.h5
 paper/compare_runs_isotope_ratios.py
+paper/data/lamost_mdwarfs_refined2025.txt

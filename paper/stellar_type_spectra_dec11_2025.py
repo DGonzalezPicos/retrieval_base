@@ -6,7 +6,20 @@ import pathlib
 import pandas as pd
 import matplotlib.patheffects as path_effects
 path = pathlib.Path('/home/dario/phd/pRT_input/input_data/stellar_specs')
+facecolor = 'white'
+dark_theme = (facecolor == 'black')
 
+label_color = 'white' if dark_theme else 'black'
+
+plt.rcParams['text.color'] = label_color
+plt.rcParams['axes.labelcolor'] = label_color
+plt.rcParams['xtick.color'] = label_color
+plt.rcParams['ytick.color'] = label_color
+plt.rcParams['grid.color'] = label_color
+plt.rcParams['figure.facecolor'] = facecolor
+plt.rcParams['axes.facecolor'] = facecolor
+    
+    
 def load_stellar_params(path):
     file = 'stellar_params.dat'
     # Load stellar parameters
@@ -32,20 +45,21 @@ def load_spec(file, wave_min_nm=2200.0, wave_max_nm=2500.0, normalize=True):
     return wave_nm, flux
 
 # Initialize plot with transparent background
-fig = plt.figure(facecolor='black')
+fig = plt.figure(facecolor=facecolor)
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 7), facecolor='black', tight_layout=True)
+fig, ax = plt.subplots(1, 1, figsize=(10, 7), facecolor=facecolor, tight_layout=True)
 ax.set_xlim(2220, 2460)
 ax.set_ylim(0.45, 1.65)
-ax.set_xlabel("Wavelength (nm)", color='white', fontsize=16)
+
+ax.set_xlabel("Wavelength (nm)", color=label_color, fontsize=16)
 
 # Increase font size of ticks
-ax.tick_params(axis='x', colors='white', labelsize=14)
-ax.tick_params(axis='y', colors='white', labelsize=14)
-ax.spines['bottom'].set_color('white')
+ax.tick_params(axis='x', colors=label_color, labelsize=14)
+ax.tick_params(axis='y', colors=label_color, labelsize=14)
+ax.spines['bottom'].set_color(label_color)
 
 # remove yticks
-ax.set_yticks([])
+# ax.set_yticks([])
 # ax.set_ylabel("Normalized Flux", color='white', fontsize=16)
 
 # Plot lines for the current and previous spectra
@@ -53,7 +67,7 @@ line_current, = ax.plot([], [], lw=2)
 line_previous, = ax.plot([], [], lw=2, alpha=0.5)
 
 # Set dark background for the plot area and ticks
-ax.set_facecolor('black')
+ax.set_facecolor(facecolor)
 
 spt = load_stellar_params(path)
 teff = 10.0 ** np.array([s[1] for s in spt])
@@ -85,9 +99,9 @@ norm = plt.Normalize(min(teff), teff_max)
 cmap = plt.cm.jet_r
 
 # Placeholder for the text to be updated during animation
-text_box = ax.text(0.05, 0.88, "", color='white',
+text_box = ax.text(0.05, 0.88, "", color=label_color,
                    transform=ax.transAxes, fontsize=22, weight='bold',
-                   path_effects=[path_effects.withStroke(linewidth=2, foreground='white')])
+                   path_effects=[path_effects.withStroke(linewidth=2, foreground=label_color)])
 
 def init():
     """Initialize animation."""
@@ -134,14 +148,14 @@ ani = animation.FuncAnimation(fig, animate,
                               repeat=False)
 
 # Save the animation as a GIF
-name = 'stellar_spectra_animation_jan2026.gif'
+name = 'stellar_spectra_animation_june2026.gif'
 path = pathlib.Path('/home/dario/phd/pRT_input')
 save_path = path / name
 ani.save(save_path, writer='pillow', fps=2)
 print(f' Animation saved to {save_path}!')
 # save last frame as png
 save_path = path / name.replace('.gif', '.png')
-fig.savefig(save_path, dpi=300, facecolor='black')
+fig.savefig(save_path, dpi=300, facecolor=facecolor)
 print(f' Last frame saved to {save_path}!')
 
 # Show the animation

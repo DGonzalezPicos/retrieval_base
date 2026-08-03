@@ -21,7 +21,7 @@ plt.style.use(['sans'])
 plt.rcParams.update({
     "font.size": 8,
 })
-dark_theme = True
+dark_theme = False
 if dark_theme:
     plt.rcParams['text.color'] = 'white'
     plt.rcParams['axes.labelcolor'] = 'white'
